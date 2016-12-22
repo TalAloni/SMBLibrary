@@ -53,10 +53,10 @@ Using PCap.Net you can programmatically setup a virtual Network adapter and inte
 
 Using SMBLibrary:
 =================
-Any directory / filesystem / object you wish to share must implement the IFileSystem interface.
-You can share anything from actual directories to custom objects, as long as they expose a directory structure.
+Any directory / filesystem / object you wish to share must implement the IFileSystem interface.  
+You can share anything from actual directories to custom objects, as long as they expose a directory structure.  
 
 Contact:
 ========
-If you have any question, feel free to contact me.
+If you have any question, feel free to contact me.  
 Tal Aloni <tal.aloni.il@gmail.com>
