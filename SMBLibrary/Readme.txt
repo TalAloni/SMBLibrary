@@ -6,31 +6,53 @@ SMBLibrary shares can be accessed from any Windows version since Windows NT 4.0.
 
 Supported SMB / CIFS transport methods:
 =======================================
-NetBIOS over TCP (port 139)
-Direct TCP hosting (port 445)
+• NetBIOS over TCP (port 139)
+• Direct TCP hosting (port 445)
+
+'NetBIOS over TCP' and 'Direct TCP hosting' are almost identical, the only differences:
+- A 'session request' packet is initiating the NBT connection.
+- A 'keep alive' packet is sent from time to time over NBT connections.
 
 Notes:
-------
-1. Windows bind port 139 on a per-adapter basis, while port 445 is bound globally.
-This means that you can't use direct TCP hosting without disabling Windows File and Printer Sharing server completely.
-However, NetBIOS over TCP is almost identical, and for this reason, it's recommended to use port 139.
+======
+By default, Windows already use ports 139 and 445. there are several techniques to free / utilize those ports:
 
-2. To free port 139 for a given adapter, go to 'Internet Protocol (TCP/IP) Properties' > Advanced > WINS,
-and select 'Disable NetBIOS over TCP/IP'. in addition you need to uncheck 'File and Printer Sharing for Microsoft Networks'.
+Method 1: Disable Windows File and Printer Sharing server completely:
+---------------------------------------------------------------------
+Windows XP/2003:
+1. For every network adapter: Uncheck 'File and Printer Sharing for Microsoft Networks".
+2. Navigate to HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters and set SMBDeviceEnabled to '0' (this will free port 445).
+3. Reboot.
 
-3. It's important to note that disabling NetBIOS over TCP/IP will also disable NetBIOS name service for that adapter (a.k.a. WINS),
-This service uses UDP port 137. SMBLibrary offers a name service of its own.
+Windows 7/8/2008/2012:
+Disable the "Server" service (p.s. "TCP\IP NETBIOS Helper" should be enabled).
 
-4. You can install a virtual network adapter driver for Windows to be used solely with SMBLibrary:
+Method 2: Use Windows File Sharing AND SMBLibrary:
+--------------------------------------------------
+Windows bind port 139 to the first IP addres of every adapter, while port 445 is bound globally.
+This means that if you'll disable port 445 (or block it using a firewall), you'll be able to use a different service on port 139 for every IP address.
+
+Additional Notes:
+-----------------
+• To free port 139 for a given adapter, go to 'Internet Protocol (TCP/IP) Properties' > Advanced > WINS, and select 'Disable NetBIOS over TCP/IP'.
+Uncheck 'File and Printer Sharing for Microsoft Networks' to ensure Windows will not answer to SMB traffic on port 445 for this adapter.
+
+• It's important to note that disabling NetBIOS over TCP/IP will also disable NetBIOS name service for that adapter (a.k.a. WINS), This service uses UDP port 137.
+SMBLibrary offers a name service of its own.
+
+• You can install a virtual network adapter driver for Windows to be used solely with SMBLibrary:
 - You can install the 'Microsoft Loopback adapter' and use it for server-only communication with SMBLibrary.
 - A limited alternative is 'OpenVPN TAP-Windows Adapter' that can be used for client communication with SMBLibrary,
 However, you will have to configure this adapter to use a separate network segment.
 The driver installation can be downloaded from: https://openvpn.net/index.php/open-source/downloads.html
 To get started, go to Adapter properties > 'Advanced' and set 'Media Status' to 'Always Connected'.
 
-5. The differences between 'Direct TCP hosting' and 'NetBIOS over TCP' are:
-- A 'session request' packet is initiating the NBT connection.
-- A 'keep alive' packet is sent from time to time over NBT connections.
+Windows 7/8/2008/2012:
+• if you want localhost access from Windows explorer to work as expected, you must use port 445, you must also specify the IP address that you selected (\\127.0.0.1 or \\localhost will not work as expected).
+
+Method 3: Use an IP address that is invisible to Windows File Sharing:
+----------------------------------------------------------------------
+Using PCap.Net you can programmatically setup a virtual Network adapter and intercept SMB traffic (similar to how a virtual machine operates), You should use the ARP protocol to notify the network about the new IP address, and then process the incoming SMB traffic using SMBLibrary, good luck! 
 
 Using SMBLibrary:
 =================
