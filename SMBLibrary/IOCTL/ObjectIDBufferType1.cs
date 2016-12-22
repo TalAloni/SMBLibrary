@@ -1,0 +1,48 @@
+/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+ * 
+ * You can redistribute this program and/or modify it under the terms of
+ * the GNU Lesser Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ */
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Utilities;
+
+namespace SMBLibrary
+{
+    /// <summary>
+    /// [MS-FSCC] FILE_OBJECTID_BUFFER Type 1
+    /// </summary>
+    public class ObjectIDBufferType1
+    {
+        public const int Length = 64;
+
+        public Guid ObjectId;
+        public Guid BirthVolumeId;
+        public Guid BirthObjectId;
+        public Guid DomainId;
+
+        public ObjectIDBufferType1()
+        {
+        }
+
+        public ObjectIDBufferType1(byte[] buffer)
+        {
+            ObjectId = LittleEndianConverter.ToGuid(buffer, 0);
+            BirthVolumeId = LittleEndianConverter.ToGuid(buffer, 16);
+            BirthObjectId = LittleEndianConverter.ToGuid(buffer, 32);
+            DomainId = LittleEndianConverter.ToGuid(buffer, 48);
+        }
+
+        public byte[] GetBytes()
+        {
+            byte[] buffer = new byte[Length];
+            LittleEndianWriter.WriteGuidBytes(buffer, 0, ObjectId);
+            LittleEndianWriter.WriteGuidBytes(buffer, 16, BirthVolumeId);
+            LittleEndianWriter.WriteGuidBytes(buffer, 32, BirthObjectId);
+            LittleEndianWriter.WriteGuidBytes(buffer, 48, DomainId);
+            return buffer;
+        }
+    }
+}

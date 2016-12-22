@@ -1,0 +1,14 @@
+Revision History:
+-----------------
+1.0.0 - Initial release.
+
+1.0.1 - Better handling of invalid read / write operations.
+
+1.0.2 - Improved documentation and updated SMB_COM_TRANSACTION2 request (Technical Specifications Errata was found).
+
+1.0.3 - Search handles (SID) are now properly closed.
+
+1.0.4 - Added support for IPv6.
+
+1.0.5 - bugfix: SMB_COM_OPEN_ANDX was not returning the requested response format.
+		File buffering logic logic was moved to a separate class.

@@ -1,0 +1,39 @@
+/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+ * 
+ * You can redistribute this program and/or modify it under the terms of
+ * the GNU Lesser Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ */
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Utilities;
+
+namespace SMBLibrary.SMB1
+{
+    public abstract class SetInformation
+    {
+        public abstract byte[] GetBytes();
+
+        public static SetInformation GetSetInformation(byte[] buffer, SetInformationLevel informationLevel)
+        {
+            switch (informationLevel)
+            {
+                case SetInformationLevel.SMB_INFO_STANDARD:
+                    return new SetInfoStandard(buffer);
+                case SetInformationLevel.SMB_INFO_SET_EAS:
+                    return new SetExtendedAttributes(buffer);
+                case SetInformationLevel.SMB_SET_FILE_BASIC_INFO:
+                    return new SetFileBasicInfo(buffer);
+                case SetInformationLevel.SMB_SET_FILE_DISPOSITION_INFO:
+                    return new SetFileDispositionInfo(buffer);
+                case SetInformationLevel.SMB_SET_FILE_ALLOCATION_INFO:
+                    return new SetFileAllocationInfo(buffer);
+                case SetInformationLevel.SMB_SET_FILE_END_OF_FILE_INFO:
+                    return new SetFileEndOfFileInfo(buffer);
+                default:
+                    throw new UnsupportedInformationLevelException();
+            }
+        }
+    }
+}
