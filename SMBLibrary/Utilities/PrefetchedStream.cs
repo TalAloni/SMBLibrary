@@ -86,6 +86,12 @@ namespace Utilities
             m_stream.Write(buffer, offset, count);
         }
 
+        public override void Close()
+        {
+            m_stream.Close();
+            base.Close();
+        }
+
         public override bool CanRead
         {
             get
