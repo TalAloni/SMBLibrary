@@ -247,7 +247,30 @@ namespace SMBLibrary.Server
                 {
                     bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) == 0;
                     System.Diagnostics.Debug.Print("[{0}] Opening {1}, Access={2}, Share={3}, Buffered={4}", DateTime.Now.ToString("HH:mm:ss:ffff"), path, fileAccess, fileShare, buffered);
-                    stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
+                    try
+                    {
+                        stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
+                    }
+                    catch (IOException ex)
+                    {
+                        ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
+                        if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
+                        {
+                            header.Status = NTStatus.STATUS_SHARING_VIOLATION;
+                            return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                        }
+                        else
+                        {
+                            header.Status = NTStatus.STATUS_DATA_ERROR;
+                            return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                        }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                        return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                    }
+        
                     if (buffered)
                     {
                         stream = new PrefetchedStream(stream);
