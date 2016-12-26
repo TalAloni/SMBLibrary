@@ -25,22 +25,25 @@ namespace Utilities
         public PrefetchedStream(Stream stream)
         {
             m_stream = stream;
-            new Thread(delegate()
+            if (m_stream.CanRead)
             {
-                lock (m_syncLock)
+                new Thread(delegate()
                 {
-                    m_cacheOffset = 0;
-                    m_cache = new byte[CacheSize];
-                    int bytesRead = m_stream.Read(m_cache, 0, CacheSize);
-                    System.Diagnostics.Debug.Print("[{0}] bytes read {1}", DateTime.Now.ToString("HH:mm:ss:ffff"), bytesRead);
-                    this.Position = 0;
-                    if (bytesRead < CacheSize)
+                    lock (m_syncLock)
                     {
-                        // EOF, we must trim the response data array
-                        m_cache = ByteReader.ReadBytes(m_cache, 0, bytesRead);
+                        m_cacheOffset = 0;
+                        m_cache = new byte[CacheSize];
+                        int bytesRead = m_stream.Read(m_cache, 0, CacheSize);
+                        System.Diagnostics.Debug.Print("[{0}] bytes read {1}", DateTime.Now.ToString("HH:mm:ss:ffff"), bytesRead);
+                        this.Position = 0;
+                        if (bytesRead < CacheSize)
+                        {
+                            // EOF, we must trim the response data array
+                            m_cache = ByteReader.ReadBytes(m_cache, 0, bytesRead);
+                        }
                     }
-                }
-            }).Start();
+                }).Start();
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
