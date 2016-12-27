@@ -7,10 +7,10 @@ namespace Utilities
     {
         public bool ContainsKey(TKey key)
         {
-            return (this.IndexOf(key) != -1);
+            return (this.IndexOfKey(key) != -1);
         }
 
-        public int IndexOf(TKey key)
+        public int IndexOfKey(TKey key)
         {
             for (int index = 0; index < this.Count; index++)
             {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -33,6 +32,35 @@ namespace Utilities
             return true;
         }
 
+        public static byte[] XOR(byte[] array1, byte[] array2)
+        {
+            if (array1.Length == array2.Length)
+            {
+                return XOR(array1, 0, array2, 0, array1.Length);
+            }
+            else
+            {
+                throw new ArgumentException("Arrays must be of equal length");
+            }
+        }
+
+        public static byte[] XOR(byte[] array1, int offset1, byte[] array2, int offset2, int length)
+        {
+            if (offset1 + length <= array1.Length && offset2 + length <= array2.Length)
+            {
+                byte[] result = new byte[length];
+                for (int index = 0; index < length; index++)
+                {
+                    result[index] = (byte)(array1[offset1 + index] ^ array2[offset2 + index]);
+                }
+                return result;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+        }
+
         public static long CopyStream(Stream input, Stream output)
         {
             // input may not support seeking, so don't use input.Position
@@ -41,7 +69,7 @@ namespace Utilities
 
         public static long CopyStream(Stream input, Stream output, long count)
         {
-            const int MaxBufferSize = 4194304; // 4 MB
+            const int MaxBufferSize = 1048576; // 1 MB
             int bufferSize = (int)Math.Min(MaxBufferSize, count);
             byte[] buffer = new byte[bufferSize];
             long totalBytesRead = 0;

@@ -97,17 +97,29 @@ namespace Utilities
 
         public static List<string> SplitIgnoreQuotedSeparators(string str, char separator)
         {
+            return SplitIgnoreQuotedSeparators(str, separator, StringSplitOptions.None);
+        }
+
+        public static List<string> SplitIgnoreQuotedSeparators(string str, char separator, StringSplitOptions options)
+        {
             List<string> result = new List<string>();
             int nextEntryIndex = 0;
             int separatorIndex = IndexOfUnquotedChar(str, separator);
             while (separatorIndex >= nextEntryIndex)
             {
-                result.Add(str.Substring(nextEntryIndex, separatorIndex - nextEntryIndex));
-
+                string entry = str.Substring(nextEntryIndex, separatorIndex - nextEntryIndex);
+                if (options != StringSplitOptions.RemoveEmptyEntries || entry != String.Empty)
+                {
+                    result.Add(entry);
+                }
                 nextEntryIndex = separatorIndex + 1;
                 separatorIndex = IndexOfUnquotedChar(str, separator, nextEntryIndex);
             }
-            result.Add(str.Substring(nextEntryIndex));
+            string lastEntry = str.Substring(nextEntryIndex);
+            if (options != StringSplitOptions.RemoveEmptyEntries || lastEntry != String.Empty)
+            {
+                result.Add(lastEntry);
+            }
             return result;
         }
     }
