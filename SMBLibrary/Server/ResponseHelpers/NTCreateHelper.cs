@@ -246,14 +246,18 @@ namespace SMBLibrary.Server
                 }
 
                 Stream stream;
-                if ((request.CreateOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0 || fileAccess == (FileAccess)0 || entry.IsDirectory)
+                if (fileAccess == (FileAccess)0 || entry.IsDirectory)
                 {
-                    // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file
                     stream = null;
                 }
                 else
                 {
-                    bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) == 0;
+                    // When FILE_OPEN_REPARSE_POINT is specified, the operation should continue normally if the file is not a reparse point.
+                    // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file, with the exception
+                    // of a file copy operation (where the caller will attempt to simply copy the reparse point).
+                    bool openReparsePoint = (request.CreateOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
+                    bool disableBuffering = (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
+                    bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
                     System.Diagnostics.Debug.Print("[{0}] NTCreate: Opening '{1}', Access={2}, Share={3}, Buffered={4}", DateTime.Now.ToString("HH:mm:ss:ffff"), path, fileAccess, fileShare, buffered);
                     try
                     {
