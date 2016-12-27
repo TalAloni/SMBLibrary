@@ -104,10 +104,12 @@ namespace SMBLibrary.Server
 
                     if ((request.FileAttrs & SMB1.FileAttributes.Directory) > 0)
                     {
+                        System.Diagnostics.Debug.Print("[{0}] OpenAndX: Creating directory '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                         entry = fileSystem.CreateDirectory(path);
                     }
                     else
                     {
+                        System.Diagnostics.Debug.Print("[{0}] OpenAndX: Creating file '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                         entry = fileSystem.CreateFile(path);
                     }
                     openResult = OpenResult.NotExistedAndWasCreated;
@@ -119,7 +121,7 @@ namespace SMBLibrary.Server
                 if (!entry.IsDirectory)
                 {
                     bool buffered = (request.AccessMode.CachedMode == CachedMode.CachingAllowed && request.AccessMode.WriteThroughMode == WriteThroughMode.Disabled);
-                    System.Diagnostics.Debug.Print("[{0}] Opening {1}, Access={2}, Share={3}, Buffered={4}", DateTime.Now.ToString("HH:mm:ss:ffff"), path, fileAccess, fileShare, buffered);
+                    System.Diagnostics.Debug.Print("[{0}] OpenAndX: Opening '{1}', Access={2}, Share={3}, Buffered={4}", DateTime.Now.ToString("HH:mm:ss:ffff"), path, fileAccess, fileShare, buffered);
                     stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
                     if (buffered)
                     {

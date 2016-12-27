@@ -240,6 +240,7 @@ namespace SMBLibrary.Server
             {
                 // Windows Server 2003 will return STATUS_OBJECT_NAME_NOT_FOUND
                 // Returning STATUS_NO_SUCH_FILE caused an issue when executing ImageX.exe from WinPE 3.0 (32-bit)
+                System.Diagnostics.Debug.Print("[{0}] Transaction2QueryPathInformation: File not found, Path: '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                 header.Status = NTStatus.STATUS_OBJECT_NAME_NOT_FOUND;
                 return null;
             }
@@ -340,6 +341,7 @@ namespace SMBLibrary.Server
                         if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                         {
                             // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
+                            System.Diagnostics.Debug.Print("[{0}] Transaction2SetFileInformation: Sharing violation setting file attributes, Path: '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return null;
                         }
@@ -374,6 +376,7 @@ namespace SMBLibrary.Server
                         }
                         catch (IOException)
                         {
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Error creating '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
                             header.Status = NTStatus.STATUS_FILE_LOCK_CONFLICT;
                             return null;
                         }
@@ -396,8 +399,13 @@ namespace SMBLibrary.Server
                         stream.SetLength((long)allocationSize);
                         stream.Close();
                     }
-                    catch
+                    catch (IOException)
                     {
+                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{1}'. Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
                     }
                     return response;
                 }
@@ -410,8 +418,13 @@ namespace SMBLibrary.Server
                         stream.SetLength((long)endOfFile);
                         stream.Close();
                     }
-                    catch
+                    catch (IOException)
                     {
+                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{1}'. Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
                     }
                     return response;
                 }

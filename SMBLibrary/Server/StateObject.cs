@@ -230,6 +230,7 @@ namespace SMBLibrary.Server
             Stream stream = m_openedFiles[fileID].Stream;
             if (stream != null)
             {
+                System.Diagnostics.Debug.Print("[{0}] Closing file '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), m_openedFiles[fileID].Path);
                 stream.Close();
             }
             m_openedFiles.Remove(fileID);

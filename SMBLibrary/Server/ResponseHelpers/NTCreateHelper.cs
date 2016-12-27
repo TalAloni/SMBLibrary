@@ -92,6 +92,7 @@ namespace SMBLibrary.Server
                     if (entry != null)
                     {
                         // File already exists, fail the request
+                        System.Diagnostics.Debug.Print("[{0}] NTCreate: File '{1}' already exist", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                         header.Status = NTStatus.STATUS_OBJECT_NAME_COLLISION;
                         return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
                     }
@@ -106,10 +107,12 @@ namespace SMBLibrary.Server
                     {
                         if (forceDirectory)
                         {
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Creating directory '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                             entry = fileSystem.CreateDirectory(path);
                         }
                         else
                         {
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Creating file '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                             entry = fileSystem.CreateFile(path);
                         }
                     }
@@ -118,17 +121,20 @@ namespace SMBLibrary.Server
                         ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
                         if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                         {
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Sharing violation creating '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
                         }
                         else
                         {
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Error creating '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                             header.Status = NTStatus.STATUS_DATA_ERROR;
                             return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
                         }
                     }
                     catch (UnauthorizedAccessException)
                     {
+                        System.Diagnostics.Debug.Print("[{0}] NTCreate: Error creating '{1}', Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                         header.Status = NTStatus.STATUS_ACCESS_DENIED;
                         return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
                     }
@@ -157,10 +163,12 @@ namespace SMBLibrary.Server
                         {
                             if (forceDirectory)
                             {
+                                System.Diagnostics.Debug.Print("[{0}] NTCreate: Creating directory '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                                 entry = fileSystem.CreateDirectory(path);
                             }
                             else
                             {
+                                System.Diagnostics.Debug.Print("[{0}] NTCreate: Creating file '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                                 entry = fileSystem.CreateFile(path);
                             }
                         }
@@ -246,7 +254,7 @@ namespace SMBLibrary.Server
                 else
                 {
                     bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) == 0;
-                    System.Diagnostics.Debug.Print("[{0}] Opening {1}, Access={2}, Share={3}, Buffered={4}", DateTime.Now.ToString("HH:mm:ss:ffff"), path, fileAccess, fileShare, buffered);
+                    System.Diagnostics.Debug.Print("[{0}] NTCreate: Opening '{1}', Access={2}, Share={3}, Buffered={4}", DateTime.Now.ToString("HH:mm:ss:ffff"), path, fileAccess, fileShare, buffered);
                     try
                     {
                         stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
@@ -256,6 +264,7 @@ namespace SMBLibrary.Server
                         ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
                         if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                         {
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Sharing violation opening '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
                         }
