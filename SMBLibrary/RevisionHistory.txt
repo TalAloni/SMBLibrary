@@ -10,5 +10,11 @@ Revision History:
 
 1.0.4 - Added support for IPv6.
 
-1.0.5 - bugfix: SMB_COM_OPEN_ANDX was not returning the requested response format.
+1.0.5 - Bugfix: SMB_COM_OPEN_ANDX was not returning the requested response format.
 		File buffering logic logic was moved to a separate class.
+
+1.0.6 - IOException handling when opening a file.
+		Bugfix: Will not try to prefetch write-only streams.
+		Bugfix: When closing a prefetched stream, close underlying stream.
+		Bugfix: Proper handling of FILE_OPEN_REPARSE_POINT flag.
+		Bugfix: Proper handling of Transaction2SetFileInformation requests.
