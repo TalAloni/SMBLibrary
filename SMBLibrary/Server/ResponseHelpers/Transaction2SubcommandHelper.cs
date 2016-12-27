@@ -281,6 +281,8 @@ namespace SMBLibrary.Server
                 return null;
             }
 
+            OpenedFileObject fileObject = state.GetOpenedFileObject(subcommand.FID);
+
             Transaction2SetFileInformationResponse response = new Transaction2SetFileInformationResponse();
             switch (subcommand.InformationLevel)
             {
@@ -370,8 +372,13 @@ namespace SMBLibrary.Server
                             return null;
                         }
 
+                        if (fileObject.Stream != null)
+                        {
+                            fileObject.Stream.Close();
+                        }
                         try
                         {
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Deleting file '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
                             share.FileSystem.Delete(openedFilePath);
                         }
                         catch (IOException)
@@ -395,9 +402,7 @@ namespace SMBLibrary.Server
                     ulong allocationSize = ((SetFileAllocationInfo)subcommand.SetInfo).AllocationSize;
                     try
                     {
-                        Stream stream = share.FileSystem.OpenFile(openedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-                        stream.SetLength((long)allocationSize);
-                        stream.Close();
+                        fileObject.Stream.SetLength((long)allocationSize);
                     }
                     catch (IOException)
                     {
@@ -414,9 +419,7 @@ namespace SMBLibrary.Server
                     ulong endOfFile = ((SetFileEndOfFileInfo)subcommand.SetInfo).EndOfFile;
                     try
                     {
-                        Stream stream = share.FileSystem.OpenFile(openedFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-                        stream.SetLength((long)endOfFile);
-                        stream.Close();
+                        fileObject.Stream.SetLength((long)endOfFile);
                     }
                     catch (IOException)
                     {
