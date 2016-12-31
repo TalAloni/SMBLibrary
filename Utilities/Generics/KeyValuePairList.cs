@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Utilities
 {
@@ -65,6 +66,36 @@ namespace Utilities
                 }
                 return result;
             }
+        }
+
+        new public void Sort()
+        {
+            this.Sort(Comparer<TKey>.Default);
+        }
+
+        public void Sort(ListSortDirection sortDirection)
+        {
+            Sort(Comparer<TKey>.Default, sortDirection);
+        }
+
+        public void Sort(IComparer<TKey> comparer, ListSortDirection sortDirection)
+        {
+            if (sortDirection == ListSortDirection.Ascending)
+            {
+                Sort(comparer);
+            }
+            else
+            {
+                Sort(new ReverseComparer<TKey>(comparer));
+            }
+        }
+
+        public void Sort(IComparer<TKey> comparer)
+        {
+            this.Sort(delegate(KeyValuePair<TKey, TValue> a, KeyValuePair<TKey, TValue> b)
+            {
+                return comparer.Compare(a.Key, b.Key);
+            });
         }
     }
 }

@@ -38,6 +38,7 @@
     <Compile Include="ByteUtils\ByteWriter.cs" />
     <Compile Include="ByteUtils\LittleEndianReader.cs" />
     <Compile Include="ByteUtils\LittleEndianWriter.cs" />
+    <Compile Include="Comparers\ReverseComparer.cs" />
     <Compile Include="Conversion\BigEndianConverter.cs" />
     <Compile Include="Conversion\Conversion.SimpleTypes.cs" />
     <Compile Include="Conversion\LittleEndianConverter.cs" />

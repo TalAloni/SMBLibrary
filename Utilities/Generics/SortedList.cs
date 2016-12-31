@@ -35,21 +35,7 @@ namespace Utilities
         /// </summary>
         public int IndexOf(T item)
         {
-            int insertIndex = FindIndexForSortedInsert(m_innerList, m_comparer, item);
-            if (insertIndex == m_innerList.Count)
-            {
-                return -1;
-            }
-            if (m_comparer.Compare(item, m_innerList[insertIndex]) == 0)
-            {
-                int index = insertIndex;
-                while (index > 0 && m_comparer.Compare(item, m_innerList[index - 1]) == 0)
-                {
-                    index--;
-                }
-                return index;
-            }
-            return -1;
+            return FirstIndexOf(m_innerList, m_comparer, item);
         }
 
         public bool Remove(T item)
@@ -115,6 +101,25 @@ namespace Utilities
             {
                 return false;
             }
+        }
+
+        public static int FirstIndexOf(List<T> list, Comparer<T> comparer, T item)
+        {
+            int insertIndex = FindIndexForSortedInsert(list, comparer, item);
+            if (insertIndex == list.Count)
+            {
+                return -1;
+            }
+            if (comparer.Compare(item, list[insertIndex]) == 0)
+            {
+                int index = insertIndex;
+                while (index > 0 && comparer.Compare(item, list[index - 1]) == 0)
+                {
+                    index--;
+                }
+                return index;
+            }
+            return -1;
         }
 
         public static int FindIndexForSortedInsert(List<T> list, Comparer<T> comparer, T item)
