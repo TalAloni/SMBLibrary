@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <summary>
+    /// [RFC 1002] 4.3.3. POSITIVE SESSION RESPONSE PACKET
+    /// </summary>
     public class PositiveSessionResponsePacket : SessionPacket
     {
         public PositiveSessionResponsePacket() : base()

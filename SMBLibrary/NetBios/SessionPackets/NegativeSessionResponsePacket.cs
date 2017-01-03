@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <summary>
+    /// [RFC 1002] 4.3.4. NEGATIVE SESSION RESPONSE PACKET
+    /// </summary>
     public class NegativeSessionResponsePacket : SessionPacket
     {
         public byte ErrorCode;

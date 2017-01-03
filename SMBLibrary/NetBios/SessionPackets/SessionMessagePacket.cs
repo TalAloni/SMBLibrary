@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <summary>
+    /// [RFC 1002] 4.3.6. SESSION MESSAGE PACKET
+    /// </summary>
     public class SessionMessagePacket : SessionPacket
     {
         public SessionMessagePacket() : base()

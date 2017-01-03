@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <summary>
+    /// [RFC 1002] 4.3.7. SESSION KEEP ALIVE PACKET
+    /// </summary>
     public class SessionKeepAlivePacket : SessionPacket
     {
         public SessionKeepAlivePacket()

@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <summary>
+    /// [RFC 1002] 4.3.5. SESSION RETARGET RESPONSE PACKET
+    /// </summary>
     public class SessionRetargetResponsePacket : SessionPacket
     {
         uint IPAddress;

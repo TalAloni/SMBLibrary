@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <summary>
+    /// [RFC 1002] 4.3.1. SESSION PACKET
+    /// </summary>
     public abstract class SessionPacket
     {
         public SessionPacketTypeName Type;

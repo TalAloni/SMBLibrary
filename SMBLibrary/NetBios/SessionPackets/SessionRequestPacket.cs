@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <summary>
+    /// [RFC 1002] 4.3.2. SESSION REQUEST PACKET
+    /// </summary>
     public class SessionRequestPacket : SessionPacket
     {
         public string CalledName;
