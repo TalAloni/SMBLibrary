@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -343,7 +343,7 @@ namespace SMBLibrary.Server
                         if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                         {
                             // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                            System.Diagnostics.Debug.Print("[{0}] Transaction2SetFileInformation: Sharing violation setting file attributes, Path: '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                            System.Diagnostics.Debug.Print("[{0}] Transaction2SetFileInformation: Sharing violation setting file dates, Path: '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return null;
                         }
@@ -383,7 +383,7 @@ namespace SMBLibrary.Server
                         }
                         catch (IOException)
                         {
-                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Error creating '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Error deleting '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
                             header.Status = NTStatus.STATUS_FILE_LOCK_CONFLICT;
                             return null;
                         }
