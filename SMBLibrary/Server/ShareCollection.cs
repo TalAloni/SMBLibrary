@@ -22,6 +22,7 @@ namespace SMBLibrary.Server
             share.FileSystem = fileSystem;
             this.Add(share);
         }
+
         public bool Contains(string shareName, StringComparison comparisonType)
         {
             return (this.IndexOf(shareName, comparisonType) != -1);
