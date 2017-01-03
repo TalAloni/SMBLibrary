@@ -71,12 +71,14 @@ namespace SMBLibrary
     /// </summary>
     public struct AccessMask // uint
     {
+        public const int Length = 4;
+
         public FileAccessMask File;
         public FileAccessMask Directory;
 
         public AccessMask(byte[] buffer, ref int offset) : this(buffer, offset)
         {
-            offset += 4;
+            offset += Length;
         }
 
         public AccessMask(byte[] buffer, int offset)
