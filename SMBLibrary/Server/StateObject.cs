@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2016 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,9 +16,8 @@ namespace SMBLibrary.Server
     public class StateObject
     {
         public Socket ClientSocket = null;
-        public const int ReceiveBufferSize = 65536;
-        public byte[] ReceiveBuffer = new byte[ReceiveBufferSize]; // immediate receive buffer
-        public byte[] ConnectionBuffer = new byte[0]; // we append the receive buffer here until we have a complete Message
+        public const int ReceiveBufferSize = 131075; // Largest NBT Session Packet
+        public SMBConnectionReceiveBuffer ReceiveBuffer = new SMBConnectionReceiveBuffer(ReceiveBufferSize);
 
         public int MaxBufferSize;
         public bool LargeRead;

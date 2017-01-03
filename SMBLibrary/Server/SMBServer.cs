@@ -95,13 +95,12 @@ namespace SMBLibrary.Server
             }
 
             StateObject state = new StateObject();
-            state.ReceiveBuffer = new byte[StateObject.ReceiveBufferSize];
             // Disable the Nagle Algorithm for this tcp socket:
             clientSocket.NoDelay = true;
             state.ClientSocket = clientSocket;
             try
             {
-                clientSocket.BeginReceive(state.ReceiveBuffer, 0, StateObject.ReceiveBufferSize, 0, ReceiveCallback, state);
+                clientSocket.BeginReceive(state.ReceiveBuffer.Buffer, state.ReceiveBuffer.WriteOffset, state.ReceiveBuffer.AvailableLength, 0, ReceiveCallback, state);
             }
             catch (ObjectDisposedException)
             {
@@ -123,13 +122,10 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            byte[] receiveBuffer = state.ReceiveBuffer;
-
-            int bytesReceived;
-
+            int numberOfBytesReceived;
             try
             {
-                bytesReceived = clientSocket.EndReceive(result);
+                numberOfBytesReceived = clientSocket.EndReceive(result);
             }
             catch (ObjectDisposedException)
             {
@@ -140,7 +136,7 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            if (bytesReceived == 0)
+            if (numberOfBytesReceived == 0)
             {
                 // The other side has closed the connection
                 System.Diagnostics.Debug.Print("[{0}] The other side closed the connection", DateTime.Now.ToString("HH:mm:ss:ffff"));
@@ -148,16 +144,15 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            byte[] currentBuffer = new byte[bytesReceived];
-            Array.Copy(receiveBuffer, currentBuffer, bytesReceived);
-
-            ProcessCurrentBuffer(currentBuffer, state);
+            SMBConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
+            receiveBuffer.SetNumberOfBytesReceived(numberOfBytesReceived);
+            ProcessConnectionBuffer(state);
 
             if (clientSocket.Connected)
             {
                 try
                 {
-                    clientSocket.BeginReceive(state.ReceiveBuffer, 0, StateObject.ReceiveBufferSize, 0, ReceiveCallback, state);
+                    clientSocket.BeginReceive(state.ReceiveBuffer.Buffer, state.ReceiveBuffer.WriteOffset, state.ReceiveBuffer.AvailableLength, 0, ReceiveCallback, state);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -168,88 +163,32 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessCurrentBuffer(byte[] currentBuffer, StateObject state)
+        public void ProcessConnectionBuffer(StateObject state)
         {
             Socket clientSocket = state.ClientSocket;
 
-            if (state.ConnectionBuffer.Length == 0)
+            SMBConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
+            while (receiveBuffer.HasCompletePacket())
             {
-                state.ConnectionBuffer = currentBuffer;
-            }
-            else
-            {
-                byte[] oldConnectionBuffer = state.ConnectionBuffer;
-                state.ConnectionBuffer = new byte[oldConnectionBuffer.Length + currentBuffer.Length];
-                Array.Copy(oldConnectionBuffer, state.ConnectionBuffer, oldConnectionBuffer.Length);
-                Array.Copy(currentBuffer, 0, state.ConnectionBuffer, oldConnectionBuffer.Length, currentBuffer.Length);
-            }
-
-            // we now have all SMB message bytes received so far in state.ConnectionBuffer
-            int bytesLeftInBuffer = state.ConnectionBuffer.Length;
-
-
-            while (bytesLeftInBuffer >= 4)
-            {
-                // The packet is either Direct TCP transport packet (which is an NBT Session Message
-                // Packet) or an NBT packet.
-                int bufferOffset = state.ConnectionBuffer.Length - bytesLeftInBuffer;
-                byte flags = ByteReader.ReadByte(state.ConnectionBuffer, bufferOffset + 1);
-                int trailerLength = (flags & 0x01) << 16 | BigEndianConverter.ToUInt16(state.ConnectionBuffer, bufferOffset + 2);
-                int packetLength = 4 + trailerLength;
-
-                if (flags > 0x01)
+                SessionPacket packet = null;
+                try
                 {
-                    System.Diagnostics.Debug.Print("[{0}] Invalid NBT flags", DateTime.Now.ToString("HH:mm:ss:ffff"));
+                    packet = receiveBuffer.DequeuePacket();
+                }
+                catch (Exception)
+                {
                     state.ClientSocket.Close();
-                    return;
                 }
 
-                if (packetLength > bytesLeftInBuffer)
+                if (packet != null)
                 {
-                    break;
+                    ProcessPacket(packet, state);
                 }
-                else
-                {
-                    byte[] packetBytes = new byte[packetLength];
-                    Array.Copy(state.ConnectionBuffer, bufferOffset, packetBytes, 0, packetLength);
-                    ProcessPacket(packetBytes, state);
-                    bytesLeftInBuffer -= packetLength;
-                    if (!clientSocket.Connected)
-                    {
-                        // Do not continue to process the buffer if the other side closed the connection
-                        return;
-                    }
-                }
-            }
-
-            if (bytesLeftInBuffer > 0)
-            {
-                byte[] newReceiveBuffer = new byte[bytesLeftInBuffer];
-                Array.Copy(state.ConnectionBuffer, state.ConnectionBuffer.Length - bytesLeftInBuffer, newReceiveBuffer, 0, bytesLeftInBuffer);
-                state.ConnectionBuffer = newReceiveBuffer;
-            }
-            else
-            {
-                state.ConnectionBuffer = new byte[0];
             }
         }
 
-        public void ProcessPacket(byte[] packetBytes, StateObject state)
+        public void ProcessPacket(SessionPacket packet, StateObject state)
         {
-            SessionPacket packet = null;
-#if DEBUG
-            packet = SessionPacket.GetSessionPacket(packetBytes, 0);
-#else
-            try
-            {
-                packet = SessionPacket.GetSessionPacket(packetBytes, 0);
-            }
-            catch (Exception)
-            {
-                state.ClientSocket.Close();
-                return;
-            }
-#endif
             if (packet is SessionRequestPacket && m_transport == SMBTransportType.NetBiosOverTCP)
             {
                 PositiveSessionResponsePacket response = new PositiveSessionResponsePacket();

@@ -116,6 +116,7 @@
     <Compile Include="Server\ResponseHelpers\ServerResponseHelper.cs" />
     <Compile Include="Server\FileSystemShare.cs" />
     <Compile Include="Server\ShareCollection.cs" />
+    <Compile Include="Server\SMBConnectionReceiveBuffer.cs" />
     <Compile Include="Server\SMBServer.cs" />
     <Compile Include="Server\StateObject.cs" />
     <Compile Include="Server\User.cs" />

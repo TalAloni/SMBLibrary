@@ -1,0 +1,131 @@
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+ * 
+ * You can redistribute this program and/or modify it under the terms of
+ * the GNU Lesser Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ */
+using System;
+using System.Collections.Generic;
+using System.Text;
+using SMBLibrary.NetBios;
+using Utilities;
+
+namespace SMBLibrary.Server
+{
+    public class SMBConnectionReceiveBuffer
+    {
+        private byte[] m_buffer;
+        private int m_readOffset = 0;
+        private int m_bytesInBuffer = 0;
+        private int? m_packetLength;
+
+        /// <param name="bufferLength">Must be large enough to hold the largest possible packet</param>
+        public SMBConnectionReceiveBuffer(int bufferLength)
+        {
+            m_buffer = new byte[bufferLength];
+        }
+
+        public void SetNumberOfBytesReceived(int numberOfBytesReceived)
+        {
+            m_bytesInBuffer += numberOfBytesReceived;
+        }
+
+        public bool HasCompletePacket()
+        {
+            if (m_bytesInBuffer >= 4)
+            {
+                if (!m_packetLength.HasValue)
+                {
+                    // The packet is either Direct TCP transport packet (which is an NBT Session Message
+                    // Packet) or an NBT packet.
+                    byte flags = ByteReader.ReadByte(m_buffer, m_readOffset + 1);
+                    int trailerLength = (flags & 0x01) << 16 | BigEndianConverter.ToUInt16(m_buffer, m_readOffset + 2);
+                    m_packetLength = 4 + trailerLength;
+                }
+                return m_bytesInBuffer >= m_packetLength.Value;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// HasCompletePacket must be called and return true before calling DequeuePacket
+        /// </summary>
+        /// <exception cref="System.IO.InvalidDataException"></exception>
+        public SessionPacket DequeuePacket()
+        {
+            SessionPacket packet;
+            try
+            {
+                packet = SessionPacket.GetSessionPacket(m_buffer, m_readOffset);
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                throw new System.IO.InvalidDataException("Invalid Packet", ex);
+            }
+            RemovePacketBytes();
+            return packet;
+        }
+
+        /// <summary>
+        /// HasCompletePDU must be called and return true before calling DequeuePDUBytes
+        /// </summary>
+        public byte[] DequeuePacketBytes()
+        {
+            byte[] packetBytes = ByteReader.ReadBytes(m_buffer, m_readOffset, m_packetLength.Value);
+            RemovePacketBytes();
+            return packetBytes;
+        }
+
+        private void RemovePacketBytes()
+        {
+            m_bytesInBuffer -= m_packetLength.Value;
+            if (m_bytesInBuffer == 0)
+            {
+                m_readOffset = 0;
+                m_packetLength = null;
+            }
+            else
+            {
+                m_readOffset += m_packetLength.Value;
+                m_packetLength = null;
+                if (!HasCompletePacket())
+                {
+                    Array.Copy(m_buffer, m_readOffset, m_buffer, 0, m_bytesInBuffer);
+                    m_readOffset = 0;
+                }
+            }
+        }
+
+        public byte[] Buffer
+        {
+            get
+            {
+                return m_buffer;
+            }
+        }
+
+        public int WriteOffset
+        {
+            get
+            {
+                return m_readOffset + m_bytesInBuffer;
+            }
+        }
+
+        public int BytesInBuffer
+        {
+            get
+            {
+                return m_bytesInBuffer;
+            }
+        }
+
+        public int AvailableLength
+        {
+            get
+            {
+                return m_buffer.Length - (m_readOffset + m_bytesInBuffer);
+            }
+        }
+    }
+}
