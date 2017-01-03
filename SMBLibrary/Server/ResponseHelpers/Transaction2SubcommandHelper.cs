@@ -384,7 +384,7 @@ namespace SMBLibrary.Server
                         catch (IOException)
                         {
                             System.Diagnostics.Debug.Print("[{0}] NTCreate: Error deleting '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
-                            header.Status = NTStatus.STATUS_FILE_LOCK_CONFLICT;
+                            header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return null;
                         }
                         catch (UnauthorizedAccessException)
