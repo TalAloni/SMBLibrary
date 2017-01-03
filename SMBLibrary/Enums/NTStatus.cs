@@ -25,6 +25,7 @@ namespace SMBLibrary
         STATUS_DISK_FULL = 0xC000007F,
         STATUS_MEDIA_WRITE_PROTECTED = 0xC00000A2,
         STATUS_FILE_IS_A_DIRECTORY = 0xC00000BA,
+        STATUS_NOT_SUPPORTED = 0xC00000BB,
         STATUS_CANNOT_DELETE = 0xC0000121,
         
         STATUS_INVALID_SMB = 0x00010002,     // CIFS/SMB1: A corrupt or invalid SMB request was received

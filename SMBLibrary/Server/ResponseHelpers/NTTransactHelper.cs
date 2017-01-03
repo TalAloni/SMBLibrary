@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -126,10 +126,18 @@ namespace SMBLibrary.Server
                     response.Data = objectID.GetBytes();
                     return response;
                 }
+                else
+                {
+                    header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                    return null;
+                }
             }
-
-            header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
-            return null;
+            else
+            {
+                // [MS-SMB] If the IsFsctl field is set to zero, the server SHOULD fail the request with STATUS_NOT_SUPPORTED
+                header.Status = NTStatus.STATUS_NOT_SUPPORTED;
+                return null;
+            }
         }
 
         private static void PrepareResponse(NTTransactResponse response, byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize, List<SMBCommand> sendQueue)
