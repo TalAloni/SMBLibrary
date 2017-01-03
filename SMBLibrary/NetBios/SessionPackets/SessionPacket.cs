@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -25,13 +25,13 @@ namespace SMBLibrary.NetBios
         {
         }
 
-        public SessionPacket(byte[] buffer)
+        public SessionPacket(byte[] buffer, int offset)
         {
-            Type = (SessionPacketTypeName)ByteReader.ReadByte(buffer, 0);
-            Flags = ByteReader.ReadByte(buffer, 1);
-            Length = (Flags & 0x01) << 16 | BigEndianConverter.ToUInt16(buffer, 2);
+            Type = (SessionPacketTypeName)ByteReader.ReadByte(buffer, offset + 0);
+            Flags = ByteReader.ReadByte(buffer, offset + 1);
+            Length = (Flags & 0x01) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
 
-            this.Trailer = ByteReader.ReadBytes(buffer, 4, Length);
+            this.Trailer = ByteReader.ReadBytes(buffer, offset + 4, Length);
         }
 
         public virtual byte[] GetBytes()
@@ -53,23 +53,23 @@ namespace SMBLibrary.NetBios
             return buffer;
         }
 
-        public static SessionPacket GetSessionPacket(byte[] buffer)
+        public static SessionPacket GetSessionPacket(byte[] buffer, int offset)
         {
-            SessionPacketTypeName type = (SessionPacketTypeName)ByteReader.ReadByte(buffer, 0);
+            SessionPacketTypeName type = (SessionPacketTypeName)ByteReader.ReadByte(buffer, offset);
             switch (type)
             {
                 case SessionPacketTypeName.SessionMessage:
-                    return new SessionMessagePacket(buffer);
+                    return new SessionMessagePacket(buffer, offset);
                 case SessionPacketTypeName.SessionRequest:
-                    return new SessionRequestPacket(buffer);
+                    return new SessionRequestPacket(buffer, offset);
                 case SessionPacketTypeName.PositiveSessionResponse:
-                    return new PositiveSessionResponsePacket(buffer);
+                    return new PositiveSessionResponsePacket(buffer, offset);
                 case SessionPacketTypeName.NegativeSessionResponse:
-                    return new NegativeSessionResponsePacket(buffer);
+                    return new NegativeSessionResponsePacket(buffer, offset);
                 case SessionPacketTypeName.RetargetSessionResponse:
-                    return new SessionRetargetResponsePacket(buffer);
+                    return new SessionRetargetResponsePacket(buffer, offset);
                 case SessionPacketTypeName.SessionKeepAlive:
-                    return new SessionKeepAlivePacket(buffer);
+                    return new SessionKeepAlivePacket(buffer, offset);
                 default:
                     throw new InvalidRequestException("Invalid NetBIOS Session Packet");
             }

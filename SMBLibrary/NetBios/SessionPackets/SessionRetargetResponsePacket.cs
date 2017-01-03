@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -24,10 +24,10 @@ namespace SMBLibrary.NetBios
             this.Type = SessionPacketTypeName.RetargetSessionResponse;
         }
 
-        public SessionRetargetResponsePacket(byte[] buffer) : base(buffer)
+        public SessionRetargetResponsePacket(byte[] buffer, int offset) : base(buffer, offset)
         {
-            IPAddress = BigEndianConverter.ToUInt32(this.Trailer, 0);
-            Port = BigEndianConverter.ToUInt16(this.Trailer, 4);
+            IPAddress = BigEndianConverter.ToUInt32(this.Trailer, offset + 0);
+            Port = BigEndianConverter.ToUInt16(this.Trailer, offset + 4);
         }
 
         public override byte[] GetBytes()
