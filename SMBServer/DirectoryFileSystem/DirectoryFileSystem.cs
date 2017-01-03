@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -9,12 +9,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Utilities;
+using Microsoft.Win32.SafeHandles;
 
 namespace SMBServer
 {
     public class DirectoryFileSystem : FileSystem
     {
         private DirectoryInfo m_directory;
+        // If a FileStream is already opened, calling File.SetCreationTime(path, ..) will result in ERROR_SHARING_VIOLATION,
+        // So we must keep track of the opened file handles and use SetFileTime(handle, ..)
+        private Dictionary<string, SafeFileHandle> m_openHandles = new Dictionary<string, SafeFileHandle>();
 
         public DirectoryFileSystem(string path) : this(new DirectoryInfo(path))
         {
@@ -137,7 +141,21 @@ namespace SMBServer
         {
             ValidatePath(path);
             string fullPath = m_directory.FullName + path;
-            return new FileInfo(fullPath).Open(mode, access, share);
+            FileStream fileStream = File.Open(fullPath, mode, access, share);
+            if (!m_openHandles.ContainsKey(fullPath.ToLower()))
+            {
+                m_openHandles.Add(fullPath.ToLower(), fileStream.SafeFileHandle);
+            }
+            StreamWatcher watcher = new StreamWatcher(fileStream);
+            watcher.Closed += new EventHandler(Stream_Closed);
+            return watcher;
+        }
+
+        private void Stream_Closed(object sender, EventArgs e)
+        {
+            StreamWatcher watcher = (StreamWatcher)sender;
+            FileStream fileStream = (FileStream)watcher.Stream;
+            m_openHandles.Remove(fileStream.Name.ToLower());
         }
 
         public override void SetAttributes(string path, bool? isHidden, bool? isReadonly, bool? isArchived)
@@ -197,19 +215,40 @@ namespace SMBServer
             string fullPath = m_directory.FullName + path;
             if (File.Exists(fullPath))
             {
-                if (creationDT.HasValue)
+                SafeFileHandle openHandle;
+                if (m_openHandles.TryGetValue(fullPath.ToLower(), out openHandle))
                 {
-                    File.SetCreationTime(fullPath, creationDT.Value);
-                }
+                    if (creationDT.HasValue)
+                    {
+                        Win32Native.SetCreationTime(openHandle, creationDT.Value);
+                    }
 
-                if (lastWriteDT.HasValue)
-                {
-                    File.SetLastWriteTime(fullPath, lastWriteDT.Value);
-                }
+                    if (lastWriteDT.HasValue)
+                    {
+                        Win32Native.SetLastWriteTime(openHandle, lastWriteDT.Value);
+                    }
 
-                if (lastAccessDT.HasValue)
+                    if (lastAccessDT.HasValue)
+                    {
+                        Win32Native.SetLastAccessTime(openHandle, lastAccessDT.Value);
+                    }
+                }
+                else
                 {
-                    File.SetLastAccessTime(fullPath, lastAccessDT.Value);
+                    if (creationDT.HasValue)
+                    {
+                        File.SetCreationTime(fullPath, creationDT.Value);
+                    }
+
+                    if (lastWriteDT.HasValue)
+                    {
+                        File.SetLastWriteTime(fullPath, lastWriteDT.Value);
+                    }
+
+                    if (lastAccessDT.HasValue)
+                    {
+                        File.SetLastAccessTime(fullPath, lastAccessDT.Value);
+                    }
                 }
             }
             else if (Directory.Exists(fullPath))

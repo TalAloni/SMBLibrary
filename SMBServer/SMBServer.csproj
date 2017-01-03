@@ -36,7 +36,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DirectoryFileSystem.cs" />
+    <Compile Include="DirectoryFileSystem\DirectoryFileSystem.cs" />
+    <Compile Include="DirectoryFileSystem\StreamWatcher.cs" />
+    <Compile Include="DirectoryFileSystem\Win32Native.cs" />
     <Compile Include="ServerUI.cs">
       <SubType>Form</SubType>
     </Compile>
