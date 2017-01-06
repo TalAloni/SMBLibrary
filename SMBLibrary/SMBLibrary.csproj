@@ -44,6 +44,9 @@
     <Compile Include="Authentication\MD4.cs" />
     <Compile Include="Authentication\NTAuthentication.cs" />
     <Compile Include="Client\SMBClient.cs" />
+    <Compile Include="Enums\NtCreateFile\CreateDisposition.cs" />
+    <Compile Include="Enums\NtCreateFile\CreateOptions.cs" />
+    <Compile Include="Enums\NtCreateFile\ShareAccess.cs" />
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />
     <Compile Include="Enums\Win32Error.cs" />
@@ -168,15 +171,12 @@
     <Compile Include="SMB1\Enums\Locking\LockType.cs" />
     <Compile Include="SMB1\Enums\Negotiate\SecurityMode.cs" />
     <Compile Include="SMB1\Enums\Negotiate\ServerCapabilities.cs" />
-    <Compile Include="SMB1\Enums\NTCreate\CreateDisposition.cs" />
-    <Compile Include="SMB1\Enums\NTCreate\CreateOptions.cs" />
     <Compile Include="SMB1\Enums\NTCreate\DesiredAccess.cs" />
     <Compile Include="SMB1\Enums\NTCreate\FileStatus.cs" />
     <Compile Include="SMB1\Enums\NTCreate\ImpersonationLevel.cs" />
     <Compile Include="SMB1\Enums\NTCreate\NTCreateFlags.cs" />
     <Compile Include="SMB1\Enums\NTCreate\OpLockLevel.cs" />
     <Compile Include="SMB1\Enums\NTCreate\SecurityFlags.cs" />
-    <Compile Include="SMB1\Enums\NTCreate\ShareAccess.cs" />
     <Compile Include="SMB1\Enums\Open\AccessRights.cs" />
     <Compile Include="SMB1\Enums\Open\OpenFlags.cs" />
     <Compile Include="SMB1\Enums\Open\OpenResult.cs" />

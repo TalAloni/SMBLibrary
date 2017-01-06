@@ -1,6 +1,6 @@
 using System;
 
-namespace SMBLibrary.SMB1
+namespace SMBLibrary
 {
     /// <summary>
     /// No bits set = Prevents the file from being shared

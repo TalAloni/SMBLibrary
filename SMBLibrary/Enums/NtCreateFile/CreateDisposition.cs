@@ -1,5 +1,5 @@
 
-namespace SMBLibrary.SMB1
+namespace SMBLibrary
 {
     public enum CreateDisposition : uint
     {
