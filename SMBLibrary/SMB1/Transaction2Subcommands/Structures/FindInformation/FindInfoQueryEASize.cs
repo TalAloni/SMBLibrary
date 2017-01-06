@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_INFO_QUERY_EA_SIZE
     /// </summary>
-    public class FindInfoQueryEASize : FindInformationEntry
+    public class FindInfoQueryEASize : FindInformation
     {
         public uint ResumeKey; // Optional
         public DateTime CreationDateTime;

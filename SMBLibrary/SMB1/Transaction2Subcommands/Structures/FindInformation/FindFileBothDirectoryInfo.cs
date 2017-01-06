@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_FIND_FILE_BOTH_DIRECTORY_INFO
     /// </summary>
-    public class FindFileBothDirectoryInfo : FindInformationEntry
+    public class FindFileBothDirectoryInfo : FindInformation
     {
         public const int FixedLength = 94;
 

@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_INFO_STANDARD
     /// </summary>
-    public class FindInfoStandard : FindInformationEntry
+    public class FindInfoStandard : FindInformation
     {
         public const int FixedLength = 23;
 

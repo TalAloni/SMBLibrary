@@ -7,72 +7,51 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Utilities;
 
 namespace SMBLibrary.SMB1
 {
-    public class FindInformation : List<FindInformationEntry>
+    public abstract class FindInformation
     {
-        public FindInformation()
+        private bool m_returnResumeKeys;
+
+        public FindInformation(bool returnResumeKeys)
         {
+            m_returnResumeKeys = returnResumeKeys;
         }
 
-        public FindInformation(byte[] buffer, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
+        public abstract void WriteBytes(byte[] buffer, ref int offset, bool isUnicode);
+        
+        public abstract int GetLength(bool isUnicode);
+
+        public bool ReturnResumeKeys
         {
-            int offset = 0;
-            while (offset < buffer.Length)
+            get
             {
-                FindInformationEntry entry = FindInformationEntry.ReadEntry(buffer, ref offset, informationLevel, isUnicode, returnResumeKeys);
-                this.Add(entry);
+                return m_returnResumeKeys;
             }
         }
 
-        public byte[] GetBytes(bool isUnicode)
+        public static FindInformation ReadEntry(byte[] buffer, ref int offset, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
         {
-            for(int index = 0; index < this.Count; index++)
+            switch (informationLevel)
             {
-                if (index < this.Count - 1)
-                {
-                    FindInformationEntry entry = this[index];
-                    int entryLength = entry.GetLength(isUnicode);
-                    if (entry is FindFileBothDirectoryInfo)
-                    {
-                        ((FindFileBothDirectoryInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                    else if (entry is FindFileDirectoryInfo)
-                    {
-                        ((FindFileDirectoryInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                    else if (entry is FindFileFullDirectoryInfo)
-                    {
-                        ((FindFileFullDirectoryInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                    else if (entry is FindFileNamesInfo)
-                    {
-                        ((FindFileNamesInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                }
+                case FindInformationLevel.SMB_INFO_STANDARD:
+                    return new FindInfoStandard(buffer, ref offset, isUnicode, returnResumeKeys);
+                case FindInformationLevel.SMB_INFO_QUERY_EA_SIZE:
+                    return new FindInfoQueryEASize(buffer, ref offset, isUnicode, returnResumeKeys);
+                case FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
+                    return new FindInfoQueryExtendedAttributesFromList(buffer, ref offset, isUnicode, returnResumeKeys);
+                case FindInformationLevel.SMB_FIND_FILE_DIRECTORY_INFO:
+                    return new FindFileDirectoryInfo(buffer, ref offset, isUnicode);
+                case FindInformationLevel.SMB_FIND_FILE_FULL_DIRECTORY_INFO:
+                    return new FindFileFullDirectoryInfo(buffer, ref offset, isUnicode);
+                case FindInformationLevel.SMB_FIND_FILE_NAMES_INFO:
+                    return new FindFileNamesInfo(buffer, ref offset, isUnicode);
+                case FindInformationLevel.SMB_FIND_FILE_BOTH_DIRECTORY_INFO:
+                    return new FindFileBothDirectoryInfo(buffer, ref offset, isUnicode);
+                default:
+                    throw new InvalidRequestException();;
             }
-            int length = GetLength(isUnicode);
-            byte[] buffer = new byte[length];
-            int offset = 0;
-            foreach (FindInformationEntry entry in this)
-            {
-                entry.WriteBytes(buffer, ref offset, isUnicode);
-            }
-            return buffer;
-        }
-
-        public int GetLength(bool isUnicode)
-        {
-            int length = 0;
-            for (int index = 0; index < this.Count; index++)
-            {
-                FindInformationEntry entry = this[index];
-                int entryLength = entry.GetLength(isUnicode);
-                length += entryLength;
-            }
-            return length;
         }
     }
 }

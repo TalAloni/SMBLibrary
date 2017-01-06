@@ -17,7 +17,7 @@ namespace SMBLibrary.Server
         public const int BytesPerSector = 512;
         public const int ClusterSize = 4096;
 
-        internal static FindInformationEntry FromFileSystemEntry(FileSystemEntry entry, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
+        internal static FindInformation FromFileSystemEntry(FileSystemEntry entry, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
         {
             switch (informationLevel)
             {

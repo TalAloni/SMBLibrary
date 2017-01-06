@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_FIND_FILE_FULL_DIRECTORY_INFO
     /// </summary>
-    public class FindFileFullDirectoryInfo : FindInformationEntry
+    public class FindFileFullDirectoryInfo : FindInformation
     {
         public const int FixedLength = 68;
 

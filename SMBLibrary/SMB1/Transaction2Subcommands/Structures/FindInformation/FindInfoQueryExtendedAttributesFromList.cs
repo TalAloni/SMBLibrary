@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_INFO_QUERY_EAS_FROM_LIST
     /// </summary>
-    public class FindInfoQueryExtendedAttributesFromList : FindInformationEntry
+    public class FindInfoQueryExtendedAttributesFromList : FindInformation
     {
         public uint ResumeKey; // Optional
         public DateTime CreationDateTime;

@@ -104,7 +104,7 @@ namespace SMBLibrary.Server
             Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
             for (int index = 0; index < entriesToReturn; index++)
             {
-                FindInformationEntry infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
+                FindInformation infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
                 response.FindInfoList.Add(infoEntry);
                 if (response.FindInfoList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
                 {
@@ -204,7 +204,7 @@ namespace SMBLibrary.Server
             List<FileSystemEntry> entries = state.OpenSearches[subcommand.SID];
             for (int index = 0; index < entries.Count; index++)
             {
-                FindInformationEntry infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
+                FindInformation infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
                 response.FindInfoList.Add(infoEntry);
                 if (response.FindInfoList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
                 {

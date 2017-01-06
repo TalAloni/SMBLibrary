@@ -296,7 +296,7 @@
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindInfoQueryEASize.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindInfoQueryExtendedAttributesFromList.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindInformation.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindInformationEntry.cs" />
+    <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindInformationList.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindInfoStandard.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FullExtendedAttribute.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FullExtendedAttributeList.cs" />

@@ -23,11 +23,11 @@ namespace SMBLibrary.SMB1
         public ushort EaErrorOffset;
         public ushort LastNameOffset;
         // Data:
-        public FindInformation FindInfoList;
+        public FindInformationList FindInfoList;
 
         public Transaction2FindNext2Response() : base()
         {
-            FindInfoList = new FindInformation();
+            FindInfoList = new FindInformationList();
         }
 
         public Transaction2FindNext2Response(byte[] parameters, byte[] data, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys) : base()
@@ -37,7 +37,7 @@ namespace SMBLibrary.SMB1
             EaErrorOffset = LittleEndianConverter.ToUInt16(parameters, 4);
             LastNameOffset = LittleEndianConverter.ToUInt16(parameters, 6);
 
-            FindInfoList = new FindInformation(data, informationLevel, isUnicode, returnResumeKeys);
+            FindInfoList = new FindInformationList(data, informationLevel, isUnicode, returnResumeKeys);
         }
 
         public override byte[] GetParameters(bool isUnicode)
