@@ -246,6 +246,7 @@ namespace SMBLibrary.Server
                 }
 
                 Stream stream;
+                bool deleteOnClose = false;
                 if (fileAccess == (FileAccess)0 || entry.IsDirectory)
                 {
                     stream = null;
@@ -255,6 +256,7 @@ namespace SMBLibrary.Server
                     // When FILE_OPEN_REPARSE_POINT is specified, the operation should continue normally if the file is not a reparse point.
                     // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file, with the exception
                     // of a file copy operation (where the caller will attempt to simply copy the reparse point).
+                    deleteOnClose = (request.CreateOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
                     bool openReparsePoint = (request.CreateOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
                     bool disableBuffering = (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
                     bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
@@ -290,7 +292,7 @@ namespace SMBLibrary.Server
                     }
                 }
 
-                ushort fileID = state.AddOpenedFile(path, stream);
+                ushort fileID = state.AddOpenedFile(path, stream, deleteOnClose);
                 if (isExtended)
                 {
                     NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileSystemEntry(entry, fileID);

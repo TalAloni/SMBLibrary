@@ -190,8 +190,13 @@ namespace SMBLibrary.Server
 
         public ushort AddOpenedFile(string relativePath, Stream stream)
         {
+            return AddOpenedFile(relativePath, stream, false);
+        }
+
+        public ushort AddOpenedFile(string relativePath, Stream stream, bool deleteOnClose)
+        {
             ushort fileID = AllocateFileID();
-            m_openedFiles.Add(fileID, new OpenedFileObject(relativePath, stream));
+            m_openedFiles.Add(fileID, new OpenedFileObject(relativePath, stream, deleteOnClose));
             return fileID;
         }
 

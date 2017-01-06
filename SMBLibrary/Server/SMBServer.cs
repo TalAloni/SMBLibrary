@@ -346,7 +346,7 @@ namespace SMBLibrary.Server
                     else if (command is CloseRequest)
                     {
                         CloseRequest request = (CloseRequest)command;
-                        return ServerResponseHelper.GetCloseResponse(header, request, state);
+                        return ServerResponseHelper.GetCloseResponse(header, request, share, state);
                     }
                     else if (command is FlushRequest)
                     {
