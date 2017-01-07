@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -45,7 +45,9 @@ namespace SMBLibrary.SMB1
             int dataOffset = SecurityBlob.Length;
             if (isUnicode)
             {
-                int padding = securityBlobLength % 2;
+                // when a Unicode string is passed it MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
+                // Note: SMBData starts at an odd offset
+                int padding = (securityBlobLength + 1) % 2;
                 dataOffset += padding;
             }
             NativeOS = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
