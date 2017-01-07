@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -119,18 +119,32 @@ namespace SMBLibrary.Server
         {
             SessionSetupAndXResponseExtended response = new SessionSetupAndXResponseExtended();
 
-            bool isValid = AuthenticationMessageUtils.IsSignatureValid(request.SecurityBlob);
-            if (!isValid)
+            // [MS-SMB] The Windows GSS implementation supports raw Kerberos / NTLM messages in the SecurityBlob
+            byte[] messageBytes = request.SecurityBlob;
+            bool isRawMessage = true;
+            if (!AuthenticationMessageUtils.IsSignatureValid(messageBytes))
+            {
+                messageBytes = GSSAPIHelper.GetNTLMSSPMessage(request.SecurityBlob);
+                isRawMessage = false;
+            }
+            if (!AuthenticationMessageUtils.IsSignatureValid(messageBytes))
             {
                 header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
                 return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
             }
 
-            MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(request.SecurityBlob);
+            MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(messageBytes);
             if (messageType == MessageTypeName.Negotiate)
             {
-                byte[] challengeMessageBytes = users.GetChallengeMessageBytes(request.SecurityBlob);
-                response.SecurityBlob = challengeMessageBytes;
+                byte[] challengeMessageBytes = users.GetChallengeMessageBytes(messageBytes);
+                if (isRawMessage)
+                {
+                    response.SecurityBlob = challengeMessageBytes;
+                }
+                else
+                {
+                    response.SecurityBlob = GSSAPIHelper.GetGSSTokenResponseBytesFromNTLMSSPMessage(challengeMessageBytes);
+                }
                 header.Status = NTStatus.STATUS_MORE_PROCESSING_REQUIRED;
             }
             else // MessageTypeName.Authenticate
@@ -138,7 +152,7 @@ namespace SMBLibrary.Server
                 User user;
                 try
                 {
-                    user = users.Authenticate(request.SecurityBlob);
+                    user = users.Authenticate(messageBytes);
                 }
                 catch(EmptyPasswordNotAllowedException)
                 {

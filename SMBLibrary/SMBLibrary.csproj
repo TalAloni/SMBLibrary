@@ -41,6 +41,11 @@
     <Compile Include="Authentication\AuthenticateMessage\NegotiateMessage.cs" />
     <Compile Include="Authentication\AuthenticateMessage\NTLMv2ClientChallenge.cs" />
     <Compile Include="Authentication\AuthenticateMessage\Version.cs" />
+    <Compile Include="Authentication\GSSAPI\DerEncodingHelper.cs" />
+    <Compile Include="Authentication\GSSAPI\GSSAPIHelper.cs" />
+    <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationToken.cs" />
+    <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenInit.cs" />
+    <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenResponse.cs" />
     <Compile Include="Authentication\MD4.cs" />
     <Compile Include="Authentication\NTAuthentication.cs" />
     <Compile Include="Client\SMBClient.cs" />

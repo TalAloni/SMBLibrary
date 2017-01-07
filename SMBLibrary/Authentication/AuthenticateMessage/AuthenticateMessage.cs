@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,6 +16,8 @@ namespace SMBLibrary.Authentication
     /// </summary>
     public class AuthenticateMessage
     {
+        public const string ValidSignature = "NTLMSSP\0";
+
         public string Signature; // 8 bytes
         public MessageTypeName MessageType;
         public byte[] LmChallengeResponse;
@@ -30,7 +32,7 @@ namespace SMBLibrary.Authentication
 
         public AuthenticateMessage()
         {
-            Signature = AuthenticationMessageUtils.ValidSignature;
+            Signature = ValidSignature;
             MessageType = MessageTypeName.Authenticate;
             DomainName = String.Empty;
             UserName = String.Empty;
@@ -66,7 +68,7 @@ namespace SMBLibrary.Authentication
 
             int payloadLength = LmChallengeResponse.Length + NtChallengeResponse.Length + DomainName.Length * 2 + UserName.Length * 2 + WorkStation.Length * 2 + EncryptedRandomSessionKey.Length;
             byte[] buffer = new byte[fixedLength + payloadLength];
-            ByteWriter.WriteAnsiString(buffer, 0, AuthenticationMessageUtils.ValidSignature, 8);
+            ByteWriter.WriteAnsiString(buffer, 0, ValidSignature, 8);
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)MessageType);
             LittleEndianWriter.WriteUInt32(buffer, 60, (uint)NegotiateFlags);
             if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)

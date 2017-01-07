@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -25,7 +25,7 @@ namespace SMBLibrary.Authentication
 
         public NegotiateMessage()
         {
-            Signature = AuthenticationMessageUtils.ValidSignature;
+            Signature = AuthenticateMessage.ValidSignature;
             MessageType = MessageTypeName.Negotiate;
             DomainName = String.Empty;
             Workstation = String.Empty;
@@ -53,7 +53,7 @@ namespace SMBLibrary.Authentication
             }
             int payloadLength = DomainName.Length * 2 + Workstation.Length * 2;
             byte[] buffer = new byte[fixedLength + payloadLength];
-            ByteWriter.WriteAnsiString(buffer, 0, AuthenticationMessageUtils.ValidSignature, 8);
+            ByteWriter.WriteAnsiString(buffer, 0, AuthenticateMessage.ValidSignature, 8);
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)MessageType);
             LittleEndianWriter.WriteUInt32(buffer, 12, (uint)NegotiateFlags);
 

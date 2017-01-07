@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -27,7 +27,7 @@ namespace SMBLibrary.Authentication
 
         public ChallengeMessage()
         {
-            Signature = AuthenticationMessageUtils.ValidSignature;
+            Signature = AuthenticateMessage.ValidSignature;
             MessageType = MessageTypeName.Challenge;
         }
 
@@ -56,7 +56,7 @@ namespace SMBLibrary.Authentication
 
             int payloadLength = TargetName.Length * 2 + TargetInfo.Length;
             byte[] buffer = new byte[fixedLength + payloadLength];
-            ByteWriter.WriteAnsiString(buffer, 0, AuthenticationMessageUtils.ValidSignature, 8);
+            ByteWriter.WriteAnsiString(buffer, 0, AuthenticateMessage.ValidSignature, 8);
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)MessageType);
             LittleEndianWriter.WriteUInt32(buffer, 20, (uint)NegotiateFlags);
             ByteWriter.WriteBytes(buffer, 24, ServerChallenge);

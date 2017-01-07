@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -13,8 +13,6 @@ namespace SMBLibrary.Authentication
 {
     public class AuthenticationMessageUtils
     {
-        public const string ValidSignature = "NTLMSSP\0";
-
         public static string ReadAnsiStringBufferPointer(byte[] buffer, int offset)
         {
             byte[] bytes = ReadBufferPointer(buffer, offset);
@@ -52,8 +50,12 @@ namespace SMBLibrary.Authentication
 
         public static bool IsSignatureValid(byte[] messageBytes)
         {
+            if (messageBytes.Length < 8)
+            {
+                return false;
+            }
             string signature = ByteReader.ReadAnsiString(messageBytes, 0, 8);
-            return (signature == ValidSignature);
+            return (signature == AuthenticateMessage.ValidSignature);
         }
 
         public static MessageTypeName GetMessageType(byte[] messageBytes)
