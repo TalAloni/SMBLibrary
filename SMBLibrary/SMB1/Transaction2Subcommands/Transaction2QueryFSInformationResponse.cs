@@ -17,21 +17,31 @@ namespace SMBLibrary.SMB1
     public class Transaction2QueryFSInformationResponse : Transaction2Subcommand
     {
         // Data:
-        public QueryFSInformation QueryFSInfo;
+        private byte[] QueryFSInformationBytes;
 
         public Transaction2QueryFSInformationResponse() : base()
         {
 
         }
 
-        public Transaction2QueryFSInformationResponse(byte[] parameters, byte[] data, QueryFSInformationLevel informationLevel, bool isUnicode) : base()
+        public Transaction2QueryFSInformationResponse(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
-            QueryFSInfo = QueryFSInformation.GetQueryFSInformation(data, informationLevel, isUnicode);
+            QueryFSInformationBytes = data;
         }
 
         public override byte[] GetData(bool isUnicode)
         {
-            return QueryFSInfo.GetBytes(isUnicode);
+            return QueryFSInformationBytes;
+        }
+
+        public QueryFSInformation GetQueryFSInformation(QueryFSInformationLevel informationLevel, bool isUnicode)
+        {
+            return QueryFSInformation.GetQueryFSInformation(QueryFSInformationBytes, informationLevel, isUnicode);
+        }
+
+        public void SetQueryFSInformation(QueryFSInformation queryFSInformation, bool isUnicode)
+        {
+            QueryFSInformationBytes = queryFSInformation.GetBytes(isUnicode);
         }
 
         public override Transaction2SubcommandName SubcommandName

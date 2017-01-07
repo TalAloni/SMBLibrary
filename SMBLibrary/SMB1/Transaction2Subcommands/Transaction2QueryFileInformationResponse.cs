@@ -17,46 +17,39 @@ namespace SMBLibrary.SMB1
     public class Transaction2QueryFileInformationResponse : Transaction2Subcommand
     {
         // Parameters:
-        public ushort EaErrorOffset;
+        public ushort EaErrorOffset; // Meaningful only when request's InformationLevel is SMB_INFO_QUERY_EAS_FROM_LIST
         // Data:
-        public QueryInformation QueryInfo;
+        private byte[] QueryInformationBytes = new byte[0];
 
         public Transaction2QueryFileInformationResponse() : base()
         {
 
         }
 
-        public Transaction2QueryFileInformationResponse(byte[] parameters, byte[] data, QueryInformationLevel informationLevel, bool isUnicode) : base()
+        public Transaction2QueryFileInformationResponse(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
-            if ((ushort)informationLevel > 0x0100)
-            {
-                EaErrorOffset = LittleEndianConverter.ToUInt16(parameters, 0);
-            }
-            QueryInfo = QueryInformation.GetQueryInformation(data, informationLevel);
+            EaErrorOffset = LittleEndianConverter.ToUInt16(parameters, 0);
+            QueryInformationBytes = data;
         }
 
         public override byte[] GetParameters(bool isUnicode)
         {
-            if ((ushort)QueryInfo.InformationLevel > 0x0100)
-            {
-                byte[] parameters = new byte[2];
-                LittleEndianWriter.WriteUInt16(parameters, 0, EaErrorOffset);
-                return parameters;
-            }
-            return new byte[0];
+            return LittleEndianConverter.GetBytes(EaErrorOffset);
         }
 
         public override byte[] GetData(bool isUnicode)
         {
-            if (QueryInfo == null)
-            {
-                // SMB_INFO_IS_NAME_VALID
-                return new byte[0];
-            }
-            else
-            {
-                return QueryInfo.GetBytes();
-            }
+            return QueryInformationBytes;
+        }
+
+        public QueryInformation GetQueryInformation(QueryInformationLevel queryInformationLevel)
+        {
+            return QueryInformation.GetQueryInformation(QueryInformationBytes, queryInformationLevel);
+        }
+
+        public void SetQueryInformation(QueryInformation queryInformation)
+        {
+            QueryInformationBytes = queryInformation.GetBytes();
         }
 
         public override Transaction2SubcommandName SubcommandName

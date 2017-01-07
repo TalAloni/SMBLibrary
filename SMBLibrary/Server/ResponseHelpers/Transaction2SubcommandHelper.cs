@@ -101,18 +101,20 @@ namespace SMBLibrary.Server
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             int entriesToReturn = Math.Min(subcommand.SearchCount, entries.Count);
             // We ignore SearchAttributes
-            Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
+            FindInformationList findInformationList = new FindInformationList();
             for (int index = 0; index < entriesToReturn; index++)
             {
                 FindInformation infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
-                response.FindInfoList.Add(infoEntry);
-                if (response.FindInfoList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
+                findInformationList.Add(infoEntry);
+                if (findInformationList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
                 {
-                    response.FindInfoList.RemoveAt(response.FindInfoList.Count - 1);
+                    findInformationList.RemoveAt(findInformationList.Count - 1);
                     break;
                 }
             }
-            int returnCount = response.FindInfoList.Count;
+            int returnCount = findInformationList.Count;
+            Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
+            response.SetFindInformationList(findInformationList, header.UnicodeFlag);
             response.EndOfSearch = (returnCount == entries.Count) && (entries.Count <= subcommand.SearchCount);
             bool closeAtEndOfSearch = (subcommand.Flags & FindFlags.SMB_FIND_CLOSE_AT_EOS) > 0;
             bool closeAfterRequest = (subcommand.Flags & FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST) > 0;
@@ -193,7 +195,6 @@ namespace SMBLibrary.Server
 
         internal static Transaction2FindNext2Response GetSubcommandResponse(SMBHeader header, Transaction2FindNext2Request subcommand, FileSystemShare share, StateObject state)
         {
-            Transaction2FindNext2Response response = new Transaction2FindNext2Response();
             if (!state.OpenSearches.ContainsKey(subcommand.SID))
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
@@ -202,20 +203,22 @@ namespace SMBLibrary.Server
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             List<FileSystemEntry> entries = state.OpenSearches[subcommand.SID];
+            FindInformationList findInformationList = new FindInformationList();
             for (int index = 0; index < entries.Count; index++)
             {
                 FindInformation infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
-                response.FindInfoList.Add(infoEntry);
-                if (response.FindInfoList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
+                findInformationList.Add(infoEntry);
+                if (findInformationList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
                 {
-                    response.FindInfoList.RemoveAt(response.FindInfoList.Count - 1);
+                    findInformationList.RemoveAt(findInformationList.Count - 1);
                     break;
                 }
             }
-            int returnCount = response.FindInfoList.Count;
+            int returnCount = findInformationList.Count;
+            Transaction2FindNext2Response response = new Transaction2FindNext2Response();
+            response.SetFindInformationList(findInformationList, header.UnicodeFlag);
             entries.RemoveRange(0, returnCount);
             state.OpenSearches[subcommand.SID] = entries;
-            response.SearchCount = (ushort)returnCount;
             response.EndOfSearch = (returnCount == entries.Count) && (entries.Count <= subcommand.SearchCount);
             if (response.EndOfSearch)
             {
@@ -227,7 +230,8 @@ namespace SMBLibrary.Server
         internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMBHeader header, Transaction2QueryFSInformationRequest subcommand, FileSystemShare share)
         {
             Transaction2QueryFSInformationResponse response = new Transaction2QueryFSInformationResponse();
-            response.QueryFSInfo = InfoHelper.GetFSInformation(subcommand.InformationLevel, share.FileSystem);
+            QueryFSInformation queryFSInformation = InfoHelper.GetFSInformation(subcommand.InformationLevel, share.FileSystem);
+            response.SetQueryFSInformation(queryFSInformation, header.UnicodeFlag);
             return response;
         }
 
@@ -245,7 +249,8 @@ namespace SMBLibrary.Server
                 return null;
             }
             Transaction2QueryPathInformationResponse response = new Transaction2QueryPathInformationResponse();
-            response.QueryInfo = InfoHelper.FromFileSystemEntry(entry, subcommand.InformationLevel);
+            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, subcommand.InformationLevel);
+            response.SetQueryInformation(queryInformation);
 
             return response;
         }
@@ -267,7 +272,8 @@ namespace SMBLibrary.Server
                 return null;
             }
             Transaction2QueryFileInformationResponse response = new Transaction2QueryFileInformationResponse();
-            response.QueryInfo = InfoHelper.FromFileSystemEntry(entry, subcommand.InformationLevel);
+            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, subcommand.InformationLevel);
+            response.SetQueryInformation(queryInformation);
 
             return response;
         }

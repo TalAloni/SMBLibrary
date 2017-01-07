@@ -24,7 +24,7 @@ namespace SMBLibrary.SMB1
 
         }
 
-        public Transaction2CreateDirectoryResponse(byte[] parameters, byte[] data, QueryInformationLevel informationLevel, bool isUnicode) : base()
+        public Transaction2CreateDirectoryResponse(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
             EaErrorOffset = LittleEndianConverter.ToUInt16(parameters, 0);
         }

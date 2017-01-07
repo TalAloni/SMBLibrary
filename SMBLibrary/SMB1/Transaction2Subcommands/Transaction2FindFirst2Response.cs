@@ -19,19 +19,18 @@ namespace SMBLibrary.SMB1
         public const int ParametersLength = 10;
         // Parameters:
         public ushort SID; // Search handle
-        public ushort SearchCount;
+        private ushort SearchCount;
         public bool EndOfSearch;
         public ushort EaErrorOffset;
         public ushort LastNameOffset;
         // Data:
-        public FindInformationList FindInfoList;
+        private byte[] FindInformationListBytes = new byte[0];
 
         public Transaction2FindFirst2Response() : base()
         {
-            FindInfoList = new FindInformationList();
         }
 
-        public Transaction2FindFirst2Response(byte[] parameters, byte[] data, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys) : base()
+        public Transaction2FindFirst2Response(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
             SID = LittleEndianConverter.ToUInt16(parameters, 0);
             SearchCount = LittleEndianConverter.ToUInt16(parameters, 2);
@@ -39,13 +38,11 @@ namespace SMBLibrary.SMB1
             EaErrorOffset = LittleEndianConverter.ToUInt16(parameters, 6);
             LastNameOffset = LittleEndianConverter.ToUInt16(parameters, 8);
 
-            FindInfoList = new FindInformationList(data, informationLevel, isUnicode, returnResumeKeys);
+            FindInformationListBytes = data;
         }
 
         public override byte[] GetParameters(bool isUnicode)
         {
-            SearchCount = (ushort)FindInfoList.Count;
-
             byte[] parameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(parameters, 0, SID);
             LittleEndianWriter.WriteUInt16(parameters, 2, SearchCount);
@@ -57,7 +54,18 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetData(bool isUnicode)
         {
-            return FindInfoList.GetBytes(isUnicode);
+            return FindInformationListBytes;
+        }
+
+        public FindInformationList GetFindInformationList(FindInformationLevel findInformationLevel, bool isUnicode, bool returnResumeKeys)
+        {
+            return new FindInformationList(FindInformationListBytes, findInformationLevel, isUnicode, returnResumeKeys);
+        }
+
+        public void SetFindInformationList(FindInformationList findInformationList, bool isUnicode)
+        {
+            SearchCount = (ushort)findInformationList.Count;
+            FindInformationListBytes = findInformationList.GetBytes(isUnicode);
         }
 
         public override Transaction2SubcommandName SubcommandName

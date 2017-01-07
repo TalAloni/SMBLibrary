@@ -24,7 +24,7 @@ namespace SMBLibrary.SMB1
         public SearchStorageType SearchStorageType;
         public string FileName; // SMB_STRING
         // Data:
-        FullExtendedAttributeList GetExtendedAttributeList; // Used with FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST
+        public FullExtendedAttributeList GetExtendedAttributeList; // Used with FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST
 
         public Transaction2FindFirst2Request() : base()
         {
