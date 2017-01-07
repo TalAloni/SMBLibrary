@@ -51,9 +51,6 @@
     <Compile Include="Enums\SMBTransportType.cs" />
     <Compile Include="Enums\Win32Error.cs" />
     <Compile Include="EnumStructures\AccessMask.cs" />
-    <Compile Include="IOCTL\FileFullEAInformation.cs" />
-    <Compile Include="IOCTL\FileFullEAInformationList.cs" />
-    <Compile Include="IOCTL\ObjectIDBufferType1.cs" />
     <Compile Include="NetBios\NameServicePackets\Enums\NameRecordType.cs" />
     <Compile Include="NetBios\NameServicePackets\Enums\NameServiceOperation.cs" />
     <Compile Include="NetBios\NameServicePackets\Enums\NetBiosSuffix.cs" />
@@ -384,6 +381,9 @@
     <Compile Include="Structures\ACE\Enums\AceFlags.cs" />
     <Compile Include="Structures\ACE\Enums\AceType.cs" />
     <Compile Include="Structures\ACL.cs" />
+    <Compile Include="Structures\FileFullEAInformation.cs" />
+    <Compile Include="Structures\FileFullEAInformationList.cs" />
+    <Compile Include="Structures\ObjectIDBufferType1.cs" />
     <Compile Include="Structures\SecurityDescriptor.cs" />
     <Compile Include="Structures\SID.cs" />
     <Compile Include="Tests\AuthenticationTests.cs" />

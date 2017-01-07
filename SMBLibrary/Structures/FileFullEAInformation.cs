@@ -16,10 +16,12 @@ namespace SMBLibrary
     /// </summary>
     public class FileFullEAInformation
     {
+        public const int FixedLength = 8;
+
         public uint NextEntryOffset;
         public byte Flags;
-        //byte EaNameLength;
-        //ushort EaValueLength;
+        private byte EaNameLength;
+        private ushort EaValueLength;
         public string EaName; // ASCII
         public string EaValue; // ASCII
 
@@ -31,20 +33,20 @@ namespace SMBLibrary
         {
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
             Flags = ByteReader.ReadByte(buffer, ref offset);
-            byte eaNameLength = ByteReader.ReadByte(buffer, ref offset);
-            ushort eaValueLength = LittleEndianReader.ReadUInt16(buffer, ref offset);
-            EaName = ByteReader.ReadAnsiString(buffer, ref offset, eaNameLength);
-            EaValue = ByteReader.ReadAnsiString(buffer, ref offset, eaValueLength);
+            EaNameLength = ByteReader.ReadByte(buffer, ref offset);
+            EaValueLength = LittleEndianReader.ReadUInt16(buffer, ref offset);
+            EaName = ByteReader.ReadAnsiString(buffer, ref offset, EaNameLength);
+            EaValue = ByteReader.ReadAnsiString(buffer, ref offset, EaValueLength);
         }
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            byte eaNameLength = (byte)EaName.Length;
-            ushort eaValueLength = (ushort)EaValue.Length;
+            EaNameLength = (byte)EaName.Length;
+            EaValueLength = (ushort)EaValue.Length;
             LittleEndianWriter.WriteUInt32(buffer, ref offset, NextEntryOffset);
             ByteWriter.WriteByte(buffer, ref offset, Flags);
-            ByteWriter.WriteByte(buffer, ref offset, eaNameLength);
-            LittleEndianWriter.WriteUInt16(buffer, ref offset, eaValueLength);
+            ByteWriter.WriteByte(buffer, ref offset, EaNameLength);
+            LittleEndianWriter.WriteUInt16(buffer, ref offset, EaValueLength);
             ByteWriter.WriteAnsiString(buffer, ref offset, EaName);
             ByteWriter.WriteAnsiString(buffer, ref offset, EaValue);
         }
@@ -53,7 +55,7 @@ namespace SMBLibrary
         {
             get
             {
-                return 8 + EaName.Length + EaValue.Length;
+                return FixedLength + EaName.Length + EaValue.Length;
             }
         }
     }
