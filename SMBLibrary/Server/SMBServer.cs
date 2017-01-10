@@ -204,20 +204,17 @@ namespace SMBLibrary.Server
             else if (packet is SessionMessagePacket)
             {
                 SMB1Message message = null;
-#if DEBUG
-                message = SMB1Message.GetSMB1Message(packet.Trailer);
-                state.LogToServer(Severity.Verbose, "Message Received: {0} Commands, First Command: {1}, Packet length: {2}", message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
-#else
                 try
                 {
                     message = SMB1Message.GetSMB1Message(packet.Trailer);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    state.LogToServer(Severity.Warning, "Invalid SMB1 message: " + ex.Message);
                     state.ClientSocket.Close();
                     return;
                 }
-#endif
+                state.LogToServer(Severity.Verbose, "Message Received: {0} Commands, First Command: {1}, Packet length: {2}", message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
                 ProcessSMB1Message(message, state);
             }
             else
