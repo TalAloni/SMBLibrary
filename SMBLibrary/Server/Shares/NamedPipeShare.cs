@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -12,8 +12,11 @@ using SMBLibrary.Services;
 
 namespace SMBLibrary.Server
 {
-    public class NamedPipeShare : List<RemoteService>
+    public class NamedPipeShare : List<RemoteService>, ISMBShare
     {
+        // A pipe share, as defined by the SMB Protocol, MUST always have the name "IPC$".
+        public const string NamedPipeShareName = "IPC$";
+
         public NamedPipeShare(List<string> shareList)
         {
             this.Add(new ServerService(Environment.MachineName, shareList));
@@ -30,6 +33,14 @@ namespace SMBLibrary.Server
                 }
             }
             return null;
+        }
+
+        public string Name
+        {
+            get
+            {
+                return NamedPipeShareName;
+            }
         }
     }
 }

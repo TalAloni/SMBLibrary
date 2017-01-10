@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2016 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,7 +16,7 @@ namespace SMBLibrary.Server
 {
     public class OpenAndXHelper
     {
-        internal static SMBCommand GetOpenAndXResponse(SMBHeader header, OpenAndXRequest request, object share, StateObject state)
+        internal static SMBCommand GetOpenAndXResponse(SMBHeader header, OpenAndXRequest request, ISMBShare share, StateObject state)
         {
             bool isExtended = (request.Flags & OpenFlags.SMB_OPEN_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;

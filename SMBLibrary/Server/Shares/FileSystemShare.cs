@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -11,12 +11,17 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class FileSystemShare
+    public class FileSystemShare : ISMBShare
     {
-        public string Name;
+        private string m_name;
         public List<string> ReadAccess;
         public List<string> WriteAccess;
         public IFileSystem FileSystem;
+
+        public FileSystemShare(string shareName)
+        {
+            m_name = shareName;
+        }
 
         public bool HasReadAccess(string userName)
         {
@@ -43,6 +48,14 @@ namespace SMBLibrary.Server
                 }
             }
             return -1;
+        }
+
+        public string Name
+        {
+            get
+            {
+                return m_name;
+            }
         }
     }
 }

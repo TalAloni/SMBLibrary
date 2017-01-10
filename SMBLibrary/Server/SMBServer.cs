@@ -313,7 +313,7 @@ namespace SMBLibrary.Server
                 else if (state.IsTreeConnected(header.TID))
                 {
                     string rootPath = state.GetConnectedTreePath(header.TID);
-                    object share;
+                    ISMBShare share;
                     if (state.IsIPC(header.TID))
                     {
                         share = m_services;

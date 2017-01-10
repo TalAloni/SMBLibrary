@@ -15,7 +15,7 @@ namespace SMBLibrary.Server
 {
     public partial class ServerResponseHelper
     {
-        internal static SMBCommand GetCloseResponse(SMBHeader header, CloseRequest request, object share, StateObject state)
+        internal static SMBCommand GetCloseResponse(SMBHeader header, CloseRequest request, ISMBShare share, StateObject state)
         {
             OpenedFileObject openedFile = state.GetOpenedFileObject(request.FID);
             if (openedFile == null)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2016 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -17,7 +17,7 @@ namespace SMBLibrary.Server
 {
     public class ReadWriteResponseHelper
     {
-        internal static SMBCommand GetReadResponse(SMBHeader header, ReadRequest request, object share, StateObject state)
+        internal static SMBCommand GetReadResponse(SMBHeader header, ReadRequest request, ISMBShare share, StateObject state)
         {
             byte[] data = PerformRead(header, share, request.FID, request.ReadOffsetInBytes, request.CountOfBytesToRead, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -31,7 +31,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMBCommand GetReadResponse(SMBHeader header, ReadAndXRequest request, object share, StateObject state)
+        internal static SMBCommand GetReadResponse(SMBHeader header, ReadAndXRequest request, ISMBShare share, StateObject state)
         {
             uint maxCount = request.MaxCount;
             if ((share is FileSystemShare) && state.LargeRead)
@@ -54,7 +54,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        public static byte[] PerformRead(SMBHeader header, object share, ushort FID, ulong offset, uint maxCount, StateObject state)
+        public static byte[] PerformRead(SMBHeader header, ISMBShare share, ushort FID, ulong offset, uint maxCount, StateObject state)
         {
             if (offset > Int64.MaxValue || maxCount > Int32.MaxValue)
             {
@@ -63,7 +63,7 @@ namespace SMBLibrary.Server
             return PerformRead(header, share, FID, (long)offset, (int)maxCount, state);
         }
 
-        public static byte[] PerformRead(SMBHeader header, object share, ushort FID, long offset, int maxCount, StateObject state)
+        public static byte[] PerformRead(SMBHeader header, ISMBShare share, ushort FID, long offset, int maxCount, StateObject state)
         {
             OpenedFileObject openedFile = state.GetOpenedFileObject(FID);
             if (openedFile == null)
@@ -134,7 +134,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMBCommand GetWriteResponse(SMBHeader header, WriteRequest request, object share, StateObject state)
+        internal static SMBCommand GetWriteResponse(SMBHeader header, WriteRequest request, ISMBShare share, StateObject state)
         {
             ushort bytesWritten = (ushort)PerformWrite(header, share, request.FID, request.WriteOffsetInBytes, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -147,7 +147,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMBCommand GetWriteResponse(SMBHeader header, WriteAndXRequest request, object share, StateObject state)
+        internal static SMBCommand GetWriteResponse(SMBHeader header, WriteAndXRequest request, ISMBShare share, StateObject state)
         {
             uint bytesWritten = PerformWrite(header, share, request.FID, request.Offset, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -165,7 +165,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        public static uint PerformWrite(SMBHeader header, object share, ushort FID, ulong offset, byte[] data, StateObject state)
+        public static uint PerformWrite(SMBHeader header, ISMBShare share, ushort FID, ulong offset, byte[] data, StateObject state)
         {
             OpenedFileObject openedFile = state.GetOpenedFileObject(FID);
             if (openedFile == null)

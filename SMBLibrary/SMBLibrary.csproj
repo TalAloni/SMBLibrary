@@ -105,10 +105,8 @@
     <Compile Include="Server\Exceptions\EmptyPasswordNotAllowedException.cs" />
     <Compile Include="Server\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Server\Exceptions\UnsupportedInformationLevelException.cs" />
-    <Compile Include="Server\FileSystemShare.cs" />
     <Compile Include="Server\IndependentUserCollection.cs" />
     <Compile Include="Server\INTLMAuthenticationProvider.cs" />
-    <Compile Include="Server\NamedPipeShare.cs" />
     <Compile Include="Server\NameServer.cs" />
     <Compile Include="Server\OpenedFileObject.cs" />
     <Compile Include="Server\ProcessStateObject.cs" />
@@ -126,7 +124,10 @@
     <Compile Include="Server\ResponseHelpers\TransactionHelper.cs" />
     <Compile Include="Server\ResponseHelpers\TransactionSubcommandHelper.cs" />
     <Compile Include="Server\ResponseHelpers\TreeConnectHelper.cs" />
-    <Compile Include="Server\ShareCollection.cs" />
+    <Compile Include="Server\Shares\FileSystemShare.cs" />
+    <Compile Include="Server\Shares\ISMBShare.cs" />
+    <Compile Include="Server\Shares\NamedPipeShare.cs" />
+    <Compile Include="Server\Shares\ShareCollection.cs" />
     <Compile Include="Server\SMBConnectionReceiveBuffer.cs" />
     <Compile Include="Server\SMBServer.cs" />
     <Compile Include="Server\StateObject.cs" />
