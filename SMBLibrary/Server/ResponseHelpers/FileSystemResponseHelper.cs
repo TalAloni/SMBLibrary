@@ -117,8 +117,8 @@ namespace SMBLibrary.Server
                 return new ErrorResponse(CommandName.SMB_COM_DELETE);
             }
 
-            if (!entry.IsDirectory && (request.SearchAttributes & SMBLibrary.SMB1.FileAttributes.Directory) > 0
-                || entry.IsDirectory && (request.SearchAttributes & SMBLibrary.SMB1.FileAttributes.Directory) == 0)
+            if (!entry.IsDirectory && (request.SearchAttributes & SMBFileAttributes.Directory) > 0
+                || entry.IsDirectory && (request.SearchAttributes & SMBFileAttributes.Directory) == 0)
             {
                 header.Status = NTStatus.STATUS_OBJECT_PATH_INVALID;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE);
@@ -227,15 +227,15 @@ namespace SMBLibrary.Server
             bool? isHidden = null;
             bool? isReadOnly = null;
             bool? isArchived = null;
-            if ((request.FileAttributes & SMBLibrary.SMB1.FileAttributes.Hidden) > 0)
+            if ((request.FileAttributes & SMBFileAttributes.Hidden) > 0)
             {
                 isHidden = true;
             }
-            if ((request.FileAttributes & SMBLibrary.SMB1.FileAttributes.ReadOnly) > 0)
+            if ((request.FileAttributes & SMBFileAttributes.ReadOnly) > 0)
             {
                 isReadOnly = true;
             }
-            if ((request.FileAttributes & SMBLibrary.SMB1.FileAttributes.Archive) > 0)
+            if ((request.FileAttributes & SMBFileAttributes.Archive) > 0)
             {
                 isArchived = true;
             }

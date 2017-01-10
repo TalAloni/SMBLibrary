@@ -313,24 +313,24 @@ namespace SMBLibrary.Server
         }
 
 
-        public static FileAttributes GetFileAttributes(FileSystemEntry entry)
+        public static SMBFileAttributes GetFileAttributes(FileSystemEntry entry)
         {
-            FileAttributes attributes = FileAttributes.Normal;
+            SMBFileAttributes attributes = SMBFileAttributes.Normal;
             if (entry.IsHidden)
             {
-                attributes |= FileAttributes.Hidden;
+                attributes |= SMBFileAttributes.Hidden;
             }
             if (entry.IsReadonly)
             {
-                attributes |= FileAttributes.ReadOnly;
+                attributes |= SMBFileAttributes.ReadOnly;
             }
             if (entry.IsArchived)
             {
-                attributes |= FileAttributes.Archive;
+                attributes |= SMBFileAttributes.Archive;
             }
             if (entry.IsDirectory)
             {
-                attributes |= FileAttributes.Directory;
+                attributes |= SMBFileAttributes.Directory;
             }
 
             return attributes;

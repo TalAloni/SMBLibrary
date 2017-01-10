@@ -19,7 +19,7 @@ namespace SMBLibrary.SMB1
         public int ParametersLength = 30;
         // Parameters
         public ushort FID;
-        public FileAttributes FileAttributes;
+        public SMBFileAttributes FileAttributes;
         public DateTime CreationTime;
         public uint FileDataSize;
         public AccessModeOptions AccessMode;
@@ -38,7 +38,7 @@ namespace SMBLibrary.SMB1
         public Transaction2Open2Response(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
             FID = LittleEndianConverter.ToUInt16(parameters, 0);
-            FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(parameters, 2);
+            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(parameters, 2);
             CreationTime = SMB1Helper.ReadUTime(parameters, 4);
             FileDataSize = LittleEndianConverter.ToUInt32(parameters, 8);
             AccessMode = new AccessModeOptions(parameters, 12);

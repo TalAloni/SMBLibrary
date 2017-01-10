@@ -23,8 +23,8 @@ namespace SMBLibrary.SMB1
         //ushort AndXOffset;
         public OpenFlags Flags;
         public AccessModeOptions AccessMode;
-        public FileAttributes SearchAttrs;
-        public FileAttributes FileAttrs;
+        public SMBFileAttributes SearchAttrs;
+        public SMBFileAttributes FileAttrs;
         public DateTime CreationTime; // UTime
         public OpenMode OpenMode;
         public uint AllocationSize;
@@ -42,8 +42,8 @@ namespace SMBLibrary.SMB1
             int parametersOffset = 4;
             Flags = (OpenFlags)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             AccessMode = AccessModeOptions.Read(this.SMBParameters, ref parametersOffset);
-            SearchAttrs = (FileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            FileAttrs = (FileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
+            SearchAttrs = (SMBFileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
+            FileAttrs = (SMBFileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             CreationTime = SMB1Helper.ReadUTime(this.SMBParameters, ref parametersOffset);
             OpenMode = OpenMode.Read(this.SMBParameters, ref parametersOffset);
             AllocationSize = LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);

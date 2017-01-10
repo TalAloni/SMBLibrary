@@ -22,7 +22,7 @@ namespace SMBLibrary.SMB1
         //byte AndXReserved;
         //ushort AndXOffset;
         public ushort FID;
-        public FileAttributes FileAttrs;
+        public SMBFileAttributes FileAttrs;
         public DateTime LastWriteTime; // UTime
         public uint FileDataSize;
         public AccessRights AccessRights;

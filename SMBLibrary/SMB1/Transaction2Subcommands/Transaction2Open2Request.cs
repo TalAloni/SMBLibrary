@@ -20,7 +20,7 @@ namespace SMBLibrary.SMB1
         public Open2Flags Flags;
         public AccessModeOptions AccessMode;
         public ushort Reserved1;
-        public FileAttributes FileAttributes;
+        public SMBFileAttributes FileAttributes;
         public DateTime CreationTime; // UTIME (seconds since Jan 1, 1970)
         public OpenMode OpenMode;
         public uint AllocationSize;
@@ -40,7 +40,7 @@ namespace SMBLibrary.SMB1
             Flags = (Open2Flags)LittleEndianConverter.ToUInt16(parameters, 0);
             AccessMode = new AccessModeOptions(parameters, 2);
             Reserved1 = LittleEndianConverter.ToUInt16(parameters, 4);
-            FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(parameters, 6);
+            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(parameters, 6);
             CreationTime = SMB1Helper.ReadUTime(parameters, 8);
             OpenMode = new OpenMode(parameters, 12);
             AllocationSize = LittleEndianConverter.ToUInt32(parameters, 14);

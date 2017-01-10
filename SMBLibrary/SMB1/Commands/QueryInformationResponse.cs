@@ -20,7 +20,7 @@ namespace SMBLibrary.SMB1
     {
         public const int ParameterLength = 20;
         // Parameters:
-        public FileAttributes FileAttributes;
+        public SMBFileAttributes FileAttributes;
         public DateTime LastWriteTime;
         public uint FileSize;
         public byte[] Reserved; // 10 bytes
@@ -32,7 +32,7 @@ namespace SMBLibrary.SMB1
 
         public QueryInformationResponse(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
             LastWriteTime = SMB1Helper.ReadSMBDateTime(this.SMBParameters, 2);
             FileSize = LittleEndianConverter.ToUInt32(this.SMBParameters, 6);
             Reserved = ByteReader.ReadBytes(this.SMBParameters, 10, 10);

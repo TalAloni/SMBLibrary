@@ -24,7 +24,7 @@ namespace SMBLibrary.SMB1
         public DateTime LastWriteDateTime;
         public uint FileDataSize;
         public uint AllocationSize;
-        public FileAttributes Attributes;
+        public SMBFileAttributes Attributes;
         //byte FileNameLength;
         public string FileName; // SMB_STRING
 
@@ -43,7 +43,7 @@ namespace SMBLibrary.SMB1
             LastWriteDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
             FileDataSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             AllocationSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            Attributes = (FileAttributes)LittleEndianReader.ReadUInt16(buffer, ref offset);
+            Attributes = (SMBFileAttributes)LittleEndianReader.ReadUInt16(buffer, ref offset);
             byte fileNameLength = ByteReader.ReadByte(buffer, ref offset);
             FileName = SMB1Helper.ReadSMBString(buffer, ref offset, isUnicode);
         }

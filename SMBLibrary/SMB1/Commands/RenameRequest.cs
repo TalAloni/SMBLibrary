@@ -19,7 +19,7 @@ namespace SMBLibrary.SMB1
         public const int SupportedBufferFormat = 0x04;
         public const int ParametersLength = 2;
         // Parameters:
-        public FileAttributes SearchAttributes;
+        public SMBFileAttributes SearchAttributes;
         // Data:
         public byte BufferFormat1;
         public string OldFileName; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
@@ -34,7 +34,7 @@ namespace SMBLibrary.SMB1
 
         public RenameRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            SearchAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            SearchAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
 
             int dataOffset = 0;
             BufferFormat1 = ByteReader.ReadByte(this.SMBData, ref dataOffset);

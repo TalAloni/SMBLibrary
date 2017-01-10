@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB1
     public class Transaction2FindFirst2Request : Transaction2Subcommand
     {
         // Parameters:
-        public FileAttributes SearchAttributes;
+        public SMBFileAttributes SearchAttributes;
         public ushort SearchCount;
         public FindFlags Flags;
         public FindInformationLevel InformationLevel;
@@ -33,7 +33,7 @@ namespace SMBLibrary.SMB1
 
         public Transaction2FindFirst2Request(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
-            SearchAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(parameters, 0);
+            SearchAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(parameters, 0);
             SearchCount = LittleEndianConverter.ToUInt16(parameters, 2);
             Flags = (FindFlags)LittleEndianConverter.ToUInt16(parameters, 4);
             InformationLevel = (FindInformationLevel)LittleEndianConverter.ToUInt16(parameters, 6);

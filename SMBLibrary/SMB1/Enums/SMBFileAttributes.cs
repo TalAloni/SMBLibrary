@@ -6,7 +6,7 @@ namespace SMBLibrary.SMB1
     /// SMB_FILE_ATTRIBUTES
     /// </summary>
     [Flags]
-    public enum FileAttributes : ushort
+    public enum SMBFileAttributes : ushort
     {
         Normal = 0x0000, // SMB_FILE_ATTRIBUTE_NORMAL
         ReadOnly = 0x0001, // SMB_FILE_ATTRIBUTE_READONLY

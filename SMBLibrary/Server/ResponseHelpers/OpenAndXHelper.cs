@@ -102,7 +102,7 @@ namespace SMBLibrary.Server
                         return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
                     }
 
-                    if ((request.FileAttrs & SMB1.FileAttributes.Directory) > 0)
+                    if ((request.FileAttrs & SMBFileAttributes.Directory) > 0)
                     {
                         System.Diagnostics.Debug.Print("[{0}] OpenAndX: Creating directory '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
                         entry = fileSystem.CreateDirectory(path);
@@ -205,11 +205,11 @@ namespace SMBLibrary.Server
             OpenAndXResponse response = new OpenAndXResponse();
             if (entry.IsDirectory)
             {
-                response.FileAttrs = SMBLibrary.SMB1.FileAttributes.Directory;
+                response.FileAttrs = SMBFileAttributes.Directory;
             }
             else
             {
-                response.FileAttrs = SMBLibrary.SMB1.FileAttributes.Normal;
+                response.FileAttrs = SMBFileAttributes.Normal;
             }
             response.FID = fileID;
             response.LastWriteTime = entry.LastWriteTime;
@@ -225,11 +225,11 @@ namespace SMBLibrary.Server
             OpenAndXResponseExtended response = new OpenAndXResponseExtended();
             if (entry.IsDirectory)
             {
-                response.FileAttrs = SMBLibrary.SMB1.FileAttributes.Directory;
+                response.FileAttrs = SMBFileAttributes.Directory;
             }
             else
             {
-                response.FileAttrs = SMBLibrary.SMB1.FileAttributes.Normal;
+                response.FileAttrs = SMBFileAttributes.Normal;
             }
             response.FID = fileID;
             response.LastWriteTime = entry.LastWriteTime;

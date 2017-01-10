@@ -19,7 +19,7 @@ namespace SMBLibrary.SMB1
         public const int ParametersLength = 16;
         public const int SupportedBufferFormat = 0x04;
         // Parameters:
-        public FileAttributes FileAttributes;
+        public SMBFileAttributes FileAttributes;
         public DateTime LastWriteTime;
         public byte[] Reserved; // 10 bytes
         // Data:
@@ -34,7 +34,7 @@ namespace SMBLibrary.SMB1
 
         public SetInformationRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
-            FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
+            FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
             LastWriteTime = SMB1Helper.ReadUTime(this.SMBParameters, 2);
             Reserved = ByteReader.ReadBytes(this.SMBParameters, 6, 10);
 

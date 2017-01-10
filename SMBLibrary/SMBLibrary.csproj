@@ -239,7 +239,6 @@
     <Compile Include="SMB1\Commands\WriteResponse.cs" />
     <Compile Include="SMB1\Enums\CommandName.cs" />
     <Compile Include="SMB1\Enums\ExtendedFileAttributes.cs" />
-    <Compile Include="SMB1\Enums\FileAttributes.cs" />
     <Compile Include="SMB1\Enums\HeaderFlags.cs" />
     <Compile Include="SMB1\Enums\HeaderFlags2.cs" />
     <Compile Include="SMB1\Enums\Locking\LockType.cs" />
@@ -256,6 +255,7 @@
     <Compile Include="SMB1\Enums\Open\OpenResult.cs" />
     <Compile Include="SMB1\Enums\ResourceType.cs" />
     <Compile Include="SMB1\Enums\SessionSetup\SessionSetupAction.cs" />
+    <Compile Include="SMB1\Enums\SMBFileAttributes.cs" />
     <Compile Include="SMB1\Enums\Transaction\TransactionFlags.cs" />
     <Compile Include="SMB1\Enums\TreeConnect\OptionalSupportFlags.cs" />
     <Compile Include="SMB1\Enums\TreeConnect\ServiceName.cs" />

@@ -22,7 +22,7 @@ namespace SMBLibrary.SMB1
         public DateTime LastWriteDateTime;
         public uint FileDataSize;
         public uint AllocationSize;
-        public FileAttributes Attributes;
+        public SMBFileAttributes Attributes;
         public uint EASize;
         //byte FileNameLength; // In bytes, MUST exclude the null termination.
         public string FileName; // OEM / Unicode character array. MUST be written as SMB_STRING, and read as fixed length string.
@@ -42,7 +42,7 @@ namespace SMBLibrary.SMB1
             LastWriteDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
             FileDataSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             AllocationSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            Attributes = (FileAttributes)LittleEndianReader.ReadUInt16(buffer, ref offset);
+            Attributes = (SMBFileAttributes)LittleEndianReader.ReadUInt16(buffer, ref offset);
             EASize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             byte fileNameLength = ByteReader.ReadByte(buffer, ref offset);
             FileName = SMB1Helper.ReadFixedLengthString(buffer, ref offset, isUnicode, fileNameLength);
