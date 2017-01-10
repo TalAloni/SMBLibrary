@@ -386,8 +386,7 @@
     <Compile Include="Structures\ACE\Enums\AceFlags.cs" />
     <Compile Include="Structures\ACE\Enums\AceType.cs" />
     <Compile Include="Structures\ACL.cs" />
-    <Compile Include="Structures\FileFullEAInformation.cs" />
-    <Compile Include="Structures\FileFullEAInformationList.cs" />
+    <Compile Include="Structures\FileInformation\Set\FileFullEAInformation.cs" />
     <Compile Include="Structures\ObjectIDBufferType1.cs" />
     <Compile Include="Structures\SecurityDescriptor.cs" />
     <Compile Include="Structures\SID.cs" />

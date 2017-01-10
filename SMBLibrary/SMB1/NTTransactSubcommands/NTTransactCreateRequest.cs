@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -34,7 +34,7 @@ namespace SMBLibrary.SMB1
         public string Name; // OEM / Unicode. NOT null terminated. (MUST be aligned to start on a 2-byte boundary from the start of the NT_Trans_Parameters)
         // Data:
         public SecurityDescriptor SecurityDescriptor;
-        public FileFullEAInformationList ExtendedAttributes;
+        public List<FileFullEAInformation> ExtendedAttributes;
 
         public NTTransactCreateRequest()
         {
@@ -66,7 +66,7 @@ namespace SMBLibrary.SMB1
             {
                 SecurityDescriptor = new SecurityDescriptor(data, 0);
             }
-            ExtendedAttributes = new FileFullEAInformationList(data, (int)securityDescriptiorLength);
+            ExtendedAttributes = FileFullEAInformation.ReadList(data, (int)securityDescriptiorLength);
         }
 
         public override byte[] GetParameters(bool isUnicode)
