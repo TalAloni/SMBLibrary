@@ -80,7 +80,7 @@ namespace SMBLibrary.SMB1
                         int namePadding = 1;
                         dataOffset += namePadding;
                     }
-                    Name = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+                    Name = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
                 }
             }
             TransParameters = ByteReader.ReadBytes(buffer, ParameterOffset, ParameterCount);
@@ -154,7 +154,7 @@ namespace SMBLibrary.SMB1
                     this.SMBData = new byte[Name.Length + 1 + ParameterCount + DataCount + padding1 + padding2];
                 }
             }
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, Name);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, Name);
             ByteWriter.WriteBytes(this.SMBData, offset + padding1, TransParameters);
             ByteWriter.WriteBytes(this.SMBData, offset + padding1 + ParameterCount + padding2, TransData);
 

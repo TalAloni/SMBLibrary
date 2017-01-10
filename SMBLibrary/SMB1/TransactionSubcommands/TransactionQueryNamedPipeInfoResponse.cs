@@ -35,7 +35,7 @@ namespace SMBLibrary.SMB1
             CurrentInstances = ByteReader.ReadByte(parameters, 5);
             PipeNameLength = ByteReader.ReadByte(parameters, 6);
             // Note: Trans_Parameters is aligned to 4 byte boundary
-            PipeName = SMBHelper.ReadSMBString(parameters, 8, isUnicode);
+            PipeName = SMB1Helper.ReadSMBString(parameters, 8, isUnicode);
         }
 
         public override byte[] GetParameters(bool isUnicode)
@@ -55,7 +55,7 @@ namespace SMBLibrary.SMB1
             ByteWriter.WriteByte(parameters, 4, MaximumInstances);
             ByteWriter.WriteByte(parameters, 5, CurrentInstances);
             ByteWriter.WriteByte(parameters, 6, PipeNameLength);
-            SMBHelper.WriteSMBString(parameters, 8, isUnicode, PipeName);
+            SMB1Helper.WriteSMBString(parameters, 8, isUnicode, PipeName);
             return parameters; ;
         }
 

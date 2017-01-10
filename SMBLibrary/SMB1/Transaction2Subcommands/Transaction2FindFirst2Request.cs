@@ -38,7 +38,7 @@ namespace SMBLibrary.SMB1
             Flags = (FindFlags)LittleEndianConverter.ToUInt16(parameters, 4);
             InformationLevel = (FindInformationLevel)LittleEndianConverter.ToUInt16(parameters, 6);
             SearchStorageType = (SearchStorageType)LittleEndianConverter.ToUInt32(parameters, 8);
-            FileName = SMBHelper.ReadSMBString(parameters, 12, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(parameters, 12, isUnicode);
 
             if (InformationLevel == FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
             {
@@ -69,7 +69,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt16(parameters, 4, (ushort)Flags);
             LittleEndianWriter.WriteUInt16(parameters, 6, (ushort)InformationLevel);
             LittleEndianWriter.WriteUInt32(parameters, 8, (uint)SearchStorageType);
-            SMBHelper.WriteSMBString(parameters, 12, isUnicode, FileName);
+            SMB1Helper.WriteSMBString(parameters, 12, isUnicode, FileName);
 
             return parameters;
         }

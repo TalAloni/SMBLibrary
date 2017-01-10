@@ -54,8 +54,8 @@ namespace SMBLibrary.SMB1
             int offset = 0;
             ByteWriter.WriteBytes(this.SMBData, ref offset, SecurityBlob);
             offset += padding;
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeOS);
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeLanMan);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeOS);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeLanMan);
 
             return base.GetBytes(isUnicode);
         }

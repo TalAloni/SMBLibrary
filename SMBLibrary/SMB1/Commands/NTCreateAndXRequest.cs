@@ -60,7 +60,7 @@ namespace SMBLibrary.SMB1
             {
                 dataOffset = 1; // 1 byte padding for 2 byte alignment
             }
-            FileName = SMBHelper.ReadSMBString(this.SMBData, dataOffset, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(this.SMBData, dataOffset, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)

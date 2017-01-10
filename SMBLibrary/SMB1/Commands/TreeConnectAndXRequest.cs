@@ -40,7 +40,7 @@ namespace SMBLibrary.SMB1
                 int padding = (1 + passwordLength) % 2;
                 dataOffset += padding;
             }
-            Path = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            Path = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
             // Should be read as OEM string but it doesn't really matter
             string serviceString = ByteReader.ReadNullTerminatedAnsiString(this.SMBData, ref dataOffset);
             Service = TreeConnectHelper.GetServiceName(serviceString);
@@ -75,7 +75,7 @@ namespace SMBLibrary.SMB1
                 int padding = (1 + passwordLength) % 2;
                 dataOffset += padding;
             }
-            SMBHelper.WriteSMBString(this.SMBData, ref dataOffset, isUnicode, Path);
+            SMB1Helper.WriteSMBString(this.SMBData, ref dataOffset, isUnicode, Path);
             ByteWriter.WriteNullTerminatedAnsiString(this.SMBData, ref dataOffset, serviceString);
 
             return base.GetBytes(isUnicode);

@@ -61,7 +61,7 @@ namespace SMBLibrary.SMB1
             {
                 parametersOffset++;
             }
-            Name = SMBHelper.ReadFixedLengthString(parameters, ref parametersOffset, isUnicode, (int)nameLength);
+            Name = SMB1Helper.ReadFixedLengthString(parameters, ref parametersOffset, isUnicode, (int)nameLength);
             if (securityDescriptiorLength > 0)
             {
                 SecurityDescriptor = new SecurityDescriptor(data, 0);

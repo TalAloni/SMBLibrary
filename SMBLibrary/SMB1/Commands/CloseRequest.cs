@@ -26,20 +26,20 @@ namespace SMBLibrary.SMB1
 
         public CloseRequest() : base()
         {
-            LastTimeModified = SMBHelper.UTimeNotSpecified;
+            LastTimeModified = SMB1Helper.UTimeNotSpecified;
         }
 
         public CloseRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
             FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            LastTimeModified = SMBHelper.ReadUTime(this.SMBParameters, 2);
+            LastTimeModified = SMB1Helper.ReadUTime(this.SMBParameters, 2);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
             this.SMBParameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, FID);
-            SMBHelper.WriteUTime(this.SMBParameters, 2, LastTimeModified);
+            SMB1Helper.WriteUTime(this.SMBParameters, 2, LastTimeModified);
             return base.GetBytes(isUnicode);
         }
 

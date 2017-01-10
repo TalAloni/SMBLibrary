@@ -42,7 +42,7 @@ namespace SMBLibrary.SMB1
             {
                 throw new InvalidRequestException("Unsupported Buffer Format");
             }
-            OldFileName = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            OldFileName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
             BufferFormat2 = ByteReader.ReadByte(this.SMBData, ref dataOffset);
             if (BufferFormat2 != SupportedBufferFormat)
             {
@@ -52,7 +52,7 @@ namespace SMBLibrary.SMB1
             {
                 dataOffset++;
             }
-            NewFileName = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NewFileName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -71,13 +71,13 @@ namespace SMBLibrary.SMB1
             }
             int dataOffset = 0;
             ByteWriter.WriteByte(this.SMBData, ref dataOffset, BufferFormat1);
-            SMBHelper.WriteSMBString(this.SMBData, ref dataOffset, isUnicode, OldFileName);
+            SMB1Helper.WriteSMBString(this.SMBData, ref dataOffset, isUnicode, OldFileName);
             ByteWriter.WriteByte(this.SMBData, ref dataOffset, BufferFormat2);
             if (isUnicode)
             {
                 dataOffset++; // padding
             }
-            SMBHelper.WriteSMBString(this.SMBData, ref dataOffset, isUnicode, NewFileName);
+            SMB1Helper.WriteSMBString(this.SMBData, ref dataOffset, isUnicode, NewFileName);
 
             return base.GetBytes(isUnicode);
         }

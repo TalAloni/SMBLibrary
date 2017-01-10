@@ -35,10 +35,10 @@ namespace SMBLibrary.SMB1
 
         public SetFileBasicInfo(byte[] buffer, int offset)
         {
-            CreationTime = SMBHelper.ReadSetFileTime(buffer, offset + 0);
-            LastAccessTime = SMBHelper.ReadSetFileTime(buffer, offset + 8);
-            LastWriteTime = SMBHelper.ReadSetFileTime(buffer, offset + 16);
-            LastChangeTime = SMBHelper.ReadSetFileTime(buffer, offset + 24);
+            CreationTime = SMB1Helper.ReadSetFileTime(buffer, offset + 0);
+            LastAccessTime = SMB1Helper.ReadSetFileTime(buffer, offset + 8);
+            LastWriteTime = SMB1Helper.ReadSetFileTime(buffer, offset + 16);
+            LastChangeTime = SMB1Helper.ReadSetFileTime(buffer, offset + 24);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 32);
             Reserved = LittleEndianConverter.ToUInt32(buffer, offset + 36);
         }
@@ -46,10 +46,10 @@ namespace SMBLibrary.SMB1
         public override byte[] GetBytes()
         {
             byte[] buffer = new byte[Length];
-            SMBHelper.WriteFileTime(buffer, 0, CreationTime);
-            SMBHelper.WriteFileTime(buffer, 8, LastAccessTime);
-            SMBHelper.WriteFileTime(buffer, 16, LastWriteTime);
-            SMBHelper.WriteFileTime(buffer, 24, LastChangeTime);
+            SMB1Helper.WriteFileTime(buffer, 0, CreationTime);
+            SMB1Helper.WriteFileTime(buffer, 8, LastAccessTime);
+            SMB1Helper.WriteFileTime(buffer, 16, LastWriteTime);
+            SMB1Helper.WriteFileTime(buffer, 24, LastChangeTime);
             LittleEndianWriter.WriteUInt32(buffer, 32, (uint)ExtFileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, 36, Reserved);
             return buffer;

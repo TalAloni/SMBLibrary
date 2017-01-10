@@ -38,7 +38,7 @@ namespace SMBLibrary.SMB1
             {
                 throw new InvalidRequestException("Unsupported Buffer Format");
             }
-            FileName = SMBHelper.ReadSMBString(this.SMBData, 1, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(this.SMBData, 1, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)

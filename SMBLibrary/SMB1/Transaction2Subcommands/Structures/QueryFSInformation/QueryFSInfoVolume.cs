@@ -28,7 +28,7 @@ namespace SMBLibrary.SMB1
         {
             VolumeSerialNumber = LittleEndianConverter.ToUInt32(buffer, offset + 0);
             byte charCount = ByteReader.ReadByte(buffer, offset + 4);
-            VolumeLabel = SMBHelper.ReadSMBString(buffer, offset + 5, isUnicode);
+            VolumeLabel = SMB1Helper.ReadSMBString(buffer, offset + 5, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -39,7 +39,7 @@ namespace SMBLibrary.SMB1
             byte[] buffer = new byte[length];
             LittleEndianWriter.WriteUInt32(buffer, 0, VolumeSerialNumber);
             ByteWriter.WriteByte(buffer, 4, charCount);
-            SMBHelper.WriteSMBString(buffer, 5, isUnicode, VolumeLabel);
+            SMB1Helper.WriteSMBString(buffer, 5, isUnicode, VolumeLabel);
             return buffer;
         }
 

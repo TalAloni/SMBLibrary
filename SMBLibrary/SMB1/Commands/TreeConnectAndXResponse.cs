@@ -36,7 +36,7 @@ namespace SMBLibrary.SMB1
 
             int dataOffset = 0;
             string serviceString = ByteReader.ReadNullTerminatedAnsiString(this.SMBData, ref dataOffset);
-            NativeFileSystem = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeFileSystem = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
 
             Service = TreeConnectHelper.GetServiceName(serviceString);
         }
@@ -59,7 +59,7 @@ namespace SMBLibrary.SMB1
 
             int offset = 0;
             ByteWriter.WriteNullTerminatedAnsiString(this.SMBData, ref offset, serviceString);
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeFileSystem);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeFileSystem);
 
             return base.GetBytes(isUnicode);
         }

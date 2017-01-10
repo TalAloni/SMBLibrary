@@ -31,7 +31,7 @@ namespace SMBLibrary.SMB1
 
         public Transaction2Open2Request() : base()
         {
-            CreationTime = SMBHelper.UTimeNotSpecified;
+            CreationTime = SMB1Helper.UTimeNotSpecified;
             Reserved = new byte[10];
         }
 
@@ -41,11 +41,11 @@ namespace SMBLibrary.SMB1
             AccessMode = new AccessModeOptions(parameters, 2);
             Reserved1 = LittleEndianConverter.ToUInt16(parameters, 4);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(parameters, 6);
-            CreationTime = SMBHelper.ReadUTime(parameters, 8);
+            CreationTime = SMB1Helper.ReadUTime(parameters, 8);
             OpenMode = new OpenMode(parameters, 12);
             AllocationSize = LittleEndianConverter.ToUInt32(parameters, 14);
             Reserved = ByteReader.ReadBytes(parameters, 18, 10);
-            FileName = SMBHelper.ReadSMBString(parameters, 28, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(parameters, 28, isUnicode);
 
             ExtendedAttributeList = new FullExtendedAttributeList(data, 0);
         }
@@ -72,11 +72,11 @@ namespace SMBLibrary.SMB1
             AccessMode.WriteBytes(parameters, 2);
             LittleEndianWriter.WriteUInt16(parameters, 4, Reserved1);
             LittleEndianWriter.WriteUInt16(parameters, 6, (ushort)FileAttributes);
-            SMBHelper.WriteUTime(parameters, 8, CreationTime);
+            SMB1Helper.WriteUTime(parameters, 8, CreationTime);
             OpenMode.WriteBytes(parameters, 12);
             LittleEndianWriter.WriteUInt32(parameters, 14, AllocationSize);
             ByteWriter.WriteBytes(parameters, 18, Reserved, 10);
-            SMBHelper.WriteSMBString(parameters, 28, isUnicode, FileName);
+            SMB1Helper.WriteSMBString(parameters, 28, isUnicode, FileName);
             return parameters;
         }
 

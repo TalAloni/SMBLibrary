@@ -46,10 +46,10 @@ namespace SMBLibrary.SMB1
         {
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
             FileIndex = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            CreationTime = SMBHelper.ReadFileTime(buffer, ref offset);
-            LastAccessTime = SMBHelper.ReadFileTime(buffer, ref offset);
-            LastWriteTime = SMBHelper.ReadFileTime(buffer, ref offset);
-            LastChangeTime = SMBHelper.ReadFileTime(buffer, ref offset);
+            CreationTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            LastAccessTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            LastWriteTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            LastChangeTime = SMB1Helper.ReadFileTime(buffer, ref offset);
             EndOfFile = LittleEndianReader.ReadUInt64(buffer, ref offset);
             AllocationSize = LittleEndianReader.ReadUInt64(buffer, ref offset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(buffer, ref offset);
@@ -59,7 +59,7 @@ namespace SMBLibrary.SMB1
             Reserved = ByteReader.ReadByte(buffer, ref offset);
             ShortName = ByteReader.ReadUTF16String(buffer, ref offset, 12);
             ShortName = ShortName.Substring(0, shortNameLength);
-            FileName = SMBHelper.ReadFixedLengthString(buffer, ref offset, isUnicode, (int)fileNameLength);
+            FileName = SMB1Helper.ReadFixedLengthString(buffer, ref offset, isUnicode, (int)fileNameLength);
         }
 
         public override void WriteBytes(byte[] buffer, ref int offset, bool isUnicode)
@@ -69,10 +69,10 @@ namespace SMBLibrary.SMB1
 
             LittleEndianWriter.WriteUInt32(buffer, ref offset, NextEntryOffset);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, FileIndex);
-            SMBHelper.WriteFileTime(buffer, ref offset, CreationTime);
-            SMBHelper.WriteFileTime(buffer, ref offset, LastAccessTime);
-            SMBHelper.WriteFileTime(buffer, ref offset, LastWriteTime);
-            SMBHelper.WriteFileTime(buffer, ref offset, LastChangeTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, CreationTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, LastAccessTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, LastWriteTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, LastChangeTime);
             LittleEndianWriter.WriteUInt64(buffer, ref offset, EndOfFile);
             LittleEndianWriter.WriteUInt64(buffer, ref offset, AllocationSize);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)ExtFileAttributes);
@@ -81,7 +81,7 @@ namespace SMBLibrary.SMB1
             ByteWriter.WriteByte(buffer, ref offset, shortNameLength);
             ByteWriter.WriteByte(buffer, ref offset, Reserved);
             ByteWriter.WriteUTF16String(buffer, ref offset, ShortName, 12);
-            SMBHelper.WriteSMBString(buffer, ref offset, isUnicode, FileName);
+            SMB1Helper.WriteSMBString(buffer, ref offset, isUnicode, FileName);
         }
 
         public override int GetLength(bool isUnicode)

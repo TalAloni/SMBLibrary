@@ -326,15 +326,15 @@ namespace SMBLibrary.Server
                     DateTime? creationTime = null;
                     DateTime? lastWriteDT = null;
                     DateTime? lastAccessTime = null;
-                    if (info.CreationTime != SMBHelper.FileTimeNotSpecified)
+                    if (info.CreationTime != SMB1Helper.FileTimeNotSpecified)
                     {
                         creationTime = info.CreationTime;
                     }
-                    if (info.LastWriteTime != SMBHelper.FileTimeNotSpecified)
+                    if (info.LastWriteTime != SMB1Helper.FileTimeNotSpecified)
                     {
                         lastWriteDT = info.LastWriteTime;
                     }
-                    if (info.LastAccessTime != SMBHelper.FileTimeNotSpecified)
+                    if (info.LastAccessTime != SMB1Helper.FileTimeNotSpecified)
                     {
                         lastAccessTime = info.LastAccessTime;
                     }

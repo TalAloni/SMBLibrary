@@ -28,7 +28,7 @@ namespace SMBLibrary.SMB1
         public Transaction2CreateDirectoryRequest(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
             Reserved = LittleEndianConverter.ToUInt32(parameters, 0);
-            DirectoryName = SMBHelper.ReadSMBString(parameters, 4, isUnicode);
+            DirectoryName = SMB1Helper.ReadSMBString(parameters, 4, isUnicode);
             ExtendedAttributeList = new FullExtendedAttributeList(data);
         }
 
@@ -43,7 +43,7 @@ namespace SMBLibrary.SMB1
             length += isUnicode ? DirectoryName.Length * 2 + 2 : DirectoryName.Length + 1 + 1;
             byte[] parameters = new byte[length];
             LittleEndianWriter.WriteUInt32(parameters, 0, Reserved);
-            SMBHelper.WriteSMBString(parameters, 4, isUnicode, DirectoryName);
+            SMB1Helper.WriteSMBString(parameters, 4, isUnicode, DirectoryName);
             return parameters;
         }
 

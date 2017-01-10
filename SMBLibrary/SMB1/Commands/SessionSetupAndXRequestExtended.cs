@@ -50,8 +50,8 @@ namespace SMBLibrary.SMB1
                 int padding = (securityBlobLength + 1) % 2;
                 dataOffset += padding;
             }
-            NativeOS = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            NativeLanMan = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeOS = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeLanMan = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
         }
 
         public override CommandName CommandName

@@ -56,10 +56,10 @@ namespace SMBLibrary.SMB1
                 int padding = (1 + OEMPasswordLength + UnicodePasswordLength) % 2;
                 dataOffset += padding;
             }
-            AccountName = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            PrimaryDomain = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            NativeOS = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            NativeLanMan = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            AccountName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            PrimaryDomain = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeOS = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeLanMan = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
         }
 
         public override CommandName CommandName

@@ -31,7 +31,7 @@ namespace SMBLibrary.SMB1
 
         public QueryFSVolumeInfo(byte[] buffer, int offset)
         {
-            VolumeCreationTime = SMBHelper.ReadFileTime(buffer, offset + 0);
+            VolumeCreationTime = SMB1Helper.ReadFileTime(buffer, offset + 0);
             SerialNumber = LittleEndianConverter.ToUInt32(buffer, offset + 8);
             uint volumeLabelSize = LittleEndianConverter.ToUInt32(buffer, offset + 12);
             Reserved = LittleEndianConverter.ToUInt16(buffer, offset + 16);
@@ -43,7 +43,7 @@ namespace SMBLibrary.SMB1
             uint volumeLabelSize = (uint)(VolumeLabel.Length * 2);
 
             byte[] buffer = new byte[FixedLength + volumeLabelSize];
-            SMBHelper.WriteFileTime(buffer, 0, VolumeCreationTime);
+            SMB1Helper.WriteFileTime(buffer, 0, VolumeCreationTime);
             LittleEndianWriter.WriteUInt32(buffer, 8, SerialNumber);
             LittleEndianWriter.WriteUInt32(buffer, 12, volumeLabelSize);
             LittleEndianWriter.WriteUInt16(buffer, 16, Reserved);

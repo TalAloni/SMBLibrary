@@ -59,7 +59,7 @@ namespace SMBLibrary.SMB1
             uint value = LittleEndianConverter.ToUInt32(buffer, offset);
             if (value > 0)
             {
-                return SMBHelper.ReadSMBDateTime(buffer, offset);
+                return SMB1Helper.ReadSMBDateTime(buffer, offset);
             }
             return null;
         }
@@ -68,7 +68,7 @@ namespace SMBLibrary.SMB1
         {
             if (datetime.HasValue)
             {
-                SMBHelper.WriteSMBDateTime(buffer, offset, datetime.Value);
+                SMB1Helper.WriteSMBDateTime(buffer, offset, datetime.Value);
             }
         }
     }

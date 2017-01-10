@@ -32,9 +32,9 @@ namespace SMBLibrary.SMB1
 
         public QueryEASize(byte[] buffer, int offset)
         {
-            CreationDateTime = SMBHelper.ReadSMBDateTime(buffer, ref offset);
-            LastAccessDateTime = SMBHelper.ReadSMBDateTime(buffer, ref offset);
-            LastWriteDateTime = SMBHelper.ReadSMBDateTime(buffer, ref offset);
+            CreationDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
+            LastAccessDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
+            LastWriteDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
             FileDataSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             AllocationSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             Attributes = (FileAttributes)LittleEndianReader.ReadUInt16(buffer, ref offset);
@@ -45,9 +45,9 @@ namespace SMBLibrary.SMB1
         {
             byte[] buffer = new byte[Length];
             int offset = 0;
-            SMBHelper.WriteSMBDateTime(buffer, ref offset, CreationDateTime);
-            SMBHelper.WriteSMBDateTime(buffer, ref offset, LastAccessDateTime);
-            SMBHelper.WriteSMBDateTime(buffer, ref offset, LastWriteDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, ref offset, CreationDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, ref offset, LastAccessDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, ref offset, LastWriteDateTime);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, FileDataSize);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, AllocationSize);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)Attributes);

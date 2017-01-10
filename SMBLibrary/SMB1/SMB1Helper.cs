@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.Text;
 using Utilities;
 
-namespace SMBLibrary
+namespace SMBLibrary.SMB1
 {
-    public class SMBHelper
+    public class SMB1Helper
     {
         public static readonly DateTime UTimeNotSpecified = new DateTime(1970, 1, 1);
         public static readonly DateTime FileTimeNotSpecified = new DateTime(1601, 1, 1);

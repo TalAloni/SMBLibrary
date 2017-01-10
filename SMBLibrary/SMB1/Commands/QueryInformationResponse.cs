@@ -33,7 +33,7 @@ namespace SMBLibrary.SMB1
         public QueryInformationResponse(byte[] buffer, int offset) : base(buffer, offset, false)
         {
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            LastWriteTime = SMBHelper.ReadSMBDateTime(this.SMBParameters, 2);
+            LastWriteTime = SMB1Helper.ReadSMBDateTime(this.SMBParameters, 2);
             FileSize = LittleEndianConverter.ToUInt32(this.SMBParameters, 6);
             Reserved = ByteReader.ReadBytes(this.SMBParameters, 10, 10);
         }
@@ -42,7 +42,7 @@ namespace SMBLibrary.SMB1
         {
             this.SMBParameters = new byte[ParameterLength];
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, (ushort)FileAttributes);
-            SMBHelper.WriteSMBDateTime(this.SMBParameters, 2, LastWriteTime);
+            SMB1Helper.WriteSMBDateTime(this.SMBParameters, 2, LastWriteTime);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 6, FileSize);
             ByteWriter.WriteBytes(this.SMBParameters, 10, Reserved, 10);
             

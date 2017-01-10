@@ -37,9 +37,9 @@ namespace SMBLibrary.SMB1
             {
                 dataOffset++;
             }
-            NativeOS = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            NativeLanMan = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
-            PrimaryDomain = SMBHelper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeOS = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            NativeLanMan = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            PrimaryDomain = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -58,9 +58,9 @@ namespace SMBLibrary.SMB1
             {
                 this.SMBData = new byte[NativeOS.Length + NativeLanMan.Length + PrimaryDomain.Length + 3];
             }
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode,  NativeOS);
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeLanMan);
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, PrimaryDomain);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode,  NativeOS);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeLanMan);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, PrimaryDomain);
 
             return base.GetBytes(isUnicode);
         }

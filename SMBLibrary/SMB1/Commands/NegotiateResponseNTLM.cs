@@ -71,8 +71,8 @@ namespace SMBLibrary.SMB1
             int offset = 0;
             ByteWriter.WriteBytes(this.SMBData, ref offset, Challenge);
             offset += padding;
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, DomainName);
-            SMBHelper.WriteSMBString(this.SMBData, ref offset, isUnicode, ServerName);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, DomainName);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, ServerName);
 
             return base.GetBytes(isUnicode);
         }

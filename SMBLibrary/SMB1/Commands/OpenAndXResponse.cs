@@ -33,7 +33,7 @@ namespace SMBLibrary.SMB1
 
         public OpenAndXResponse() : base()
         {
-            LastWriteTime = SMBHelper.UTimeNotSpecified;
+            LastWriteTime = SMB1Helper.UTimeNotSpecified;
             Reserved = new byte[6];
         }
 
@@ -48,7 +48,7 @@ namespace SMBLibrary.SMB1
             int parametersOffset = 4;
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, FID);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)FileAttrs);
-            SMBHelper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
+            SMB1Helper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, FileDataSize);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)AccessRights);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)ResourceType);

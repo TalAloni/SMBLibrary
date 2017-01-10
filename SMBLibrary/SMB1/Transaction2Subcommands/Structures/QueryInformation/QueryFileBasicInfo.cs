@@ -31,10 +31,10 @@ namespace SMBLibrary.SMB1
 
         public QueryFileBasicInfo(byte[] buffer, int offset)
         {
-            CreationDateTime = SMBHelper.ReadFileTime(buffer, ref offset);
-            LastAccessDateTime = SMBHelper.ReadFileTime(buffer, ref offset);
-            LastWriteDateTime = SMBHelper.ReadFileTime(buffer, ref offset);
-            LastChangeTime = SMBHelper.ReadFileTime(buffer, ref offset);
+            CreationDateTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            LastAccessDateTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            LastWriteDateTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            LastChangeTime = SMB1Helper.ReadFileTime(buffer, ref offset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(buffer, ref offset);
             Reserved = LittleEndianReader.ReadUInt32(buffer, ref offset);
         }
@@ -43,10 +43,10 @@ namespace SMBLibrary.SMB1
         {
             byte[] buffer = new byte[Length];
             int offset = 0;
-            SMBHelper.WriteFileTime(buffer, ref offset, CreationDateTime);
-            SMBHelper.WriteFileTime(buffer, ref offset, LastAccessDateTime);
-            SMBHelper.WriteFileTime(buffer, ref offset, LastWriteDateTime);
-            SMBHelper.WriteFileTime(buffer, ref offset, LastChangeTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, CreationDateTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, LastAccessDateTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, LastWriteDateTime);
+            SMB1Helper.WriteFileTime(buffer, ref offset, LastChangeTime);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)ExtFileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, Reserved);
             return buffer;

@@ -37,10 +37,10 @@ namespace SMBLibrary.SMB1
 
         public NTCreateAndXResponse() : base()
         {
-            CreateTime = SMBHelper.FileTimeNotSpecified;
-            LastAccessTime = SMBHelper.FileTimeNotSpecified;
-            LastWriteTime = SMBHelper.FileTimeNotSpecified;
-            LastChangeTime = SMBHelper.FileTimeNotSpecified;
+            CreateTime = SMB1Helper.FileTimeNotSpecified;
+            LastAccessTime = SMB1Helper.FileTimeNotSpecified;
+            LastWriteTime = SMB1Helper.FileTimeNotSpecified;
+            LastChangeTime = SMB1Helper.FileTimeNotSpecified;
         }
 
         public NTCreateAndXResponse(byte[] buffer, int offset) : base(buffer, offset, false)
@@ -49,10 +49,10 @@ namespace SMBLibrary.SMB1
             OpLockLevel = (OpLockLevel)ByteReader.ReadByte(this.SMBParameters, ref parametersOffset);
             FID = LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             CreateDisposition = (CreateDisposition)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
-            CreateTime = SMBHelper.ReadFileTime(buffer, ref parametersOffset);
-            LastAccessTime = SMBHelper.ReadFileTime(buffer, ref parametersOffset);
-            LastWriteTime = SMBHelper.ReadFileTime(buffer, ref parametersOffset);
-            LastChangeTime = SMBHelper.ReadFileTime(buffer, ref parametersOffset);
+            CreateTime = SMB1Helper.ReadFileTime(buffer, ref parametersOffset);
+            LastAccessTime = SMB1Helper.ReadFileTime(buffer, ref parametersOffset);
+            LastWriteTime = SMB1Helper.ReadFileTime(buffer, ref parametersOffset);
+            LastChangeTime = SMB1Helper.ReadFileTime(buffer, ref parametersOffset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
             AllocationSize = LittleEndianReader.ReadUInt64(buffer, ref parametersOffset);
             EndOfFile = LittleEndianReader.ReadUInt64(buffer, ref parametersOffset);
@@ -68,10 +68,10 @@ namespace SMBLibrary.SMB1
             ByteWriter.WriteByte(this.SMBParameters, ref parametersOffset, (byte)OpLockLevel);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, FID);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)CreateDisposition);
-            SMBHelper.WriteFileTime(this.SMBParameters, ref parametersOffset, CreateTime);
-            SMBHelper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastAccessTime);
-            SMBHelper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
-            SMBHelper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastChangeTime);
+            SMB1Helper.WriteFileTime(this.SMBParameters, ref parametersOffset, CreateTime);
+            SMB1Helper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastAccessTime);
+            SMB1Helper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
+            SMB1Helper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastChangeTime);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)ExtFileAttributes);
             LittleEndianWriter.WriteUInt64(this.SMBParameters, ref parametersOffset, AllocationSize);
             LittleEndianWriter.WriteUInt64(this.SMBParameters, ref parametersOffset, EndOfFile);

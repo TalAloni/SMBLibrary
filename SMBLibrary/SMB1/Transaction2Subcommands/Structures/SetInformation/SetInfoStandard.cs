@@ -34,18 +34,18 @@ namespace SMBLibrary.SMB1
 
         public SetInfoStandard(byte[] buffer, int offset)
         {
-            CreationDateTime = SMBHelper.ReadSMBDateTime(buffer, offset + 0);
-            LastAccessDateTime = SMBHelper.ReadSMBDateTime(buffer, offset + 4);
-            LastWriteDateTime = SMBHelper.ReadSMBDateTime(buffer, offset + 8);
+            CreationDateTime = SMB1Helper.ReadSMBDateTime(buffer, offset + 0);
+            LastAccessDateTime = SMB1Helper.ReadSMBDateTime(buffer, offset + 4);
+            LastWriteDateTime = SMB1Helper.ReadSMBDateTime(buffer, offset + 8);
             Reserved = ByteReader.ReadBytes(buffer, offset + 12, 10);
         }
 
         public override byte[] GetBytes()
         {
             byte[] buffer = new byte[Length];
-            SMBHelper.WriteSMBDateTime(buffer, 0, CreationDateTime);
-            SMBHelper.WriteSMBDateTime(buffer, 4, LastAccessDateTime);
-            SMBHelper.WriteSMBDateTime(buffer, 8, LastWriteDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, 0, CreationDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, 4, LastAccessDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, 8, LastWriteDateTime);
             ByteWriter.WriteBytes(buffer, 12, Reserved);
             return buffer;
         }

@@ -38,14 +38,14 @@ namespace SMBLibrary.SMB1
             {
                 ResumeKey = LittleEndianReader.ReadUInt32(buffer, ref offset);
             }
-            CreationDateTime = SMBHelper.ReadSMBDateTime(buffer, ref offset);
-            LastAccessDateTime = SMBHelper.ReadSMBDateTime(buffer, ref offset);
-            LastWriteDateTime = SMBHelper.ReadSMBDateTime(buffer, ref offset);
+            CreationDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
+            LastAccessDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
+            LastWriteDateTime = SMB1Helper.ReadSMBDateTime(buffer, ref offset);
             FileDataSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             AllocationSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             Attributes = (FileAttributes)LittleEndianReader.ReadUInt16(buffer, ref offset);
             byte fileNameLength = ByteReader.ReadByte(buffer, ref offset);
-            FileName = SMBHelper.ReadSMBString(buffer, ref offset, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(buffer, ref offset, isUnicode);
         }
 
         public override void WriteBytes(byte[] buffer, ref int offset, bool isUnicode)
@@ -56,14 +56,14 @@ namespace SMBLibrary.SMB1
             {
                 LittleEndianWriter.WriteUInt32(buffer, ref offset, ResumeKey);
             }
-            SMBHelper.WriteSMBDateTime(buffer, ref offset, CreationDateTime);
-            SMBHelper.WriteSMBDateTime(buffer, ref offset, LastAccessDateTime);
-            SMBHelper.WriteSMBDateTime(buffer, ref offset, LastWriteDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, ref offset, CreationDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, ref offset, LastAccessDateTime);
+            SMB1Helper.WriteSMBDateTime(buffer, ref offset, LastWriteDateTime);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, FileDataSize);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, AllocationSize);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)Attributes);
             ByteWriter.WriteByte(buffer, ref offset, fileNameLength);
-            SMBHelper.WriteSMBString(buffer, ref offset, isUnicode, FileName);
+            SMB1Helper.WriteSMBString(buffer, ref offset, isUnicode, FileName);
         }
 
         public override int GetLength(bool isUnicode)

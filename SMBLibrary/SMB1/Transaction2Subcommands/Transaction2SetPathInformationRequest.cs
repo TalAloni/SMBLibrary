@@ -31,7 +31,7 @@ namespace SMBLibrary.SMB1
         {
             InformationLevel = (SetInformationLevel)LittleEndianConverter.ToUInt16(parameters, 0);
             Reserved = LittleEndianConverter.ToUInt32(parameters, 2);
-            FileName = SMBHelper.ReadSMBString(parameters, 6, isUnicode);
+            FileName = SMB1Helper.ReadSMBString(parameters, 6, isUnicode);
         }
 
         public override byte[] GetSetup()
@@ -54,7 +54,7 @@ namespace SMBLibrary.SMB1
             byte[] parameters = new byte[length];
             LittleEndianWriter.WriteUInt16(parameters, 0, (ushort)InformationLevel);
             LittleEndianWriter.WriteUInt32(parameters, 2, Reserved);
-            SMBHelper.WriteSMBString(parameters, 6, isUnicode, FileName);
+            SMB1Helper.WriteSMBString(parameters, 6, isUnicode, FileName);
             return parameters;
         }
 

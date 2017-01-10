@@ -32,7 +32,7 @@ namespace SMBLibrary.SMB1
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
             FileIndex = LittleEndianReader.ReadUInt32(buffer, ref offset);
             uint fileNameLength = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            FileName = SMBHelper.ReadFixedLengthString(buffer, ref offset, isUnicode, (int)fileNameLength);
+            FileName = SMB1Helper.ReadFixedLengthString(buffer, ref offset, isUnicode, (int)fileNameLength);
         }
 
         public override void WriteBytes(byte[] buffer, ref int offset, bool isUnicode)
@@ -42,7 +42,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt32(buffer, ref offset, NextEntryOffset);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, FileIndex);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, fileNameLength);
-            SMBHelper.WriteSMBString(buffer, ref offset, isUnicode, FileName);
+            SMB1Helper.WriteSMBString(buffer, ref offset, isUnicode, FileName);
         }
 
         public override int GetLength(bool isUnicode)

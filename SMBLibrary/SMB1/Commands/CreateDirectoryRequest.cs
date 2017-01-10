@@ -36,7 +36,7 @@ namespace SMBLibrary.SMB1
             {
                 throw new InvalidRequestException("Unsupported Buffer Format");
             }
-            DirectoryName = SMBHelper.ReadSMBString(this.SMBData, 1, isUnicode);
+            DirectoryName = SMB1Helper.ReadSMBString(this.SMBData, 1, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -52,7 +52,7 @@ namespace SMBLibrary.SMB1
             }
             this.SMBData = new byte[1 + length];
             ByteWriter.WriteByte(this.SMBData, 0, BufferFormat);
-            SMBHelper.WriteSMBString(this.SMBData, 1, isUnicode, DirectoryName);
+            SMB1Helper.WriteSMBString(this.SMBData, 1, isUnicode, DirectoryName);
 
             return base.GetBytes(isUnicode);
         }
