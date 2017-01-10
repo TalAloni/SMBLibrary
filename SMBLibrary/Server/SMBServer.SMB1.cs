@@ -77,13 +77,13 @@ namespace SMBLibrary.Server
             {
                 SessionSetupAndXRequest request = (SessionSetupAndXRequest)command;
                 state.MaxBufferSize = request.MaxBufferSize;
-                return NegotiateHelper.GetSessionSetupResponse(header, request, m_users, state);
+                return SessionSetupHelper.GetSessionSetupResponse(header, request, m_users, state);
             }
             else if (command is SessionSetupAndXRequestExtended)
             {
                 SessionSetupAndXRequestExtended request = (SessionSetupAndXRequestExtended)command;
                 state.MaxBufferSize = request.MaxBufferSize;
-                return NegotiateHelper.GetSessionSetupResponseExtended(header, request, m_users, state);
+                return SessionSetupHelper.GetSessionSetupResponseExtended(header, request, m_users, state);
             }
             else if (command is EchoRequest)
             {

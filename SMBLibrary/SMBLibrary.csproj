@@ -127,6 +127,7 @@
     <Compile Include="Server\SMB1\OpenAndXHelper.cs" />
     <Compile Include="Server\SMB1\ReadWriteResponseHelper.cs" />
     <Compile Include="Server\SMB1\ServerResponseHelper.cs" />
+    <Compile Include="Server\SMB1\SessionSetupHelper.cs" />
     <Compile Include="Server\SMB1\Transaction2SubcommandHelper.cs" />
     <Compile Include="Server\SMB1\TransactionHelper.cs" />
     <Compile Include="Server\SMB1\TransactionSubcommandHelper.cs" />
