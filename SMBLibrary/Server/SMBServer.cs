@@ -200,14 +200,14 @@ namespace SMBLibrary.Server
             }
             else if (packet is SessionMessagePacket)
             {
-                SMBMessage message = null;
+                SMB1Message message = null;
 #if DEBUG
-                message = SMBMessage.GetSMBMessage(packet.Trailer);
+                message = SMB1Message.GetSMBMessage(packet.Trailer);
                 System.Diagnostics.Debug.Print("[{0}] Message Received: {1} Commands, First Command: {2}, Packet length: {3}", DateTime.Now.ToString("HH:mm:ss:ffff"), message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
 #else
                 try
                 {
-                    message = SMBMessage.GetSMBMessage(packet.Trailer);
+                    message = SMB1Message.GetSMBMessage(packet.Trailer);
                 }
                 catch (Exception)
                 {
@@ -225,9 +225,9 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessMessage(SMBMessage message, StateObject state)
+        public void ProcessMessage(SMB1Message message, StateObject state)
         {
-            SMBMessage reply = new SMBMessage();
+            SMB1Message reply = new SMB1Message();
             PrepareResponseHeader(reply, message);
             List<SMB1Command> sendQueue = new List<SMB1Command>();
 
@@ -250,7 +250,7 @@ namespace SMBLibrary.Server
 
                 foreach (SMB1Command command in sendQueue)
                 {
-                    SMBMessage secondaryReply = new SMBMessage();
+                    SMB1Message secondaryReply = new SMB1Message();
                     secondaryReply.Header = reply.Header;
                     secondaryReply.Commands.Add(command);
                     TrySendMessage(state, secondaryReply);
@@ -524,7 +524,7 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName);
         }
 
-        public static void TrySendMessage(StateObject state, SMBMessage reply)
+        public static void TrySendMessage(StateObject state, SMB1Message reply)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = reply.GetBytes();
@@ -547,7 +547,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        private static void PrepareResponseHeader(SMBMessage response, SMBMessage request)
+        private static void PrepareResponseHeader(SMB1Message response, SMB1Message request)
         {
             response.Header.Status = NTStatus.STATUS_SUCCESS;
             response.Header.Flags = HeaderFlags.CaseInsensitive | HeaderFlags.CanonicalizedPaths | HeaderFlags.Reply;

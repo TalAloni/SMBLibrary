@@ -276,7 +276,7 @@
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactSubcommand.cs" />
     <Compile Include="SMB1\SMB1Header.cs" />
     <Compile Include="SMB1\SMB1Helper.cs" />
-    <Compile Include="SMB1\SMBMessage.cs" />
+    <Compile Include="SMB1\SMB1Message.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Enums\ExtendedAttributeFlag.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Enums\FindFlags.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Enums\FindInformationLevel.cs" />

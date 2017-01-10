@@ -16,17 +16,17 @@ namespace SMBLibrary.SMB1
     /// Each message has a single header and either a single command or multiple batched (AndX) commands.
     /// Multiple command requests or responses can be sent in a single message.
     /// </summary>
-    public class SMBMessage
+    public class SMB1Message
     {
         public SMB1Header Header;
         public List<SMB1Command> Commands = new List<SMB1Command>();
 
-        public SMBMessage()
+        public SMB1Message()
         {
             Header = new SMB1Header();
         }
 
-        public SMBMessage(byte[] buffer)
+        public SMB1Message(byte[] buffer)
         {
             Header = new SMB1Header(buffer);
             SMB1Command command = SMB1Command.ReadCommand(buffer, SMB1Header.Length, Header.Command, Header);
@@ -110,13 +110,13 @@ namespace SMBLibrary.SMB1
             }
         }
 
-        public static SMBMessage GetSMBMessage(byte[] buffer)
+        public static SMB1Message GetSMBMessage(byte[] buffer)
         {
             if (!IsValidSMBMessage(buffer))
             {
                 throw new InvalidRequestException("Invalid SMB message signature");;
             }
-            return new SMBMessage(buffer);
+            return new SMB1Message(buffer);
         }
     }
 }

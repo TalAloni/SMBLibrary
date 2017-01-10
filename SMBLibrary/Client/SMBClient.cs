@@ -40,12 +40,12 @@ namespace SMBLibrary.Client
 
         public static void TrySendMessage(Socket serverSocket, SMB1Command request)
         {
-            SMBMessage message = new SMBMessage();
+            SMB1Message message = new SMB1Message();
             message.Commands.Add(request);
             TrySendMessage(serverSocket, message);
         }
 
-        public static void TrySendMessage(Socket serverSocket, SMBMessage message)
+        public static void TrySendMessage(Socket serverSocket, SMB1Message message)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = message.GetBytes();
