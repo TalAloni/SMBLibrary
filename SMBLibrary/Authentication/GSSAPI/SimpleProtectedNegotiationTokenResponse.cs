@@ -24,11 +24,11 @@ namespace SMBLibrary.Authentication
         public NegState? NegState; // Optional
         public byte[] SupportedMechanism; // Optional
         public byte[] ResponseToken; // Optional
-        // mechListMIC - Optional, Unused
+        public byte[] MechanismListMIC; // Optional
     }
 
     /// <summary>
-    /// RFC 4178 - negTokenInit
+    /// RFC 4178 - negTokenResp
     /// </summary>
     public class SimpleProtectedNegotiationTokenResponse : SimpleProtectedNegotiationToken
     {
@@ -78,9 +78,13 @@ namespace SMBLibrary.Authentication
                     {
                         entry.ResponseToken = ReadResponseToken(buffer, ref offset);
                     }
+                    else if (tag == MechanismListMICTag)
+                    {
+                        entry.MechanismListMIC = ReadMechanismListMIC(buffer, ref offset);
+                    }
                     else
                     {
-                        throw new InvalidDataException();
+                        throw new InvalidDataException("Invalid negTokenResp structure");
                     }
                 }
                 Tokens.Add(entry);
@@ -118,6 +122,10 @@ namespace SMBLibrary.Authentication
                 {
                     WriteResponseToken(buffer, ref offset, token.ResponseToken);
                 }
+                if (token.MechanismListMIC != null)
+                {
+                    WriteMechanismListMIC(buffer, ref offset, token.MechanismListMIC);
+                }
             }
             return buffer;
         }
@@ -147,6 +155,18 @@ namespace SMBLibrary.Authentication
         }
 
         private static byte[] ReadResponseToken(byte[] buffer, ref int offset)
+        {
+            int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
+            byte tag = ByteReader.ReadByte(buffer, ref offset);
+            if (tag != (byte)DerEncodingTag.ByteArray)
+            {
+                throw new InvalidDataException();
+            }
+            int length = DerEncodingHelper.ReadLength(buffer, ref offset);
+            return ByteReader.ReadBytes(buffer, ref offset, length);
+        }
+
+        private static byte[] ReadMechanismListMIC(byte[] buffer, ref int offset)
         {
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
             byte tag = ByteReader.ReadByte(buffer, ref offset);
@@ -210,6 +230,16 @@ namespace SMBLibrary.Authentication
             ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ByteArray);
             DerEncodingHelper.WriteLength(buffer, ref offset, responseToken.Length);
             ByteWriter.WriteBytes(buffer, ref offset, responseToken);
+        }
+
+        private static void WriteMechanismListMIC(byte[] buffer, ref int offset, byte[] mechanismListMIC)
+        {
+            int mechanismListMICLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismListMIC.Length);
+            ByteWriter.WriteByte(buffer, ref offset, MechanismListMICTag);
+            DerEncodingHelper.WriteLength(buffer, ref offset, 1 + mechanismListMICLengthFieldSize + mechanismListMIC.Length);
+            ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ByteArray);
+            DerEncodingHelper.WriteLength(buffer, ref offset, mechanismListMIC.Length);
+            ByteWriter.WriteBytes(buffer, ref offset, mechanismListMIC);
         }
     }
 }

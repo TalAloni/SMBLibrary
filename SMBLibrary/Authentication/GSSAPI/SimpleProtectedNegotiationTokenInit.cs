@@ -14,9 +14,9 @@ namespace SMBLibrary.Authentication
     public class TokenInitEntry
     {
         public List<byte[]> MechanismTypeList = new List<byte[]>(); // Optional
-        // reqFlags - Optional, Unused
+        // reqFlags - Optional, RECOMMENDED to be left out
         public byte[] MechanismToken = new byte[0]; // Optional
-        // mechListMIC - Optional, Unused
+        public byte[] MechanismListMIC; // Optional
     }
 
     /// <summary>
@@ -58,13 +58,21 @@ namespace SMBLibrary.Authentication
                     {
                         entry.MechanismTypeList = ReadMechanismTypeList(buffer, ref offset);
                     }
+                    else if (tag == RequiredFlagsTag)
+                    {
+                        throw new NotImplementedException("negTokenInit.ReqFlags is not implemented");
+                    }
                     else if (tag == MechanismTokenTag)
                     {
                         entry.MechanismToken = ReadMechanismToken(buffer, ref offset);
                     }
+                    else if (tag == MechanismListMICTag)
+                    {
+                        entry.MechanismListMIC = ReadMechanismListMIC(buffer, ref offset);
+                    }
                     else
                     {
-                        throw new InvalidDataException();
+                        throw new InvalidDataException("Invalid negTokenInit structure");
                     }
                 }
                 Tokens.Add(entry);
@@ -96,7 +104,11 @@ namespace SMBLibrary.Authentication
                 }
                 if (token.MechanismToken != null)
                 {
-                    WriteMechanismToken(buffer, ref offset, token.MechanismToken);   
+                    WriteMechanismToken(buffer, ref offset, token.MechanismToken);
+                }
+                if (token.MechanismListMIC != null)
+                {
+                    WriteMechanismListMIC(buffer, ref offset, token.MechanismListMIC);
                 }
             }
             return buffer;
@@ -161,6 +173,18 @@ namespace SMBLibrary.Authentication
             return token;
         }
 
+        private static byte[] ReadMechanismListMIC(byte[] buffer, ref int offset)
+        {
+            int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
+            byte tag = ByteReader.ReadByte(buffer, ref offset);
+            if (tag != (byte)DerEncodingTag.ByteArray)
+            {
+                throw new InvalidDataException();
+            }
+            int length = DerEncodingHelper.ReadLength(buffer, ref offset);
+            return ByteReader.ReadBytes(buffer, ref offset, length);
+        }
+
         private static int GetSequenceLength(List<byte[]> mechanismTypeList)
         {
             int sequenceLength = 0;
@@ -199,6 +223,16 @@ namespace SMBLibrary.Authentication
             ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ByteArray);
             DerEncodingHelper.WriteLength(buffer, ref offset, mechanismToken.Length);
             ByteWriter.WriteBytes(buffer, ref offset, mechanismToken);
-        }   
+        }
+
+        private static void WriteMechanismListMIC(byte[] buffer, ref int offset, byte[] mechanismListMIC)
+        {
+            int mechanismListMICLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismListMIC.Length);
+            ByteWriter.WriteByte(buffer, ref offset, MechanismListMICTag);
+            DerEncodingHelper.WriteLength(buffer, ref offset, 1 + mechanismListMICLengthFieldSize + mechanismListMIC.Length);
+            ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ByteArray);
+            DerEncodingHelper.WriteLength(buffer, ref offset, mechanismListMIC.Length);
+            ByteWriter.WriteBytes(buffer, ref offset, mechanismListMIC);
+        }
     }
 }
