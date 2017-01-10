@@ -22,3 +22,9 @@ Revision History:
 1.0.7 - Improved connection buffer implementation.
         Improved compliance with MS-SMB when NTTransactIOCTLRequest.IsFsctl is set to false.
         Report STATUS_SHARING_VIOLATION instead of STATUS_FILE_LOCK_CONFLICT on IOException when deleting a file.
+
+1.0.8 - Bugfix: Honor FILE_DELETE_ON_CLOSE flag.
+        Bugfix: SMB_COM_SESSION_SETUP_ANDX Extended Request: NativeOS and NativeLanMan were not properly read.
+        Improved Transaction2Subcommands implementation.
+        Added support for GSSAPI SPNEGO tokens.
+        API: Added SMBServer.OnLogEntry event.
