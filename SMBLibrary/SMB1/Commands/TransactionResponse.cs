@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_TRANSACTION Response
     /// </summary>
-    public class TransactionResponse : SMBCommand
+    public class TransactionResponse : SMB1Command
     {
         public const int FixedSMBParametersLength = 20;
         // Parameters:

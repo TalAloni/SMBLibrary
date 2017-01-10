@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_DELETE_DIRECTORY Request
     /// </summary>
-    public class DeleteDirectoryRequest : SMBCommand
+    public class DeleteDirectoryRequest : SMB1Command
     {
         public const int SupportedBufferFormat = 0x04;
         // Data:

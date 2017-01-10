@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_SET_INFORMATION Response
     /// </summary>
-    public class SetInformationResponse : SMBCommand
+    public class SetInformationResponse : SMB1Command
     {
         public SetInformationResponse() : base()
         {

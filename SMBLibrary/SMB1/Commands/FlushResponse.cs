@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_FLUSH Response
     /// </summary>
-    public class FlushResponse : SMBCommand
+    public class FlushResponse : SMB1Command
     {
         public FlushResponse() : base()
         {

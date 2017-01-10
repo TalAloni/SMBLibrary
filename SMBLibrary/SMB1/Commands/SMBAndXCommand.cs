@@ -11,7 +11,7 @@ using Utilities;
 
 namespace SMBLibrary.SMB1
 {
-    public abstract class SMBAndXCommand : SMBCommand
+    public abstract class SMBAndXCommand : SMB1Command
     {
         public CommandName AndXCommand;
         public byte AndXReserved;

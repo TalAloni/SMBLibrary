@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_SET_INFORMATION Request
     /// </summary>
-    public class SetInformationRequest : SMBCommand
+    public class SetInformationRequest : SMB1Command
     {
         public const int ParametersLength = 16;
         public const int SupportedBufferFormat = 0x04;

@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_CHECK_DIRECTORY Response
     /// </summary>
-    public class CheckDirectoryResponse : SMBCommand
+    public class CheckDirectoryResponse : SMB1Command
     {
         public CheckDirectoryResponse() : base()
         {

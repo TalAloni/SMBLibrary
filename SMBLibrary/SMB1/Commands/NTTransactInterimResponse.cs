@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_NT_TRANSACT Interim Response
     /// </summary>
-    public class NTTransactInterimResponse : SMBCommand
+    public class NTTransactInterimResponse : SMB1Command
     {
         public const int ParametersLength = 0;
 

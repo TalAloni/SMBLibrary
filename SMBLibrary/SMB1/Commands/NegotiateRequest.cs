@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_NEGOTIATE Request
     /// </summary>
-    public class NegotiateRequest : SMBCommand
+    public class NegotiateRequest : SMB1Command
     {
         public const int SupportedBufferFormat = 0x02;
         // Data:

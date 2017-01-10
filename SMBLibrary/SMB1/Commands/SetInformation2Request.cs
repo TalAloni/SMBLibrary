@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_SET_INFORMATION2 Request
     /// </summary>
-    public class SetInformation2Request : SMBCommand
+    public class SetInformation2Request : SMB1Command
     {
         public const int ParametersLength = 14;
         // Parameters:

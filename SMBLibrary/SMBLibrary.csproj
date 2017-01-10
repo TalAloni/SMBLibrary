@@ -217,8 +217,8 @@
     <Compile Include="SMB1\Commands\SetInformation2Response.cs" />
     <Compile Include="SMB1\Commands\SetInformationRequest.cs" />
     <Compile Include="SMB1\Commands\SetInformationResponse.cs" />
+    <Compile Include="SMB1\Commands\SMB1Command.cs" />
     <Compile Include="SMB1\Commands\SMBAndXCommand.cs" />
-    <Compile Include="SMB1\Commands\SMBCommand.cs" />
     <Compile Include="SMB1\Commands\Transaction2Request.cs" />
     <Compile Include="SMB1\Commands\Transaction2Response.cs" />
     <Compile Include="SMB1\Commands\Transaction2SecondaryRequest.cs" />

@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_TREE_DISCONNECT Response
     /// </summary>
-    public class TreeDisconnectResponse : SMBCommand
+    public class TreeDisconnectResponse : SMB1Command
     {
         public TreeDisconnectResponse() : base()
         {

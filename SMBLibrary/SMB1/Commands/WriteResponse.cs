@@ -10,7 +10,7 @@ namespace SMBLibrary.SMB1
     /// This command is obsolete.
     /// Windows NT4 SP6 will send this command with empty data for some reason.
     /// </summary>
-    public class WriteResponse : SMBCommand
+    public class WriteResponse : SMB1Command
     {
         public const int ParametersLength = 2;
         // Parameters:

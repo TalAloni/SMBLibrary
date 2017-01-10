@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_WRITE_RAW Final Response
     /// </summary>
-    public class WriteRawFinalResponse : SMBCommand
+    public class WriteRawFinalResponse : SMB1Command
     {
         public ushort ParametersLength = 2;
         // Parameters;

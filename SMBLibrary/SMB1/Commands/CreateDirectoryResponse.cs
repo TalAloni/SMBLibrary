@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// This command is obsolete.
     /// This command is used by Windows NT4 SP6.
     /// </summary>
-    public class CreateDirectoryResponse : SMBCommand
+    public class CreateDirectoryResponse : SMB1Command
     {
         public CreateDirectoryResponse() : base()
         {

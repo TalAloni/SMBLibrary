@@ -13,7 +13,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_DELETE_DIRECTORY Response
     /// </summary>
-    public class DeleteDirectoryResponse : SMBCommand
+    public class DeleteDirectoryResponse : SMB1Command
     {
         public DeleteDirectoryResponse() : base()
         {

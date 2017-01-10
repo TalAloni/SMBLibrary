@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_ECHO
     /// </summary>
-    public class EchoResponse : SMBCommand
+    public class EchoResponse : SMB1Command
     {
         public const int ParametersLength = 2;
         // Parameters

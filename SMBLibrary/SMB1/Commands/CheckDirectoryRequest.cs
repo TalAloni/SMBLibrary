@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_CHECK_DIRECTORY Request
     /// </summary>
-    public class CheckDirectoryRequest : SMBCommand
+    public class CheckDirectoryRequest : SMB1Command
     {
         public const byte SupportedBufferFormat = 0x04;
         // Data:

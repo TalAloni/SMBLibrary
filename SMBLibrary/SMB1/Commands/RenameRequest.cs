@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_RENAME Request
     /// </summary>
-    public class RenameRequest : SMBCommand
+    public class RenameRequest : SMB1Command
     {
         public const int SupportedBufferFormat = 0x04;
         public const int ParametersLength = 2;

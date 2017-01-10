@@ -229,11 +229,11 @@ namespace SMBLibrary.Server
         {
             SMBMessage reply = new SMBMessage();
             PrepareResponseHeader(reply, message);
-            List<SMBCommand> sendQueue = new List<SMBCommand>();
+            List<SMB1Command> sendQueue = new List<SMB1Command>();
 
-            foreach (SMBCommand command in message.Commands)
+            foreach (SMB1Command command in message.Commands)
             {
-                SMBCommand response = ProcessCommand(reply.Header, command, state, sendQueue);
+                SMB1Command response = ProcessCommand(reply.Header, command, state, sendQueue);
                 if (response != null)
                 {
                     reply.Commands.Add(response);
@@ -248,7 +248,7 @@ namespace SMBLibrary.Server
             {
                 TrySendMessage(state, reply);
 
-                foreach (SMBCommand command in sendQueue)
+                foreach (SMB1Command command in sendQueue)
                 {
                     SMBMessage secondaryReply = new SMBMessage();
                     secondaryReply.Header = reply.Header;
@@ -261,7 +261,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// May return null
         /// </summary>
-        public SMBCommand ProcessCommand(SMBHeader header, SMBCommand command, StateObject state, List<SMBCommand> sendQueue)
+        public SMB1Command ProcessCommand(SMBHeader header, SMB1Command command, StateObject state, List<SMB1Command> sendQueue)
         {
             if (command is NegotiateRequest)
             {

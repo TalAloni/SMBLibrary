@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_CLOSE Request
     /// </summary>
-    public class CloseRequest : SMBCommand
+    public class CloseRequest : SMB1Command
     {
         public const int ParametersLength = 6;
         // Parameters:

@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_NEGOTIATE Response, NT LAN Manager dialect, Extended Security response
     /// </summary>
-    public class NegotiateResponseNTLMExtended : SMBCommand
+    public class NegotiateResponseNTLMExtended : SMB1Command
     {
         public const int ParametersLength = 34;
         // Parameters:

@@ -11,18 +11,18 @@ using Utilities;
 
 namespace SMBLibrary.SMB1
 {
-    public abstract class SMBCommand
+    public abstract class SMB1Command
     {
         public byte[] SMBParameters; // SMB_Parameters
         public byte[] SMBData; // SMB_Data
 
-        public SMBCommand()
+        public SMB1Command()
         {
             SMBParameters = new byte[0];
             SMBData = new byte[0];
         }
 
-        public SMBCommand(byte[] buffer, int offset, bool isUnicode)
+        public SMB1Command(byte[] buffer, int offset, bool isUnicode)
         {
             byte wordCount = ByteReader.ReadByte(buffer, ref offset);
             SMBParameters = ByteReader.ReadBytes(buffer, ref offset, wordCount * 2);
@@ -63,7 +63,7 @@ namespace SMBLibrary.SMB1
             return buffer;
         }
 
-        public static SMBCommand ReadCommand(byte[] buffer, int offset, CommandName commandName, SMBHeader header)
+        public static SMB1Command ReadCommand(byte[] buffer, int offset, CommandName commandName, SMBHeader header)
         {
             if ((header.Flags & HeaderFlags.Reply) > 0)
             {
@@ -75,7 +75,7 @@ namespace SMBLibrary.SMB1
             }
         }
 
-        public static SMBCommand ReadCommandRequest(byte[] buffer, int offset, CommandName commandName, bool isUnicode)
+        public static SMB1Command ReadCommandRequest(byte[] buffer, int offset, CommandName commandName, bool isUnicode)
         {
             switch (commandName)
             {
@@ -160,7 +160,7 @@ namespace SMBLibrary.SMB1
             }
         }
 
-        public static SMBCommand ReadCommandResponse(byte[] buffer, int offset, CommandName commandName, bool isUnicode)
+        public static SMB1Command ReadCommandResponse(byte[] buffer, int offset, CommandName commandName, bool isUnicode)
         {
             byte wordCount = ByteReader.ReadByte(buffer, offset);
             switch (commandName)

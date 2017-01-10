@@ -17,7 +17,7 @@ namespace SMBLibrary.Server
 {
     public class ReadWriteResponseHelper
     {
-        internal static SMBCommand GetReadResponse(SMBHeader header, ReadRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetReadResponse(SMBHeader header, ReadRequest request, ISMBShare share, StateObject state)
         {
             byte[] data = PerformRead(header, share, request.FID, request.ReadOffsetInBytes, request.CountOfBytesToRead, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -31,7 +31,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMBCommand GetReadResponse(SMBHeader header, ReadAndXRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetReadResponse(SMBHeader header, ReadAndXRequest request, ISMBShare share, StateObject state)
         {
             uint maxCount = request.MaxCount;
             if ((share is FileSystemShare) && state.LargeRead)
@@ -134,7 +134,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMBCommand GetWriteResponse(SMBHeader header, WriteRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetWriteResponse(SMBHeader header, WriteRequest request, ISMBShare share, StateObject state)
         {
             ushort bytesWritten = (ushort)PerformWrite(header, share, request.FID, request.WriteOffsetInBytes, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -147,7 +147,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMBCommand GetWriteResponse(SMBHeader header, WriteAndXRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetWriteResponse(SMBHeader header, WriteAndXRequest request, ISMBShare share, StateObject state)
         {
             uint bytesWritten = PerformWrite(header, share, request.FID, request.Offset, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)

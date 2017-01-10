@@ -19,7 +19,7 @@ namespace SMBLibrary.SMB1
     public class SMBMessage
     {
         public SMBHeader Header;
-        public List<SMBCommand> Commands = new List<SMBCommand>();
+        public List<SMB1Command> Commands = new List<SMB1Command>();
 
         public SMBMessage()
         {
@@ -29,7 +29,7 @@ namespace SMBLibrary.SMB1
         public SMBMessage(byte[] buffer)
         {
             Header = new SMBHeader(buffer);
-            SMBCommand command = SMBCommand.ReadCommand(buffer, SMBHeader.Length, Header.Command, Header);
+            SMB1Command command = SMB1Command.ReadCommand(buffer, SMBHeader.Length, Header.Command, Header);
             Commands.Add(command);
             while(command is SMBAndXCommand)
             {
@@ -38,7 +38,7 @@ namespace SMBLibrary.SMB1
                 {
                     break;
                 }
-                command = SMBCommand.ReadCommand(buffer, andXCommand.AndXOffset, andXCommand.AndXCommand, Header);
+                command = SMB1Command.ReadCommand(buffer, andXCommand.AndXOffset, andXCommand.AndXCommand, Header);
                 Commands.Add(command);
             }
         }
@@ -58,7 +58,7 @@ namespace SMBLibrary.SMB1
                 }
             }
 
-            SMBCommand lastCommand = Commands[Commands.Count - 1];
+            SMB1Command lastCommand = Commands[Commands.Count - 1];
             if (lastCommand is SMBAndXCommand)
             {
                 ((SMBAndXCommand)lastCommand).AndXCommand = CommandName.SMB_COM_NO_ANDX_COMMAND;

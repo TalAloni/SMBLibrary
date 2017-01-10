@@ -16,7 +16,7 @@ namespace SMBLibrary.Server
 {
     public class OpenAndXHelper
     {
-        internal static SMBCommand GetOpenAndXResponse(SMBHeader header, OpenAndXRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetOpenAndXResponse(SMBHeader header, OpenAndXRequest request, ISMBShare share, StateObject state)
         {
             bool isExtended = (request.Flags & OpenFlags.SMB_OPEN_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;

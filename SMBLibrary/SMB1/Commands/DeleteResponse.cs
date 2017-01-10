@@ -13,7 +13,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_DELETE Response
     /// </summary>
-    public class DeleteResponse : SMBCommand
+    public class DeleteResponse : SMB1Command
     {
         public DeleteResponse() : base()
         {

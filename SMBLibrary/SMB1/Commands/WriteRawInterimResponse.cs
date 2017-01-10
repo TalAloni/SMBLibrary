@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_WRITE_RAW Interim Response
     /// </summary>
-    public class WriteRawInterimResponse : SMBCommand
+    public class WriteRawInterimResponse : SMB1Command
     {
         public ushort ParametersLength = 2;
         // Parameters;

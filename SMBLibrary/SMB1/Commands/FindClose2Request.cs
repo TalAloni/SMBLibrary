@@ -8,7 +8,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_FIND_CLOSE2 Request
     /// </summary>
-    public class FindClose2Request : SMBCommand
+    public class FindClose2Request : SMB1Command
     {
         public const int ParameterCount = 2;
         // Parameters:

@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// This command is obsolete.
     /// Windows NT4 SP6 will send this command with empty data for some reason.
     /// </summary>
-    public class WriteRequest : SMBCommand
+    public class WriteRequest : SMB1Command
     {
         public const int ParametersLength = 8;
         public const int SupportedBufferFormat = 0x01;

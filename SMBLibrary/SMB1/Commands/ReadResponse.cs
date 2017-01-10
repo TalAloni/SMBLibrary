@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_READ Response
     /// </summary>
-    public class ReadResponse : SMBCommand
+    public class ReadResponse : SMB1Command
     {
         public const int ParametersLength = 10;
         public const int SupportedBufferFormat = 0x01;

@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// This command is obsolete.
     /// This command is used by Windows NT4 SP6.
     /// </summary>
-    public class CreateDirectoryRequest : SMBCommand
+    public class CreateDirectoryRequest : SMB1Command
     {
         public const byte SupportedBufferFormat = 0x04;
         // Data:

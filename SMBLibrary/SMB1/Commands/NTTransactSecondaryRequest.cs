@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_NT_TRANSACT_SECONDARY Request
     /// </summary>
-    public class NTTransactSecondaryRequest : SMBCommand
+    public class NTTransactSecondaryRequest : SMB1Command
     {
         public const int SMBParametersLength = 36;
         // Parameters:

@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_NEGOTIATE Response
     /// </summary>
-    public class NegotiateResponseNotSupported : SMBCommand
+    public class NegotiateResponseNotSupported : SMB1Command
     {
         public const int ParametersLength = 2;
         public const ushort DialectsNotSupported = 0xFFFF;

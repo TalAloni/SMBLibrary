@@ -21,7 +21,7 @@ namespace SMBLibrary.Server
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.
         /// The server MUST respond to the transaction request as a whole.
         /// </summary>
-        internal static SMBCommand GetTransactionResponse(SMBHeader header, TransactionRequest request, ISMBShare share, StateObject state, List<SMBCommand> sendQueue)
+        internal static SMB1Command GetTransactionResponse(SMBHeader header, TransactionRequest request, ISMBShare share, StateObject state, List<SMB1Command> sendQueue)
         {
             ProcessStateObject processState = state.ObtainProcessState(header.PID);
             processState.MaxDataCount = request.MaxDataCount;
@@ -58,7 +58,7 @@ namespace SMBLibrary.Server
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.
         /// The server MUST respond to the transaction request as a whole.
         /// </summary>
-        internal static SMBCommand GetTransactionResponse(SMBHeader header, TransactionSecondaryRequest request, ISMBShare share, StateObject state, List<SMBCommand> sendQueue)
+        internal static SMB1Command GetTransactionResponse(SMBHeader header, TransactionSecondaryRequest request, ISMBShare share, StateObject state, List<SMB1Command> sendQueue)
         {
             ProcessStateObject processState = state.GetProcessState(header.PID);
             if (processState == null)
@@ -89,7 +89,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMBCommand GetCompleteTransactionResponse(SMBHeader header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, StateObject state, List<SMBCommand> sendQueue)
+        internal static SMB1Command GetCompleteTransactionResponse(SMBHeader header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, StateObject state, List<SMB1Command> sendQueue)
         {
             TransactionSubcommand subcommand = TransactionSubcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
             TransactionSubcommand subcommandResponse = null;
@@ -162,7 +162,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMBCommand GetCompleteTransaction2Response(SMBHeader header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, StateObject state, List<SMBCommand> sendQueue)
+        internal static SMB1Command GetCompleteTransaction2Response(SMBHeader header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, StateObject state, List<SMB1Command> sendQueue)
         {
             Transaction2Subcommand subcommand = Transaction2Subcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
             Transaction2Subcommand subcommandResponse = null;
@@ -229,7 +229,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static void PrepareResponse(TransactionResponse response, byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize, List<SMBCommand> sendQueue)
+        internal static void PrepareResponse(TransactionResponse response, byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize, List<SMB1Command> sendQueue)
         {
             int responseSize = TransactionResponse.CalculateMessageSize(responseSetup.Length, responseParameters.Length, responseData.Length);
             if (responseSize <= maxBufferSize)

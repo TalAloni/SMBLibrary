@@ -13,7 +13,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_RENAME Response
     /// </summary>
-    public class RenameResponse : SMBCommand
+    public class RenameResponse : SMB1Command
     {
         public RenameResponse() : base()
         {

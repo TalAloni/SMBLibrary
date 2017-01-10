@@ -38,7 +38,7 @@ namespace SMBLibrary.Client
             TrySendMessage(serverSocket, request);
         }
 
-        public static void TrySendMessage(Socket serverSocket, SMBCommand request)
+        public static void TrySendMessage(Socket serverSocket, SMB1Command request)
         {
             SMBMessage message = new SMBMessage();
             message.Commands.Add(request);

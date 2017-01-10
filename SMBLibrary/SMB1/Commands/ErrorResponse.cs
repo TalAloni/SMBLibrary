@@ -15,7 +15,7 @@ namespace SMBLibrary.SMB1
     /// The Command trailer of an error response message.
     /// See [MS-CIFS]3.3.4.1.2 - Sending Any Error Response Message.
     /// </summary>
-    public class ErrorResponse : SMBCommand
+    public class ErrorResponse : SMB1Command
     {
         private CommandName m_commandName;
 

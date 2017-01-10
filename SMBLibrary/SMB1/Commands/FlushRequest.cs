@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_FLUSH Request
     /// </summary>
-    public class FlushRequest : SMBCommand
+    public class FlushRequest : SMB1Command
     {
         public const int ParametersLength = 2;
         // Parameters:

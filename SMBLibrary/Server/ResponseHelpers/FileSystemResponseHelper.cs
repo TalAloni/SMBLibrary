@@ -15,7 +15,7 @@ namespace SMBLibrary.Server
 {
     public class FileSystemResponseHelper
     {
-        internal static SMBCommand GetCreateDirectoryResponse(SMBHeader header, CreateDirectoryRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetCreateDirectoryResponse(SMBHeader header, CreateDirectoryRequest request, FileSystemShare share, StateObject state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -45,7 +45,7 @@ namespace SMBLibrary.Server
             return new CreateDirectoryResponse();
         }
 
-        internal static SMBCommand GetDeleteDirectoryResponse(SMBHeader header, DeleteDirectoryRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetDeleteDirectoryResponse(SMBHeader header, DeleteDirectoryRequest request, FileSystemShare share, StateObject state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -87,7 +87,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMBCommand GetCheckDirectoryResponse(SMBHeader header, CheckDirectoryRequest request, FileSystemShare share)
+        internal static SMB1Command GetCheckDirectoryResponse(SMBHeader header, CheckDirectoryRequest request, FileSystemShare share)
         {
             IFileSystem fileSystem = share.FileSystem;
             FileSystemEntry entry = fileSystem.GetEntry(request.DirectoryName);
@@ -100,7 +100,7 @@ namespace SMBLibrary.Server
             return new CheckDirectoryResponse();
         }
 
-        internal static SMBCommand GetDeleteResponse(SMBHeader header, DeleteRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetDeleteResponse(SMBHeader header, DeleteRequest request, FileSystemShare share, StateObject state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -143,7 +143,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMBCommand GetRenameResponse(SMBHeader header, RenameRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetRenameResponse(SMBHeader header, RenameRequest request, FileSystemShare share, StateObject state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -189,7 +189,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMBCommand GetQueryInformationResponse(SMBHeader header, QueryInformationRequest request, FileSystemShare share)
+        internal static SMB1Command GetQueryInformationResponse(SMBHeader header, QueryInformationRequest request, FileSystemShare share)
         {
             IFileSystem fileSystem = share.FileSystem;
             FileSystemEntry entry = fileSystem.GetEntry(request.FileName);
@@ -207,7 +207,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMBCommand GetSetInformationResponse(SMBHeader header, SetInformationRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetSetInformationResponse(SMBHeader header, SetInformationRequest request, FileSystemShare share, StateObject state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -249,7 +249,7 @@ namespace SMBLibrary.Server
             return new SetInformationResponse();
         }
 
-        internal static SMBCommand GetSetInformation2Response(SMBHeader header, SetInformation2Request request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetSetInformation2Response(SMBHeader header, SetInformation2Request request, FileSystemShare share, StateObject state)
         {
             string openedFilePath = state.GetOpenedFilePath(request.FID);
             if (openedFilePath == null)

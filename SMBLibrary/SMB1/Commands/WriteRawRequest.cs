@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_WRITE_RAW Request
     /// </summary>
-    public class WriteRawRequest : SMBCommand
+    public class WriteRawRequest : SMB1Command
     {
         public const int ParametersFixedLength = 24; // + 4 optional bytes
         // Parameters:

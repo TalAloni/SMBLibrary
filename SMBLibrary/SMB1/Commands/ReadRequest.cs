@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_READ Request
     /// </summary>
-    public class ReadRequest : SMBCommand
+    public class ReadRequest : SMB1Command
     {
         public const int ParametersLength = 10;
         // Parameters:

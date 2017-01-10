@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_TRANSACTION_SECONDARY Request
     /// </summary>
-    public class TransactionSecondaryRequest : SMBCommand
+    public class TransactionSecondaryRequest : SMB1Command
     {
         public const int SMBParametersLength = 16;
         // Parameters:

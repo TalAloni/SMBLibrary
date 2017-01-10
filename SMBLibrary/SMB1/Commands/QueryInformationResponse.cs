@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// This command is deprecated.
     /// This command is used by Windows NT4 SP6.
     /// </summary>
-    public class QueryInformationResponse : SMBCommand
+    public class QueryInformationResponse : SMB1Command
     {
         public const int ParameterLength = 20;
         // Parameters:

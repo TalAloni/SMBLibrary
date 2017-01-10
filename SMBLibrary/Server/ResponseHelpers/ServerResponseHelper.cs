@@ -15,7 +15,7 @@ namespace SMBLibrary.Server
 {
     public partial class ServerResponseHelper
     {
-        internal static SMBCommand GetCloseResponse(SMBHeader header, CloseRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetCloseResponse(SMBHeader header, CloseRequest request, ISMBShare share, StateObject state)
         {
             OpenedFileObject openedFile = state.GetOpenedFileObject(request.FID);
             if (openedFile == null)
@@ -40,13 +40,13 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMBCommand GetFindClose2Request(SMBHeader header, FindClose2Request request, StateObject state)
+        internal static SMB1Command GetFindClose2Request(SMBHeader header, FindClose2Request request, StateObject state)
         {
             state.ReleaseSearchHandle(request.SearchHandle);
             return new FindClose2Response();
         }
 
-        internal static EchoResponse GetEchoResponse(EchoRequest request, List<SMBCommand> sendQueue)
+        internal static EchoResponse GetEchoResponse(EchoRequest request, List<SMB1Command> sendQueue)
         {
             EchoResponse response = new EchoResponse();
             response.SequenceNumber = 0;

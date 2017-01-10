@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_COM_CLOSE Response
     /// </summary>
-    public class CloseResponse : SMBCommand
+    public class CloseResponse : SMB1Command
     {
         public CloseResponse() : base()
         {}

@@ -16,7 +16,7 @@ namespace SMBLibrary.Server
 {
     public class NTCreateHelper
     {
-        internal static SMBCommand GetNTCreateResponse(SMBHeader header, NTCreateAndXRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetNTCreateResponse(SMBHeader header, NTCreateAndXRequest request, ISMBShare share, StateObject state)
         {
             bool isExtended = (request.Flags & NTCreateFlags.NT_CREATE_REQUEST_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;
