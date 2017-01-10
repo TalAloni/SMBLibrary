@@ -6,22 +6,28 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
-using SMBLibrary.NetBios;
 using Utilities;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary.NetBios
 {
-    public class SMBConnectionReceiveBuffer
+    public class NBTConnectionReceiveBuffer
     {
         private byte[] m_buffer;
         private int m_readOffset = 0;
         private int m_bytesInBuffer = 0;
         private int? m_packetLength;
 
-        /// <param name="bufferLength">Must be large enough to hold the largest possible packet</param>
-        public SMBConnectionReceiveBuffer(int bufferLength)
+        public NBTConnectionReceiveBuffer() : this(SessionPacket.MaxSessionPacketLength)
         {
+        }
+
+        /// <param name="bufferLength">Must be large enough to hold the largest possible NBT packet</param>
+        public NBTConnectionReceiveBuffer(int bufferLength)
+        {
+            if (bufferLength < SessionPacket.MaxSessionPacketLength)
+            {
+                throw new ArgumentException("bufferLength must be large enough to hold the largest possible NBT packet");
+            }
             m_buffer = new byte[bufferLength];
         }
 
@@ -36,8 +42,6 @@ namespace SMBLibrary.Server
             {
                 if (!m_packetLength.HasValue)
                 {
-                    // The packet is either Direct TCP transport packet (which is an NBT Session Message
-                    // Packet) or an NBT packet.
                     byte flags = ByteReader.ReadByte(m_buffer, m_readOffset + 1);
                     int trailerLength = (flags & 0x01) << 16 | BigEndianConverter.ToUInt16(m_buffer, m_readOffset + 2);
                     m_packetLength = 4 + trailerLength;

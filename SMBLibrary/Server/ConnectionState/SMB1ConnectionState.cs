@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using SMBLibrary.NetBios;
 using Utilities;
 
 namespace SMBLibrary.Server
@@ -15,8 +16,7 @@ namespace SMBLibrary.Server
     public class SMB1ConnectionState
     {
         public Socket ClientSocket = null;
-        public const int ReceiveBufferSize = 131075; // Largest NBT Session Packet
-        public SMBConnectionReceiveBuffer ReceiveBuffer = new SMBConnectionReceiveBuffer(ReceiveBufferSize);
+        public NBTConnectionReceiveBuffer ReceiveBuffer = new NBTConnectionReceiveBuffer();
 
         public int MaxBufferSize;
         public bool LargeRead;

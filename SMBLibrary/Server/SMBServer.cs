@@ -100,6 +100,8 @@ namespace SMBLibrary.Server
             state.ClientSocket = clientSocket;
             try
             {
+                // Direct TCP transport packet is actually an NBT Session Message Packet,
+                // So in either case (NetBios over TCP or Direct TCP Transport) we will receive an NBT packet.
                 clientSocket.BeginReceive(state.ReceiveBuffer.Buffer, state.ReceiveBuffer.WriteOffset, state.ReceiveBuffer.AvailableLength, 0, ReceiveCallback, state);
             }
             catch (ObjectDisposedException)
@@ -144,7 +146,7 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            SMBConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
+            NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
             receiveBuffer.SetNumberOfBytesReceived(numberOfBytesReceived);
             ProcessConnectionBuffer(state);
 
@@ -167,7 +169,7 @@ namespace SMBLibrary.Server
         {
             Socket clientSocket = state.ClientSocket;
 
-            SMBConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
+            NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
             while (receiveBuffer.HasCompletePacket())
             {
                 SessionPacket packet = null;

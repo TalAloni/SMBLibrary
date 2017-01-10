@@ -69,6 +69,7 @@
     <Compile Include="NetBios\NameServicePackets\Structures\NodeStatistics.cs" />
     <Compile Include="NetBios\NameServicePackets\Structures\QuestionSection.cs" />
     <Compile Include="NetBios\NameServicePackets\Structures\ResourceRecord.cs" />
+    <Compile Include="NetBios\NBTConnectionReceiveBuffer.cs" />
     <Compile Include="NetBios\NetBiosUtils.cs" />
     <Compile Include="NetBios\SessionPackets\Enums\SessionPacketTypeName.cs" />
     <Compile Include="NetBios\SessionPackets\NegativeSessionResponsePacket.cs" />
@@ -129,7 +130,6 @@
     <Compile Include="Server\Shares\ISMBShare.cs" />
     <Compile Include="Server\Shares\NamedPipeShare.cs" />
     <Compile Include="Server\Shares\ShareCollection.cs" />
-    <Compile Include="Server\SMBConnectionReceiveBuffer.cs" />
     <Compile Include="Server\SMBServer.cs" />
     <Compile Include="Server\User.cs" />
     <Compile Include="Server\UserCollection.cs" />

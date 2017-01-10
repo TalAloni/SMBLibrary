@@ -16,6 +16,8 @@ namespace SMBLibrary.NetBios
     /// </summary>
     public abstract class SessionPacket
     {
+        public const int MaxSessionPacketLength = 131075;
+
         public SessionPacketTypeName Type;
         public byte Flags;
         public int Length; // 2 bytes + length extension bit
