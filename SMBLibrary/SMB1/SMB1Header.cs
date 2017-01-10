@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -114,6 +114,16 @@ namespace SMBLibrary.SMB1
             {
                 return (Flags2 & HeaderFlags2.Unicode) > 0;
             }
+        }
+
+        public static bool IsValidSMB1Header(byte[] buffer)
+        {
+            if (buffer.Length >= 4)
+            {
+                byte[] signature = ByteReader.ReadBytes(buffer, 0, 4);
+                return ByteUtils.AreByteArraysEqual(signature, ProtocolSignature);
+            }
+            return false;
         }
     }
 }

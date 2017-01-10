@@ -95,21 +95,11 @@ namespace SMBLibrary.SMB1
             return buffer;
         }
 
-        public static bool IsValidSMB1Message(byte[] buffer)
-        {
-            if (buffer.Length >= 4)
-            {
-                byte[] signature = ByteReader.ReadBytes(buffer, 0, 4);
-                return ByteUtils.AreByteArraysEqual(signature, SMB1Header.ProtocolSignature);
-            }
-            return false;
-        }
-
         public static SMB1Message GetSMB1Message(byte[] buffer)
         {
-            if (!IsValidSMB1Message(buffer))
+            if (!SMB1Header.IsValidSMB1Header(buffer))
             {
-                throw new InvalidRequestException("Invalid SMB message signature");;
+                throw new InvalidRequestException("Invalid SMB header signature");;
             }
             return new SMB1Message(buffer);
         }
