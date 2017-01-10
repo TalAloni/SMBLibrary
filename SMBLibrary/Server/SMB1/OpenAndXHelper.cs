@@ -104,12 +104,12 @@ namespace SMBLibrary.Server.SMB1
 
                     if ((request.FileAttrs & SMBFileAttributes.Directory) > 0)
                     {
-                        System.Diagnostics.Debug.Print("[{0}] OpenAndX: Creating directory '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
+                        state.LogToServer(Severity.Information, "OpenAndX: Creating directory '{0}'", path);
                         entry = fileSystem.CreateDirectory(path);
                     }
                     else
                     {
-                        System.Diagnostics.Debug.Print("[{0}] OpenAndX: Creating file '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
+                        state.LogToServer(Severity.Information, "OpenAndX: Creating file '{0}'", path);
                         entry = fileSystem.CreateFile(path);
                     }
                     openResult = OpenResult.NotExistedAndWasCreated;
@@ -121,7 +121,7 @@ namespace SMBLibrary.Server.SMB1
                 if (!entry.IsDirectory)
                 {
                     bool buffered = (request.AccessMode.CachedMode == CachedMode.CachingAllowed && request.AccessMode.WriteThroughMode == WriteThroughMode.Disabled);
-                    System.Diagnostics.Debug.Print("[{0}] OpenAndX: Opening '{1}', Access={2}, Share={3}, Buffered={4}", DateTime.Now.ToString("HH:mm:ss:ffff"), path, fileAccess, fileShare, buffered);
+                    state.LogToServer(Severity.Verbose, "OpenAndX: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
                     stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
                     if (buffered)
                     {

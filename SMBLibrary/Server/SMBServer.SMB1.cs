@@ -319,7 +319,7 @@ namespace SMBLibrary.Server
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();
             TrySendPacket(state, packet);
-            System.Diagnostics.Debug.Print("[{0}] Response sent: {1} Commands, First Command: {2}, Packet length: {3}", DateTime.Now.ToString("HH:mm:ss:ffff"), response.Commands.Count, response.Commands[0].CommandName.ToString(), packet.Length);
+            state.LogToServer(Severity.Verbose, "Response sent: {0} Commands, First Command: {1}, Packet length: {2}", response.Commands.Count, response.Commands[0].CommandName.ToString(), packet.Length);
         }
 
         private static void PrepareResponseHeader(SMB1Message response, SMB1Message request)

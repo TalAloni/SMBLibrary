@@ -103,24 +103,26 @@ namespace SMBLibrary.Server.SMB1
                     if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                     {
                         // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                        System.Diagnostics.Debug.Print("[{0}] ReadAndX: Cannot read '{1}'. Sharing Violation.", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                        state.LogToServer(Severity.Debug, "ReadAndX: Cannot read '{0}'. Sharing Violation.", openedFilePath);
                         header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                         return null;
                     }
                     else
                     {
+                        state.LogToServer(Severity.Debug, "ReadAndX: Cannot read '{0}'. Data Error.", openedFilePath);
                         header.Status = NTStatus.STATUS_DATA_ERROR;
                         return null;
                     }
                 }
                 catch (ArgumentOutOfRangeException)
                 {
+                    state.LogToServer(Severity.Debug, "ReadAndX: Cannot read '{0}'. Offset Out Of Range.", openedFilePath);
                     header.Status = NTStatus.STATUS_DATA_ERROR;
                     return null;
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    System.Diagnostics.Debug.Print("[{0}] ReadAndX: Cannot read '{1}', Access Denied.", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                    state.LogToServer(Severity.Debug, "ReadAndX: Cannot read '{0}', Access Denied.", openedFilePath);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return null;
                 }

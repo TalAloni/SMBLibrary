@@ -235,7 +235,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryPathInformationRequest subcommand, FileSystemShare share)
+        internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryPathInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             IFileSystem fileSystem = share.FileSystem;
             string path = subcommand.FileName;
@@ -244,7 +244,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 // Windows Server 2003 will return STATUS_OBJECT_NAME_NOT_FOUND
                 // Returning STATUS_NO_SUCH_FILE caused an issue when executing ImageX.exe from WinPE 3.0 (32-bit)
-                System.Diagnostics.Debug.Print("[{0}] Transaction2QueryPathInformation: File not found, Path: '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), path);
+                state.LogToServer(Severity.Debug, "Transaction2QueryPathInformation: File not found, Path: '{0}'", path);
                 header.Status = NTStatus.STATUS_OBJECT_NAME_NOT_FOUND;
                 return null;
             }
@@ -349,7 +349,7 @@ namespace SMBLibrary.Server.SMB1
                         if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                         {
                             // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                            System.Diagnostics.Debug.Print("[{0}] Transaction2SetFileInformation: Sharing violation setting file dates, Path: '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                            state.LogToServer(Severity.Debug, "Transaction2SetFileInformation: Sharing violation setting file dates, Path: '{0}'", openedFilePath);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return null;
                         }
@@ -384,17 +384,18 @@ namespace SMBLibrary.Server.SMB1
                         }
                         try
                         {
-                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Deleting file '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                            state.LogToServer(Severity.Information, "NTCreate: Deleting file '{0}'", openedFilePath);
                             share.FileSystem.Delete(openedFilePath);
                         }
                         catch (IOException)
                         {
-                            System.Diagnostics.Debug.Print("[{0}] NTCreate: Error deleting '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}'", openedFilePath);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return null;
                         }
                         catch (UnauthorizedAccessException)
                         {
+                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}', Access Denied", openedFilePath);
                             header.Status = NTStatus.STATUS_ACCESS_DENIED;
                             return null;
                         }
@@ -412,11 +413,11 @@ namespace SMBLibrary.Server.SMB1
                     }
                     catch (IOException)
                     {
-                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'", openedFilePath);
                     }
                     catch (UnauthorizedAccessException)
                     {
-                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{1}'. Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'. Access Denied", openedFilePath);
                     }
                     return response;
                 }
@@ -429,11 +430,11 @@ namespace SMBLibrary.Server.SMB1
                     }
                     catch (IOException)
                     {
-                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'", openedFilePath);
                     }
                     catch (UnauthorizedAccessException)
                     {
-                        System.Diagnostics.Debug.Print("[{0}] SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{1}'. Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'. Access Denied", openedFilePath);
                     }
                     return response;
                 }

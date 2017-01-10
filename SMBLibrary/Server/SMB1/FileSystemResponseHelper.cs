@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -31,13 +31,13 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (IOException)
             {
-                System.Diagnostics.Debug.Print("[{0}] CreateDirectory: Cannot create '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), request.DirectoryName);
+                state.LogToServer(Severity.Debug, "CreateDirectory: Cannot create '{0}'", request.DirectoryName);
                 header.Status = NTStatus.STATUS_OBJECT_NAME_INVALID;
                 return new ErrorResponse(CommandName.SMB_COM_CREATE_DIRECTORY);
             }
             catch (UnauthorizedAccessException)
             {
-                System.Diagnostics.Debug.Print("[{0}] CreateDirectory: Cannot create '{1}', Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), request.DirectoryName);
+                state.LogToServer(Severity.Debug, "CreateDirectory: Cannot create '{0}', Access Denied", request.DirectoryName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_CREATE_DIRECTORY);
             }
@@ -75,13 +75,13 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (IOException)
             {
-                System.Diagnostics.Debug.Print("[{0}] DeleteDirectory: Cannot delete '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), request.DirectoryName);
+                state.LogToServer(Severity.Debug, "DeleteDirectory: Cannot delete '{0}'", request.DirectoryName);
                 header.Status = NTStatus.STATUS_CANNOT_DELETE;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
             }
             catch (UnauthorizedAccessException)
             {
-                System.Diagnostics.Debug.Print("[{0}] DeleteDirectory: Cannot delete '{1}', Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), request.DirectoryName);
+                state.LogToServer(Severity.Debug, "DeleteDirectory: Cannot delete '{0}', Access Denied", request.DirectoryName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
             }
@@ -131,13 +131,13 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (IOException)
             {
-                System.Diagnostics.Debug.Print("[{0}] Delete: Cannot delete '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), request.FileName);
+                state.LogToServer(Severity.Debug, "Delete: Cannot delete '{0}'", request.FileName);
                 header.Status = NTStatus.STATUS_CANNOT_DELETE;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE);
             }
             catch (UnauthorizedAccessException)
             {
-                System.Diagnostics.Debug.Print("[{0}] DeleteDirectory: Cannot delete '{1}', Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), request.FileName);
+                state.LogToServer(Severity.Debug, "DeleteDirectory: Cannot delete '{0}', Access Denied", request.FileName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE);
             }
@@ -177,13 +177,13 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (IOException)
             {
-                System.Diagnostics.Debug.Print("[{0}] Rename: Sharing violation renaming '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), request.OldFileName);
+                state.LogToServer(Severity.Debug, "Rename: Sharing violation renaming '{0}'", request.OldFileName);
                 header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                 return new ErrorResponse(CommandName.SMB_COM_RENAME);
             }
             catch (UnauthorizedAccessException)
             {
-                System.Diagnostics.Debug.Print("[{0}] Rename: Cannot rename '{1}', Access Denied", DateTime.Now.ToString("HH:mm:ss:ffff"), request.OldFileName);
+                state.LogToServer(Severity.Debug, "Rename: Cannot rename '{0}', Access Denied", request.OldFileName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_RENAME);
             }

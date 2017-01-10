@@ -32,6 +32,8 @@ namespace SMBLibrary.Server
         private bool m_listening;
         private Guid m_serverGuid;
 
+        public event EventHandler<LogEntry> OnLogEntry;
+
         public SMBServer(ShareCollection shares, INTLMAuthenticationProvider users, IPAddress serverAddress, SMBTransportType transport)
         {
             m_shares = shares;
@@ -66,7 +68,6 @@ namespace SMBLibrary.Server
         // This method Accepts new connections
         private void ConnectRequestCallback(IAsyncResult ar)
         {
-            System.Diagnostics.Debug.Print("[{0}] New connection request", DateTime.Now.ToString("HH:mm:ss:ffff"));
             Socket listenerSocket = (Socket)ar.AsyncState;
 
             Socket clientSocket;
@@ -88,14 +89,16 @@ namespace SMBLibrary.Server
                 {
                     m_listenerSocket.BeginAccept(ConnectRequestCallback, m_listenerSocket);
                 }
-                System.Diagnostics.Debug.Print("[{0}] Connection request error {1}", DateTime.Now.ToString("HH:mm:ss:ffff"), ex.ErrorCode);
+                Log(Severity.Debug, "Connection request error {0}", ex.ErrorCode);
                 return;
             }
 
-            SMB1ConnectionState state = new SMB1ConnectionState(new ConnectionState());
+            SMB1ConnectionState state = new SMB1ConnectionState(new ConnectionState(Log));
             // Disable the Nagle Algorithm for this tcp socket:
             clientSocket.NoDelay = true;
             state.ClientSocket = clientSocket;
+            state.ClientEndPoint = clientSocket.RemoteEndPoint as IPEndPoint;
+            state.LogToServer(Severity.Verbose, "New connection request");
             try
             {
                 // Direct TCP transport packet is actually an NBT Session Message Packet,
@@ -139,7 +142,7 @@ namespace SMBLibrary.Server
             if (numberOfBytesReceived == 0)
             {
                 // The other side has closed the connection
-                System.Diagnostics.Debug.Print("[{0}] The other side closed the connection", DateTime.Now.ToString("HH:mm:ss:ffff"));
+                state.LogToServer(Severity.Debug, "The other side closed the connection");
                 clientSocket.Close();
                 return;
             }
@@ -203,7 +206,7 @@ namespace SMBLibrary.Server
                 SMB1Message message = null;
 #if DEBUG
                 message = SMB1Message.GetSMB1Message(packet.Trailer);
-                System.Diagnostics.Debug.Print("[{0}] Message Received: {1} Commands, First Command: {2}, Packet length: {3}", DateTime.Now.ToString("HH:mm:ss:ffff"), message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
+                state.LogToServer(Severity.Verbose, "Message Received: {0} Commands, First Command: {1}, Packet length: {2}", message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
 #else
                 try
                 {
@@ -219,7 +222,7 @@ namespace SMBLibrary.Server
             }
             else
             {
-                System.Diagnostics.Debug.Print("[{0}] Invalid NetBIOS packet", DateTime.Now.ToString("HH:mm:ss:ffff"));
+                state.LogToServer(Severity.Warning, "Invalid NetBIOS packet");
                 state.ClientSocket.Close();
                 return;
             }
@@ -238,6 +241,21 @@ namespace SMBLibrary.Server
             catch (ObjectDisposedException)
             {
             }
+        }
+
+        public void Log(Severity severity, string message)
+        {
+            // To be thread-safe we must capture the delegate reference first
+            EventHandler<LogEntry> handler = OnLogEntry;
+            if (handler != null)
+            {
+                handler(this, new LogEntry(DateTime.Now, severity, "SMB Server", message));
+            }
+        }
+
+        public void Log(Severity severity, string message, params object[] args)
+        {
+            Log(severity, String.Format(message, args));
         }
     }
 }

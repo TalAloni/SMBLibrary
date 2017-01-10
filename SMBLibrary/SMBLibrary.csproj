@@ -396,6 +396,7 @@
     <Compile Include="Tests\AuthenticationTests.cs" />
     <Compile Include="Tests\NetBiosTests.cs" />
     <Compile Include="Tests\RPCTests.cs" />
+    <Compile Include="Utilities\LogEntry.cs" />
     <Compile Include="Utilities\PrefetchedStream.cs" />
     <Compile Include="Utilities\SocketUtils.cs" />
     <Compile Include="Win32\Authentication\LoginAPI.cs" />

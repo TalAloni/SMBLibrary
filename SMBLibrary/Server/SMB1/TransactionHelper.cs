@@ -189,7 +189,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is Transaction2QueryPathInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryPathInformationRequest)subcommand, fileSystemShare);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryPathInformationRequest)subcommand, fileSystemShare, state);
             }
             else if (subcommand is Transaction2SetPathInformationRequest)
             {

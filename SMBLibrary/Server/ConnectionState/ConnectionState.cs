@@ -6,26 +6,60 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using SMBLibrary.NetBios;
 using Utilities;
 
 namespace SMBLibrary.Server
 {
+    public delegate void LogDelegate(Severity severity, string message);
+
     public class ConnectionState
     {
         public Socket ClientSocket;
+        public IPEndPoint ClientEndPoint;
         public NBTConnectionReceiveBuffer ReceiveBuffer;
+        protected LogDelegate LogToServerHandler;
 
-        public ConnectionState()
+        public ConnectionState(LogDelegate logToServerHandler)
         {
             ReceiveBuffer = new NBTConnectionReceiveBuffer();
+            LogToServerHandler = logToServerHandler;
         }
 
         public ConnectionState(ConnectionState state)
         {
             ClientSocket = state.ClientSocket;
+            ClientEndPoint = state.ClientEndPoint;
             ReceiveBuffer = state.ReceiveBuffer;
+            LogToServerHandler = state.LogToServerHandler;
+        }
+
+        public void LogToServer(Severity severity, string message)
+        {
+            message = String.Format("[{0}] {1}", ConnectionIdentifier, message);
+            if (LogToServerHandler != null)
+            {
+                LogToServerHandler(severity, message);
+            }
+        }
+
+        public void LogToServer(Severity severity, string message, params object[] args)
+        {
+            LogToServer(severity, String.Format(message, args));
+        }
+
+        public string ConnectionIdentifier
+        {
+            get
+            {
+                if (ClientEndPoint != null)
+                {
+                    return ClientEndPoint.Address + ":" + ClientEndPoint.Port;
+                }
+                return String.Empty;
+            }
         }
     }
 }

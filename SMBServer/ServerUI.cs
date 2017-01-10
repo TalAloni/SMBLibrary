@@ -90,6 +90,7 @@ namespace SMBServer
             }
 
             m_server = new SMBLibrary.Server.SMBServer(shares, provider, serverAddress, transportType);
+            m_server.OnLogEntry += new EventHandler<LogEntry>(Server_OnLogEntry);
 
             try
             {
@@ -213,6 +214,13 @@ namespace SMBServer
                 }
             }
             return result;
+        }
+
+        private void Server_OnLogEntry(object sender, LogEntry entry)
+        {
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ");
+            string message = String.Format("{0} {1} {2}", entry.Severity.ToString().PadRight(12), timestamp, entry.Message);
+            System.Diagnostics.Debug.Print(message);
         }
     }
 }

@@ -33,7 +33,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 catch
                 {
-                    System.Diagnostics.Debug.Print("[{0}] Close: Cannot delete '{1}'", DateTime.Now.ToString("HH:mm:ss:ffff"), openedFile.Path);
+                    state.LogToServer(Severity.Debug, "Close: Cannot delete '{0}'", openedFile.Path);
                 }
             }
             CloseResponse response = new CloseResponse();
