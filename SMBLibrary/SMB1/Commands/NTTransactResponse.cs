@@ -68,7 +68,7 @@ namespace SMBLibrary.SMB1
             uint dataDisplacement = 0;
 
             // WordCount + ByteCount are additional 3 bytes
-            uint parameterOffset = (ushort)(SMBHeader.Length + 3 + (FixedSMBParametersLength + Setup.Length));
+            uint parameterOffset = (ushort)(SMB1Header.Length + 3 + (FixedSMBParametersLength + Setup.Length));
             int padding1 = (int)(4 - (parameterOffset % 4)) % 4;
             parameterOffset += (ushort)padding1;
             uint dataOffset = (ushort)(parameterOffset + parameterCount);
@@ -106,7 +106,7 @@ namespace SMBLibrary.SMB1
 
         public static int CalculateMessageSize(int setupLength, int trans2ParametersLength, int trans2DataLength)
         {
-            int parameterOffset = SMBHeader.Length + 3 + (FixedSMBParametersLength + setupLength);
+            int parameterOffset = SMB1Header.Length + 3 + (FixedSMBParametersLength + setupLength);
             int padding1 = (4 - (parameterOffset % 4)) % 4;
             parameterOffset += padding1;
             int dataOffset = (parameterOffset + trans2ParametersLength);
@@ -115,7 +115,7 @@ namespace SMBLibrary.SMB1
             int messageParametersLength = FixedSMBParametersLength + setupLength;
             int messageDataLength = trans2ParametersLength + trans2DataLength + padding1 + padding2;
             // WordCount + ByteCount are additional 3 bytes
-            return SMBHeader.Length + messageParametersLength + messageDataLength + 3;
+            return SMB1Header.Length + messageParametersLength + messageDataLength + 3;
         }
     }
 }

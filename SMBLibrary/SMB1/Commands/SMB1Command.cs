@@ -63,7 +63,7 @@ namespace SMBLibrary.SMB1
             return buffer;
         }
 
-        public static SMB1Command ReadCommand(byte[] buffer, int offset, CommandName commandName, SMBHeader header)
+        public static SMB1Command ReadCommand(byte[] buffer, int offset, CommandName commandName, SMB1Header header)
         {
             if ((header.Flags & HeaderFlags.Reply) > 0)
             {

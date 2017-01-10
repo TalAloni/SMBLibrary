@@ -18,7 +18,7 @@ namespace SMBLibrary.Server
     /// </summary>
     public class NegotiateHelper
     {
-        internal static NegotiateResponseNTLM GetNegotiateResponse(SMBHeader header, NegotiateRequest request, byte[] serverChallenge)
+        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, byte[] serverChallenge)
         {
             NegotiateResponseNTLM response = new NegotiateResponseNTLM();
 
@@ -68,7 +68,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetSessionSetupResponse(SMBHeader header, SessionSetupAndXRequest request, INTLMAuthenticationProvider users, StateObject state)
+        internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, INTLMAuthenticationProvider users, StateObject state)
         {
             SessionSetupAndXResponse response = new SessionSetupAndXResponse();
             // The PrimaryDomain field in the request is used to determine with domain controller should authenticate the user credentials,
@@ -115,7 +115,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetSessionSetupResponseExtended(SMBHeader header, SessionSetupAndXRequestExtended request, INTLMAuthenticationProvider users, StateObject state)
+        internal static SMB1Command GetSessionSetupResponseExtended(SMB1Header header, SessionSetupAndXRequestExtended request, INTLMAuthenticationProvider users, StateObject state)
         {
             SessionSetupAndXResponseExtended response = new SessionSetupAndXResponseExtended();
 

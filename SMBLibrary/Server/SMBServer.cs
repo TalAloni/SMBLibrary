@@ -261,7 +261,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// May return null
         /// </summary>
-        public SMB1Command ProcessCommand(SMBHeader header, SMB1Command command, StateObject state, List<SMB1Command> sendQueue)
+        public SMB1Command ProcessCommand(SMB1Header header, SMB1Command command, StateObject state, List<SMB1Command> sendQueue)
         {
             if (command is NegotiateRequest)
             {

@@ -94,7 +94,7 @@ namespace SMBLibrary.SMB1
             ushort DataCount = (ushort)TransData.Length;
 
             // WordCount + ByteCount are additional 3 bytes
-            ushort ParameterOffset = (ushort)(SMBHeader.Length + 3 + (FixedSMBParametersLength + Setup.Length));
+            ushort ParameterOffset = (ushort)(SMB1Header.Length + 3 + (FixedSMBParametersLength + Setup.Length));
             if (this is Transaction2Request)
             {
                 ParameterOffset += 1;

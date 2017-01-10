@@ -56,7 +56,7 @@ namespace SMBLibrary.SMB1
         {
             uint DataLength = (uint)Data.Length;
             // WordCount + ByteCount are additional 3 bytes
-            ushort DataOffset = SMBHeader.Length + 3 + ParametersLength;
+            ushort DataOffset = SMB1Header.Length + 3 + ParametersLength;
             if (isUnicode)
             {
                 DataOffset++;

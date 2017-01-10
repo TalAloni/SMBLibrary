@@ -11,7 +11,7 @@ using Utilities;
 
 namespace SMBLibrary.SMB1
 {
-    public class SMBHeader
+    public class SMB1Header
     {
         public const int Length = 32;
         public static readonly byte[] ProtocolSignature = new byte[] { 0xFF, 0x53, 0x4D, 0x42 };
@@ -31,12 +31,12 @@ namespace SMBLibrary.SMB1
 
         public uint PID; // Process ID
 
-        public SMBHeader()
+        public SMB1Header()
         {
             Protocol = ProtocolSignature;
         }
 
-        public SMBHeader(byte[] buffer)
+        public SMB1Header(byte[] buffer)
         {
             Protocol = ByteReader.ReadBytes(buffer, 0, 4);
             Command = (CommandName)ByteReader.ReadByte(buffer, 4);

@@ -57,7 +57,7 @@ namespace SMBLibrary.SMB1
             DataCount = (ushort)TransData.Length;
 
             // WordCount + ByteCount are additional 3 bytes
-            ParameterOffset = (ushort)(SMBHeader.Length + 3 + SMBParametersLength);
+            ParameterOffset = (ushort)(SMB1Header.Length + 3 + SMBParametersLength);
             int padding1 = (4 - (ParameterOffset % 4)) % 4;
             ParameterOffset += (ushort)padding1;
             DataOffset = (ushort)(ParameterOffset + ParameterCount);

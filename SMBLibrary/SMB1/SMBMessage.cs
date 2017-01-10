@@ -18,18 +18,18 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class SMBMessage
     {
-        public SMBHeader Header;
+        public SMB1Header Header;
         public List<SMB1Command> Commands = new List<SMB1Command>();
 
         public SMBMessage()
         {
-            Header = new SMBHeader();
+            Header = new SMB1Header();
         }
 
         public SMBMessage(byte[] buffer)
         {
-            Header = new SMBHeader(buffer);
-            SMB1Command command = SMB1Command.ReadCommand(buffer, SMBHeader.Length, Header.Command, Header);
+            Header = new SMB1Header(buffer);
+            SMB1Command command = SMB1Command.ReadCommand(buffer, SMB1Header.Length, Header.Command, Header);
             Commands.Add(command);
             while(command is SMBAndXCommand)
             {
@@ -65,7 +65,7 @@ namespace SMBLibrary.SMB1
             }
 
             List<byte[]> sequence = new List<byte[]>();
-            int length = SMBHeader.Length;
+            int length = SMB1Header.Length;
             byte[] commandBytes;
             for (int index = 0; index < Commands.Count - 1; index++)
             {
@@ -86,7 +86,7 @@ namespace SMBLibrary.SMB1
 
             byte[] buffer = new byte[length];
             Header.WriteBytes(buffer, 0);
-            int offset = SMBHeader.Length;
+            int offset = SMB1Header.Length;
             foreach (byte[] bytes in sequence)
             {
                 ByteWriter.WriteBytes(buffer, ref offset, bytes);
@@ -97,10 +97,10 @@ namespace SMBLibrary.SMB1
 
         public static bool IsValidSMBMessage(byte[] buffer)
         {
-            if (buffer[0] == SMBHeader.ProtocolSignature[0] &&
-                buffer[1] == SMBHeader.ProtocolSignature[1] &&
-                buffer[2] == SMBHeader.ProtocolSignature[2] &&
-                buffer[3] == SMBHeader.ProtocolSignature[3])
+            if (buffer[0] == SMB1Header.ProtocolSignature[0] &&
+                buffer[1] == SMB1Header.ProtocolSignature[1] &&
+                buffer[2] == SMB1Header.ProtocolSignature[2] &&
+                buffer[3] == SMB1Header.ProtocolSignature[3])
             {
                 return true;
             }
