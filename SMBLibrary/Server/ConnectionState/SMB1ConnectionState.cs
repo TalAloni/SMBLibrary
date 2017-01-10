@@ -7,17 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Sockets;
-using SMBLibrary.NetBios;
 using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class SMB1ConnectionState
+    public class SMB1ConnectionState : ConnectionState
     {
-        public Socket ClientSocket = null;
-        public NBTConnectionReceiveBuffer ReceiveBuffer = new NBTConnectionReceiveBuffer();
-
         public int MaxBufferSize;
         public bool LargeRead;
         public bool LargeWrite;
@@ -35,12 +30,16 @@ namespace SMBLibrary.Server
         private ushort m_nextFID = 1;
         // Key is FID
         private Dictionary<ushort, byte[]> m_namedPipeResponse = new Dictionary<ushort, byte[]>();
-        
+
         // Key is PID
         public Dictionary<uint, ProcessStateObject> ProcessStateList = new Dictionary<uint, ProcessStateObject>();
         public const int MaxSearches = 2048; // Windows servers initialize Server.MaxSearches to 2048.
         public Dictionary<ushort, List<FileSystemEntry>> OpenSearches = new Dictionary<ushort, List<FileSystemEntry>>();
         private ushort m_nextSearchHandle = 1;
+
+        public SMB1ConnectionState(ConnectionState state) : base(state)
+        {
+        }
 
         /// <summary>
         /// An open UID MUST be unique within an SMB connection.

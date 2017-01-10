@@ -92,7 +92,7 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            SMB1ConnectionState state = new SMB1ConnectionState();
+            SMB1ConnectionState state = new SMB1ConnectionState(new ConnectionState());
             // Disable the Nagle Algorithm for this tcp socket:
             clientSocket.NoDelay = true;
             state.ClientSocket = clientSocket;
