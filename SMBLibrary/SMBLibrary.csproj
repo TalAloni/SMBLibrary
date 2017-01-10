@@ -274,6 +274,7 @@
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactQuerySecurityDescriptorResponse.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactSetSecurityDescriptor.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactSubcommand.cs" />
+    <Compile Include="SMB1\ServiceNameHelper.cs" />
     <Compile Include="SMB1\SMB1Header.cs" />
     <Compile Include="SMB1\SMB1Helper.cs" />
     <Compile Include="SMB1\SMB1Message.cs" />
@@ -380,7 +381,6 @@
     <Compile Include="SMB1\TransactionSubcommands\TransactionWaitNamedPipeRequest.cs" />
     <Compile Include="SMB1\TransactionSubcommands\TransactionWriteNamedPipeRequest.cs" />
     <Compile Include="SMB1\TransactionSubcommands\TransactionWriteNamedPipeResponse.cs" />
-    <Compile Include="SMB1\TreeConnectHelper.cs" />
     <Compile Include="Structures\ACE\AccessAllowedACE.cs" />
     <Compile Include="Structures\ACE\ACE.cs" />
     <Compile Include="Structures\ACE\AceHeader.cs" />

@@ -43,7 +43,7 @@ namespace SMBLibrary.SMB1
             Path = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
             // Should be read as OEM string but it doesn't really matter
             string serviceString = ByteReader.ReadNullTerminatedAnsiString(this.SMBData, ref dataOffset);
-            Service = TreeConnectHelper.GetServiceName(serviceString);
+            Service = ServiceNameHelper.GetServiceName(serviceString);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -55,7 +55,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)Flags);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, passwordLength);
 
-            string serviceString = TreeConnectHelper.GetServiceString(Service);
+            string serviceString = ServiceNameHelper.GetServiceString(Service);
             int dataLength = Password.Length + serviceString.Length;
             if (isUnicode)
             {

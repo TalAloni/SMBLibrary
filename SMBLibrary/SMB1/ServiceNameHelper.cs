@@ -11,7 +11,7 @@ using Utilities;
 
 namespace SMBLibrary.SMB1
 {
-    public class TreeConnectHelper
+    public class ServiceNameHelper
     {
         public static string GetServiceString(ServiceName serviceName)
         {
