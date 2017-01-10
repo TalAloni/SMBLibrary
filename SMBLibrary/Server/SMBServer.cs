@@ -11,8 +11,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using SMBLibrary.NetBios;
-using SMBLibrary.SMB1;
+using SMBLibrary.Server.SMB1;
 using SMBLibrary.Services;
+using SMBLibrary.SMB1;
 using Utilities;
 
 namespace SMBLibrary.Server

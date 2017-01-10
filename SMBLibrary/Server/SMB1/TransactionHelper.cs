@@ -12,7 +12,7 @@ using SMBLibrary.RPC;
 using SMBLibrary.Services;
 using Utilities;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary.Server.SMB1
 {
     public class TransactionHelper
     {

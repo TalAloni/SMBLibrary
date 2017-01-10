@@ -11,7 +11,7 @@ using System.Text;
 using SMBLibrary.SMB1;
 using Utilities;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary.Server.SMB1
 {
     public partial class ServerResponseHelper
     {

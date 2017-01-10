@@ -11,7 +11,7 @@ using SMBLibrary.Authentication;
 using SMBLibrary.SMB1;
 using Utilities;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary.Server.SMB1
 {
     /// <summary>
     /// Negotiate and Session Setup helper
