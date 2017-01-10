@@ -94,7 +94,7 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            StateObject state = new StateObject();
+            SMB1ConnectionState state = new SMB1ConnectionState();
             // Disable the Nagle Algorithm for this tcp socket:
             clientSocket.NoDelay = true;
             state.ClientSocket = clientSocket;
@@ -113,7 +113,7 @@ namespace SMBLibrary.Server
 
         private void ReceiveCallback(IAsyncResult result)
         {
-            StateObject state = (StateObject)result.AsyncState;
+            SMB1ConnectionState state = (SMB1ConnectionState)result.AsyncState;
             Socket clientSocket = state.ClientSocket;
 
             if (!m_listening)
@@ -163,7 +163,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessConnectionBuffer(StateObject state)
+        public void ProcessConnectionBuffer(SMB1ConnectionState state)
         {
             Socket clientSocket = state.ClientSocket;
 
@@ -187,7 +187,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessPacket(SessionPacket packet, StateObject state)
+        public void ProcessPacket(SessionPacket packet, SMB1ConnectionState state)
         {
             if (packet is SessionRequestPacket && m_transport == SMBTransportType.NetBiosOverTCP)
             {
@@ -225,7 +225,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessMessage(SMB1Message message, StateObject state)
+        public void ProcessMessage(SMB1Message message, SMB1ConnectionState state)
         {
             SMB1Message reply = new SMB1Message();
             PrepareResponseHeader(reply, message);
@@ -261,7 +261,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// May return null
         /// </summary>
-        public SMB1Command ProcessCommand(SMB1Header header, SMB1Command command, StateObject state, List<SMB1Command> sendQueue)
+        public SMB1Command ProcessCommand(SMB1Header header, SMB1Command command, SMB1ConnectionState state, List<SMB1Command> sendQueue)
         {
             if (command is NegotiateRequest)
             {
@@ -524,7 +524,7 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName);
         }
 
-        public static void TrySendMessage(StateObject state, SMB1Message reply)
+        public static void TrySendMessage(SMB1ConnectionState state, SMB1Message reply)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = reply.GetBytes();
@@ -532,7 +532,7 @@ namespace SMBLibrary.Server
             System.Diagnostics.Debug.Print("[{0}] Reply sent: {1} Commands, First Command: {2}, Packet length: {3}", DateTime.Now.ToString("HH:mm:ss:ffff"), reply.Commands.Count, reply.Commands[0].CommandName.ToString(), packet.Length);
         }
 
-        public static void TrySendPacket(StateObject state, SessionPacket response)
+        public static void TrySendPacket(SMB1ConnectionState state, SessionPacket response)
         {
             Socket clientSocket = state.ClientSocket;
             try

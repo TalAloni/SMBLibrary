@@ -17,7 +17,7 @@ namespace SMBLibrary.Server
 {
     public class ReadWriteResponseHelper
     {
-        internal static SMB1Command GetReadResponse(SMB1Header header, ReadRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetReadResponse(SMB1Header header, ReadRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             byte[] data = PerformRead(header, share, request.FID, request.ReadOffsetInBytes, request.CountOfBytesToRead, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -31,7 +31,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetReadResponse(SMB1Header header, ReadAndXRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetReadResponse(SMB1Header header, ReadAndXRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             uint maxCount = request.MaxCount;
             if ((share is FileSystemShare) && state.LargeRead)
@@ -54,7 +54,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        public static byte[] PerformRead(SMB1Header header, ISMBShare share, ushort FID, ulong offset, uint maxCount, StateObject state)
+        public static byte[] PerformRead(SMB1Header header, ISMBShare share, ushort FID, ulong offset, uint maxCount, SMB1ConnectionState state)
         {
             if (offset > Int64.MaxValue || maxCount > Int32.MaxValue)
             {
@@ -63,7 +63,7 @@ namespace SMBLibrary.Server
             return PerformRead(header, share, FID, (long)offset, (int)maxCount, state);
         }
 
-        public static byte[] PerformRead(SMB1Header header, ISMBShare share, ushort FID, long offset, int maxCount, StateObject state)
+        public static byte[] PerformRead(SMB1Header header, ISMBShare share, ushort FID, long offset, int maxCount, SMB1ConnectionState state)
         {
             OpenedFileObject openedFile = state.GetOpenedFileObject(FID);
             if (openedFile == null)
@@ -134,7 +134,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMB1Command GetWriteResponse(SMB1Header header, WriteRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetWriteResponse(SMB1Header header, WriteRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             ushort bytesWritten = (ushort)PerformWrite(header, share, request.FID, request.WriteOffsetInBytes, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -147,7 +147,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetWriteResponse(SMB1Header header, WriteAndXRequest request, ISMBShare share, StateObject state)
+        internal static SMB1Command GetWriteResponse(SMB1Header header, WriteAndXRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             uint bytesWritten = PerformWrite(header, share, request.FID, request.Offset, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -165,7 +165,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        public static uint PerformWrite(SMB1Header header, ISMBShare share, ushort FID, ulong offset, byte[] data, StateObject state)
+        public static uint PerformWrite(SMB1Header header, ISMBShare share, ushort FID, ulong offset, byte[] data, SMB1ConnectionState state)
         {
             OpenedFileObject openedFile = state.GetOpenedFileObject(FID);
             if (openedFile == null)

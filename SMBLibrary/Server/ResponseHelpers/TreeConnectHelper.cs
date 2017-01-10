@@ -14,7 +14,7 @@ namespace SMBLibrary.Server
 {
     public class TreeConnectHelper
     {
-        internal static SMB1Command GetTreeConnectResponse(SMB1Header header, TreeConnectAndXRequest request, StateObject state, ShareCollection shares)
+        internal static SMB1Command GetTreeConnectResponse(SMB1Header header, TreeConnectAndXRequest request, SMB1ConnectionState state, ShareCollection shares)
         {
             bool isExtended = (request.Flags & TreeConnectFlags.ExtendedResponse) > 0;
             string relativePath = ServerPathUtils.GetRelativeServerPath(request.Path);
@@ -89,7 +89,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetTreeDisconnectResponse(SMB1Header header, TreeDisconnectRequest request, StateObject state)
+        internal static SMB1Command GetTreeDisconnectResponse(SMB1Header header, TreeDisconnectRequest request, SMB1ConnectionState state)
         {
             if (!state.IsTreeConnected(header.TID))
             {

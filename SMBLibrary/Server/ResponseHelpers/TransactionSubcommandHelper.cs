@@ -16,7 +16,7 @@ namespace SMBLibrary.Server
 {
     public class TransactionSubcommandHelper
     {
-        internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, NamedPipeShare share, StateObject state)
+        internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, NamedPipeShare share, SMB1ConnectionState state)
         {
             string openedFilePath = state.GetOpenedFilePath(subcommand.FID);
             if (openedFilePath == null)

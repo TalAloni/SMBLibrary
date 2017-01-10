@@ -15,7 +15,7 @@ namespace SMBLibrary.Server
 {
     public class FileSystemResponseHelper
     {
-        internal static SMB1Command GetCreateDirectoryResponse(SMB1Header header, CreateDirectoryRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetCreateDirectoryResponse(SMB1Header header, CreateDirectoryRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -45,7 +45,7 @@ namespace SMBLibrary.Server
             return new CreateDirectoryResponse();
         }
 
-        internal static SMB1Command GetDeleteDirectoryResponse(SMB1Header header, DeleteDirectoryRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetDeleteDirectoryResponse(SMB1Header header, DeleteDirectoryRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -100,7 +100,7 @@ namespace SMBLibrary.Server
             return new CheckDirectoryResponse();
         }
 
-        internal static SMB1Command GetDeleteResponse(SMB1Header header, DeleteRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetDeleteResponse(SMB1Header header, DeleteRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -143,7 +143,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        internal static SMB1Command GetRenameResponse(SMB1Header header, RenameRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetRenameResponse(SMB1Header header, RenameRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -207,7 +207,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetSetInformationResponse(SMB1Header header, SetInformationRequest request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetSetInformationResponse(SMB1Header header, SetInformationRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             string userName = state.GetConnectedUserName(header.UID);
             if (!share.HasWriteAccess(userName))
@@ -249,7 +249,7 @@ namespace SMBLibrary.Server
             return new SetInformationResponse();
         }
 
-        internal static SMB1Command GetSetInformation2Response(SMB1Header header, SetInformation2Request request, FileSystemShare share, StateObject state)
+        internal static SMB1Command GetSetInformation2Response(SMB1Header header, SetInformation2Request request, FileSystemShare share, SMB1ConnectionState state)
         {
             string openedFilePath = state.GetOpenedFilePath(request.FID);
             if (openedFilePath == null)

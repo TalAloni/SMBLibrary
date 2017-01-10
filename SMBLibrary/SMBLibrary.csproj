@@ -102,6 +102,7 @@
     <Compile Include="RPC\Structures\ResultElement.cs" />
     <Compile Include="RPC\Structures\ResultList.cs" />
     <Compile Include="RPC\Structures\SyntaxID.cs" />
+    <Compile Include="Server\ConnectionState\SMB1ConnectionState.cs" />
     <Compile Include="Server\Exceptions\EmptyPasswordNotAllowedException.cs" />
     <Compile Include="Server\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Server\Exceptions\UnsupportedInformationLevelException.cs" />
@@ -130,7 +131,6 @@
     <Compile Include="Server\Shares\ShareCollection.cs" />
     <Compile Include="Server\SMBConnectionReceiveBuffer.cs" />
     <Compile Include="Server\SMBServer.cs" />
-    <Compile Include="Server\StateObject.cs" />
     <Compile Include="Server\User.cs" />
     <Compile Include="Server\UserCollection.cs" />
     <Compile Include="Services\Enums\PlatformName.cs" />

@@ -20,7 +20,7 @@ namespace SMBLibrary.Server
         public const bool IncludeCurrentDirectoryInResults = true;
         public const bool IncludeParentDirectoryInResults = true;
 
-        internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, FileSystemShare share, StateObject state)
+        internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             IFileSystem fileSystem = share.FileSystem;
             string path = subcommand.FileName;
@@ -40,7 +40,7 @@ namespace SMBLibrary.Server
             }
             bool exactNameWithoutExtension = searchPattern.Contains("\"");
 
-            if (state.OpenSearches.Count > StateObject.MaxSearches)
+            if (state.OpenSearches.Count > SMB1ConnectionState.MaxSearches)
             {
                 header.Status = NTStatus.STATUS_OS2_NO_MORE_SIDS;
                 return null;
@@ -193,7 +193,7 @@ namespace SMBLibrary.Server
             return result;
         }
 
-        internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, FileSystemShare share, StateObject state)
+        internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             if (!state.OpenSearches.ContainsKey(subcommand.SID))
             {
@@ -255,7 +255,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, FileSystemShare share, StateObject state)
+        internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             IFileSystem fileSystem = share.FileSystem;
             string openedFilePath = state.GetOpenedFilePath(subcommand.FID);
@@ -278,7 +278,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static Transaction2SetFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2SetFileInformationRequest subcommand, FileSystemShare share, StateObject state)
+        internal static Transaction2SetFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2SetFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             string openedFilePath = state.GetOpenedFilePath(subcommand.FID);
             if (openedFilePath == null)

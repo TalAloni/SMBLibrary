@@ -68,7 +68,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, INTLMAuthenticationProvider users, StateObject state)
+        internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, INTLMAuthenticationProvider users, SMB1ConnectionState state)
         {
             SessionSetupAndXResponse response = new SessionSetupAndXResponse();
             // The PrimaryDomain field in the request is used to determine with domain controller should authenticate the user credentials,
@@ -115,7 +115,7 @@ namespace SMBLibrary.Server
             return response;
         }
 
-        internal static SMB1Command GetSessionSetupResponseExtended(SMB1Header header, SessionSetupAndXRequestExtended request, INTLMAuthenticationProvider users, StateObject state)
+        internal static SMB1Command GetSessionSetupResponseExtended(SMB1Header header, SessionSetupAndXRequestExtended request, INTLMAuthenticationProvider users, SMB1ConnectionState state)
         {
             SessionSetupAndXResponseExtended response = new SessionSetupAndXResponseExtended();
 
