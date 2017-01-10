@@ -202,12 +202,12 @@ namespace SMBLibrary.Server
             {
                 SMB1Message message = null;
 #if DEBUG
-                message = SMB1Message.GetSMBMessage(packet.Trailer);
+                message = SMB1Message.GetSMB1Message(packet.Trailer);
                 System.Diagnostics.Debug.Print("[{0}] Message Received: {1} Commands, First Command: {2}, Packet length: {3}", DateTime.Now.ToString("HH:mm:ss:ffff"), message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
 #else
                 try
                 {
-                    message = SMB1Message.GetSMBMessage(packet.Trailer);
+                    message = SMB1Message.GetSMB1Message(packet.Trailer);
                 }
                 catch (Exception)
                 {

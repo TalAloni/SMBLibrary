@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -95,24 +95,19 @@ namespace SMBLibrary.SMB1
             return buffer;
         }
 
-        public static bool IsValidSMBMessage(byte[] buffer)
+        public static bool IsValidSMB1Message(byte[] buffer)
         {
-            if (buffer[0] == SMB1Header.ProtocolSignature[0] &&
-                buffer[1] == SMB1Header.ProtocolSignature[1] &&
-                buffer[2] == SMB1Header.ProtocolSignature[2] &&
-                buffer[3] == SMB1Header.ProtocolSignature[3])
+            if (buffer.Length >= 4)
             {
-                return true;
+                byte[] signature = ByteReader.ReadBytes(buffer, 0, 4);
+                return ByteUtils.AreByteArraysEqual(signature, SMB1Header.ProtocolSignature);
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
-        public static SMB1Message GetSMBMessage(byte[] buffer)
+        public static SMB1Message GetSMB1Message(byte[] buffer)
         {
-            if (!IsValidSMBMessage(buffer))
+            if (!IsValidSMB1Message(buffer))
             {
                 throw new InvalidRequestException("Invalid SMB message signature");;
             }
