@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,36 +20,36 @@ namespace SMBLibrary.Authentication.Win32
 
     public class SSPIHelper
     {
-        public const int MAX_TOKEN_SIZE = 12000;
+        private const int MAX_TOKEN_SIZE = 12000;
 
-        public const uint SEC_E_OK = 0;
-        public const uint SEC_I_CONTINUE_NEEDED = 0x90312;
-        public const uint SEC_E_INVALID_HANDLE = 0x80090301;
-        public const uint SEC_E_INVALID_TOKEN = 0x80090308;
-        public const uint SEC_E_LOGON_DENIED = 0x8009030C;
-        public const uint SEC_E_BUFFER_TOO_SMALL = 0x80090321;
-        
-        public const int SECURITY_NETWORK_DREP = 0x00;
-        public const int SECURITY_NATIVE_DREP = 0x10;
+        private const uint SEC_E_OK = 0;
+        private const uint SEC_I_CONTINUE_NEEDED = 0x90312;
+        private const uint SEC_E_INVALID_HANDLE = 0x80090301;
+        private const uint SEC_E_INVALID_TOKEN = 0x80090308;
+        private const uint SEC_E_LOGON_DENIED = 0x8009030C;
+        private const uint SEC_E_BUFFER_TOO_SMALL = 0x80090321;
 
-        public const int SECPKG_CRED_INBOUND = 0x01;
-        public const int SECPKG_CRED_OUTBOUND = 0x02;
-        public const int SECPKG_CRED_BOTH = 0x03;
+        private const int SECURITY_NETWORK_DREP = 0x00;
+        private const int SECURITY_NATIVE_DREP = 0x10;
 
-        public const int ISC_REQ_CONFIDENTIALITY = 0x00000010;
-        public const int ISC_REQ_ALLOCATE_MEMORY = 0x00000100;
-        public const int ISC_REQ_INTEGRITY = 0x00010000;
+        private const int SECPKG_CRED_INBOUND = 0x01;
+        private const int SECPKG_CRED_OUTBOUND = 0x02;
+        private const int SECPKG_CRED_BOTH = 0x03;
 
-        public const int ASC_REQ_REPLAY_DETECT = 0x00000004;
-        public const int ASC_REQ_CONFIDENTIALITY = 0x00000010;
-        public const int ASC_REQ_USE_SESSION_KEY = 0x00000020;
-        public const int ASC_REQ_INTEGRITY = 0x00020000;
+        private const int ISC_REQ_CONFIDENTIALITY = 0x00000010;
+        private const int ISC_REQ_ALLOCATE_MEMORY = 0x00000100;
+        private const int ISC_REQ_INTEGRITY = 0x00010000;
 
-        public const int SEC_WINNT_AUTH_IDENTITY_ANSI = 1;
-        public const int SEC_WINNT_AUTH_IDENTITY_UNICODE = 2;
+        private const int ASC_REQ_REPLAY_DETECT = 0x00000004;
+        private const int ASC_REQ_CONFIDENTIALITY = 0x00000010;
+        private const int ASC_REQ_USE_SESSION_KEY = 0x00000020;
+        private const int ASC_REQ_INTEGRITY = 0x00020000;
+
+        private const int SEC_WINNT_AUTH_IDENTITY_ANSI = 1;
+        private const int SEC_WINNT_AUTH_IDENTITY_UNICODE = 2;
         
         [StructLayout(LayoutKind.Sequential)]
-        public struct SECURITY_INTEGER
+        private struct SECURITY_INTEGER
         {
             public uint LowPart;
             public int HighPart;
@@ -59,7 +59,7 @@ namespace SMBLibrary.Authentication.Win32
         /// When using the NTLM package, the maximum character lengths for user name, password, and domain are 256, 256, and 15, respectively.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public struct SEC_WINNT_AUTH_IDENTITY
+        private struct SEC_WINNT_AUTH_IDENTITY
         {
             public string User;
             public int UserLength;
@@ -83,7 +83,7 @@ namespace SMBLibrary.Authentication.Win32
           out SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        static extern int InitializeSecurityContext(
+        private static extern int InitializeSecurityContext(
             ref SecHandle phCredential,
             IntPtr phContext,
             string pszTargetName,
@@ -98,7 +98,7 @@ namespace SMBLibrary.Authentication.Win32
             out SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        static extern int InitializeSecurityContext(
+        private static extern int InitializeSecurityContext(
             IntPtr phCredential,
             ref SecHandle phContext,
             string pszTargetName,
@@ -113,7 +113,7 @@ namespace SMBLibrary.Authentication.Win32
             out SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        static extern int AcceptSecurityContext(
+        private static extern int AcceptSecurityContext(
             ref SecHandle phCredential,
             IntPtr phContext,
             ref SecBufferDesc pInput,
@@ -125,7 +125,7 @@ namespace SMBLibrary.Authentication.Win32
             out SECURITY_INTEGER ptsTimeStamp);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        static extern int AcceptSecurityContext(
+        private static extern int AcceptSecurityContext(
             IntPtr phCredential,
             ref SecHandle phContext,
             ref SecBufferDesc pInput,
