@@ -46,7 +46,7 @@ namespace SMBLibrary.Server.SMB1
                 header.UID = userID.Value;
                 response.PrimaryDomain = request.PrimaryDomain;
             }
-            else if (users.EnableGuestLogin)
+            else if (users.FallbackToGuest(user.AccountName))
             {
                 ushort? userID = state.AddConnectedUser("Guest");
                 if (!userID.HasValue)
@@ -132,7 +132,7 @@ namespace SMBLibrary.Server.SMB1
                     }
                     header.UID = userID.Value;
                 }
-                else if (users.EnableGuestLogin)
+                else if (users.FallbackToGuest(user.AccountName))
                 {
                     ushort? userID = state.AddConnectedUser("Guest");
                     if (!userID.HasValue)

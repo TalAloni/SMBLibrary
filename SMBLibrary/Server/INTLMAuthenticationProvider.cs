@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -21,11 +21,19 @@ namespace SMBLibrary.Server
         byte[] GetChallengeMessageBytes(byte[] negotiateMessageBytes);
         User Authenticate(byte[] authenticateMessageBytes);
 
-        List<string> ListUsers();
+        /// <summary>
+        /// Permit access to this user via the guest user account if the normal authentication process fails.
+        /// </summary>
+        /// <remarks>
+        /// Windows will permit fallback when these conditions are met:
+        /// 1. The guest user account is enabled.
+        /// 2. The guest user account does not have a password set.
+        /// 3. The specified account does not exist.
+        ///    OR:
+        ///    The password is correct but 'limitblankpassworduse' is set to 1 (logon over a network is disabled for accounts without a password).
+        /// </remarks>
+        bool FallbackToGuest(string userName);
 
-        bool EnableGuestLogin
-        {
-            get;
-        }
+        List<string> ListUsers();
     }
 }

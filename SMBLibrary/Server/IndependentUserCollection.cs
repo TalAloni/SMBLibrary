@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -176,7 +176,12 @@ namespace SMBLibrary.Server
             return AuthenticateV1(accountNameToAuth, m_serverChallenge, lmResponse, ntlmResponse);
         }
 
-        public bool EnableGuestLogin
+        public bool FallbackToGuest(string userName)
+        {
+            return (EnableGuestLogin && (IndexOf(userName) == -1));
+        }
+
+        private bool EnableGuestLogin
         {
             get
             {

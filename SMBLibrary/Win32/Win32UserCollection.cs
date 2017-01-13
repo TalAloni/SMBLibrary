@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -189,10 +189,15 @@ namespace SMBLibrary.Server.Win32
             return false;
         }
 
+        public bool FallbackToGuest(string userName)
+        {
+            return (EnableGuestLogin && (IndexOf(userName) == -1));
+        }
+
         /// <summary>
         /// We immitate Windows, Guest logins are disabled when the guest account has password set
         /// </summary>
-        public bool EnableGuestLogin
+        private bool EnableGuestLogin
         {
             get
             {
