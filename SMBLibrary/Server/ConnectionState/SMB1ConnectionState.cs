@@ -89,21 +89,31 @@ namespace SMBLibrary.Server
         /// An open TID MUST be unique within an SMB connection.
         /// The value 0xFFFF MUST NOT be used as a valid TID. All other possible values for TID, including zero (0x0000), are valid.
         /// </summary>
-        private ushort AllocateTreeID()
+        private ushort? AllocateTreeID()
         {
-            while (m_connectedTrees.ContainsKey(m_nextTID) || m_nextTID == 0 || m_nextTID == 0xFFFF)
+            for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
-                m_nextTID++;
+                ushort treeID = (ushort)(m_nextTID + offset);
+                if (treeID == 0 || treeID == 0xFFFF)
+                {
+                    continue;
+                }
+                if (!m_connectedTrees.ContainsKey(treeID))
+                {
+                    m_nextTID = (ushort)(treeID + 1);
+                    return treeID;
+                }
             }
-            ushort treeID = m_nextTID;
-            m_nextTID++;
-            return treeID;
+            return null;
         }
 
-        public ushort AddConnectedTree(string relativePath)
+        public ushort? AddConnectedTree(string relativePath)
         {
-            ushort treeID = AllocateTreeID();
-            m_connectedTrees.Add(treeID, relativePath);
+            ushort? treeID = AllocateTreeID();
+            if (treeID.HasValue)
+            {
+                m_connectedTrees.Add(treeID.Value, relativePath);
+            }
             return treeID;
         }
 

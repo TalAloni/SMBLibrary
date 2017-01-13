@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,7 +20,13 @@ namespace SMBLibrary.Server.SMB1
             string relativePath = ServerPathUtils.GetRelativeServerPath(request.Path);
             if (String.Equals(relativePath, "\\IPC$", StringComparison.InvariantCultureIgnoreCase))
             {
-                header.TID = state.AddConnectedTree(relativePath);
+                ushort? treeID = state.AddConnectedTree(relativePath);
+                if (!treeID.HasValue)
+                {
+                    header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
+                    return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
+                }
+                header.TID = treeID.Value;
                 if (isExtended)
                 {
                     return CreateTreeConnectResponseExtended(ServiceName.NamedPipe);
@@ -48,7 +54,13 @@ namespace SMBLibrary.Server.SMB1
                     }
                     else
                     {
-                        header.TID = state.AddConnectedTree(relativePath);
+                        ushort? treeID = state.AddConnectedTree(relativePath);
+                        if (!treeID.HasValue)
+                        {
+                            header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
+                            return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
+                        }
+                        header.TID = treeID.Value;
                         if (isExtended)
                         {
                             return CreateTreeConnectResponseExtended(ServiceName.DiskShare);
