@@ -51,20 +51,9 @@ namespace SMBLibrary.Server
         }
 
         /// <param name="relativePath">e.g. \Shared</param>
-        public FileSystemShare GetShareFromRelativePath(string relativePath)
+        public FileSystemShare GetShareFromName(string shareName)
         {
-            if (relativePath.StartsWith(@"\"))
-            {
-                relativePath = relativePath.Substring(1);
-            }
-
-            int indexOfSeparator = relativePath.IndexOf(@"\");
-            if (indexOfSeparator >= 0)
-            {
-                relativePath = relativePath.Substring(0, indexOfSeparator);
-            }
-
-            int index = IndexOf(relativePath, StringComparison.InvariantCultureIgnoreCase);
+            int index = IndexOf(shareName, StringComparison.InvariantCultureIgnoreCase);
             if (index >= 0)
             {
                 return this[index];

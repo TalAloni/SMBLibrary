@@ -93,7 +93,7 @@ namespace SMBLibrary.Server
                 if (command is TreeConnectAndXRequest)
                 {
                     TreeConnectAndXRequest request = (TreeConnectAndXRequest)command;
-                    return TreeConnectHelper.GetTreeConnectResponse(header, request, state, m_shares);
+                    return TreeConnectHelper.GetTreeConnectResponse(header, request, state, m_services, m_shares);
                 }
                 else if (command is LogoffAndXRequest)
                 {
@@ -101,17 +101,7 @@ namespace SMBLibrary.Server
                 }
                 else if (state.IsTreeConnected(header.TID))
                 {
-                    string rootPath = state.GetConnectedTreePath(header.TID);
-                    ISMBShare share;
-                    if (state.IsIPC(header.TID))
-                    {
-                        share = m_services;
-                    }
-                    else
-                    {
-                        share = m_shares.GetShareFromRelativePath(rootPath);
-                    }
-
+                    ISMBShare share = state.GetConnectedTree(header.TID);
                     if (command is CreateDirectoryRequest)
                     {
                         if (!(share is FileSystemShare))

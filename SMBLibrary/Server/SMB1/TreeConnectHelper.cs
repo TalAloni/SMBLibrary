@@ -14,63 +14,48 @@ namespace SMBLibrary.Server.SMB1
 {
     public class TreeConnectHelper
     {
-        internal static SMB1Command GetTreeConnectResponse(SMB1Header header, TreeConnectAndXRequest request, SMB1ConnectionState state, ShareCollection shares)
+        internal static SMB1Command GetTreeConnectResponse(SMB1Header header, TreeConnectAndXRequest request, SMB1ConnectionState state, NamedPipeShare services, ShareCollection shares)
         {
             bool isExtended = (request.Flags & TreeConnectFlags.ExtendedResponse) > 0;
-            string relativePath = ServerPathUtils.GetRelativeServerPath(request.Path);
-            if (String.Equals(relativePath, "\\IPC$", StringComparison.InvariantCultureIgnoreCase))
+            string shareName = ServerPathUtils.GetShareName(request.Path);
+            ISMBShare share;
+            ServiceName serviceName;
+            if (String.Equals(shareName, NamedPipeShare.NamedPipeShareName, StringComparison.InvariantCultureIgnoreCase))
             {
-                ushort? treeID = state.AddConnectedTree(relativePath);
-                if (!treeID.HasValue)
-                {
-                    header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
-                    return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
-                }
-                header.TID = treeID.Value;
-                if (isExtended)
-                {
-                    return CreateTreeConnectResponseExtended(ServiceName.NamedPipe);
-                }
-                else
-                {
-                    return CreateTreeConnectResponse(ServiceName.NamedPipe);
-                }
+                share = services;
+                serviceName = ServiceName.NamedPipe;
             }
             else
             {
-                FileSystemShare share = shares.GetShareFromRelativePath(relativePath);
+                share = shares.GetShareFromName(shareName);
+                serviceName = ServiceName.DiskShare;
                 if (share == null)
                 {
                     header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
                     return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
                 }
-                else
+
+                string userName = state.GetConnectedUserName(header.UID);
+                if (!((FileSystemShare)share).HasReadAccess(userName))
                 {
-                    string userName = state.GetConnectedUserName(header.UID);
-                    if (!share.HasReadAccess(userName))
-                    {
-                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                        return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
-                    }
-                    else
-                    {
-                        ushort? treeID = state.AddConnectedTree(relativePath);
-                        if (!treeID.HasValue)
-                        {
-                            header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
-                            return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
-                        }
-                        header.TID = treeID.Value;
-                        if (isExtended)
-                        {
-                            return CreateTreeConnectResponseExtended(ServiceName.DiskShare);
-                        }
-                        else
-                        {
-                            return CreateTreeConnectResponse(ServiceName.DiskShare);
-                        }
-                    }
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
                 }
+            }
+            ushort? treeID = state.AddConnectedTree(share);
+            if (!treeID.HasValue)
+            {
+                header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
+                return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
+            }
+            header.TID = treeID.Value;
+            if (isExtended)
+            {
+                return CreateTreeConnectResponseExtended(serviceName);
+            }
+            else
+            {
+                return CreateTreeConnectResponse(serviceName);
             }
         }
 

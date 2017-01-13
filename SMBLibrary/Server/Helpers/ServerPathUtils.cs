@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -36,20 +36,32 @@ namespace SMBLibrary.Server
         /// <returns>e.g. \*</returns>
         public static string GetRelativeSharePath(string path)
         {
-            if (path.StartsWith(@"\\"))
+            string relativePath = GetRelativeServerPath(path);
+            int index = relativePath.IndexOf('\\', 1);
+            if (index > 0)
             {
-                int firstIndex = path.IndexOf('\\', 2);
-                int index = path.IndexOf('\\', firstIndex + 1);
-                if (index > 0)
-                {
-                    return path.Substring(index);
-                }
-                else
-                {
-                    return path;
-                }
+                return path.Substring(index);
             }
-            return path;
+            else
+            {
+                return @"\";
+            }
+        }
+
+        public static string GetShareName(string path)
+        {
+            string relativePath = GetRelativeServerPath(path);
+            if (relativePath.StartsWith(@"\"))
+            {
+                relativePath = relativePath.Substring(1);
+            }
+
+            int indexOfSeparator = relativePath.IndexOf(@"\");
+            if (indexOfSeparator >= 0)
+            {
+                relativePath = relativePath.Substring(0, indexOfSeparator);
+            }
+            return relativePath;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace SMBLibrary.Server
         private ushort m_nextUID = 1;
 
         // Key is TID
-        private Dictionary<ushort, string> m_connectedTrees = new Dictionary<ushort, string>();
+        private Dictionary<ushort, ISMBShare> m_connectedTrees = new Dictionary<ushort, ISMBShare>();
         private ushort m_nextTID = 1;
 
         // Key is FID
@@ -117,17 +117,17 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public ushort? AddConnectedTree(string relativePath)
+        public ushort? AddConnectedTree(ISMBShare share)
         {
             ushort? treeID = AllocateTreeID();
             if (treeID.HasValue)
             {
-                m_connectedTrees.Add(treeID.Value, relativePath);
+                m_connectedTrees.Add(treeID.Value, share);
             }
             return treeID;
         }
 
-        public string GetConnectedTreePath(ushort treeID)
+        public ISMBShare GetConnectedTree(ushort treeID)
         {
             if (m_connectedTrees.ContainsKey(treeID))
             {
@@ -147,12 +147,6 @@ namespace SMBLibrary.Server
         public bool IsTreeConnected(ushort treeID)
         {
             return m_connectedTrees.ContainsKey(treeID);
-        }
-
-        public bool IsIPC(ushort treeID)
-        {
-            string relativePath = GetConnectedTreePath(treeID);
-            return String.Equals(relativePath, "\\IPC$", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public ProcessStateObject GetProcessState(uint processID)
