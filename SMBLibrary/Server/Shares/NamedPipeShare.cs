@@ -6,7 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using SMBLibrary.RPC;
 using SMBLibrary.Services;
 
@@ -23,7 +23,21 @@ namespace SMBLibrary.Server
             this.Add(new WorkstationService(Environment.MachineName, Environment.MachineName));
         }
 
-        public RemoteService GetService(string path)
+        public Stream OpenPipe(string path)
+        {
+            // It is possible to have a named pipe that does not use RPC (e.g. MS-WSP),
+            // However this is not currently needed by our implementation.
+            RemoteService service = GetService(path);
+            if (service != null)
+            {
+                // All instances of a named pipe share the same pipe name, but each instance has its own buffers and handles,
+                // and provides a separate conduit for client/server communication.
+                return new RPCPipeStream(service);
+            }
+            return null;
+        }
+
+        private RemoteService GetService(string path)
         {
             foreach (RemoteService service in this)
             {

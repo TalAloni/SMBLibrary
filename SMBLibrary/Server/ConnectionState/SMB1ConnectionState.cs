@@ -28,8 +28,6 @@ namespace SMBLibrary.Server
         // Key is FID
         private Dictionary<ushort, OpenedFileObject> m_openedFiles = new Dictionary<ushort, OpenedFileObject>();
         private ushort m_nextFID = 1;
-        // Key is FID
-        private Dictionary<ushort, byte[]> m_namedPipeResponse = new Dictionary<ushort, byte[]>();
 
         // Key is PID
         public Dictionary<uint, ProcessStateObject> ProcessStateList = new Dictionary<uint, ProcessStateObject>();
@@ -260,25 +258,6 @@ namespace SMBLibrary.Server
                 stream.Close();
             }
             m_openedFiles.Remove(fileID);
-        }
-
-        public void StoreNamedPipeReply(ushort fileID, byte[] response)
-        {
-            m_namedPipeResponse.Add(fileID, response);
-        }
-
-        public byte[] RetrieveNamedPipeReply(ushort fileID)
-        {
-            if (m_namedPipeResponse.ContainsKey(fileID))
-            {
-                byte[] result = m_namedPipeResponse[fileID];
-                m_namedPipeResponse.Remove(fileID);
-                return result;
-            }
-            else
-            {
-                return new byte[0];
-            }
         }
 
         public uint? GetMaxDataCount(uint processID)

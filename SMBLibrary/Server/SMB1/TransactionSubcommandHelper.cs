@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -18,26 +18,17 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, NamedPipeShare share, SMB1ConnectionState state)
         {
-            string openedFilePath = state.GetOpenedFilePath(subcommand.FID);
-            if (openedFilePath == null)
+            OpenedFileObject openedFile = state.GetOpenedFileObject(subcommand.FID);
+            if (openedFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
 
             TransactionTransactNamedPipeResponse response = new TransactionTransactNamedPipeResponse();
-            RemoteService service = share.GetService(openedFilePath);
-            if (service != null)
-            {
-                RPCPDU rpcRequest = RPCPDU.GetPDU(subcommand.WriteData, 0);
-                RPCPDU rpcReply = RemoteServiceHelper.GetRPCReply(rpcRequest, service);
-                response.ReadData = rpcReply.GetBytes();
-                return response;
-            }
-
-            // This code should not execute unless the request sequence is invalid
-            header.Status = NTStatus.STATUS_INVALID_SMB;
-            return null;
+            openedFile.Stream.Write(subcommand.WriteData, 0, subcommand.WriteData.Length);
+            response.ReadData = ByteReader.ReadAllBytes(openedFile.Stream);
+            return response;
         }
     }
 }

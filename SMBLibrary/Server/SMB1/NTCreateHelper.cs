@@ -22,10 +22,10 @@ namespace SMBLibrary.Server.SMB1
             string path = request.FileName;
             if (share is NamedPipeShare)
             {
-                RemoteService service = ((NamedPipeShare)share).GetService(path);
-                if (service != null)
+                Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
+                if (pipeStream != null)
                 {
-                    ushort? fileID = state.AddOpenedFile(path);
+                    ushort? fileID = state.AddOpenedFile(path, pipeStream);
                     if (!fileID.HasValue)
                     {
                         header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;

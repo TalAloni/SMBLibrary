@@ -72,16 +72,20 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             string openedFilePath = openedFile.Path;
-            
+            Stream stream = openedFile.Stream;
             if (share is NamedPipeShare)
             {
-                return state.RetrieveNamedPipeReply(FID);
+                byte[] data = new byte[maxCount];
+                int bytesRead = stream.Read(data, 0, maxCount);
+                if (bytesRead < maxCount)
+                {
+                    // EOF, we must trim the response data array
+                    data = ByteReader.ReadBytes(data, 0, bytesRead);
+                }
+                return data;
             }
             else // FileSystemShare
             {
-                FileSystemShare fileSystemShare = (FileSystemShare)share;
-                IFileSystem fileSystem = fileSystemShare.FileSystem;
-                Stream stream = openedFile.Stream;
 
                 if (stream == null)
                 {
@@ -176,26 +180,14 @@ namespace SMBLibrary.Server.SMB1
                 return 0;
             }
             string openedFilePath = openedFile.Path;
-
+            Stream stream = openedFile.Stream;
             if (share is NamedPipeShare)
             {
-                RemoteService service = ((NamedPipeShare)share).GetService(openedFilePath);
-                if (service != null)
-                {
-                    RPCPDU rpcRequest = RPCPDU.GetPDU(data, 0);
-                    RPCPDU rpcReply = RemoteServiceHelper.GetRPCReply(rpcRequest, service);
-                    byte[] replyData = rpcReply.GetBytes();
-                    state.StoreNamedPipeReply(FID, replyData);
-                    return (uint)data.Length;
-                }
-
-                // This code should not execute unless the SMB request (sequence) is invalid
-                header.Status = NTStatus.STATUS_INVALID_SMB;
-                return 0;
+                stream.Write(data, 0, data.Length);
+                return (uint)data.Length;
             }
             else // FileSystemShare
             {
-                Stream stream = openedFile.Stream;
                 if (stream == null)
                 {
                      header.Status = NTStatus.STATUS_ACCESS_DENIED;

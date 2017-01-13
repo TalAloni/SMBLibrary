@@ -139,6 +139,7 @@
     <Compile Include="Services\Enums\PlatformName.cs" />
     <Compile Include="Services\RemoteService.cs" />
     <Compile Include="Services\RemoteServiceHelper.cs" />
+    <Compile Include="Services\RPCPipeStream.cs" />
     <Compile Include="Services\ServerService\Enums\Permissions.cs" />
     <Compile Include="Services\ServerService\Enums\ServerType.cs" />
     <Compile Include="Services\ServerService\EnumStructures\ShareTypeExtended.cs" />
