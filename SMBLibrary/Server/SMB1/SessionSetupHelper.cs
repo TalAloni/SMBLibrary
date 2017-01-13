@@ -32,12 +32,14 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (EmptyPasswordNotAllowedException)
             {
+                state.LogToServer(Severity.Information, "User '{0}' authentication using an empty password was rejected", message.UserName);
                 header.Status = NTStatus.STATUS_ACCOUNT_RESTRICTION;
                 return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
             }
 
             if (loginSuccess)
             {
+                state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", message.UserName);
                 ushort? userID = state.AddConnectedUser(message.UserName);
                 if (!userID.HasValue)
                 {
@@ -49,6 +51,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (users.FallbackToGuest(message.UserName))
             {
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", message.UserName);
                 ushort? userID = state.AddConnectedUser("Guest");
                 if (!userID.HasValue)
                 {
@@ -61,6 +64,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else
             {
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication", message.UserName);
                 header.Status = NTStatus.STATUS_LOGON_FAILURE;
                 return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
             }
@@ -121,12 +125,14 @@ namespace SMBLibrary.Server.SMB1
                 }
                 catch (EmptyPasswordNotAllowedException)
                 {
+                    state.LogToServer(Severity.Information, "User '{0}' authentication using an empty password was rejected", authenticateMessage.UserName);
                     header.Status = NTStatus.STATUS_ACCOUNT_RESTRICTION;
                     return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
 
                 if (loginSuccess)
                 {
+                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", authenticateMessage.UserName);
                     ushort? userID = state.AddConnectedUser(authenticateMessage.UserName);
                     if (!userID.HasValue)
                     {
@@ -137,6 +143,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else if (users.FallbackToGuest(authenticateMessage.UserName))
                 {
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", authenticateMessage.UserName);
                     ushort? userID = state.AddConnectedUser("Guest");
                     if (!userID.HasValue)
                     {
@@ -148,6 +155,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication", authenticateMessage.UserName);
                     header.Status = NTStatus.STATUS_LOGON_FAILURE;
                     return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
