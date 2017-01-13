@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -12,13 +12,19 @@ using Utilities;
 
 namespace SMBLibrary.Authentication.Win32
 {
+    public enum LogonType
+    {
+        Interactive = 2, // LOGON32_LOGON_INTERACTIVE
+        Network = 3,     // LOGON32_LOGON_NETWORK
+        Service = 5,     // LOGON32_LOGON_SERVICE
+    }
+
     public class LoginAPI
     {
-        public const int LOGON32_LOGON_NETWORK = 3;
-        public const int LOGON32_PROVIDER_WINNT40 = 2;
+        private const int LOGON32_PROVIDER_WINNT40 = 2;
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        public static extern bool LogonUser(
+        private static extern bool LogonUser(
             string lpszUsername,
             string lpszDomain,
             string lpszPassword,
@@ -29,12 +35,12 @@ namespace SMBLibrary.Authentication.Win32
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool CloseHandle(IntPtr hObject);
+        private static extern bool CloseHandle(IntPtr hObject);
 
-        public static bool ValidateUserPassword(string userName, string password)
+        public static bool ValidateUserPassword(string userName, string password, LogonType logonType)
         {
             IntPtr token;
-            bool success = LogonUser(userName, String.Empty, password, LOGON32_LOGON_NETWORK, LOGON32_PROVIDER_WINNT40, out token);
+            bool success = LogonUser(userName, String.Empty, password, (int)logonType, LOGON32_PROVIDER_WINNT40, out token);
             if (!success)
             {
                 uint error = (uint)Marshal.GetLastWin32Error();
@@ -53,7 +59,7 @@ namespace SMBLibrary.Authentication.Win32
         public static bool HasEmptyPassword(string userName)
         {
             IntPtr token;
-            bool success = LogonUser(userName, String.Empty, String.Empty, LOGON32_LOGON_NETWORK, LOGON32_PROVIDER_WINNT40, out token);
+            bool success = LogonUser(userName, String.Empty, String.Empty, (int)LogonType.Network, LOGON32_PROVIDER_WINNT40, out token);
             if (success)
             {
                 CloseHandle(token);
