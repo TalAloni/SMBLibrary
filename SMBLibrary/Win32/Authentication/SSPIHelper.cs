@@ -287,9 +287,19 @@ namespace SMBLibrary.Authentication.Win32
         }
 
         /// <summary>
-        /// Note: The 'limitblankpassworduse' (Under HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa)
-        /// will cause AcceptSecurityContext to return SEC_E_LOGON_DENIED when the correct password is blank.
+        /// AcceptSecurityContext will return SEC_E_LOGON_DENIED when the password is correct in these cases:
+        /// 1. The account is listed under the "Deny access to this computer from the network" list.
+        /// 2. 'limitblankpassworduse' is set to 1, non-guest is attempting to login with an empty password,
+        ///    and the Guest account is disabled, has non-empty pasword set or listed under the "Deny access to this computer from the network" list.
         /// </summary>
+        /// <remarks>
+        /// 1. 'limitblankpassworduse' will not affect the Guest account.
+        /// 2. Listing the user in the "Deny access to this computer from the network" or the "Deny logon locally" lists will not affect AcceptSecurityContext if all of these conditions are met.
+        /// - 'limitblankpassworduse' is set to 1.
+        /// - The user has an empty password set.
+        /// - Guest is NOT listed in the "Deny access to this computer from the network" list.
+        /// - Guest is enabled and has empty pasword set.
+        /// </remarks>
         public static bool AuthenticateType3Message(SecHandle serverContext, byte[] type3MessageBytes)
         {
             SecHandle newContext = new SecHandle();
