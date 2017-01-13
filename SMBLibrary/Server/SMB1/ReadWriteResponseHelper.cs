@@ -182,7 +182,7 @@ namespace SMBLibrary.Server.SMB1
                 RemoteService service = ((NamedPipeShare)share).GetService(openedFilePath);
                 if (service != null)
                 {
-                    RPCPDU rpcRequest = RPCPDU.GetPDU(data);
+                    RPCPDU rpcRequest = RPCPDU.GetPDU(data, 0);
                     RPCPDU rpcReply = RemoteServiceHelper.GetRPCReply(rpcRequest, service);
                     byte[] replyData = rpcReply.GetBytes();
                     state.StoreNamedPipeReply(FID, replyData);

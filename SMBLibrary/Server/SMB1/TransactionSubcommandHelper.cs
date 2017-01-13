@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -29,7 +29,7 @@ namespace SMBLibrary.Server.SMB1
             RemoteService service = share.GetService(openedFilePath);
             if (service != null)
             {
-                RPCPDU rpcRequest = RPCPDU.GetPDU(subcommand.WriteData);
+                RPCPDU rpcRequest = RPCPDU.GetPDU(subcommand.WriteData, 0);
                 RPCPDU rpcReply = RemoteServiceHelper.GetRPCReply(rpcRequest, service);
                 response.ReadData = rpcReply.GetBytes();
                 return response;

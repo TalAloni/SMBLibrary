@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -29,9 +29,9 @@ namespace SMBLibrary.RPC
             AuthVerifier = new byte[0];
         }
 
-        public RequestPDU(byte[] buffer) : base(buffer)
+        public RequestPDU(byte[] buffer, int offset) : base(buffer, offset)
         {
-            int offset = RPCPDU.CommonFieldsLength;
+            offset += RPCPDU.CommonFieldsLength;
             AllocationHint = LittleEndianReader.ReadUInt32(buffer, ref offset);
             ContextID = LittleEndianReader.ReadUInt16(buffer, ref offset);
             OpNum = LittleEndianReader.ReadUInt16(buffer, ref offset);

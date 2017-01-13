@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -32,14 +32,15 @@ namespace SMBLibrary.RPC
             AuthVerifier = new byte[0];
         }
 
-        public BindAckPDU(byte[] buffer) : base(buffer)
+        public BindAckPDU(byte[] buffer, int offset) : base(buffer, offset)
         {
-            int offset = RPCPDU.CommonFieldsLength;
+            int startOffset = offset;
+            offset += RPCPDU.CommonFieldsLength;
             MaxTransmitFragmentSize = LittleEndianReader.ReadUInt16(buffer, ref offset);
             MaxReceiveFragmentSize = LittleEndianReader.ReadUInt16(buffer, ref offset);
             AssociationGroupID = LittleEndianReader.ReadUInt32(buffer, ref offset);
             SecondaryAddress = RPCHelper.ReadPortAddress(buffer, ref offset);
-            int padding = (4 - (offset % 4)) % 4;
+            int padding = (4 - ((offset - startOffset) % 4)) % 4;
             offset += padding;
             ResultList = new ResultList(buffer, offset);
             offset += ResultList.Length;
