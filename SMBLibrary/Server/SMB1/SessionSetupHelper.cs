@@ -37,14 +37,26 @@ namespace SMBLibrary.Server.SMB1
 
             if (user != null)
             {
+                ushort? userID = state.AddConnectedUser(user.AccountName);
+                if (!userID.HasValue)
+                {
+                    header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
+                    return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                }
+                header.UID = userID.Value;
                 response.PrimaryDomain = request.PrimaryDomain;
-                header.UID = state.AddConnectedUser(user.AccountName);
             }
             else if (users.EnableGuestLogin)
             {
+                ushort? userID = state.AddConnectedUser("Guest");
+                if (!userID.HasValue)
+                {
+                    header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
+                    return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                }
+                header.UID = userID.Value;
                 response.Action = SessionSetupAction.SetupGuest;
                 response.PrimaryDomain = request.PrimaryDomain;
-                header.UID = state.AddConnectedUser("Guest");
             }
             else
             {
@@ -110,15 +122,26 @@ namespace SMBLibrary.Server.SMB1
                     return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
 
-
                 if (user != null)
                 {
-                    header.UID = state.AddConnectedUser(user.AccountName);
+                    ushort? userID = state.AddConnectedUser(user.AccountName);
+                    if (!userID.HasValue)
+                    {
+                        header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
+                        return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                    }
+                    header.UID = userID.Value;
                 }
                 else if (users.EnableGuestLogin)
                 {
+                    ushort? userID = state.AddConnectedUser("Guest");
+                    if (!userID.HasValue)
+                    {
+                        header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
+                        return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                    }
+                    header.UID = userID.Value;
                     response.Action = SessionSetupAction.SetupGuest;
-                    header.UID = state.AddConnectedUser("Guest");
                 }
                 else
                 {

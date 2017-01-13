@@ -45,21 +45,31 @@ namespace SMBLibrary.Server
         /// An open UID MUST be unique within an SMB connection.
         /// The value of 0xFFFE SHOULD NOT be used as a valid UID. All other possible values for a UID, excluding zero (0x0000), are valid.
         /// </summary>
-        private ushort AllocateUserID()
+        private ushort? AllocateUserID()
         {
-            while (m_connectedUsers.ContainsKey(m_nextUID) || m_nextUID == 0 || m_nextUID == 0xFFFE || m_nextUID == 0xFFFF)
+            for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
-                m_nextUID++;
+                ushort userID = (ushort)(m_nextUID + offset);
+                if (userID == 0 || userID == 0xFFFE || userID == 0xFFFF)
+                {
+                    continue;
+                }
+                if (!m_connectedUsers.ContainsKey(userID))
+                {
+                    m_nextUID = (ushort)(userID + 1);
+                    return userID;
+                }
             }
-            ushort userID = m_nextUID;
-            m_nextUID++;
-            return userID;
+            return null;
         }
 
-        public ushort AddConnectedUser(string userName)
+        public ushort? AddConnectedUser(string userName)
         {
-            ushort userID = AllocateUserID();
-            m_connectedUsers.Add(userID, userName);
+            ushort? userID = AllocateUserID();
+            if (userID.HasValue)
+            {
+                m_connectedUsers.Add(userID.Value, userName);
+            }
             return userID;
         }
 
