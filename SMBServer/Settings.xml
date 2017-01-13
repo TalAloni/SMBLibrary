@@ -8,6 +8,7 @@
   </Shares>
   <Users>
     <User AccountName="Admin" Password="admin"></User>
+    <User AccountName="Guest" Password=""></User>
     <User AccountName="Test" Password="test"></User>
   </Users>
 </Settings>
