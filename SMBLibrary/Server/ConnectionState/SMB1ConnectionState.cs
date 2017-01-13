@@ -178,33 +178,43 @@ namespace SMBLibrary.Server
         /// The value 0xFFFF MUST NOT be used as a valid FID. All other possible values for FID, including zero (0x0000) are valid.
         /// </summary>
         /// <returns></returns>
-        private ushort AllocateFileID()
+        private ushort? AllocateFileID()
         {
-            while (m_openedFiles.ContainsKey(m_nextFID) || m_nextFID == 0 || m_nextFID == 0xFFFF)
+            for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
-                m_nextFID++;
+                ushort fileID = (ushort)(m_nextFID + offset);
+                if (fileID == 0 || fileID == 0xFFFF)
+                {
+                    continue;
+                }
+                if (!m_openedFiles.ContainsKey(fileID))
+                {
+                    m_nextFID = (ushort)(fileID + 1);
+                    return fileID;
+                }
             }
-            ushort fileID = m_nextFID;
-            m_nextFID++;
-            return fileID;
+            return null;
         }
 
         /// <param name="relativePath">Should include the path relative to the file system</param>
         /// <returns>FileID</returns>
-        public ushort AddOpenedFile(string relativePath)
+        public ushort? AddOpenedFile(string relativePath)
         {
             return AddOpenedFile(relativePath, null);
         }
 
-        public ushort AddOpenedFile(string relativePath, Stream stream)
+        public ushort? AddOpenedFile(string relativePath, Stream stream)
         {
             return AddOpenedFile(relativePath, stream, false);
         }
 
-        public ushort AddOpenedFile(string relativePath, Stream stream, bool deleteOnClose)
+        public ushort? AddOpenedFile(string relativePath, Stream stream, bool deleteOnClose)
         {
-            ushort fileID = AllocateFileID();
-            m_openedFiles.Add(fileID, new OpenedFileObject(relativePath, stream, deleteOnClose));
+            ushort? fileID = AllocateFileID();
+            if (fileID.HasValue)
+            {
+                m_openedFiles.Add(fileID.Value, new OpenedFileObject(relativePath, stream, deleteOnClose));
+            }
             return fileID;
         }
 

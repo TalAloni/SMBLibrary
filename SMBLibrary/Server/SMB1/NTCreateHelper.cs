@@ -25,14 +25,19 @@ namespace SMBLibrary.Server.SMB1
                 RemoteService service = ((NamedPipeShare)share).GetService(path);
                 if (service != null)
                 {
-                    ushort fileID = state.AddOpenedFile(path);
+                    ushort? fileID = state.AddOpenedFile(path);
+                    if (!fileID.HasValue)
+                    {
+                        header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
+                        return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                    }
                     if (isExtended)
                     {
-                        return CreateResponseExtendedForNamedPipe(fileID);
+                        return CreateResponseExtendedForNamedPipe(fileID.Value);
                     }
                     else
                     {
-                        return CreateResponseForNamedPipe(fileID);
+                        return CreateResponseForNamedPipe(fileID.Value);
                     }
                 }
 
@@ -294,10 +299,15 @@ namespace SMBLibrary.Server.SMB1
                     }
                 }
 
-                ushort fileID = state.AddOpenedFile(path, stream, deleteOnClose);
+                ushort? fileID = state.AddOpenedFile(path, stream, deleteOnClose);
+                if (!fileID.HasValue)
+                {
+                    header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
+                    return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                }
                 if (isExtended)
                 {
-                    NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileSystemEntry(entry, fileID);
+                    NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileSystemEntry(entry, fileID.Value);
                     if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
                     {
                         response.OpLockLevel = OpLockLevel.BatchOpLockGranted;
@@ -306,7 +316,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
-                    NTCreateAndXResponse response = CreateResponseFromFileSystemEntry(entry, fileID);
+                    NTCreateAndXResponse response = CreateResponseFromFileSystemEntry(entry, fileID.Value);
                     if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
                     {
                         response.OpLockLevel = OpLockLevel.BatchOpLockGranted;

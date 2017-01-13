@@ -25,14 +25,19 @@ namespace SMBLibrary.Server.SMB1
                 RemoteService service = ((NamedPipeShare)share).GetService(path);
                 if (service != null)
                 {
-                    ushort fileID = state.AddOpenedFile(path);
+                    ushort? fileID = state.AddOpenedFile(path);
+                    if (!fileID.HasValue)
+                    {
+                        header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
+                        return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                    }
                     if (isExtended)
                     {
-                        return CreateResponseExtendedForNamedPipe(fileID);
+                        return CreateResponseExtendedForNamedPipe(fileID.Value);
                     }
                     else
                     {
-                        return CreateResponseForNamedPipe(fileID);
+                        return CreateResponseForNamedPipe(fileID.Value);
                     }
                 }
 
@@ -128,14 +133,19 @@ namespace SMBLibrary.Server.SMB1
                         stream = new PrefetchedStream(stream);
                     }
                 }
-                ushort fileID = state.AddOpenedFile(path, stream);
+                ushort? fileID = state.AddOpenedFile(path, stream);
+                if (!fileID.HasValue)
+                {
+                    header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
+                    return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                }
                 if (isExtended)
                 {
-                    return CreateResponseExtendedFromFileSystemEntry(entry, fileID, openResult);
+                    return CreateResponseExtendedFromFileSystemEntry(entry, fileID.Value, openResult);
                 }
                 else
                 {
-                    return CreateResponseFromFileSystemEntry(entry, fileID, openResult);
+                    return CreateResponseFromFileSystemEntry(entry, fileID.Value, openResult);
                 }
             }
         }
