@@ -40,12 +40,6 @@ namespace SMBLibrary.Server.SMB1
             }
             bool exactNameWithoutExtension = searchPattern.Contains("\"");
 
-            if (state.OpenSearches.Count > SMB1ConnectionState.MaxSearches)
-            {
-                header.Status = NTStatus.STATUS_OS2_NO_MORE_SIDS;
-                return null;
-            }
-
             FileSystemEntry entry = fileSystem.GetEntry(path);
             if (entry == null)
             {
@@ -128,7 +122,13 @@ namespace SMBLibrary.Server.SMB1
             }
             else
             {
-                response.SID = state.AllocateSearchHandle();
+                ushort? searchHandle = state.AllocateSearchHandle();
+                if (!searchHandle.HasValue)
+                {
+                    header.Status = NTStatus.STATUS_OS2_NO_MORE_SIDS;
+                    return null;
+                }
+                response.SID = searchHandle.Value;
                 entries.RemoveRange(0, returnCount);
                 state.OpenSearches.Add(response.SID, entries);
             }

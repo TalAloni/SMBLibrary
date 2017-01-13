@@ -270,15 +270,22 @@ namespace SMBLibrary.Server
             }
         }
 
-        public ushort AllocateSearchHandle()
+        public ushort? AllocateSearchHandle()
         {
-            while (OpenSearches.ContainsKey(m_nextSearchHandle) || m_nextSearchHandle == 0 || m_nextSearchHandle == 0xFFFF)
+            for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
-                m_nextSearchHandle++;
+                ushort searchHandle = (ushort)(m_nextSearchHandle + offset);
+                if (searchHandle == 0 || searchHandle == 0xFFFF)
+                {
+                    continue;
+                }
+                if (!OpenSearches.ContainsKey(searchHandle))
+                {
+                    m_nextSearchHandle = (ushort)(searchHandle + 1);
+                    return searchHandle;
+                }
             }
-            ushort searchHandle = m_nextSearchHandle;
-            m_nextSearchHandle++;
-            return searchHandle;
+            return null;
         }
 
         public void ReleaseSearchHandle(ushort searchHandle)
