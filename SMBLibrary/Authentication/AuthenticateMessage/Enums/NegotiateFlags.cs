@@ -34,7 +34,8 @@ namespace SMBLibrary.Authentication
 
         /// <summary>
         /// NegotiateLanManagerKey and NegotiateExtendedSecurity are mutually exclusive
-        /// If both are set then NegotiateLanManagerKey must be ignored
+        /// If both are set then NegotiateLanManagerKey must be ignored.
+        /// NTLM v2 requires this flag to be set.
         /// </summary>
         NegotiateExtendedSecurity = 0x80000, // NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY
         NegotiateIdentify = 0x100000, // NTLMSSP_NEGOTIATE_IDENTIFY

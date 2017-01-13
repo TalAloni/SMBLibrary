@@ -28,7 +28,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// LM v1 / NTLM v1
         /// </summary>
-        public User AuthenticateV1(string accountNameToAuth, byte[] serverChallenge, byte[] lmResponse, byte[] ntlmResponse)
+        private User AuthenticateV1(string accountNameToAuth, byte[] serverChallenge, byte[] lmResponse, byte[] ntlmResponse)
         {
             for (int index = 0; index < this.Count; index++)
             {
@@ -56,7 +56,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// LM v1 / NTLM v1 Extended Security
         /// </summary>
-        public User AuthenticateV1Extended(string accountNameToAuth, byte[] serverChallenge, byte[] lmResponse, byte[] ntlmResponse)
+        private User AuthenticateV1Extended(string accountNameToAuth, byte[] serverChallenge, byte[] lmResponse, byte[] ntlmResponse)
         {
             for (int index = 0; index < this.Count; index++)
             {
@@ -80,7 +80,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// LM v2 / NTLM v2
         /// </summary>
-        public User AuthenticateV2(string domainNameToAuth, string accountNameToAuth, byte[] serverChallenge, byte[] lmResponse, byte[] ntlmResponse)
+        private User AuthenticateV2(string domainNameToAuth, string accountNameToAuth, byte[] serverChallenge, byte[] lmResponse, byte[] ntlmResponse)
         {
             for (int index = 0; index < this.Count; index++)
             {
@@ -112,13 +112,13 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public byte[] GenerateServerChallenge()
+        private byte[] GenerateServerChallenge()
         {
             new Random().NextBytes(m_serverChallenge);
             return m_serverChallenge;
         }
 
-        public ChallengeMessage GetChallengeMessage(byte[] negotiateMessageBytes)
+        public ChallengeMessage GetChallengeMessage(NegotiateMessage negotiateMessage)
         {
             byte[] serverChallenge = GenerateServerChallenge();
 
@@ -138,42 +138,29 @@ namespace SMBLibrary.Server
             return message;
         }
 
-        public byte[] GetChallengeMessageBytes(byte[] negotiateMessageBytes)
+        public bool Authenticate(AuthenticateMessage message)
         {
-            ChallengeMessage message = GetChallengeMessage(negotiateMessageBytes);
-            return message.GetBytes();
-        }
+            if ((message.NegotiateFlags & NegotiateFlags.NegotiateAnonymous) > 0)
+            {
+                return this.EnableGuestLogin;
+            }
 
-        public User Authenticate(byte[] authenticateMessageBytes)
-        {
-            AuthenticateMessage message = new AuthenticateMessage(authenticateMessageBytes);
-            return Authenticate(message);
-        }
-
-        public User Authenticate(AuthenticateMessage message)
-        {
             User user;
             if ((message.NegotiateFlags & NegotiateFlags.NegotiateExtendedSecurity) > 0)
             {
                 user = AuthenticateV1Extended(message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
+                if (user == null)
+                {
+                    // NTLM v2:
+                    user = AuthenticateV2(message.DomainName, message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
+                }
             }
             else
             {
                 user = AuthenticateV1(message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
             }
 
-            if (user == null)
-            {
-                // NTLM v2
-                user = AuthenticateV2(message.DomainName, message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
-            }
-
-            return user;
-        }
-
-        public User Authenticate(string accountNameToAuth, byte[] lmResponse, byte[] ntlmResponse)
-        {
-            return AuthenticateV1(accountNameToAuth, m_serverChallenge, lmResponse, ntlmResponse);
+            return (user != null);
         }
 
         public bool FallbackToGuest(string userName)

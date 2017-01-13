@@ -24,10 +24,11 @@ namespace SMBLibrary.Server.SMB1
             // The PrimaryDomain field in the request is used to determine with domain controller should authenticate the user credentials,
             // However, the domain controller itself does not use this field.
             // See: http://msdn.microsoft.com/en-us/library/windows/desktop/aa378749%28v=vs.85%29.aspx
-            User user;
+            AuthenticateMessage message = CreateAuthenticateMessage(request.AccountName, request.OEMPassword, request.UnicodePassword);
+            bool loginSuccess;
             try
             {
-                user = users.Authenticate(request.AccountName, request.OEMPassword, request.UnicodePassword);
+                loginSuccess = users.Authenticate(message);
             }
             catch (EmptyPasswordNotAllowedException)
             {
@@ -35,9 +36,9 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
             }
 
-            if (user != null)
+            if (loginSuccess)
             {
-                ushort? userID = state.AddConnectedUser(user.AccountName);
+                ushort? userID = state.AddConnectedUser(message.UserName);
                 if (!userID.HasValue)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
@@ -46,7 +47,7 @@ namespace SMBLibrary.Server.SMB1
                 header.UID = userID.Value;
                 response.PrimaryDomain = request.PrimaryDomain;
             }
-            else if (users.FallbackToGuest(user.AccountName))
+            else if (users.FallbackToGuest(message.UserName))
             {
                 ushort? userID = state.AddConnectedUser("Guest");
                 if (!userID.HasValue)
@@ -98,23 +99,25 @@ namespace SMBLibrary.Server.SMB1
             MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(messageBytes);
             if (messageType == MessageTypeName.Negotiate)
             {
-                byte[] challengeMessageBytes = users.GetChallengeMessageBytes(messageBytes);
+                NegotiateMessage negotiateMessage = new NegotiateMessage(messageBytes);
+                ChallengeMessage challengeMessage = users.GetChallengeMessage(negotiateMessage);
                 if (isRawMessage)
                 {
-                    response.SecurityBlob = challengeMessageBytes;
+                    response.SecurityBlob = challengeMessage.GetBytes();
                 }
                 else
                 {
-                    response.SecurityBlob = GSSAPIHelper.GetGSSTokenResponseBytesFromNTLMSSPMessage(challengeMessageBytes);
+                    response.SecurityBlob = GSSAPIHelper.GetGSSTokenResponseBytesFromNTLMSSPMessage(challengeMessage.GetBytes());
                 }
                 header.Status = NTStatus.STATUS_MORE_PROCESSING_REQUIRED;
             }
             else // MessageTypeName.Authenticate
             {
-                User user;
+                AuthenticateMessage authenticateMessage = new AuthenticateMessage(messageBytes);
+                bool loginSuccess;
                 try
                 {
-                    user = users.Authenticate(messageBytes);
+                    loginSuccess = users.Authenticate(authenticateMessage);
                 }
                 catch (EmptyPasswordNotAllowedException)
                 {
@@ -122,9 +125,9 @@ namespace SMBLibrary.Server.SMB1
                     return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
 
-                if (user != null)
+                if (loginSuccess)
                 {
-                    ushort? userID = state.AddConnectedUser(user.AccountName);
+                    ushort? userID = state.AddConnectedUser(authenticateMessage.UserName);
                     if (!userID.HasValue)
                     {
                         header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
@@ -132,7 +135,7 @@ namespace SMBLibrary.Server.SMB1
                     }
                     header.UID = userID.Value;
                 }
-                else if (users.FallbackToGuest(user.AccountName))
+                else if (users.FallbackToGuest(authenticateMessage.UserName))
                 {
                     ushort? userID = state.AddConnectedUser("Guest");
                     if (!userID.HasValue)
@@ -153,6 +156,17 @@ namespace SMBLibrary.Server.SMB1
             response.NativeLanMan = String.Empty; // "Windows Server 2003 5.2"
 
             return response;
+        }
+
+        private static AuthenticateMessage CreateAuthenticateMessage(string accountNameToAuth, byte[] lmResponse, byte[] ntlmResponse)
+        {
+            AuthenticateMessage authenticateMessage = new AuthenticateMessage();
+            authenticateMessage.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.NegotiateOEM | NegotiateFlags.RequestTarget | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateSeal | NegotiateFlags.NegotiateLanManagerKey | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.Negotiate56;
+            authenticateMessage.UserName = accountNameToAuth;
+            authenticateMessage.LmChallengeResponse = lmResponse;
+            authenticateMessage.NtChallengeResponse = ntlmResponse;
+            authenticateMessage.Version = Authentication.Version.Server2003;
+            return authenticateMessage;
         }
     }
 }

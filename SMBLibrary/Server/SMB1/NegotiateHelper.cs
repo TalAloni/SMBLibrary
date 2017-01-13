@@ -18,7 +18,7 @@ namespace SMBLibrary.Server.SMB1
     /// </summary>
     public class NegotiateHelper
     {
-        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, byte[] serverChallenge)
+        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, INTLMAuthenticationProvider users)
         {
             NegotiateResponseNTLM response = new NegotiateResponseNTLM();
 
@@ -37,7 +37,8 @@ namespace SMBLibrary.Server.SMB1
                                     ServerCapabilities.LargeWrite;
             response.SystemTime = DateTime.UtcNow;
             response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
-            response.Challenge = serverChallenge;
+            ChallengeMessage challengeMessage = users.GetChallengeMessage(CreateNegotiateMessage());
+            response.Challenge = challengeMessage.ServerChallenge;
             response.DomainName = String.Empty;
             response.ServerName = String.Empty;
 
@@ -66,6 +67,14 @@ namespace SMBLibrary.Server.SMB1
             response.ServerGuid = serverGuid;
 
             return response;
+        }
+
+        private static NegotiateMessage CreateNegotiateMessage()
+        {
+            NegotiateMessage negotiateMessage = new NegotiateMessage();
+            negotiateMessage.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.NegotiateOEM | NegotiateFlags.RequestTarget | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateSeal | NegotiateFlags.NegotiateLanManagerKey | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.Negotiate56;
+            negotiateMessage.Version = Authentication.Version.Server2003;
+            return negotiateMessage;
         }
     }
 }

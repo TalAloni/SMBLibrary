@@ -64,8 +64,7 @@ namespace SMBLibrary.Server
                     }
                     else
                     {
-                        byte[] serverChallenge = m_users.GenerateServerChallenge();
-                        return NegotiateHelper.GetNegotiateResponse(header, request, serverChallenge);
+                        return NegotiateHelper.GetNegotiateResponse(header, request, m_users);
                     }
                 }
                 else

@@ -29,158 +29,97 @@ namespace SMBLibrary.Server.Win32
             }
         }
 
-        public byte[] GenerateServerChallenge()
+        public ChallengeMessage GetChallengeMessage(NegotiateMessage negotiateMessage)
         {
-            NegotiateMessage negotiateMessage = new NegotiateMessage();
-            negotiateMessage.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.NegotiateOEM | NegotiateFlags.RequestTarget | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateSeal | NegotiateFlags.NegotiateLanManagerKey | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.Negotiate56;
-            negotiateMessage.Version = Authentication.Version.Server2003;
-
             byte[] negotiateMessageBytes = negotiateMessage.GetBytes();
             byte[] challengeMessageBytes = SSPIHelper.GetType2Message(negotiateMessageBytes, out m_serverContext);
             ChallengeMessage challengeMessage = new ChallengeMessage(challengeMessageBytes);
-            
             m_serverChallenge = challengeMessage.ServerChallenge;
-            return m_serverChallenge;
-        }
-
-        public byte[] GetChallengeMessageBytes(byte[] negotiateMessageBytes)
-        {
-            byte[] challengeMessageBytes = SSPIHelper.GetType2Message(negotiateMessageBytes, out m_serverContext);
-            ChallengeMessage message = new ChallengeMessage(challengeMessageBytes);
-            m_serverChallenge = message.ServerChallenge;
-            return challengeMessageBytes;
+            return challengeMessage;
         }
 
         /// <summary>
-        /// Note: The 'limitblankpassworduse' (Under HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa)
-        /// will cause AcceptSecurityContext to return SEC_E_LOGON_DENIED when the correct password is blank.
+        /// Authenticate will return false when the password is correct in these cases:
+        /// 1. The correct password is blank and 'limitblankpassworduse' is set to 1.
+        /// 2. The user is listed in the "Deny access to this computer from the network" list.
         /// </summary>
-        public User Authenticate(string accountNameToAuth, byte[] lmResponse, byte[] ntlmResponse)
+        public bool Authenticate(AuthenticateMessage message)
         {
-            if (accountNameToAuth == String.Empty ||
-                (String.Equals(accountNameToAuth, "Guest", StringComparison.InvariantCultureIgnoreCase) && IsPasswordEmpty(lmResponse, ntlmResponse) && this.EnableGuestLogin))
+            if ((message.NegotiateFlags & NegotiateFlags.NegotiateAnonymous) > 0)
             {
-                int guestIndex = IndexOf("Guest");
-                if (guestIndex >= 0)
-                {
-                    return this[guestIndex];
-                }
-                return null;
+                return this.EnableGuestLogin;
             }
 
-            int index = IndexOf(accountNameToAuth);
-            if (index >= 0)
+            // AuthenticateType3Message is not reliable when 'limitblankpassworduse' is set to 1 and the user has an empty password set.
+            // Note: Windows LogonUser API calls will be listed in the security event log.
+            if (!AreEmptyPasswordsAllowed() &&
+                IsPasswordEmpty(message) &&
+                LoginAPI.HasEmptyPassword(message.UserName))
             {
-                // We should not spam the security event log, and should call the Windows LogonUser API
-                // just to verify the user has a blank password.
-                if (!AreEmptyPasswordsAllowed() &&
-                    IsPasswordEmpty(lmResponse, ntlmResponse) &&
-                    LoginAPI.HasEmptyPassword(accountNameToAuth))
+                if (FallbackToGuest(message.UserName))
+                {
+                    return false;
+                }
+                else
                 {
                     throw new EmptyPasswordNotAllowedException();
                 }
-
-                AuthenticateMessage authenticateMessage = new AuthenticateMessage();
-                authenticateMessage.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.NegotiateOEM | NegotiateFlags.RequestTarget | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateSeal | NegotiateFlags.NegotiateLanManagerKey | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.Negotiate56;
-                authenticateMessage.UserName = accountNameToAuth;
-                authenticateMessage.LmChallengeResponse = lmResponse;
-                authenticateMessage.NtChallengeResponse = ntlmResponse;
-                authenticateMessage.Version = Authentication.Version.Server2003;
-                byte[] authenticateMessageBytes = authenticateMessage.GetBytes();
-
-                bool success = SSPIHelper.AuthenticateType3Message(m_serverContext, authenticateMessageBytes);
-                if (success)
-                {
-                    return this[index];
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Note: The 'limitblankpassworduse' (Under HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa)
-        /// will cause AcceptSecurityContext to return SEC_E_LOGON_DENIED when the correct password is blank.
-        /// </summary>
-        public User Authenticate(byte[] authenticateMessageBytes)
-        {
-            AuthenticateMessage message = new AuthenticateMessage(authenticateMessageBytes);
-            if ((message.NegotiateFlags & NegotiateFlags.NegotiateAnonymous) > 0 ||
-                (String.Equals(message.UserName, "Guest", StringComparison.InvariantCultureIgnoreCase) && IsPasswordEmpty(message) && this.EnableGuestLogin))
-            {
-                int guestIndex = IndexOf("Guest");
-                if (guestIndex >= 0)
-                {
-                    return this[guestIndex];
-                }
-                return null;
             }
 
-            int index = IndexOf(message.UserName);
-            if (index >= 0)
-            {
-                // We should not spam the security event log, and should call the Windows LogonUser API
-                // just to verify the user has a blank password.
-                if (!AreEmptyPasswordsAllowed() &&
-                    IsPasswordEmpty(message) &&
-                    LoginAPI.HasEmptyPassword(message.UserName))
-                {
-                    throw new EmptyPasswordNotAllowedException();
-                }
-
-                bool success = SSPIHelper.AuthenticateType3Message(m_serverContext, authenticateMessageBytes);
-                if (success)
-                {
-                    return this[index];
-                }
-            }
-            return null;
-        }
-
-        public bool IsPasswordEmpty(byte[] lmResponse, byte[] ntlmResponse)
-        {
-            // Special case for anonymous authentication
-            // Windows NT4 SP6 will send 1 null byte OEMPassword and 0 bytes UnicodePassword for anonymous authentication
-            if (lmResponse.Length == 0 || ByteUtils.AreByteArraysEqual(lmResponse, new byte[] { 0x00 }) || ntlmResponse.Length == 0)
-            {
-                return true;
-            }
-
-            byte[] emptyPasswordLMv1Response = NTAuthentication.ComputeLMv1Response(m_serverChallenge, String.Empty);
-            if (ByteUtils.AreByteArraysEqual(emptyPasswordLMv1Response, lmResponse))
-            {
-                return true;
-            }
-
-            byte[] emptyPasswordNTLMv1Response = NTAuthentication.ComputeNTLMv1Response(m_serverChallenge, String.Empty);
-            if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv1Response, ntlmResponse))
-            {
-                return true;
-            }
-
-            return false;
+            byte[] messageBytes = message.GetBytes();
+            bool success = SSPIHelper.AuthenticateType3Message(m_serverContext, messageBytes);
+            return success;
         }
 
         public bool IsPasswordEmpty(AuthenticateMessage message)
         {
-            // Special case for anonymous authentication, see [MS-NLMP] 3.3.1 - NTLM v1 Authentication
+            // See [MS-NLMP] 3.3.1 - NTLM v1 Authentication
+            // Special case for anonymous authentication:
             if (message.LmChallengeResponse.Length == 1 || message.NtChallengeResponse.Length == 0)
             {
                 return true;
             }
 
-            byte[] clientChallenge = ByteReader.ReadBytes(message.LmChallengeResponse, 0, 8);
-            byte[] emptyPasswordNTLMv1Response = NTAuthentication.ComputeNTLMv1ExtendedSecurityResponse(m_serverChallenge, clientChallenge, String.Empty);
-            if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv1Response, message.NtChallengeResponse))
+            if ((message.NegotiateFlags & NegotiateFlags.NegotiateExtendedSecurity) > 0)
             {
-                return true;
-            }
+                // NTLM v1 extended security:
+                byte[] clientChallenge = ByteReader.ReadBytes(message.LmChallengeResponse, 0, 8);
+                byte[] emptyPasswordNTLMv1Response = NTAuthentication.ComputeNTLMv1ExtendedSecurityResponse(m_serverChallenge, clientChallenge, String.Empty);
+                if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv1Response, message.NtChallengeResponse))
+                {
+                    return true;
+                }
 
-            if (message.NtChallengeResponse.Length > 24)
+                // NTLM v2:
+                byte[] _LMv2ClientChallenge = ByteReader.ReadBytes(message.LmChallengeResponse, 16, 8);
+                byte[] emptyPasswordLMv2Response = NTAuthentication.ComputeLMv2Response(m_serverChallenge, _LMv2ClientChallenge, String.Empty, message.UserName, message.DomainName);
+                if (ByteUtils.AreByteArraysEqual(emptyPasswordLMv2Response, message.LmChallengeResponse))
+                {
+                    return true;
+                }
+
+                if (message.NtChallengeResponse.Length > 24)
+                {
+                    NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(message.NtChallengeResponse, 16);
+                    byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
+                    byte[] emptyPasswordNTLMv2Response = NTAuthentication.ComputeNTLMv2Response(m_serverChallenge, clientChallengeStructurePadded, String.Empty, message.UserName, message.DomainName);
+                    if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv2Response, message.NtChallengeResponse))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
             {
-                NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(message.NtChallengeResponse, 16);
-                byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
-                byte[] emptyPasswordNTLMv2Response = NTAuthentication.ComputeNTLMv2Response(m_serverChallenge, clientChallengeStructurePadded, String.Empty, message.UserName, message.DomainName);
-                if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv2Response, message.NtChallengeResponse))
+                // NTLM v1:
+                byte[] emptyPasswordLMv1Response = NTAuthentication.ComputeLMv1Response(m_serverChallenge, String.Empty);
+                if (ByteUtils.AreByteArraysEqual(emptyPasswordLMv1Response, message.LmChallengeResponse))
+                {
+                    return true;
+                }
+
+                byte[] emptyPasswordNTLMv1Response = NTAuthentication.ComputeNTLMv1Response(m_serverChallenge, String.Empty);
+                if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv1Response, message.NtChallengeResponse))
                 {
                     return true;
                 }
@@ -195,13 +134,16 @@ namespace SMBLibrary.Server.Win32
         }
 
         /// <summary>
-        /// We immitate Windows, Guest logins are disabled when the guest account has password set
+        /// We immitate Windows, Guest logins are disabled in any of these cases:
+        /// 1. The Guest account is disabled.
+        /// 2. The Guest account has password set.
+        /// 3. The Guest account is listed in the "deny access to this computer from the network" list.
         /// </summary>
         private bool EnableGuestLogin
         {
             get
             {
-                return (IndexOf("Guest") >= 0) && LoginAPI.HasEmptyPassword("Guest");
+                return LoginAPI.ValidateUserPassword("Guest", String.Empty, LogonType.Network);
             }
         }
 

@@ -13,13 +13,9 @@ namespace SMBLibrary.Server
 {
     public interface INTLMAuthenticationProvider
     {
-        // CIFS style NTLM
-        byte[] GenerateServerChallenge();
-        User Authenticate(string accountNameToAuth, byte[] lmResponse, byte[] ntlmResponse);
-
-        // SSPI style NTLM
-        byte[] GetChallengeMessageBytes(byte[] negotiateMessageBytes);
-        User Authenticate(byte[] authenticateMessageBytes);
+        ChallengeMessage GetChallengeMessage(NegotiateMessage negotiateMessage);
+        
+        bool Authenticate(AuthenticateMessage authenticateMessage);
 
         /// <summary>
         /// Permit access to this user via the guest user account if the normal authentication process fails.
