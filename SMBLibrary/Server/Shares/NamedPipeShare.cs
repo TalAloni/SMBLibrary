@@ -39,6 +39,10 @@ namespace SMBLibrary.Server
 
         private RemoteService GetService(string path)
         {
+            if (path.StartsWith(@"\"))
+            {
+                path = path.Substring(1);
+            }
             foreach (RemoteService service in this)
             {
                 if (String.Equals(path, service.PipeName, StringComparison.InvariantCultureIgnoreCase))
