@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -32,7 +32,7 @@ namespace SMBLibrary.SMB1
 
         public Transaction2Open2Response() : base()
         {
-            CreationTime = SMB1Helper.FileTimeNotSpecified;
+            CreationTime = SMB1Helper.UTimeNotSpecified;
         }
 
         public Transaction2Open2Response(byte[] parameters, byte[] data, bool isUnicode) : base()
