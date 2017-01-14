@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -43,7 +43,7 @@ namespace SMBLibrary.SMB1
             uint volumeLabelSize = (uint)(VolumeLabel.Length * 2);
 
             byte[] buffer = new byte[FixedLength + volumeLabelSize];
-            SMB1Helper.WriteFileTime(buffer, 0, VolumeCreationTime);
+            FileTimeHelper.WriteFileTime(buffer, 0, VolumeCreationTime);
             LittleEndianWriter.WriteUInt32(buffer, 8, SerialNumber);
             LittleEndianWriter.WriteUInt32(buffer, 12, volumeLabelSize);
             LittleEndianWriter.WriteUInt16(buffer, 16, Reserved);

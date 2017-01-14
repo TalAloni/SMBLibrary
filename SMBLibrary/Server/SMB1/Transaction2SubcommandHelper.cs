@@ -323,25 +323,9 @@ namespace SMBLibrary.Server.SMB1
                         return null;
                     }
 
-                    DateTime? creationTime = null;
-                    DateTime? lastWriteDT = null;
-                    DateTime? lastAccessTime = null;
-                    if (info.CreationTime != SMB1Helper.FileTimeNotSpecified)
-                    {
-                        creationTime = info.CreationTime;
-                    }
-                    if (info.LastWriteTime != SMB1Helper.FileTimeNotSpecified)
-                    {
-                        lastWriteDT = info.LastWriteTime;
-                    }
-                    if (info.LastAccessTime != SMB1Helper.FileTimeNotSpecified)
-                    {
-                        lastAccessTime = info.LastAccessTime;
-                    }
-
                     try
                     {
-                        share.FileSystem.SetDates(openedFilePath, creationTime, lastWriteDT, lastAccessTime);
+                        share.FileSystem.SetDates(openedFilePath, info.CreationTime, info.LastWriteTime, info.LastAccessTime);
                     }
                     catch (IOException ex)
                     {

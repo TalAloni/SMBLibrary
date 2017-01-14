@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -14,7 +14,6 @@ namespace SMBLibrary.SMB1
     public class SMB1Helper
     {
         public static readonly DateTime UTimeNotSpecified = new DateTime(1970, 1, 1);
-        public static readonly DateTime FileTimeNotSpecified = new DateTime(1601, 1, 1);
 
         public static DateTime ReadFileTime(byte[] buffer, int offset)
         {
@@ -34,31 +33,6 @@ namespace SMBLibrary.SMB1
         {
             offset += 8;
             return ReadFileTime(buffer, offset - 8);
-        }
-
-        public static DateTime ReadSetFileTime(byte[] buffer, int offset)
-        {
-            long span = LittleEndianConverter.ToInt64(buffer, offset);
-            if (span >= 0)
-            {
-                return DateTime.FromFileTimeUtc(span);
-            }
-            else
-            {
-                return FileTimeNotSpecified;
-            }
-        }
-
-        public static void WriteFileTime(byte[] buffer, int offset, DateTime time)
-        {
-            long span = time.ToFileTimeUtc();
-            LittleEndianWriter.WriteInt64(buffer, offset, span);
-        }
-
-        public static void WriteFileTime(byte[] buffer, ref int offset, DateTime time)
-        {
-            WriteFileTime(buffer, offset, time);
-            offset += 8;
         }
 
         // UTime - The number of seconds since Jan 1, 1970, 00:00:00

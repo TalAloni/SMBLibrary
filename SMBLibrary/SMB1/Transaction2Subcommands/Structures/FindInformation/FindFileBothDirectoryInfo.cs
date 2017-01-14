@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -69,10 +69,10 @@ namespace SMBLibrary.SMB1
 
             LittleEndianWriter.WriteUInt32(buffer, ref offset, NextEntryOffset);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, FileIndex);
-            SMB1Helper.WriteFileTime(buffer, ref offset, CreationTime);
-            SMB1Helper.WriteFileTime(buffer, ref offset, LastAccessTime);
-            SMB1Helper.WriteFileTime(buffer, ref offset, LastWriteTime);
-            SMB1Helper.WriteFileTime(buffer, ref offset, LastChangeTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, CreationTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, LastAccessTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, LastWriteTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, LastChangeTime);
             LittleEndianWriter.WriteUInt64(buffer, ref offset, EndOfFile);
             LittleEndianWriter.WriteUInt64(buffer, ref offset, AllocationSize);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)ExtFileAttributes);
