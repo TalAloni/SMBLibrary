@@ -20,7 +20,7 @@ namespace SMBLibrary.SMB1
         // Parameters:
         public NTCreateFlags Flags;
         public uint RootDirectoryFID;
-        public DesiredAccess DesiredAccess;
+        public FileAccessMask DesiredAccess;
         public ulong AllocationSize;
         public ExtendedFileAttributes ExtFileAttributes;
         public ShareAccess ShareAccess;
@@ -45,7 +45,7 @@ namespace SMBLibrary.SMB1
             int parametersOffset = 0;
             Flags = (NTCreateFlags)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
             RootDirectoryFID = LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
-            DesiredAccess = (DesiredAccess)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
+            DesiredAccess = (FileAccessMask)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
             AllocationSize = LittleEndianReader.ReadUInt64(parameters, ref parametersOffset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
             ShareAccess = (ShareAccess)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);

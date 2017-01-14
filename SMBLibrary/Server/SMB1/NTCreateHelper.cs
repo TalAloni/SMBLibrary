@@ -326,21 +326,21 @@ namespace SMBLibrary.Server.SMB1
             }
         }
 
-        public static FileAccess ToFileAccess(DesiredAccess desiredAccess)
+        public static FileAccess ToFileAccess(FileAccessMask desiredAccess)
         {
-            if ((desiredAccess & DesiredAccess.GENERIC_ALL) > 0 ||
-                ((desiredAccess & DesiredAccess.FILE_READ_DATA) > 0 && (desiredAccess & DesiredAccess.FILE_WRITE_DATA) > 0) ||
-                ((desiredAccess & DesiredAccess.FILE_READ_DATA) > 0 && (desiredAccess & DesiredAccess.FILE_APPEND_DATA) > 0))
+            if ((desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
+                ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0) ||
+                ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0))
             {
                 return FileAccess.ReadWrite;
             }
-            else if ((desiredAccess & DesiredAccess.GENERIC_WRITE) > 0 ||
-                     (desiredAccess & DesiredAccess.FILE_WRITE_DATA) > 0 ||
-                     (desiredAccess & DesiredAccess.FILE_APPEND_DATA) > 0)
+            else if ((desiredAccess & FileAccessMask.GENERIC_WRITE) > 0 ||
+                     (desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0 ||
+                     (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0)
             {
                 return FileAccess.Write;
             }
-            else if ((desiredAccess & DesiredAccess.FILE_READ_DATA) > 0)
+            else if ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0)
             {
                 return FileAccess.Read;
             }

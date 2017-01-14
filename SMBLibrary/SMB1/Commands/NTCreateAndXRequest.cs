@@ -25,7 +25,7 @@ namespace SMBLibrary.SMB1
         //ushort NameLength; // in bytes
         public NTCreateFlags Flags;
         public uint RootDirectoryFID;
-        public DesiredAccess DesiredAccess;
+        public FileAccessMask DesiredAccess;
         public ulong AllocationSize;
         public ExtendedFileAttributes ExtFileAttributes;
         public ShareAccess ShareAccess;
@@ -46,7 +46,7 @@ namespace SMBLibrary.SMB1
             ushort nameLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 5);
             Flags = (NTCreateFlags)LittleEndianConverter.ToUInt32(this.SMBParameters, 7);
             RootDirectoryFID = LittleEndianConverter.ToUInt32(this.SMBParameters, 11);
-            DesiredAccess = (DesiredAccess)LittleEndianConverter.ToUInt32(this.SMBParameters, 15);
+            DesiredAccess = (FileAccessMask)LittleEndianConverter.ToUInt32(this.SMBParameters, 15);
             AllocationSize = LittleEndianConverter.ToUInt64(this.SMBParameters, 19);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianConverter.ToUInt32(this.SMBParameters, 27);
             ShareAccess = (ShareAccess)LittleEndianConverter.ToUInt32(this.SMBParameters, 31);
