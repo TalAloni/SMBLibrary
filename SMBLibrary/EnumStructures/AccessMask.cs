@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -12,6 +12,7 @@ using Utilities;
 namespace SMBLibrary
 {
     /// <summary>
+    /// [MS-CIFS] SMB_COM_NT_CREATE_ANDX request (DesiredAccess field) and NT_TRANSACT_CREATE request (DesiredAccess field)
     /// [MS-SMB] 2.2.1.4.1 - File_Pipe_Printer_Access_Mask
     /// </summary>
     [Flags]
@@ -32,7 +33,7 @@ namespace SMBLibrary
         SYNCHRONIZE = 0x00100000,
         ACCESS_SYSTEM_SECURITY = 0x01000000,
         MAXIMUM_ALLOWED = 0x02000000,
-        GENERIC_ALL = 0x20000000,
+        GENERIC_ALL = 0x10000000,
         GENERIC_EXECUTE = 0x20000000,
         GENERIC_WRITE = 0x40000000,
         GENERIC_READ = 0x80000000,
@@ -60,7 +61,7 @@ namespace SMBLibrary
         SYNCHRONIZE = 0x00100000,
         ACCESS_SYSTEM_SECURITY = 0x01000000,
         MAXIMUM_ALLOWED = 0x02000000,
-        GENERIC_ALL = 0x20000000,
+        GENERIC_ALL = 0x10000000,
         GENERIC_EXECUTE = 0x20000000,
         GENERIC_WRITE = 0x40000000,
         GENERIC_READ = 0x80000000,
@@ -74,7 +75,7 @@ namespace SMBLibrary
         public const int Length = 4;
 
         public FileAccessMask File;
-        public FileAccessMask Directory;
+        public DirectoryAccessMask Directory;
 
         public AccessMask(byte[] buffer, ref int offset) : this(buffer, offset)
         {
@@ -85,12 +86,12 @@ namespace SMBLibrary
         {
             uint value = LittleEndianConverter.ToUInt32(buffer, offset);
             File = (FileAccessMask)value;
-            Directory = (FileAccessMask)value;
+            Directory = (DirectoryAccessMask)value;
         }
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            uint value = (uint)(this.File | this.Directory);
+            uint value = (uint)this.File | (uint)this.Directory;
             LittleEndianWriter.WriteUInt32(buffer, offset, value);
         }
 
