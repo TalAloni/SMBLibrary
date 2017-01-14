@@ -100,5 +100,26 @@ namespace SMBLibrary
             WriteBytes(buffer, offset);
             offset += 4;
         }
+
+        public static explicit operator AccessMask(uint value)
+        {
+            AccessMask result = new AccessMask();
+            result.File = (FileAccessMask)value;
+            result.Directory = (DirectoryAccessMask)value;
+            return result;
+        }
+
+        public static implicit operator AccessMask(FileAccessMask accessMask)
+        {
+            AccessMask result = new AccessMask();
+            result.File = accessMask;
+            return result;
+        }
+
+        public static explicit operator uint(AccessMask accessMask)
+        {
+            uint value = (uint)accessMask.File | (uint)accessMask.Directory;
+            return value;
+        }
     }
 }
