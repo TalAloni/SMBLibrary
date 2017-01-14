@@ -97,6 +97,8 @@ namespace SMBLibrary.Server
                 }
                 else if (command is LogoffAndXRequest)
                 {
+                    // FIXME: Remove connected trees that the user has connected to
+                    state.RemoveConnectedUser(header.UID);
                     return new LogoffAndXResponse();
                 }
                 else if (state.IsTreeConnected(header.TID))
