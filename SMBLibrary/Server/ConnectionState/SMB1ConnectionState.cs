@@ -30,8 +30,9 @@ namespace SMBLibrary.Server
         private ushort m_nextFID = 1;
 
         // Key is PID
-        public Dictionary<uint, ProcessStateObject> ProcessStateList = new Dictionary<uint, ProcessStateObject>();
-        public const int MaxSearches = 2048; // Windows servers initialize Server.MaxSearches to 2048.
+        private Dictionary<uint, ProcessStateObject> m_processStateList = new Dictionary<uint, ProcessStateObject>();
+
+        private const int MaxSearches = 2048; // Windows servers initialize Server.MaxSearches to 2048.
         public Dictionary<ushort, List<FileSystemEntry>> OpenSearches = new Dictionary<ushort, List<FileSystemEntry>>();
         private ushort m_nextSearchHandle = 1;
 
@@ -149,9 +150,9 @@ namespace SMBLibrary.Server
 
         public ProcessStateObject GetProcessState(uint processID)
         {
-            if (ProcessStateList.ContainsKey(processID))
+            if (m_processStateList.ContainsKey(processID))
             {
-                return ProcessStateList[processID];
+                return m_processStateList[processID];
             }
             else
             {
@@ -164,14 +165,14 @@ namespace SMBLibrary.Server
         /// </summary>
         public ProcessStateObject ObtainProcessState(uint processID)
         {
-            if (ProcessStateList.ContainsKey(processID))
+            if (m_processStateList.ContainsKey(processID))
             {
-                return ProcessStateList[processID];
+                return m_processStateList[processID];
             }
             else
             {
                 ProcessStateObject processState = new ProcessStateObject();
-                ProcessStateList[processID] = processState;
+                m_processStateList[processID] = processState;
                 return processState;
             }
         }
@@ -198,7 +199,7 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        /// <param name="relativePath">Should include the path relative to the file system</param>
+        /// <param name="relativePath">Should include the path relative to the share</param>
         /// <returns>FileID</returns>
         public ushort? AddOpenedFile(string relativePath)
         {
