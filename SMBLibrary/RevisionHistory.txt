@@ -28,3 +28,11 @@ Revision History:
         Improved Transaction2Subcommands implementation.
         Added support for GSSAPI SPNEGO tokens.
         API: Added SMBServer.OnLogEntry event.
+
+1.0.9 - Improved SID / TID / FID / UID allocation mechanisms.
+        API: More control over which users are permitted access via the guest user account if the normal authentication process fails.
+        Improved NTLM authentication API and implementation.
+        Added authentication related logging.
+        Improved connected trees management logic.
+        Remove connected user from connection state on Logoff.
+        Bugfix: Transaction2Open2Response: Incorrect value was set as default CreationTime.
