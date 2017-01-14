@@ -23,7 +23,7 @@ namespace SMBLibrary.SMB1
         //ushort AndXOffset;
         public ushort FID;
         public SMBFileAttributes FileAttrs;
-        public DateTime LastWriteTime; // UTime
+        public DateTime? LastWriteTime; // UTime
         public uint FileDataSize;
         public AccessRights AccessRights;
         public ResourceType ResourceType;
@@ -36,7 +36,6 @@ namespace SMBLibrary.SMB1
 
         public OpenAndXResponseExtended() : base()
         {
-            LastWriteTime = SMB1Helper.UTimeNotSpecified;
         }
 
         public OpenAndXResponseExtended(byte[] buffer, int offset) : base(buffer, offset, false)
@@ -50,7 +49,7 @@ namespace SMBLibrary.SMB1
             int parametersOffset = 4;
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, FID);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)FileAttrs);
-            SMB1Helper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
+            UTimeHelper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, FileDataSize);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)AccessRights);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)ResourceType);

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -25,7 +25,7 @@ namespace SMBLibrary.SMB1
         public AccessModeOptions AccessMode;
         public SMBFileAttributes SearchAttrs;
         public SMBFileAttributes FileAttrs;
-        public DateTime CreationTime; // UTime
+        public DateTime? CreationTime; // UTime
         public OpenMode OpenMode;
         public uint AllocationSize;
         public uint Timeout;
@@ -44,7 +44,7 @@ namespace SMBLibrary.SMB1
             AccessMode = AccessModeOptions.Read(this.SMBParameters, ref parametersOffset);
             SearchAttrs = (SMBFileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             FileAttrs = (SMBFileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            CreationTime = SMB1Helper.ReadUTime(this.SMBParameters, ref parametersOffset);
+            CreationTime = UTimeHelper.ReadNullableUTime(this.SMBParameters, ref parametersOffset);
             OpenMode = OpenMode.Read(this.SMBParameters, ref parametersOffset);
             AllocationSize = LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
             Timeout = LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);

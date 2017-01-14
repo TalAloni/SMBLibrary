@@ -21,7 +21,7 @@ namespace SMBLibrary.SMB1
         public AccessModeOptions AccessMode;
         public ushort Reserved1;
         public SMBFileAttributes FileAttributes;
-        public DateTime CreationTime; // UTIME (seconds since Jan 1, 1970)
+        public DateTime? CreationTime; // UTIME (seconds since Jan 1, 1970)
         public OpenMode OpenMode;
         public uint AllocationSize;
         public byte[] Reserved; // 10 bytes
@@ -31,7 +31,6 @@ namespace SMBLibrary.SMB1
 
         public Transaction2Open2Request() : base()
         {
-            CreationTime = SMB1Helper.UTimeNotSpecified;
             Reserved = new byte[10];
         }
 
@@ -41,7 +40,7 @@ namespace SMBLibrary.SMB1
             AccessMode = new AccessModeOptions(parameters, 2);
             Reserved1 = LittleEndianConverter.ToUInt16(parameters, 4);
             FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(parameters, 6);
-            CreationTime = SMB1Helper.ReadUTime(parameters, 8);
+            CreationTime = UTimeHelper.ReadNullableUTime(parameters, 8);
             OpenMode = new OpenMode(parameters, 12);
             AllocationSize = LittleEndianConverter.ToUInt32(parameters, 14);
             Reserved = ByteReader.ReadBytes(parameters, 18, 10);
@@ -72,7 +71,7 @@ namespace SMBLibrary.SMB1
             AccessMode.WriteBytes(parameters, 2);
             LittleEndianWriter.WriteUInt16(parameters, 4, Reserved1);
             LittleEndianWriter.WriteUInt16(parameters, 6, (ushort)FileAttributes);
-            SMB1Helper.WriteUTime(parameters, 8, CreationTime);
+            UTimeHelper.WriteUTime(parameters, 8, CreationTime);
             OpenMode.WriteBytes(parameters, 12);
             LittleEndianWriter.WriteUInt32(parameters, 14, AllocationSize);
             ByteWriter.WriteBytes(parameters, 18, Reserved, 10);

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -23,7 +23,7 @@ namespace SMBLibrary.SMB1
         //ushort AndXOffset;
         public ushort FID;
         public SMBFileAttributes FileAttrs;
-        public DateTime LastWriteTime; // UTime
+        public DateTime? LastWriteTime; // UTime
         public uint FileDataSize;
         public AccessRights AccessRights;
         public ResourceType ResourceType;
@@ -33,7 +33,6 @@ namespace SMBLibrary.SMB1
 
         public OpenAndXResponse() : base()
         {
-            LastWriteTime = SMB1Helper.UTimeNotSpecified;
             Reserved = new byte[6];
         }
 
@@ -48,7 +47,7 @@ namespace SMBLibrary.SMB1
             int parametersOffset = 4;
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, FID);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)FileAttrs);
-            SMB1Helper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
+            UTimeHelper.WriteUTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, FileDataSize);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)AccessRights);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)ResourceType);

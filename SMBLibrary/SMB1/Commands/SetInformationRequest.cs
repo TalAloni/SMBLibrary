@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,7 +20,7 @@ namespace SMBLibrary.SMB1
         public const int SupportedBufferFormat = 0x04;
         // Parameters:
         public SMBFileAttributes FileAttributes;
-        public DateTime LastWriteTime;
+        public DateTime? LastWriteTime;
         public byte[] Reserved; // 10 bytes
         // Data:
         public byte BufferFormat;
@@ -35,7 +35,7 @@ namespace SMBLibrary.SMB1
         public SetInformationRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
             FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            LastWriteTime = SMB1Helper.ReadUTime(this.SMBParameters, 2);
+            LastWriteTime = UTimeHelper.ReadNullableUTime(this.SMBParameters, 2);
             Reserved = ByteReader.ReadBytes(this.SMBParameters, 6, 10);
 
             BufferFormat = ByteReader.ReadByte(this.SMBData, 0);
@@ -50,7 +50,7 @@ namespace SMBLibrary.SMB1
         {
             this.SMBParameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, (ushort)FileAttributes);
-            SMB1Helper.WriteUTime(this.SMBParameters, 2, LastWriteTime);
+            UTimeHelper.WriteUTime(this.SMBParameters, 2, LastWriteTime);
             ByteWriter.WriteBytes(this.SMBParameters, 6, Reserved, 10);
 
             int length = 1;

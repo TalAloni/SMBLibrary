@@ -385,6 +385,7 @@
     <Compile Include="SMB1\TransactionSubcommands\TransactionWaitNamedPipeRequest.cs" />
     <Compile Include="SMB1\TransactionSubcommands\TransactionWriteNamedPipeRequest.cs" />
     <Compile Include="SMB1\TransactionSubcommands\TransactionWriteNamedPipeResponse.cs" />
+    <Compile Include="SMB1\UTimeHelper.cs" />
     <Compile Include="Structures\ACE\AccessAllowedACE.cs" />
     <Compile Include="Structures\ACE\ACE.cs" />
     <Compile Include="Structures\ACE\AceHeader.cs" />

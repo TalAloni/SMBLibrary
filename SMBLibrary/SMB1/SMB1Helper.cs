@@ -13,8 +13,6 @@ namespace SMBLibrary.SMB1
 {
     public class SMB1Helper
     {
-        public static readonly DateTime UTimeNotSpecified = new DateTime(1970, 1, 1);
-
         public static DateTime ReadFileTime(byte[] buffer, int offset)
         {
             long span = LittleEndianConverter.ToInt64(buffer, offset);
@@ -33,34 +31,6 @@ namespace SMBLibrary.SMB1
         {
             offset += 8;
             return ReadFileTime(buffer, offset - 8);
-        }
-
-        // UTime - The number of seconds since Jan 1, 1970, 00:00:00
-        public static DateTime ReadUTime(byte[] buffer, int offset)
-        {
-            uint span = LittleEndianConverter.ToUInt32(buffer, offset);
-            DateTime result = new DateTime(1970, 1, 1);
-            return result.AddSeconds(span);
-        }
-
-        public static DateTime ReadUTime(byte[] buffer, ref int offset)
-        {
-            offset += 4;
-            return ReadUTime(buffer, offset - 4);
-        }
-
-        // UTime - The number of seconds since Jan 1, 1970, 00:00:00
-        public static void WriteUTime(byte[] buffer, int offset, DateTime time)
-        {
-            TimeSpan timespan = time - new DateTime(1970, 1, 1);
-            uint span = (uint)timespan.TotalSeconds;
-            LittleEndianWriter.WriteUInt32(buffer, offset, span);
-        }
-
-        public static void WriteUTime(byte[] buffer, ref int offset, DateTime time)
-        {
-            WriteUTime(buffer, offset, time);
-            offset += 4;
         }
 
         /// <summary>

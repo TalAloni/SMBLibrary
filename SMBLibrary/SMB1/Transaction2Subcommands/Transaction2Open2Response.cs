@@ -20,7 +20,7 @@ namespace SMBLibrary.SMB1
         // Parameters
         public ushort FID;
         public SMBFileAttributes FileAttributes;
-        public DateTime CreationTime;
+        public DateTime? CreationTime;
         public uint FileDataSize;
         public AccessModeOptions AccessMode;
         public ResourceType ResourceType;
@@ -32,14 +32,13 @@ namespace SMBLibrary.SMB1
 
         public Transaction2Open2Response() : base()
         {
-            CreationTime = SMB1Helper.UTimeNotSpecified;
         }
 
         public Transaction2Open2Response(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
             FID = LittleEndianConverter.ToUInt16(parameters, 0);
             FileAttributes = (SMBFileAttributes)LittleEndianConverter.ToUInt16(parameters, 2);
-            CreationTime = SMB1Helper.ReadUTime(parameters, 4);
+            CreationTime = UTimeHelper.ReadNullableUTime(parameters, 4);
             FileDataSize = LittleEndianConverter.ToUInt32(parameters, 8);
             AccessMode = new AccessModeOptions(parameters, 12);
             ResourceType = (ResourceType)LittleEndianConverter.ToUInt16(parameters, 14);
@@ -55,7 +54,7 @@ namespace SMBLibrary.SMB1
             byte[] parameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(parameters, 0, FID);
             LittleEndianWriter.WriteUInt16(parameters, 2, (ushort)FileAttributes);
-            SMB1Helper.WriteUTime(parameters, 4, CreationTime);
+            UTimeHelper.WriteUTime(parameters, 4, CreationTime);
             LittleEndianWriter.WriteUInt32(parameters, 8, FileDataSize);
             AccessMode.WriteBytes(parameters, 12);
             LittleEndianWriter.WriteUInt16(parameters, 14, (ushort)ResourceType);

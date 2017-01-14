@@ -241,7 +241,7 @@ namespace SMBLibrary.Server.SMB1
             }
             fileSystem.SetAttributes(request.FileName, isHidden, isReadOnly, isArchived);
 
-            if (request.LastWriteTime != SMB1Helper.UTimeNotSpecified)
+            if (request.LastWriteTime.HasValue)
             {
                 fileSystem.SetDates(request.FileName, null, request.LastWriteTime, null);
             }
