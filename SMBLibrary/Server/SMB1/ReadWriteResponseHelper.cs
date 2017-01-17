@@ -27,7 +27,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             byte[] data;
-            header.Status = ReadFile(out data, openFile, request.ReadOffsetInBytes, request.CountOfBytesToRead, state);
+            header.Status = NTFileSystemHelper.ReadFile(out data, openFile, request.ReadOffsetInBytes, request.CountOfBytesToRead, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -54,7 +54,7 @@ namespace SMBLibrary.Server.SMB1
                 maxCount = request.MaxCountLarge;
             }
             byte[] data;
-            header.Status = ReadFile(out data, openFile, (long)request.Offset, (int)maxCount, state);
+            header.Status = NTFileSystemHelper.ReadFile(out data, openFile, (long)request.Offset, (int)maxCount, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -70,72 +70,6 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        public static NTStatus ReadFile(out byte[] data, OpenFileObject openFile, long offset, int maxCount, ConnectionState state)
-        {
-            data = null;
-            string openFilePath = openFile.Path;
-            Stream stream = openFile.Stream;
-            if (stream is RPCPipeStream)
-            {
-                data = new byte[maxCount];
-                int bytesRead = stream.Read(data, 0, maxCount);
-                if (bytesRead < maxCount)
-                {
-                    // EOF, we must trim the response data array
-                    data = ByteReader.ReadBytes(data, 0, bytesRead);
-                }
-                return NTStatus.STATUS_SUCCESS;
-            }
-            else // File
-            {
-                if (stream == null)
-                {
-                    state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}', Invalid Operation.", openFilePath);
-                    return NTStatus.STATUS_ACCESS_DENIED;
-                }
-
-                int bytesRead;
-                try
-                {
-                    stream.Seek(offset, SeekOrigin.Begin);
-                    data = new byte[maxCount];
-                    bytesRead = stream.Read(data, 0, maxCount);
-                }
-                catch (IOException ex)
-                {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                        state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}'. Sharing Violation.", openFilePath);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}'. Data Error.", openFilePath);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}'. Offset Out Of Range.", openFilePath);
-                    return NTStatus.STATUS_DATA_ERROR;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}', Access Denied.", openFilePath);
-                    return NTStatus.STATUS_ACCESS_DENIED;
-                }
-
-                if (bytesRead < maxCount)
-                {
-                    // EOF, we must trim the response data array
-                    data = ByteReader.ReadBytes(data, 0, bytesRead);
-                }
-                return NTStatus.STATUS_SUCCESS;
-            }
-        }
-
         internal static SMB1Command GetWriteResponse(SMB1Header header, WriteRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
@@ -146,7 +80,7 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
             int numberOfBytesWritten;
-            header.Status = WriteFile(out numberOfBytesWritten, openFile, request.WriteOffsetInBytes, request.Data, state);
+            header.Status = NTFileSystemHelper.WriteFile(out numberOfBytesWritten, openFile, request.WriteOffsetInBytes, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -166,7 +100,7 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
             int numberOfBytesWritten;
-            header.Status = WriteFile(out numberOfBytesWritten, openFile, (long)request.Offset, request.Data, state);
+            header.Status = NTFileSystemHelper.WriteFile(out numberOfBytesWritten, openFile, (long)request.Offset, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -179,66 +113,6 @@ namespace SMBLibrary.Server.SMB1
                 response.Available = 0xFFFF;
             }
             return response;
-        }
-
-        public static NTStatus WriteFile(out int numberOfBytesWritten, OpenFileObject openFile, long offset, byte[] data, ConnectionState state)
-        {
-            numberOfBytesWritten = 0;
-            string openFilePath = openFile.Path;
-            Stream stream = openFile.Stream;
-            if (stream is RPCPipeStream)
-            {
-                stream.Write(data, 0, data.Length);
-                numberOfBytesWritten = data.Length;
-                return NTStatus.STATUS_SUCCESS;
-            }
-            else // File
-            {
-                if (stream == null)
-                {
-                    state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Invalid Operation.", openFilePath);
-                    return NTStatus.STATUS_ACCESS_DENIED;
-                }
-
-                try
-                {
-                    stream.Seek(offset, SeekOrigin.Begin);
-                    stream.Write(data, 0, data.Length);
-                    numberOfBytesWritten = data.Length;
-                    return NTStatus.STATUS_SUCCESS;
-                }
-                catch (IOException ex)
-                {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_DISK_FULL)
-                    {
-                        state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Disk Full.", openFilePath);
-                        return NTStatus.STATUS_DISK_FULL;
-                    }
-                    else if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Sharing Violation.", openFilePath);
-                        // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Data Error.", openFilePath);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Offset Out Of Range.", openFilePath);
-                    return NTStatus.STATUS_DATA_ERROR;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Access Denied.", openFilePath);
-                    // The user may have tried to write to a readonly file
-                    return NTStatus.STATUS_ACCESS_DENIED;
-                }
-            }
         }
     }
 }

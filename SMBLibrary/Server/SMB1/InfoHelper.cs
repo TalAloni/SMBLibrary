@@ -14,9 +14,6 @@ namespace SMBLibrary.Server.SMB1
 {
     public class InfoHelper
     {
-        public const int BytesPerSector = 512;
-        public const int ClusterSize = 4096;
-
         internal static FindInformation FromFileSystemEntry(FileSystemEntry entry, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
         {
             switch (informationLevel)
@@ -28,7 +25,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessDateTime = entry.LastAccessTime;
                         result.LastWriteDateTime = entry.LastWriteTime;
                         result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(GetAllocationSize(entry.Size), UInt32.MaxValue);
+                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
                         result.Attributes = GetFileAttributes(entry);
                         result.FileName = entry.Name;
                         return result;
@@ -40,7 +37,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessDateTime = entry.LastAccessTime;
                         result.LastWriteDateTime = entry.LastWriteTime;
                         result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(GetAllocationSize(entry.Size), UInt32.MaxValue);
+                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
                         result.Attributes = GetFileAttributes(entry);
                         result.EASize = 0;
                         result.FileName = entry.Name;
@@ -53,7 +50,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessDateTime = entry.LastAccessTime;
                         result.LastWriteDateTime = entry.LastWriteTime;
                         result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(GetAllocationSize(entry.Size), UInt32.MaxValue);
+                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
                         result.Attributes = GetFileAttributes(entry);
                         result.ExtendedAttributeList = new FullExtendedAttributeList();
                         return result;
@@ -66,7 +63,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastWriteTime = entry.LastWriteTime;
                         result.LastAttrChangeTime = entry.LastWriteTime;
                         result.EndOfFile = entry.Size;
-                        result.AllocationSize = GetAllocationSize(entry.Size);
+                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         result.FileName = entry.Name;
                         return result;
@@ -79,7 +76,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastWriteTime = entry.LastWriteTime;
                         result.LastAttrChangeTime = entry.LastWriteTime;
                         result.EndOfFile = entry.Size;
-                        result.AllocationSize = GetAllocationSize(entry.Size);
+                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         result.FileName = entry.Name;
                         return result;
@@ -98,9 +95,9 @@ namespace SMBLibrary.Server.SMB1
                         result.LastWriteTime = entry.LastWriteTime;
                         result.LastChangeTime = entry.LastWriteTime;
                         result.EndOfFile = entry.Size;
-                        result.AllocationSize = GetAllocationSize(entry.Size);
+                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.ExtFileAttributes = GetExtendedFileAttributes(entry);
-                        result.ShortName = GetShortName(entry.Name);
+                        result.ShortName = NTFileSystemHelper.GetShortName(entry.Name);
                         result.FileName = entry.Name;
                         return result;
                     }
@@ -122,7 +119,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessDateTime = entry.LastAccessTime;
                         result.LastWriteDateTime = entry.LastWriteTime;
                         result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(GetAllocationSize(entry.Size), UInt32.MaxValue);
+                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
                         return result;
                     }
                 case QueryInformationLevel.SMB_INFO_QUERY_EA_SIZE:
@@ -132,7 +129,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessDateTime = entry.LastAccessTime;
                         result.LastWriteDateTime = entry.LastWriteTime;
                         result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(GetAllocationSize(entry.Size), UInt32.MaxValue);
+                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
                         result.Attributes = GetFileAttributes(entry);
                         result.EASize = 0;
                         return result;
@@ -162,7 +159,7 @@ namespace SMBLibrary.Server.SMB1
                 case QueryInformationLevel.SMB_QUERY_FILE_STANDARD_INFO:
                     {
                         QueryFileStandardInfo result = new QueryFileStandardInfo();
-                        result.AllocationSize = GetAllocationSize(entry.Size);
+                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.EndOfFile = entry.Size;
                         result.DeletePending = deletePending;
                         result.Directory = entry.IsDirectory;
@@ -188,7 +185,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastWriteDateTime = entry.LastWriteTime;
                         result.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         result.LastChangeTime = entry.LastWriteTime;
-                        result.AllocationSize = GetAllocationSize(entry.Size);
+                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.EndOfFile = entry.Size;
                         result.DeletePending = deletePending;
                         result.Directory = entry.IsDirectory;
@@ -199,14 +196,14 @@ namespace SMBLibrary.Server.SMB1
                 case QueryInformationLevel.SMB_QUERY_FILE_ALT_NAME_INFO:
                     {
                         QueryFileAltNameInfo result = new QueryFileAltNameInfo();
-                        result.FileName = GetShortName(entry.Name);
+                        result.FileName = NTFileSystemHelper.GetShortName(entry.Name);
                         return result;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_STREAM_INFO:
                     {
                         QueryFileStreamInfo result = new QueryFileStreamInfo();
                         result.StreamSize = entry.Size;
-                        result.StreamAllocationSize = GetAllocationSize(entry.Size);
+                        result.StreamAllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.StreamName = "::$DATA";
                         return result;
                     }
@@ -231,10 +228,10 @@ namespace SMBLibrary.Server.SMB1
                     {
                         QueryFSInfoAllocation result = new QueryFSInfoAllocation();
                         result.FileSystemID = 0;
-                        result.SectorUnit = ClusterSize / BytesPerSector;
-                        result.UnitsTotal = (uint)Math.Min(fileSystem.Size / ClusterSize, UInt32.MaxValue);
-                        result.UnitsAvailable = (uint)Math.Min(fileSystem.FreeSpace / ClusterSize, UInt32.MaxValue);
-                        result.Sector = BytesPerSector;
+                        result.SectorUnit = NTFileSystemHelper.ClusterSize / NTFileSystemHelper.BytesPerSector;
+                        result.UnitsTotal = (uint)Math.Min(fileSystem.Size / NTFileSystemHelper.ClusterSize, UInt32.MaxValue);
+                        result.UnitsAvailable = (uint)Math.Min(fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize, UInt32.MaxValue);
+                        result.Sector = NTFileSystemHelper.BytesPerSector;
                         return result;
                     }
                 case QueryFSInformationLevel.SMB_INFO_VOLUME:
@@ -253,10 +250,10 @@ namespace SMBLibrary.Server.SMB1
                 case QueryFSInformationLevel.SMB_QUERY_FS_SIZE_INFO:
                     {
                         QueryFSSizeInfo result = new QueryFSSizeInfo();
-                        result.TotalAllocationUnits = (ulong)(fileSystem.Size / ClusterSize);
-                        result.TotalFreeAllocationUnits = (ulong)(fileSystem.FreeSpace / ClusterSize);
-                        result.BytesPerSector = BytesPerSector;
-                        result.SectorsPerAllocationUnit = ClusterSize / BytesPerSector;
+                        result.TotalAllocationUnits = (ulong)(fileSystem.Size / NTFileSystemHelper.ClusterSize);
+                        result.TotalFreeAllocationUnits = (ulong)(fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize);
+                        result.BytesPerSector = NTFileSystemHelper.BytesPerSector;
+                        result.SectorsPerAllocationUnit = NTFileSystemHelper.ClusterSize / NTFileSystemHelper.BytesPerSector;
                         return result;
                     }
                 case QueryFSInformationLevel.SMB_QUERY_FS_DEVICE_INFO:
@@ -280,39 +277,6 @@ namespace SMBLibrary.Server.SMB1
                     }
             }
         }
-
-        /// <summary>
-        /// Will return a virtual allocation size, assuming 4096 bytes per cluster
-        /// </summary>
-        public static ulong GetAllocationSize(ulong size)
-        {
-            return (ulong)Math.Ceiling((double)size / ClusterSize) * ClusterSize;
-        }
-
-        private static string GetShortName(string filename)
-        {
-            string fileNameWithoutExt = System.IO.Path.GetFileNameWithoutExtension(filename);
-            string extension = System.IO.Path.GetExtension(filename);
-            if (fileNameWithoutExt.Length > 8 || extension.Length > 4)
-            {
-                if (fileNameWithoutExt.Length > 8)
-                {
-                    fileNameWithoutExt = fileNameWithoutExt.Substring(0, 8);
-                }
-
-                if (extension.Length > 4)
-                {
-                    extension = extension.Substring(0, 4);
-                }
-
-                return fileNameWithoutExt + extension;
-            }
-            else
-            {
-                return filename;
-            }
-        }
-
 
         public static SMBFileAttributes GetFileAttributes(FileSystemEntry entry)
         {
@@ -339,7 +303,7 @@ namespace SMBLibrary.Server.SMB1
 
         public static ExtendedFileAttributes GetExtendedFileAttributes(FileSystemEntry entry)
         {
-            ExtendedFileAttributes attributes = (ExtendedFileAttributes)0;
+            ExtendedFileAttributes attributes = 0;
             if (entry.IsHidden)
             {
                 attributes |= ExtendedFileAttributes.Hidden;
@@ -357,7 +321,7 @@ namespace SMBLibrary.Server.SMB1
                 attributes |= ExtendedFileAttributes.Directory;
             }
 
-            if (attributes == (ExtendedFileAttributes)0)
+            if ((uint)attributes == 0)
             {
                 attributes = ExtendedFileAttributes.Normal;
             }

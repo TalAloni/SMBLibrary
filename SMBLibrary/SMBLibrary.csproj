@@ -114,6 +114,7 @@
     <Compile Include="Server\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Server\Exceptions\UnsupportedInformationLevelException.cs" />
     <Compile Include="Server\Helpers\IOExceptionHelper.cs" />
+    <Compile Include="Server\Helpers\NTFileSystemHelper.cs" />
     <Compile Include="Server\Helpers\ServerPathUtils.cs" />
     <Compile Include="Server\IndependentUserCollection.cs" />
     <Compile Include="Server\INTLMAuthenticationProvider.cs" />

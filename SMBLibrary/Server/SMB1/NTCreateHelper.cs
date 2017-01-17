@@ -50,7 +50,7 @@ namespace SMBLibrary.Server.SMB1
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
                 string userName = session.UserName;
                 FileSystemEntry entry;
-                NTStatus createStatus = CreateFile(out entry, fileSystemShare, userName, path, request.CreateDisposition, request.CreateOptions, request.DesiredAccess, state);
+                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, fileSystemShare, userName, path, request.CreateDisposition, request.CreateOptions, request.DesiredAccess, state);
                 if (createStatus != NTStatus.STATUS_SUCCESS)
                 {
                     header.Status = createStatus;
@@ -58,8 +58,8 @@ namespace SMBLibrary.Server.SMB1
                 }
 
                 IFileSystem fileSystem = fileSystemShare.FileSystem;
-                FileAccess fileAccess = ToFileAccess(request.DesiredAccess);
-                FileShare fileShare = ToFileShare(request.ShareAccess);
+                FileAccess fileAccess = NTFileSystemHelper.ToFileAccess(request.DesiredAccess);
+                FileShare fileShare = NTFileSystemHelper.ToFileShare(request.ShareAccess);
 
                 Stream stream;
                 bool deleteOnClose = false;
@@ -137,242 +137,6 @@ namespace SMBLibrary.Server.SMB1
             }
         }
 
-        public static NTStatus CreateFile(out FileSystemEntry entry, FileSystemShare share, string userName, string path, CreateDisposition createDisposition, CreateOptions createOptions, AccessMask desiredAccess, ConnectionState state)
-        {
-            bool hasWriteAccess = share.HasWriteAccess(userName);
-            IFileSystem fileSystem = share.FileSystem;
-
-            bool forceDirectory = (createOptions & CreateOptions.FILE_DIRECTORY_FILE) > 0;
-            bool forceFile = (createOptions & CreateOptions.FILE_NON_DIRECTORY_FILE) > 0;
-
-            if (forceDirectory & (createDisposition != CreateDisposition.FILE_CREATE &&
-                                  createDisposition != CreateDisposition.FILE_OPEN &&
-                                  createDisposition != CreateDisposition.FILE_OPEN_IF))
-            {
-                entry = null;
-                return NTStatus.STATUS_INVALID_PARAMETER;
-            }
-
-            // Windows will try to access named streams (alternate data streams) regardless of the FILE_NAMED_STREAMS flag, we need to prevent this behaviour.
-            if (path.Contains(":"))
-            {
-                // Windows Server 2003 will return STATUS_OBJECT_NAME_NOT_FOUND
-                entry = null;
-                return NTStatus.STATUS_NO_SUCH_FILE;
-            }
-
-            entry = fileSystem.GetEntry(path);
-            if (createDisposition == CreateDisposition.FILE_OPEN)
-            {
-                if (entry == null)
-                {
-                    return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
-                }
-
-                if (entry.IsDirectory && forceFile)
-                {
-                    return NTStatus.STATUS_FILE_IS_A_DIRECTORY;
-                }
-
-                if (!entry.IsDirectory && forceDirectory)
-                {
-                    // Not sure if that's the correct response
-                    return NTStatus.STATUS_OBJECT_NAME_COLLISION;
-                }
-            }
-            else if (createDisposition == CreateDisposition.FILE_CREATE)
-            {
-                if (entry != null)
-                {
-                    // File already exists, fail the request
-                    state.LogToServer(Severity.Debug, "NTCreate: File '{0}' already exist", path);
-                    return NTStatus.STATUS_OBJECT_NAME_COLLISION;
-                }
-
-                if (!hasWriteAccess)
-                {
-                    return NTStatus.STATUS_ACCESS_DENIED;
-                }
-
-                try
-                {
-                    if (forceDirectory)
-                    {
-                        state.LogToServer(Severity.Information, "NTCreate: Creating directory '{0}'", path);
-                        entry = fileSystem.CreateDirectory(path);
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Information, "NTCreate: Creating file '{0}'", path);
-                        entry = fileSystem.CreateFile(path);
-                    }
-                }
-                catch (IOException ex)
-                {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "NTCreate: Sharing violation creating '{0}'", path);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "NTCreate: Error creating '{0}'", path);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "NTCreate: Error creating '{0}', Access Denied", path);
-                    return NTStatus.STATUS_ACCESS_DENIED;
-                }
-            }
-            else if (createDisposition == CreateDisposition.FILE_OPEN_IF ||
-                     createDisposition == CreateDisposition.FILE_OVERWRITE ||
-                     createDisposition == CreateDisposition.FILE_OVERWRITE_IF ||
-                     createDisposition == CreateDisposition.FILE_SUPERSEDE)
-            {
-                entry = fileSystem.GetEntry(path);
-                if (entry == null)
-                {
-                    if (createDisposition == CreateDisposition.FILE_OVERWRITE)
-                    {
-                        return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
-                    }
-
-                    if (!hasWriteAccess)
-                    {
-                        return NTStatus.STATUS_ACCESS_DENIED;
-                    }
-
-                    try
-                    {
-                        if (forceDirectory)
-                        {
-                            state.LogToServer(Severity.Information, "NTCreate: Creating directory '{0}'", path);
-                            entry = fileSystem.CreateDirectory(path);
-                        }
-                        else
-                        {
-                            state.LogToServer(Severity.Information, "NTCreate: Creating file '{0}'", path);
-                            entry = fileSystem.CreateFile(path);
-                        }
-                    }
-                    catch (IOException ex)
-                    {
-                        ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                        if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                        {
-                            return NTStatus.STATUS_SHARING_VIOLATION;
-                        }
-                        else
-                        {
-                            return NTStatus.STATUS_DATA_ERROR;
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        return NTStatus.STATUS_ACCESS_DENIED;
-                    }
-                }
-                else
-                {
-                    if (createDisposition == CreateDisposition.FILE_OVERWRITE ||
-                        createDisposition == CreateDisposition.FILE_OVERWRITE_IF ||
-                        createDisposition == CreateDisposition.FILE_SUPERSEDE)
-                    {
-                        if (!hasWriteAccess)
-                        {
-                            return NTStatus.STATUS_ACCESS_DENIED;
-                        }
-
-                        // Truncate the file
-                        try
-                        {
-                            Stream temp = fileSystem.OpenFile(path, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite);
-                            temp.Close();
-                        }
-                        catch (IOException ex)
-                        {
-                            ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                            if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                            {
-                                return NTStatus.STATUS_SHARING_VIOLATION;
-                            }
-                            else
-                            {
-                                return NTStatus.STATUS_DATA_ERROR;
-                            }
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            return NTStatus.STATUS_ACCESS_DENIED;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                return NTStatus.STATUS_INVALID_PARAMETER;
-            }
-
-            FileAccess fileAccess = ToFileAccess(desiredAccess.File);
-            if (!hasWriteAccess && (fileAccess == FileAccess.Write || fileAccess == FileAccess.ReadWrite))
-            {
-                return NTStatus.STATUS_ACCESS_DENIED;
-            }
-
-            return NTStatus.STATUS_SUCCESS;
-        }
-
-        public static FileAccess ToFileAccess(FileAccessMask desiredAccess)
-        {
-            if ((desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
-                ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0) ||
-                ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0))
-            {
-                return FileAccess.ReadWrite;
-            }
-            else if ((desiredAccess & FileAccessMask.GENERIC_WRITE) > 0 ||
-                     (desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0 ||
-                     (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0)
-            {
-                return FileAccess.Write;
-            }
-            else if ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0)
-            {
-                return FileAccess.Read;
-            }
-            else
-            {
-                return (FileAccess)0;
-            }
-        }
-
-        public static FileShare ToFileShare(ShareAccess shareAccess)
-        {
-            if ((shareAccess & ShareAccess.FILE_SHARE_READ) > 0 && (shareAccess & ShareAccess.FILE_SHARE_WRITE) > 0)
-            {
-                return FileShare.ReadWrite;
-            }
-            else if ((shareAccess & ShareAccess.FILE_SHARE_WRITE) > 0)
-            {
-                return FileShare.Write;
-            }
-            else if ((shareAccess & ShareAccess.FILE_SHARE_READ) > 0)
-            {
-                return FileShare.Read;
-            }
-            else if ((shareAccess & ShareAccess.FILE_SHARE_DELETE) > 0)
-            {
-                return FileShare.Delete;
-            }
-            else
-            {
-                return FileShare.None;
-            }
-        }
-
         private static NTCreateAndXResponse CreateResponseForNamedPipe(ushort fileID)
         {
             NTCreateAndXResponse response = new NTCreateAndXResponse();
@@ -424,7 +188,7 @@ namespace SMBLibrary.Server.SMB1
             }
             response.FID = fileID;
             response.CreateDisposition = CreateDisposition.FILE_OPEN;
-            response.AllocationSize = InfoHelper.GetAllocationSize(entry.Size);
+            response.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
             response.EndOfFile = entry.Size;
             response.CreateTime = entry.CreationTime;
             response.LastAccessTime = entry.LastAccessTime;
@@ -452,7 +216,7 @@ namespace SMBLibrary.Server.SMB1
             response.LastWriteTime = entry.LastWriteTime;
             response.LastChangeTime = entry.LastWriteTime;
             response.CreateDisposition = CreateDisposition.FILE_OPEN;
-            response.AllocationSize = InfoHelper.GetAllocationSize(entry.Size);
+            response.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
             response.EndOfFile = entry.Size;
             response.ResourceType = ResourceType.FileTypeDisk;
             response.FileStatus = FileStatus.NO_EAS | FileStatus.NO_SUBSTREAMS | FileStatus.NO_REPARSETAG;
