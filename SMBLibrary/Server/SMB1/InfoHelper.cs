@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -111,7 +111,7 @@ namespace SMBLibrary.Server.SMB1
             }
         }
 
-        internal static QueryInformation FromFileSystemEntry(FileSystemEntry entry, QueryInformationLevel informationLevel)
+        internal static QueryInformation FromFileSystemEntry(FileSystemEntry entry, bool deletePending, QueryInformationLevel informationLevel)
         {
             switch (informationLevel)
             {
@@ -164,6 +164,7 @@ namespace SMBLibrary.Server.SMB1
                         QueryFileStandardInfo result = new QueryFileStandardInfo();
                         result.AllocationSize = GetAllocationSize(entry.Size);
                         result.EndOfFile = entry.Size;
+                        result.DeletePending = deletePending;
                         result.Directory = entry.IsDirectory;
                         return result;
                     }
@@ -189,7 +190,7 @@ namespace SMBLibrary.Server.SMB1
                         result.LastChangeTime = entry.LastWriteTime;
                         result.AllocationSize = GetAllocationSize(entry.Size);
                         result.EndOfFile = entry.Size;
-                        result.DeletePending = false; // We delete immediately
+                        result.DeletePending = deletePending;
                         result.Directory = entry.IsDirectory;
                         result.EASize = 0;
                         result.FileName = entry.Name;

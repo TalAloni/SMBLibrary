@@ -253,7 +253,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             Transaction2QueryPathInformationResponse response = new Transaction2QueryPathInformationResponse();
-            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, subcommand.InformationLevel);
+            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, false, subcommand.InformationLevel);
             response.SetQueryInformation(queryInformation);
 
             return response;
@@ -277,7 +277,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             Transaction2QueryFileInformationResponse response = new Transaction2QueryFileInformationResponse();
-            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, subcommand.InformationLevel);
+            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, openFile.DeleteOnClose, subcommand.InformationLevel);
             response.SetQueryInformation(queryInformation);
 
             return response;
