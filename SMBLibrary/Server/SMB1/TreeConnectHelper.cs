@@ -16,6 +16,7 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static SMB1Command GetTreeConnectResponse(SMB1Header header, TreeConnectAndXRequest request, SMB1ConnectionState state, NamedPipeShare services, ShareCollection shares)
         {
+            SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & TreeConnectFlags.ExtendedResponse) > 0;
             string shareName = ServerPathUtils.GetShareName(request.Path);
             ISMBShare share;
@@ -35,14 +36,13 @@ namespace SMBLibrary.Server.SMB1
                     return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
                 }
 
-                string userName = state.GetConnectedUserName(header.UID);
-                if (!((FileSystemShare)share).HasReadAccess(userName))
+                if (!((FileSystemShare)share).HasReadAccess(session.UserName))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
                 }
             }
-            ushort? treeID = state.AddConnectedTree(share);
+            ushort? treeID = session.AddConnectedTree(share);
             if (!treeID.HasValue)
             {
                 header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
@@ -88,13 +88,14 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetTreeDisconnectResponse(SMB1Header header, TreeDisconnectRequest request, SMB1ConnectionState state)
         {
-            if (!state.IsTreeConnected(header.TID))
+            SMB1Session session = state.GetSession(header.UID);
+            if (!session.IsTreeConnected(header.TID))
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_TID;
                 return new ErrorResponse(CommandName.SMB_COM_TREE_DISCONNECT);
             }
 
-            state.RemoveConnectedTree(header.TID);
+            session.RemoveConnectedTree(header.TID);
             return new TreeDisconnectResponse();
         }
     }

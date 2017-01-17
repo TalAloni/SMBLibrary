@@ -18,6 +18,7 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static SMB1Command GetNTCreateResponse(SMB1Header header, NTCreateAndXRequest request, ISMBShare share, SMB1ConnectionState state)
         {
+            SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & NTCreateFlags.NT_CREATE_REQUEST_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;
             if (share is NamedPipeShare)
@@ -25,7 +26,7 @@ namespace SMBLibrary.Server.SMB1
                 Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
                 if (pipeStream != null)
                 {
-                    ushort? fileID = state.AddOpenFile(path, pipeStream);
+                    ushort? fileID = session.AddOpenFile(path, pipeStream);
                     if (!fileID.HasValue)
                     {
                         header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
@@ -47,7 +48,7 @@ namespace SMBLibrary.Server.SMB1
             else // FileSystemShare
             {
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
-                string userName = state.GetConnectedUserName(header.UID);
+                string userName = session.UserName;
                 FileSystemEntry entry;
                 NTStatus createStatus = CreateFile(out entry, fileSystemShare, userName, path, request.CreateDisposition, request.CreateOptions, request.DesiredAccess, state);
                 if (createStatus != NTStatus.STATUS_SUCCESS)
@@ -109,7 +110,7 @@ namespace SMBLibrary.Server.SMB1
                     }
                 }
 
-                ushort? fileID = state.AddOpenFile(path, stream, deleteOnClose);
+                ushort? fileID = session.AddOpenFile(path, stream, deleteOnClose);
                 if (!fileID.HasValue)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;

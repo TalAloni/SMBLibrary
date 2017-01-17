@@ -17,14 +17,16 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static SMB1Command GetCloseResponse(SMB1Header header, CloseRequest request, ISMBShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
                 return new ErrorResponse(CommandName.SMB_COM_CLOSE);
             }
 
-            state.RemoveOpenFile(request.FID);
+            state.LogToServer(Severity.Verbose, "Close: Closing file '{0}'", openFile.Path);
+            session.RemoveOpenFile(request.FID);
             if (openFile.DeleteOnClose && share is FileSystemShare)
             {
                 try
@@ -42,7 +44,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetFindClose2Request(SMB1Header header, FindClose2Request request, SMB1ConnectionState state)
         {
-            state.ReleaseSearchHandle(request.SearchHandle);
+            SMB1Session session = state.GetSession(header.UID);
+            session.ReleaseSearchHandle(request.SearchHandle);
             return new FindClose2Response();
         }
 

@@ -40,25 +40,25 @@ namespace SMBLibrary.Server.SMB1
             if (loginSuccess)
             {
                 state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", message.UserName);
-                ushort? userID = state.AddConnectedUser(message.UserName);
-                if (!userID.HasValue)
+                SMB1Session session = state.CreateSession(message.UserName);
+                if (session == null)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
                     return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
-                header.UID = userID.Value;
+                header.UID = session.UserID;
                 response.PrimaryDomain = request.PrimaryDomain;
             }
             else if (users.FallbackToGuest(message.UserName))
             {
                 state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", message.UserName);
-                ushort? userID = state.AddConnectedUser("Guest");
-                if (!userID.HasValue)
+                SMB1Session session = state.CreateSession("Guest");
+                if (session == null)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
                     return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
-                header.UID = userID.Value;
+                header.UID = session.UserID;
                 response.Action = SessionSetupAction.SetupGuest;
                 response.PrimaryDomain = request.PrimaryDomain;
             }
@@ -100,6 +100,18 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
             }
 
+            // According to [MS-SMB] 3.3.5.3, a UID MUST be allocated if the server returns STATUS_MORE_PROCESSING_REQUIRED
+            if (header.UID == 0)
+            {
+                ushort? userID = state.AllocateUserID();
+                if (!userID.HasValue)
+                {
+                    header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
+                    return new ErrorResponse(request.CommandName);
+                }
+                header.UID = userID.Value;
+            }
+
             MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(messageBytes);
             if (messageType == MessageTypeName.Negotiate)
             {
@@ -133,24 +145,12 @@ namespace SMBLibrary.Server.SMB1
                 if (loginSuccess)
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", authenticateMessage.UserName);
-                    ushort? userID = state.AddConnectedUser(authenticateMessage.UserName);
-                    if (!userID.HasValue)
-                    {
-                        header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
-                        return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
-                    }
-                    header.UID = userID.Value;
+                    state.CreateSession(header.UID, authenticateMessage.UserName);
                 }
                 else if (users.FallbackToGuest(authenticateMessage.UserName))
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", authenticateMessage.UserName);
-                    ushort? userID = state.AddConnectedUser("Guest");
-                    if (!userID.HasValue)
-                    {
-                        header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
-                        return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
-                    }
-                    header.UID = userID.Value;
+                    state.CreateSession(header.UID, "Guest");
                     response.Action = SessionSetupAction.SetupGuest;
                 }
                 else

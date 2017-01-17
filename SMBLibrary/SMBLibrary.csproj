@@ -108,6 +108,7 @@
     <Compile Include="Server\ConnectionState\OpenFileObject.cs" />
     <Compile Include="Server\ConnectionState\ProcessStateObject.cs" />
     <Compile Include="Server\ConnectionState\SMB1ConnectionState.cs" />
+    <Compile Include="Server\ConnectionState\SMB1Session.cs" />
     <Compile Include="Server\Exceptions\EmptyPasswordNotAllowedException.cs" />
     <Compile Include="Server\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Server\Exceptions\UnsupportedInformationLevelException.cs" />

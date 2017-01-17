@@ -88,8 +88,15 @@ namespace SMBLibrary.Server
             {
                 return ServerResponseHelper.GetEchoResponse((EchoRequest)command, sendQueue);
             }
-            else if (state.IsAuthenticated(header.UID))
+            else
             {
+                SMB1Session session = state.GetSession(header.UID);
+                if (session == null)
+                {
+                    header.Status = NTStatus.STATUS_USER_SESSION_DELETED;
+                    return new ErrorResponse(command.CommandName);
+                }
+
                 if (command is TreeConnectAndXRequest)
                 {
                     TreeConnectAndXRequest request = (TreeConnectAndXRequest)command;
@@ -97,13 +104,18 @@ namespace SMBLibrary.Server
                 }
                 else if (command is LogoffAndXRequest)
                 {
-                    // FIXME: Remove connected trees that the user has connected to
-                    state.RemoveConnectedUser(header.UID);
+                    state.RemoveSession(header.UID);
                     return new LogoffAndXResponse();
                 }
-                else if (state.IsTreeConnected(header.TID))
+                else
                 {
-                    ISMBShare share = state.GetConnectedTree(header.TID);
+                    ISMBShare share = session.GetConnectedTree(header.TID);
+                    if (share == null)
+                    {
+                        header.Status = NTStatus.STATUS_SMB_BAD_TID;
+                        return new ErrorResponse(command.CommandName);
+                    }
+
                     if (command is CreateDirectoryRequest)
                     {
                         if (!(share is FileSystemShare))
@@ -180,7 +192,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is WriteRequest)
                     {
-                        string userName = state.GetConnectedUserName(header.UID);
+                        string userName = session.UserName;
                         if (share is FileSystemShare && !((FileSystemShare)share).HasWriteAccess(userName))
                         {
                             header.Status = NTStatus.STATUS_ACCESS_DENIED;
@@ -234,7 +246,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is WriteAndXRequest)
                     {
-                        string userName = state.GetConnectedUserName(header.UID);
+                        string userName = session.UserName;
                         if (share is FileSystemShare && !((FileSystemShare)share).HasWriteAccess(userName))
                         {
                             header.Status = NTStatus.STATUS_ACCESS_DENIED;
@@ -293,11 +305,6 @@ namespace SMBLibrary.Server
                         NTCreateAndXRequest request = (NTCreateAndXRequest)command;
                         return NTCreateHelper.GetNTCreateResponse(header, request, share, state);
                     }
-                }
-                else
-                {
-                    header.Status = NTStatus.STATUS_SMB_BAD_TID;
-                    return new ErrorResponse(command.CommandName);
                 }
             }
 

@@ -22,6 +22,7 @@ namespace SMBLibrary.Server.SMB1
 
         internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
+            SMB1Session session = state.GetSession(header.UID);
             IFileSystem fileSystem = share.FileSystem;
             string path = subcommand.FileName;
             // '\Directory' - Get the directory info
@@ -122,7 +123,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else
             {
-                ushort? searchHandle = state.AllocateSearchHandle();
+                ushort? searchHandle = session.AllocateSearchHandle();
                 if (!searchHandle.HasValue)
                 {
                     header.Status = NTStatus.STATUS_OS2_NO_MORE_SIDS;
@@ -130,7 +131,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 response.SID = searchHandle.Value;
                 entries.RemoveRange(0, returnCount);
-                state.OpenSearches.Add(response.SID, entries);
+                session.OpenSearches.Add(response.SID, entries);
             }
             return response;
         }
@@ -195,14 +196,15 @@ namespace SMBLibrary.Server.SMB1
 
         internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
-            if (!state.OpenSearches.ContainsKey(subcommand.SID))
+            SMB1Session session = state.GetSession(header.UID);
+            if (!session.OpenSearches.ContainsKey(subcommand.SID))
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
-            List<FileSystemEntry> entries = state.OpenSearches[subcommand.SID];
+            List<FileSystemEntry> entries = session.OpenSearches[subcommand.SID];
             FindInformationList findInformationList = new FindInformationList();
             for (int index = 0; index < entries.Count; index++)
             {
@@ -218,11 +220,11 @@ namespace SMBLibrary.Server.SMB1
             Transaction2FindNext2Response response = new Transaction2FindNext2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
             entries.RemoveRange(0, returnCount);
-            state.OpenSearches[subcommand.SID] = entries;
+            session.OpenSearches[subcommand.SID] = entries;
             response.EndOfSearch = (returnCount == entries.Count) && (entries.Count <= subcommand.SearchCount);
             if (response.EndOfSearch)
             {
-                state.ReleaseSearchHandle(subcommand.SID);
+                session.ReleaseSearchHandle(subcommand.SID);
             }
             return response;
         }
@@ -257,8 +259,9 @@ namespace SMBLibrary.Server.SMB1
 
         internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
+            SMB1Session session = state.GetSession(header.UID);
             IFileSystem fileSystem = share.FileSystem;
-            OpenFileObject openFile = state.GetOpenFileObject(subcommand.FID);
+            OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
@@ -280,7 +283,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static Transaction2SetFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2SetFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(subcommand.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
@@ -300,8 +304,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 case SetInformationLevel.SMB_SET_FILE_BASIC_INFO:
                 {
-                    string userName = state.GetConnectedUserName(header.UID);
-                    if (!share.HasWriteAccess(userName))
+                    if (!share.HasWriteAccess(session.UserName))
                     {
                         header.Status = NTStatus.STATUS_ACCESS_DENIED;
                         return null;
@@ -353,8 +356,7 @@ namespace SMBLibrary.Server.SMB1
                     if (((SetFileDispositionInfo)subcommand.SetInfo).DeletePending)
                     {
                         // We're supposed to delete the file on close, but it's too late to report errors at this late stage
-                        string userName = state.GetConnectedUserName(header.UID);
-                        if (!share.HasWriteAccess(userName))
+                        if (!share.HasWriteAccess(session.UserName))
                         {
                             header.Status = NTStatus.STATUS_ACCESS_DENIED;
                             return null;

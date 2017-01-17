@@ -18,7 +18,8 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, NamedPipeShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(subcommand.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;

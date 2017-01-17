@@ -18,23 +18,13 @@ namespace SMBLibrary.Server
         public bool LargeWrite;
 
         // Key is UID
-        private Dictionary<ushort, string> m_connectedUsers = new Dictionary<ushort, string>();
-        private ushort m_nextUID = 1;
+        private Dictionary<ushort, SMB1Session> m_sessions = new Dictionary<ushort, SMB1Session>();
+        private ushort m_nextUID = 1; // UID MUST be unique within an SMB connection
+        private ushort m_nextTID = 1; // TID MUST be unique within an SMB connection
+        private ushort m_nextFID = 1; // FID MUST be unique within an SMB connection
 
-        // Key is TID
-        private Dictionary<ushort, ISMBShare> m_connectedTrees = new Dictionary<ushort, ISMBShare>();
-        private ushort m_nextTID = 1;
-
-        // Key is FID
-        private Dictionary<ushort, OpenFileObject> m_openFiles = new Dictionary<ushort, OpenFileObject>();
-        private ushort m_nextFID = 1;
-
-        // Key is PID
+        // Key is PID (PID MUST be unique within an SMB connection)
         private Dictionary<uint, ProcessStateObject> m_processStateList = new Dictionary<uint, ProcessStateObject>();
-
-        private const int MaxSearches = 2048; // Windows servers initialize Server.MaxSearches to 2048.
-        public Dictionary<ushort, List<FileSystemEntry>> OpenSearches = new Dictionary<ushort, List<FileSystemEntry>>();
-        private ushort m_nextSearchHandle = 1;
 
         public SMB1ConnectionState(ConnectionState state) : base(state)
         {
@@ -44,7 +34,7 @@ namespace SMBLibrary.Server
         /// An open UID MUST be unique within an SMB connection.
         /// The value of 0xFFFE SHOULD NOT be used as a valid UID. All other possible values for a UID, excluding zero (0x0000), are valid.
         /// </summary>
-        private ushort? AllocateUserID()
+        public ushort? AllocateUserID()
         {
             for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
@@ -53,7 +43,7 @@ namespace SMBLibrary.Server
                 {
                     continue;
                 }
-                if (!m_connectedUsers.ContainsKey(userID))
+                if (!m_sessions.ContainsKey(userID))
                 {
                     m_nextUID = (ushort)(userID + 1);
                     return userID;
@@ -62,43 +52,41 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public ushort? AddConnectedUser(string userName)
+        public SMB1Session CreateSession(ushort userID, string userName)
+        {
+            SMB1Session session = new SMB1Session(this, userID, userName);
+            m_sessions.Add(userID, session);
+            return session;
+        }
+
+        /// <returns>null if all UserID values have already been allocated</returns>
+        public SMB1Session CreateSession(string userName)
         {
             ushort? userID = AllocateUserID();
             if (userID.HasValue)
             {
-                m_connectedUsers.Add(userID.Value, userName);
+                return CreateSession(userID.Value, userName);
             }
-            return userID;
+            return null;
         }
 
-        public string GetConnectedUserName(ushort userID)
+        public SMB1Session GetSession(ushort userID)
         {
-            if (m_connectedUsers.ContainsKey(userID))
-            {
-                return m_connectedUsers[userID];
-            }
-            else
-            {
-                return null;
-            }
+            SMB1Session session;
+            m_sessions.TryGetValue(userID, out session);
+            return session;
         }
 
-        public bool IsAuthenticated(ushort userID)
+        public void RemoveSession(ushort userID)
         {
-            return m_connectedUsers.ContainsKey(userID);
-        }
-
-        public void RemoveConnectedUser(ushort userID)
-        {
-            m_connectedUsers.Remove(userID);
+            m_sessions.Remove(userID);
         }
 
         /// <summary>
         /// An open TID MUST be unique within an SMB connection.
         /// The value 0xFFFF MUST NOT be used as a valid TID. All other possible values for TID, including zero (0x0000), are valid.
         /// </summary>
-        private ushort? AllocateTreeID()
+        public ushort? AllocateTreeID()
         {
             for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
@@ -107,7 +95,7 @@ namespace SMBLibrary.Server
                 {
                     continue;
                 }
-                if (!m_connectedTrees.ContainsKey(treeID))
+                if (!IsTreeIDAllocated(treeID))
                 {
                     m_nextTID = (ushort)(treeID + 1);
                     return treeID;
@@ -116,36 +104,51 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public ushort? AddConnectedTree(ISMBShare share)
+        private bool IsTreeIDAllocated(ushort treeID)
         {
-            ushort? treeID = AllocateTreeID();
-            if (treeID.HasValue)
+            foreach (SMB1Session session in m_sessions.Values)
             {
-                m_connectedTrees.Add(treeID.Value, share);
+                if (session.GetConnectedTree(treeID) != null)
+                {
+                    return true;
+                }
             }
-            return treeID;
+            return false;
         }
 
-        public ISMBShare GetConnectedTree(ushort treeID)
+        /// <summary>
+        /// A FID returned from an Open or Create operation MUST be unique within an SMB connection.
+        /// The value 0xFFFF MUST NOT be used as a valid FID. All other possible values for FID, including zero (0x0000) are valid.
+        /// </summary>
+        /// <returns></returns>
+        public ushort? AllocateFileID()
         {
-            if (m_connectedTrees.ContainsKey(treeID))
+            for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
-                return m_connectedTrees[treeID];
+                ushort fileID = (ushort)(m_nextFID + offset);
+                if (fileID == 0 || fileID == 0xFFFF)
+                {
+                    continue;
+                }
+                if (!IsFileIDAllocated(fileID))
+                {
+                    m_nextFID = (ushort)(fileID + 1);
+                    return fileID;
+                }
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
-        public void RemoveConnectedTree(ushort treeID)
+        private bool IsFileIDAllocated(ushort fileID)
         {
-            m_connectedTrees.Remove(treeID);
-        }
-
-        public bool IsTreeConnected(ushort treeID)
-        {
-            return m_connectedTrees.ContainsKey(treeID);
+            foreach (SMB1Session session in m_sessions.Values)
+            {
+                if (session.GetOpenFileObject(fileID) != null)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public ProcessStateObject GetProcessState(uint processID)
@@ -177,73 +180,6 @@ namespace SMBLibrary.Server
             }
         }
 
-        /// <summary>
-        /// The value 0xFFFF MUST NOT be used as a valid FID. All other possible values for FID, including zero (0x0000) are valid.
-        /// </summary>
-        /// <returns></returns>
-        private ushort? AllocateFileID()
-        {
-            for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
-            {
-                ushort fileID = (ushort)(m_nextFID + offset);
-                if (fileID == 0 || fileID == 0xFFFF)
-                {
-                    continue;
-                }
-                if (!m_openFiles.ContainsKey(fileID))
-                {
-                    m_nextFID = (ushort)(fileID + 1);
-                    return fileID;
-                }
-            }
-            return null;
-        }
-
-        /// <param name="relativePath">Should include the path relative to the share</param>
-        /// <returns>FileID</returns>
-        public ushort? AddOpenFile(string relativePath)
-        {
-            return AddOpenFile(relativePath, null);
-        }
-
-        public ushort? AddOpenFile(string relativePath, Stream stream)
-        {
-            return AddOpenFile(relativePath, stream, false);
-        }
-
-        public ushort? AddOpenFile(string relativePath, Stream stream, bool deleteOnClose)
-        {
-            ushort? fileID = AllocateFileID();
-            if (fileID.HasValue)
-            {
-                m_openFiles.Add(fileID.Value, new OpenFileObject(relativePath, stream, deleteOnClose));
-            }
-            return fileID;
-        }
-
-        public OpenFileObject GetOpenFileObject(ushort fileID)
-        {
-            if (m_openFiles.ContainsKey(fileID))
-            {
-                return m_openFiles[fileID];
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public void RemoveOpenFile(ushort fileID)
-        {
-            Stream stream = m_openFiles[fileID].Stream;
-            if (stream != null)
-            {
-                LogToServer(Severity.Verbose, "Closing file '{0}'", m_openFiles[fileID].Path);
-                stream.Close();
-            }
-            m_openFiles.Remove(fileID);
-        }
-
         public uint? GetMaxDataCount(uint processID)
         {
             ProcessStateObject processState = GetProcessState(processID);
@@ -254,32 +190,6 @@ namespace SMBLibrary.Server
             else
             {
                 return null;
-            }
-        }
-
-        public ushort? AllocateSearchHandle()
-        {
-            for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
-            {
-                ushort searchHandle = (ushort)(m_nextSearchHandle + offset);
-                if (searchHandle == 0 || searchHandle == 0xFFFF)
-                {
-                    continue;
-                }
-                if (!OpenSearches.ContainsKey(searchHandle))
-                {
-                    m_nextSearchHandle = (ushort)(searchHandle + 1);
-                    return searchHandle;
-                }
-            }
-            return null;
-        }
-
-        public void ReleaseSearchHandle(ushort searchHandle)
-        {
-            if (OpenSearches.ContainsKey(searchHandle))
-            {
-                OpenSearches.Remove(searchHandle);
             }
         }
     }

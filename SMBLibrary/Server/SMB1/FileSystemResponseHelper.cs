@@ -17,8 +17,8 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static SMB1Command GetCreateDirectoryResponse(SMB1Header header, CreateDirectoryRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
-            string userName = state.GetConnectedUserName(header.UID);
-            if (!share.HasWriteAccess(userName))
+            SMB1Session session = state.GetSession(header.UID);
+            if (!share.HasWriteAccess(session.UserName))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_CREATE_DIRECTORY);
@@ -47,8 +47,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetDeleteDirectoryResponse(SMB1Header header, DeleteDirectoryRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
-            string userName = state.GetConnectedUserName(header.UID);
-            if (!share.HasWriteAccess(userName))
+            SMB1Session session = state.GetSession(header.UID);
+            if (!share.HasWriteAccess(session.UserName))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
@@ -102,8 +102,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetDeleteResponse(SMB1Header header, DeleteRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
-            string userName = state.GetConnectedUserName(header.UID);
-            if (!share.HasWriteAccess(userName))
+            SMB1Session session = state.GetSession(header.UID);
+            if (!share.HasWriteAccess(session.UserName))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE);
@@ -145,8 +145,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetRenameResponse(SMB1Header header, RenameRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
-            string userName = state.GetConnectedUserName(header.UID);
-            if (!share.HasWriteAccess(userName))
+            SMB1Session session = state.GetSession(header.UID);
+            if (!share.HasWriteAccess(session.UserName))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_RENAME);
@@ -209,8 +209,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetSetInformationResponse(SMB1Header header, SetInformationRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
-            string userName = state.GetConnectedUserName(header.UID);
-            if (!share.HasWriteAccess(userName))
+            SMB1Session session = state.GetSession(header.UID);
+            if (!share.HasWriteAccess(session.UserName))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
@@ -251,15 +251,15 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetSetInformation2Response(SMB1Header header, SetInformation2Request request, FileSystemShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
                 return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
             }
 
-            string userName = state.GetConnectedUserName(header.UID);
-            if (!share.HasWriteAccess(userName))
+            if (!share.HasWriteAccess(session.UserName))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);

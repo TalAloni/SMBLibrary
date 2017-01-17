@@ -19,7 +19,8 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static SMB1Command GetReadResponse(SMB1Header header, ReadRequest request, ISMBShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
@@ -40,7 +41,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetReadResponse(SMB1Header header, ReadAndXRequest request, ISMBShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
@@ -136,7 +138,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetWriteResponse(SMB1Header header, WriteRequest request, ISMBShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
@@ -155,7 +158,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetWriteResponse(SMB1Header header, WriteAndXRequest request, ISMBShare share, SMB1ConnectionState state)
         {
-            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
