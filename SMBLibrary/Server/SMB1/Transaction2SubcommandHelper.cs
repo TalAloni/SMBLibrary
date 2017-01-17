@@ -111,13 +111,11 @@ namespace SMBLibrary.Server.SMB1
             Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
             response.EndOfSearch = (returnCount == entries.Count);
-            bool closeAtEndOfSearch = (subcommand.Flags & FindFlags.SMB_FIND_CLOSE_AT_EOS) > 0;
-            bool closeAfterRequest = (subcommand.Flags & FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST) > 0;
             // If [..] the search fit within a single response and SMB_FIND_CLOSE_AT_EOS is set in the Flags field,
             // or if SMB_FIND_CLOSE_AFTER_REQUEST is set in the request,
             // the server SHOULD return a SID field value of zero.
             // This indicates that the search has been closed and is no longer active on the server.
-            if ((response.EndOfSearch && closeAtEndOfSearch) || closeAfterRequest)
+            if ((response.EndOfSearch && subcommand.CloseAtEndOfSearch) || subcommand.CloseAfterRequest)
             {
                 response.SID = 0;
             }
