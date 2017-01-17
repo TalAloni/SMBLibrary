@@ -78,6 +78,25 @@ namespace SMBLibrary.Server
             return entries;
         }
 
+        /// <param name="expression">Expression as described in [MS-FSA] 2.1.4.4</param>
+        private static List<FileSystemEntry> GetFiltered(List<FileSystemEntry> entries, string expression)
+        {
+            if (expression == "*")
+            {
+                return entries;
+            }
+
+            List<FileSystemEntry> result = new List<FileSystemEntry>();
+            foreach (FileSystemEntry entry in entries)
+            {
+                if (IsFileNameInExpression(entry.Name, expression))
+                {
+                    result.Add(entry);
+                }
+            }
+            return result;
+        }
+
         // [MS-FSA] 2.1.4.4
         // The FileName is string compared with Expression using the following wildcard rules:
         // * (asterisk) Matches zero or more characters.
@@ -85,55 +104,51 @@ namespace SMBLibrary.Server
         // DOS_DOT (" quotation mark) Matches either a period or zero characters beyond the name string.
         // DOS_QM (> greater than) Matches any single character or, upon encountering a period or end of name string, advances the expression to the end of the set of contiguous DOS_QMs.
         // DOS_STAR (< less than) Matches zero or more characters until encountering and matching the final . in the name.
-        private static List<FileSystemEntry> GetFiltered(List<FileSystemEntry> entries, string searchPattern)
+        private static bool IsFileNameInExpression(string fileName, string expression)
         {
-            if (searchPattern == String.Empty || searchPattern == "*")
+            if (expression == "*")
             {
-                return entries;
+                return true;
             }
-
-            List<FileSystemEntry> result = new List<FileSystemEntry>();
-            if (searchPattern.EndsWith("*") && searchPattern.Length > 1)
+            else if (expression.EndsWith("*")) // expression.Length > 1
             {
-                string fileNameStart = searchPattern.Substring(0, searchPattern.Length - 1);
-                bool exactNameWithoutExtensionMatch = false;
-                if (fileNameStart.EndsWith("\""))
+                string desiredFileNameStart = expression.Substring(0, expression.Length - 1);
+                bool findExactNameWithoutExtension = false;
+                if (desiredFileNameStart.EndsWith("\""))
                 {
-                    exactNameWithoutExtensionMatch = true;
-                    fileNameStart = fileNameStart.Substring(0, fileNameStart.Length - 1);
+                    findExactNameWithoutExtension = true;
+                    desiredFileNameStart = desiredFileNameStart.Substring(0, desiredFileNameStart.Length - 1);
                 }
 
-                foreach (FileSystemEntry entry in entries)
+                if (!findExactNameWithoutExtension)
                 {
-                    if (!exactNameWithoutExtensionMatch)
+                    if (fileName.StartsWith(desiredFileNameStart, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        if (entry.Name.StartsWith(fileNameStart, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            result.Add(entry);
-                        }
+                        return true;
                     }
-                    else
+                }
+                else
+                {
+                    if (fileName.StartsWith(desiredFileNameStart + ".", StringComparison.InvariantCultureIgnoreCase) ||
+                        fileName.Equals(desiredFileNameStart, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        if (entry.Name.StartsWith(fileNameStart + ".", StringComparison.InvariantCultureIgnoreCase) ||
-                            entry.Name.Equals(fileNameStart, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            result.Add(entry);
-                        }
+                        return true;
                     }
                 }
             }
-            else if (searchPattern.StartsWith("<"))
+            else if (expression.StartsWith("<"))
             {
-                string fileNameEnd = searchPattern.Substring(1);
-                foreach (FileSystemEntry entry in entries)
+                string desiredFileNameEnd = expression.Substring(1);
+                if (fileName.EndsWith(desiredFileNameEnd, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (entry.Name.EndsWith(fileNameEnd, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        result.Add(entry);
-                    }
+                    return true;
                 }
             }
-            return result;
+            else if (String.Equals(fileName, expression, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
