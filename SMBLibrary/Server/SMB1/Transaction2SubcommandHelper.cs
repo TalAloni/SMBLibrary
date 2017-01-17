@@ -15,82 +15,29 @@ namespace SMBLibrary.Server.SMB1
 {
     public class Transaction2SubcommandHelper
     {
-        // Windows servers will return "." and ".." when enumerating directory files, Windows clients do not require it.
-        // It seems that Ubuntu 10.04.4 and 13.10 expect at least one entry in the response (so empty directory listing cause a problem when omitting both).
-        public const bool IncludeCurrentDirectoryInResults = true;
-        public const bool IncludeParentDirectoryInResults = true;
-
         internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             IFileSystem fileSystem = share.FileSystem;
-            string path = subcommand.FileName;
-            // '\Directory' - Get the directory info
-            // '\Directory\*' - List the directory files
-            // '\Directory\s*' - List the directory files starting with s (cmd.exe will use this syntax when entering 's' and hitting tab for autocomplete)
-            // '\Directory\<.inf' (Update driver will use this syntax)
-            // '\Directory\exefile"*' (cmd.exe will use this syntax when entering an exe without its extension, explorer will use this opening a directory from the run menu)
-            bool isDirectoryEnumeration = false;
-            string searchPattern = String.Empty;
-            if (path.Contains("*") || path.Contains("<"))
-            {
-                isDirectoryEnumeration = true;
-                int separatorIndex = path.LastIndexOf('\\');
-                searchPattern = path.Substring(separatorIndex + 1);
-                path = path.Substring(0, separatorIndex + 1);
-            }
-            bool exactNameWithoutExtension = searchPattern.Contains("\"");
+            string fileNamePattern = subcommand.FileName;
 
-            FileSystemEntry entry = fileSystem.GetEntry(path);
-            if (entry == null)
+            List<FileSystemEntry> entries;
+            try
+            {
+                entries = NTFileSystemHelper.FindEntries(fileSystem, fileNamePattern);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                return null;
+            }
+            state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', found {1} matching entries", fileNamePattern, entries != null ? entries.Count.ToString() : "no");
+
+            // [MS-CIFS] If no matching entries are found, the server SHOULD fail the request with STATUS_NO_SUCH_FILE.
+            if (entries == null || entries.Count == 0)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
                 return null;
-            }
-
-            List<FileSystemEntry> entries;
-            if (isDirectoryEnumeration)
-            {
-                try
-                {
-                    entries = fileSystem.ListEntriesInDirectory(path);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                    return null;
-                }
-
-                if (searchPattern != String.Empty)
-                {
-                    entries = GetFiltered(entries, searchPattern);
-                }
-
-                if (!exactNameWithoutExtension)
-                {
-                    if (IncludeParentDirectoryInResults)
-                    {
-                        entries.Insert(0, fileSystem.GetEntry(FileSystem.GetParentDirectory(path)));
-                        entries[0].Name = "..";
-                    }
-                    if (IncludeCurrentDirectoryInResults)
-                    {
-                        entries.Insert(0, fileSystem.GetEntry(path));
-                        entries[0].Name = ".";
-                    }
-                }
-
-                // If no matching entries are found, the server SHOULD fail the request with STATUS_NO_SUCH_FILE.
-                if (entries.Count == 0)
-                {
-                    header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                    return null;
-                }
-            }
-            else
-            {
-                entries = new List<FileSystemEntry>();
-                entries.Add(entry);
             }
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
@@ -130,64 +77,6 @@ namespace SMBLibrary.Server.SMB1
                 response.SID = searchHandle.Value;
             }
             return response;
-        }
-
-        // [MS-FSA] 2.1.4.4
-        // The FileName is string compared with Expression using the following wildcard rules:
-        // * (asterisk) Matches zero or more characters.
-        // ? (question mark) Matches a single character.
-        // DOS_DOT (" quotation mark) Matches either a period or zero characters beyond the name string.
-        // DOS_QM (> greater than) Matches any single character or, upon encountering a period or end of name string, advances the expression to the end of the set of contiguous DOS_QMs.
-        // DOS_STAR (< less than) Matches zero or more characters until encountering and matching the final . in the name.
-        internal static List<FileSystemEntry> GetFiltered(List<FileSystemEntry> entries, string searchPattern)
-        {
-            if (searchPattern == String.Empty || searchPattern == "*")
-            {
-                return entries;
-            }
-
-            List<FileSystemEntry> result = new List<FileSystemEntry>();
-            if (searchPattern.EndsWith("*") && searchPattern.Length > 1)
-            {
-                string fileNameStart = searchPattern.Substring(0, searchPattern.Length - 1);
-                bool exactNameWithoutExtensionMatch = false;
-                if (fileNameStart.EndsWith("\""))
-                {
-                    exactNameWithoutExtensionMatch = true;
-                    fileNameStart = fileNameStart.Substring(0, fileNameStart.Length - 1);
-                }
-
-                foreach (FileSystemEntry entry in entries)
-                {
-                    if (!exactNameWithoutExtensionMatch)
-                    {
-                        if (entry.Name.StartsWith(fileNameStart, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            result.Add(entry);
-                        }
-                    }
-                    else
-                    {
-                        if (entry.Name.StartsWith(fileNameStart + ".", StringComparison.InvariantCultureIgnoreCase) ||
-                            entry.Name.Equals(fileNameStart, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            result.Add(entry);
-                        }
-                    }
-                }
-            }
-            else if (searchPattern.StartsWith("<"))
-            {
-                string fileNameEnd = searchPattern.Substring(1);
-                foreach (FileSystemEntry entry in entries)
-                {
-                    if (entry.Name.EndsWith(fileNameEnd, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        result.Add(entry);
-                    }
-                }
-            }
-            return result;
         }
 
         internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
