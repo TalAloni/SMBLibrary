@@ -45,7 +45,7 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetFindClose2Request(SMB1Header header, FindClose2Request request, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            session.ReleaseSearchHandle(request.SearchHandle);
+            session.RemoveOpenSearch(request.SearchHandle);
             return new FindClose2Response();
         }
 

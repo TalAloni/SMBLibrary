@@ -110,7 +110,7 @@ namespace SMBLibrary.Server.SMB1
             int returnCount = findInformationList.Count;
             Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
-            response.EndOfSearch = (returnCount == entries.Count) && (entries.Count <= subcommand.SearchCount);
+            response.EndOfSearch = (returnCount == entries.Count);
             bool closeAtEndOfSearch = (subcommand.Flags & FindFlags.SMB_FIND_CLOSE_AT_EOS) > 0;
             bool closeAfterRequest = (subcommand.Flags & FindFlags.SMB_FIND_CLOSE_AFTER_REQUEST) > 0;
             // If [..] the search fit within a single response and SMB_FIND_CLOSE_AT_EOS is set in the Flags field,
@@ -123,15 +123,13 @@ namespace SMBLibrary.Server.SMB1
             }
             else
             {
-                ushort? searchHandle = session.AllocateSearchHandle();
+                ushort? searchHandle = session.AddOpenSearch(entries, returnCount);
                 if (!searchHandle.HasValue)
                 {
                     header.Status = NTStatus.STATUS_OS2_NO_MORE_SIDS;
                     return null;
                 }
                 response.SID = searchHandle.Value;
-                entries.RemoveRange(0, returnCount);
-                session.OpenSearches.Add(response.SID, entries);
             }
             return response;
         }
@@ -197,34 +195,38 @@ namespace SMBLibrary.Server.SMB1
         internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!session.OpenSearches.ContainsKey(subcommand.SID))
+            OpenSearch openSearch = session.GetOpenSearch(subcommand.SID);
+            if (openSearch == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
-            List<FileSystemEntry> entries = session.OpenSearches[subcommand.SID];
             FindInformationList findInformationList = new FindInformationList();
-            for (int index = 0; index < entries.Count; index++)
+            for (int index = openSearch.EnumerationLocation; index < openSearch.Entries.Count; index++)
             {
-                FindInformation infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
+                FindInformation infoEntry = InfoHelper.FromFileSystemEntry(openSearch.Entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
                 findInformationList.Add(infoEntry);
                 if (findInformationList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
                 {
                     findInformationList.RemoveAt(findInformationList.Count - 1);
                     break;
                 }
+
+                if (findInformationList.Count == subcommand.SearchCount)
+                {
+                    break;
+                }
             }
             int returnCount = findInformationList.Count;
             Transaction2FindNext2Response response = new Transaction2FindNext2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
-            entries.RemoveRange(0, returnCount);
-            session.OpenSearches[subcommand.SID] = entries;
-            response.EndOfSearch = (returnCount == entries.Count) && (entries.Count <= subcommand.SearchCount);
+            openSearch.EnumerationLocation += returnCount;
+            response.EndOfSearch = (openSearch.EnumerationLocation == openSearch.Entries.Count);
             if (response.EndOfSearch)
             {
-                session.ReleaseSearchHandle(subcommand.SID);
+                session.RemoveOpenSearch(subcommand.SID);
             }
             return response;
         }

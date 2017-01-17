@@ -26,7 +26,7 @@ namespace SMBLibrary.Server
         private Dictionary<ushort, OpenFileObject> m_openFiles = new Dictionary<ushort, OpenFileObject>();
 
         // Key is search handle a.k.a. Search ID
-        public Dictionary<ushort, List<FileSystemEntry>> OpenSearches = new Dictionary<ushort, List<FileSystemEntry>>();
+        private Dictionary<ushort, OpenSearch> m_openSearches = new Dictionary<ushort, OpenSearch>();
         private ushort m_nextSearchHandle = 1;
 
         public SMB1Session(SMB1ConnectionState connection, ushort userID, string userName)
@@ -102,7 +102,7 @@ namespace SMBLibrary.Server
             m_openFiles.Remove(fileID);
         }
 
-        public ushort? AllocateSearchHandle()
+        private ushort? AllocateSearchHandle()
         {
             for (ushort offset = 0; offset < UInt16.MaxValue; offset++)
             {
@@ -111,7 +111,7 @@ namespace SMBLibrary.Server
                 {
                     continue;
                 }
-                if (!OpenSearches.ContainsKey(searchHandle))
+                if (!m_openSearches.ContainsKey(searchHandle))
                 {
                     m_nextSearchHandle = (ushort)(searchHandle + 1);
                     return searchHandle;
@@ -120,12 +120,27 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public void ReleaseSearchHandle(ushort searchHandle)
+        public ushort? AddOpenSearch(List<FileSystemEntry> entries, int enumerationLocation)
         {
-            if (OpenSearches.ContainsKey(searchHandle))
+            ushort? searchHandle = AllocateSearchHandle();
+            if (searchHandle.HasValue)
             {
-                OpenSearches.Remove(searchHandle);
+                OpenSearch openSearch = new OpenSearch(entries, enumerationLocation);
+                m_openSearches.Add(searchHandle.Value, openSearch);
             }
+            return searchHandle;
+        }
+
+        public OpenSearch GetOpenSearch(ushort searchHandle)
+        {
+            OpenSearch openSearch;
+            m_openSearches.TryGetValue(searchHandle, out openSearch);
+            return openSearch;
+        }
+
+        public void RemoveOpenSearch(ushort searchHandle)
+        {
+            m_openSearches.Remove(searchHandle);
         }
 
         public ushort UserID

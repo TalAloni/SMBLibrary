@@ -106,6 +106,7 @@
     <Compile Include="RPC\Structures\SyntaxID.cs" />
     <Compile Include="Server\ConnectionState\ConnectionState.cs" />
     <Compile Include="Server\ConnectionState\OpenFileObject.cs" />
+    <Compile Include="Server\ConnectionState\OpenSearch.cs" />
     <Compile Include="Server\ConnectionState\ProcessStateObject.cs" />
     <Compile Include="Server\ConnectionState\SMB1ConnectionState.cs" />
     <Compile Include="Server\ConnectionState\SMB1Session.cs" />
