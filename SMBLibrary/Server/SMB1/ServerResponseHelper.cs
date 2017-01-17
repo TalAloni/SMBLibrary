@@ -17,23 +17,23 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static SMB1Command GetCloseResponse(SMB1Header header, CloseRequest request, ISMBShare share, SMB1ConnectionState state)
         {
-            OpenedFileObject openedFile = state.GetOpenedFileObject(request.FID);
-            if (openedFile == null)
+            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
                 return new ErrorResponse(CommandName.SMB_COM_CLOSE);
             }
 
-            state.RemoveOpenedFile(request.FID);
-            if (openedFile.DeleteOnClose && share is FileSystemShare)
+            state.RemoveOpenFile(request.FID);
+            if (openFile.DeleteOnClose && share is FileSystemShare)
             {
                 try
                 {
-                    ((FileSystemShare)share).FileSystem.Delete(openedFile.Path);
+                    ((FileSystemShare)share).FileSystem.Delete(openFile.Path);
                 }
                 catch
                 {
-                    state.LogToServer(Severity.Debug, "Close: Cannot delete '{0}'", openedFile.Path);
+                    state.LogToServer(Severity.Debug, "Close: Cannot delete '{0}'", openFile.Path);
                 }
             }
             CloseResponse response = new CloseResponse();

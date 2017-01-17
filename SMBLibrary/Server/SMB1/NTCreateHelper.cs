@@ -25,7 +25,7 @@ namespace SMBLibrary.Server.SMB1
                 Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
                 if (pipeStream != null)
                 {
-                    ushort? fileID = state.AddOpenedFile(path, pipeStream);
+                    ushort? fileID = state.AddOpenFile(path, pipeStream);
                     if (!fileID.HasValue)
                     {
                         header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
@@ -109,7 +109,7 @@ namespace SMBLibrary.Server.SMB1
                     }
                 }
 
-                ushort? fileID = state.AddOpenedFile(path, stream, deleteOnClose);
+                ushort? fileID = state.AddOpenFile(path, stream, deleteOnClose);
                 if (!fileID.HasValue)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;

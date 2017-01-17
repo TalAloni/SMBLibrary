@@ -251,8 +251,8 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetSetInformation2Response(SMB1Header header, SetInformation2Request request, FileSystemShare share, SMB1ConnectionState state)
         {
-            string openedFilePath = state.GetOpenedFilePath(request.FID);
-            if (openedFilePath == null)
+            OpenFileObject openFile = state.GetOpenFileObject(request.FID);
+            if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
                 return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
@@ -266,7 +266,7 @@ namespace SMBLibrary.Server.SMB1
             }
             IFileSystem fileSystem = share.FileSystem;
 
-            fileSystem.SetDates(openedFilePath, request.CreationDateTime, request.LastWriteDateTime, request.LastAccessDateTime);
+            fileSystem.SetDates(openFile.Path, request.CreationDateTime, request.LastWriteDateTime, request.LastAccessDateTime);
             return new SetInformation2Response();
         }
     }

@@ -26,7 +26,7 @@ namespace SMBLibrary.Server
         private ushort m_nextTID = 1;
 
         // Key is FID
-        private Dictionary<ushort, OpenedFileObject> m_openedFiles = new Dictionary<ushort, OpenedFileObject>();
+        private Dictionary<ushort, OpenFileObject> m_openFiles = new Dictionary<ushort, OpenFileObject>();
         private ushort m_nextFID = 1;
 
         // Key is PID
@@ -190,7 +190,7 @@ namespace SMBLibrary.Server
                 {
                     continue;
                 }
-                if (!m_openedFiles.ContainsKey(fileID))
+                if (!m_openFiles.ContainsKey(fileID))
                 {
                     m_nextFID = (ushort)(fileID + 1);
                     return fileID;
@@ -201,31 +201,31 @@ namespace SMBLibrary.Server
 
         /// <param name="relativePath">Should include the path relative to the share</param>
         /// <returns>FileID</returns>
-        public ushort? AddOpenedFile(string relativePath)
+        public ushort? AddOpenFile(string relativePath)
         {
-            return AddOpenedFile(relativePath, null);
+            return AddOpenFile(relativePath, null);
         }
 
-        public ushort? AddOpenedFile(string relativePath, Stream stream)
+        public ushort? AddOpenFile(string relativePath, Stream stream)
         {
-            return AddOpenedFile(relativePath, stream, false);
+            return AddOpenFile(relativePath, stream, false);
         }
 
-        public ushort? AddOpenedFile(string relativePath, Stream stream, bool deleteOnClose)
+        public ushort? AddOpenFile(string relativePath, Stream stream, bool deleteOnClose)
         {
             ushort? fileID = AllocateFileID();
             if (fileID.HasValue)
             {
-                m_openedFiles.Add(fileID.Value, new OpenedFileObject(relativePath, stream, deleteOnClose));
+                m_openFiles.Add(fileID.Value, new OpenFileObject(relativePath, stream, deleteOnClose));
             }
             return fileID;
         }
 
-        public string GetOpenedFilePath(ushort fileID)
+        public OpenFileObject GetOpenFileObject(ushort fileID)
         {
-            if (m_openedFiles.ContainsKey(fileID))
+            if (m_openFiles.ContainsKey(fileID))
             {
-                return m_openedFiles[fileID].Path;
+                return m_openFiles[fileID];
             }
             else
             {
@@ -233,32 +233,15 @@ namespace SMBLibrary.Server
             }
         }
 
-        public OpenedFileObject GetOpenedFileObject(ushort fileID)
+        public void RemoveOpenFile(ushort fileID)
         {
-            if (m_openedFiles.ContainsKey(fileID))
-            {
-                return m_openedFiles[fileID];
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public bool IsFileOpen(ushort fileID)
-        {
-            return m_openedFiles.ContainsKey(fileID);
-        }
-
-        public void RemoveOpenedFile(ushort fileID)
-        {
-            Stream stream = m_openedFiles[fileID].Stream;
+            Stream stream = m_openFiles[fileID].Stream;
             if (stream != null)
             {
-                LogToServer(Severity.Verbose, "Closing file '{0}'", m_openedFiles[fileID].Path);
+                LogToServer(Severity.Verbose, "Closing file '{0}'", m_openFiles[fileID].Path);
                 stream.Close();
             }
-            m_openedFiles.Remove(fileID);
+            m_openFiles.Remove(fileID);
         }
 
         public uint? GetMaxDataCount(uint processID)

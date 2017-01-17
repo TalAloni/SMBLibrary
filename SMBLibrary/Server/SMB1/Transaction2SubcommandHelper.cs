@@ -258,14 +258,14 @@ namespace SMBLibrary.Server.SMB1
         internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             IFileSystem fileSystem = share.FileSystem;
-            string openedFilePath = state.GetOpenedFilePath(subcommand.FID);
-            if (openedFilePath == null)
+            OpenFileObject openFile = state.GetOpenFileObject(subcommand.FID);
+            if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
 
-            FileSystemEntry entry = fileSystem.GetEntry(openedFilePath);
+            FileSystemEntry entry = fileSystem.GetEntry(openFile.Path);
             if (entry == null)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
@@ -280,14 +280,12 @@ namespace SMBLibrary.Server.SMB1
 
         internal static Transaction2SetFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2SetFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
-            string openedFilePath = state.GetOpenedFilePath(subcommand.FID);
-            if (openedFilePath == null)
+            OpenFileObject openFile = state.GetOpenFileObject(subcommand.FID);
+            if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
-
-            OpenedFileObject fileObject = state.GetOpenedFileObject(subcommand.FID);
 
             Transaction2SetFileInformationResponse response = new Transaction2SetFileInformationResponse();
             switch (subcommand.InformationLevel)
@@ -315,7 +313,7 @@ namespace SMBLibrary.Server.SMB1
                     bool isArchived = (info.ExtFileAttributes & ExtendedFileAttributes.Archive) > 0;
                     try
                     {
-                        share.FileSystem.SetAttributes(openedFilePath, isHidden, isReadonly, isArchived);
+                        share.FileSystem.SetAttributes(openFile.Path, isHidden, isReadonly, isArchived);
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -325,7 +323,7 @@ namespace SMBLibrary.Server.SMB1
 
                     try
                     {
-                        share.FileSystem.SetDates(openedFilePath, info.CreationTime, info.LastWriteTime, info.LastAccessTime);
+                        share.FileSystem.SetDates(openFile.Path, info.CreationTime, info.LastWriteTime, info.LastAccessTime);
                     }
                     catch (IOException ex)
                     {
@@ -333,7 +331,7 @@ namespace SMBLibrary.Server.SMB1
                         if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                         {
                             // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                            state.LogToServer(Severity.Debug, "Transaction2SetFileInformation: Sharing violation setting file dates, Path: '{0}'", openedFilePath);
+                            state.LogToServer(Severity.Debug, "Transaction2SetFileInformation: Sharing violation setting file dates, Path: '{0}'", openFile.Path);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return null;
                         }
@@ -362,24 +360,24 @@ namespace SMBLibrary.Server.SMB1
                             return null;
                         }
 
-                        if (fileObject.Stream != null)
+                        if (openFile.Stream != null)
                         {
-                            fileObject.Stream.Close();
+                            openFile.Stream.Close();
                         }
                         try
                         {
-                            state.LogToServer(Severity.Information, "NTCreate: Deleting file '{0}'", openedFilePath);
-                            share.FileSystem.Delete(openedFilePath);
+                            state.LogToServer(Severity.Information, "NTCreate: Deleting file '{0}'", openFile.Path);
+                            share.FileSystem.Delete(openFile.Path);
                         }
                         catch (IOException)
                         {
-                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}'", openedFilePath);
+                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}'", openFile.Path);
                             header.Status = NTStatus.STATUS_SHARING_VIOLATION;
                             return null;
                         }
                         catch (UnauthorizedAccessException)
                         {
-                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}', Access Denied", openedFilePath);
+                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}', Access Denied", openFile.Path);
                             header.Status = NTStatus.STATUS_ACCESS_DENIED;
                             return null;
                         }
@@ -393,15 +391,15 @@ namespace SMBLibrary.Server.SMB1
                     ulong allocationSize = ((SetFileAllocationInfo)subcommand.SetInfo).AllocationSize;
                     try
                     {
-                        fileObject.Stream.SetLength((long)allocationSize);
+                        openFile.Stream.SetLength((long)allocationSize);
                     }
                     catch (IOException)
                     {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'", openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'", openFile.Path);
                     }
                     catch (UnauthorizedAccessException)
                     {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'. Access Denied", openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'. Access Denied", openFile.Path);
                     }
                     return response;
                 }
@@ -410,15 +408,15 @@ namespace SMBLibrary.Server.SMB1
                     ulong endOfFile = ((SetFileEndOfFileInfo)subcommand.SetInfo).EndOfFile;
                     try
                     {
-                        fileObject.Stream.SetLength((long)endOfFile);
+                        openFile.Stream.SetLength((long)endOfFile);
                     }
                     catch (IOException)
                     {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'", openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'", openFile.Path);
                     }
                     catch (UnauthorizedAccessException)
                     {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'. Access Denied", openedFilePath);
+                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'. Access Denied", openFile.Path);
                     }
                     return response;
                 }

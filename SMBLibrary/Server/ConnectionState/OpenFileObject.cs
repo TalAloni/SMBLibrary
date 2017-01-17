@@ -11,13 +11,13 @@ using System.Text;
 
 namespace SMBLibrary.Server
 {
-    public class OpenedFileObject
+    public class OpenFileObject
     {
         public string Path;
         public Stream Stream;
         public bool DeleteOnClose;
 
-        public OpenedFileObject(string path, Stream stream, bool deleteOnClose)
+        public OpenFileObject(string path, Stream stream, bool deleteOnClose)
         {
             Path = path;
             Stream = stream;

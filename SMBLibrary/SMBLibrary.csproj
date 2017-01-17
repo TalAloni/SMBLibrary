@@ -105,7 +105,7 @@
     <Compile Include="RPC\Structures\ResultList.cs" />
     <Compile Include="RPC\Structures\SyntaxID.cs" />
     <Compile Include="Server\ConnectionState\ConnectionState.cs" />
-    <Compile Include="Server\ConnectionState\OpenedFileObject.cs" />
+    <Compile Include="Server\ConnectionState\OpenFileObject.cs" />
     <Compile Include="Server\ConnectionState\ProcessStateObject.cs" />
     <Compile Include="Server\ConnectionState\SMB1ConnectionState.cs" />
     <Compile Include="Server\Exceptions\EmptyPasswordNotAllowedException.cs" />
