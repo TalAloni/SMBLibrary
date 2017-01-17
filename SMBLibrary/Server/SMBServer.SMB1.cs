@@ -53,24 +53,41 @@ namespace SMBLibrary.Server
         /// </summary>
         public SMB1Command ProcessSMB1Command(SMB1Header header, SMB1Command command, SMB1ConnectionState state, List<SMB1Command> sendQueue)
         {
-            if (command is NegotiateRequest)
+            if (state.ServerDialect == SMBDialect.NotSet)
             {
-                NegotiateRequest request = (NegotiateRequest)command;
-                if (request.Dialects.Contains(SMBServer.NTLanManagerDialect))
+                if (command is NegotiateRequest)
                 {
-                    if (EnableExtendedSecurity && header.ExtendedSecurityFlag)
+                    NegotiateRequest request = (NegotiateRequest)command;
+                    if (request.Dialects.Contains(SMBServer.NTLanManagerDialect))
                     {
-                        return NegotiateHelper.GetNegotiateResponseExtended(request, m_serverGuid);
+                        state.ServerDialect = SMBDialect.NTLM012;
+                        if (EnableExtendedSecurity && header.ExtendedSecurityFlag)
+                        {
+                            return NegotiateHelper.GetNegotiateResponseExtended(request, m_serverGuid);
+                        }
+                        else
+                        {
+                            return NegotiateHelper.GetNegotiateResponse(header, request, m_users);
+                        }
                     }
                     else
                     {
-                        return NegotiateHelper.GetNegotiateResponse(header, request, m_users);
+                        return new NegotiateResponseNotSupported();
                     }
                 }
                 else
                 {
-                    return new NegotiateResponseNotSupported();
+                    // [MS-CIFS] An SMB_COM_NEGOTIATE exchange MUST be completed before any other SMB messages are sent to the server
+                    header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                    return new ErrorResponse(command.CommandName);
                 }
+            }
+            else if (command is NegotiateRequest)
+            {
+                // There MUST be only one SMB_COM_NEGOTIATE exchange per SMB connection.
+                // Subsequent SMB_COM_NEGOTIATE requests received by the server MUST be rejected with error responses.
+                header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                return new ErrorResponse(command.CommandName);
             }
             else if (command is SessionSetupAndXRequest)
             {

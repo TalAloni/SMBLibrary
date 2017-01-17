@@ -15,17 +15,25 @@ namespace SMBLibrary.Server
 {
     public delegate void LogDelegate(Severity severity, string message);
 
+    public enum SMBDialect
+    {
+        NotSet,
+        NTLM012, // NT LM 0.12
+    }
+
     public class ConnectionState
     {
         public Socket ClientSocket;
         public IPEndPoint ClientEndPoint;
         public NBTConnectionReceiveBuffer ReceiveBuffer;
         protected LogDelegate LogToServerHandler;
+        public SMBDialect ServerDialect;
 
         public ConnectionState(LogDelegate logToServerHandler)
         {
             ReceiveBuffer = new NBTConnectionReceiveBuffer();
             LogToServerHandler = logToServerHandler;
+            ServerDialect = SMBDialect.NotSet;
         }
 
         public ConnectionState(ConnectionState state)
@@ -34,6 +42,7 @@ namespace SMBLibrary.Server
             ClientEndPoint = state.ClientEndPoint;
             ReceiveBuffer = state.ReceiveBuffer;
             LogToServerHandler = state.LogToServerHandler;
+            ServerDialect = state.ServerDialect;
         }
 
         public void LogToServer(Severity severity, string message)
