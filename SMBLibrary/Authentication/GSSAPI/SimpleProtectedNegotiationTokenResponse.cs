@@ -44,16 +44,12 @@ namespace SMBLibrary.Authentication
         {
         }
 
+        /// <param name="offset">The offset following the NegTokenResp tag</param>
         public SimpleProtectedNegotiationTokenResponse(byte[] buffer, int offset)
         {
-            byte tag = ByteReader.ReadByte(buffer, ref offset);
-            if (tag != NegTokenRespTag)
-            {
-                throw new InvalidDataException();
-            }
             int constuctionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
             int sequenceEndOffset = offset + constuctionLength;
-            tag = ByteReader.ReadByte(buffer, ref offset);
+            byte tag = ByteReader.ReadByte(buffer, ref offset);
             if (tag != (byte)DerEncodingTag.Sequence)
             {
                 throw new InvalidDataException();

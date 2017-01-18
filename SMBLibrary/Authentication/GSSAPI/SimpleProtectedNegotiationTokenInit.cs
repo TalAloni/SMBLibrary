@@ -32,16 +32,12 @@ namespace SMBLibrary.Authentication
 
         public List<TokenInitEntry> Tokens = new List<TokenInitEntry>();
 
+        /// <param name="offset">The offset following the NegTokenInit tag</param>
         public SimpleProtectedNegotiationTokenInit(byte[] buffer, int offset)
         {
-            byte tag = ByteReader.ReadByte(buffer, ref offset);
-            if (tag != NegTokenInitTag)
-            {
-                throw new InvalidDataException();
-            }
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
             int sequenceEndOffset = offset + constructionLength;
-            tag = ByteReader.ReadByte(buffer, ref offset);
+            byte tag = ByteReader.ReadByte(buffer, ref offset);
             if (tag != (byte)DerEncodingTag.Sequence)
             {
                 throw new InvalidDataException();

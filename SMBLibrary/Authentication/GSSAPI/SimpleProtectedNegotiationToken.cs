@@ -37,13 +37,16 @@ namespace SMBLibrary.Authentication
                     byte[] objectIdentifier = ByteReader.ReadBytes(tokenBytes, ref offset, objectIdentifierLength);
                     if (ByteUtils.AreByteArraysEqual(objectIdentifier, SPNEGOIdentifier))
                     {
-                        return new SimpleProtectedNegotiationTokenInit(tokenBytes, offset);
+                        tag = ByteReader.ReadByte(tokenBytes, ref offset);
+                        if (tag == SimpleProtectedNegotiationTokenInit.NegTokenInitTag)
+                        {
+                            return new SimpleProtectedNegotiationTokenInit(tokenBytes, offset);
+                        }
                     }
                 }
             }
             else if (tag == SimpleProtectedNegotiationTokenResponse.NegTokenRespTag)
             {
-                offset--;
                 return new SimpleProtectedNegotiationTokenResponse(tokenBytes, offset);
             }
             return null;
