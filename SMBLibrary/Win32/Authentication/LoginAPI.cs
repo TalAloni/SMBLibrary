@@ -45,6 +45,7 @@ namespace SMBLibrary.Authentication.Win32
             {
                 uint error = (uint)Marshal.GetLastWin32Error();
                 if (error == (uint)Win32Error.ERROR_ACCOUNT_RESTRICTION ||
+                    error == (uint)Win32Error.ERROR_ACCOUNT_DISABLED ||
                     error == (uint)Win32Error.ERROR_LOGON_FAILURE ||
                     error == (uint)Win32Error.ERROR_LOGON_TYPE_NOT_GRANTED)
                 {
@@ -69,6 +70,7 @@ namespace SMBLibrary.Authentication.Win32
             {
                 uint error = (uint)Marshal.GetLastWin32Error();
                 return (error == (uint)Win32Error.ERROR_ACCOUNT_RESTRICTION ||
+                        error == (uint)Win32Error.ERROR_ACCOUNT_DISABLED ||
                         error == (uint)Win32Error.ERROR_LOGON_TYPE_NOT_GRANTED);
             }
         }
