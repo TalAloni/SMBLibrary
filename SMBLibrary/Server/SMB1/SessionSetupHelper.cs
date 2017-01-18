@@ -174,7 +174,7 @@ namespace SMBLibrary.Server.SMB1
         private static AuthenticateMessage CreateAuthenticateMessage(string accountNameToAuth, byte[] lmResponse, byte[] ntlmResponse)
         {
             AuthenticateMessage authenticateMessage = new AuthenticateMessage();
-            authenticateMessage.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.NegotiateOEM | NegotiateFlags.RequestTarget | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateSeal | NegotiateFlags.NegotiateLanManagerKey | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.Negotiate56;
+            authenticateMessage.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.NegotiateOEM | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateLanManagerKey | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.Negotiate56;
             authenticateMessage.UserName = accountNameToAuth;
             authenticateMessage.LmChallengeResponse = lmResponse;
             authenticateMessage.NtChallengeResponse = ntlmResponse;
