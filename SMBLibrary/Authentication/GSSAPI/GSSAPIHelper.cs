@@ -58,5 +58,14 @@ namespace SMBLibrary.Authentication
             token.Tokens.Add(entry);
             return token.GetBytes();
         }
+
+        public static byte[] GetGSSTokenAcceptCompletedResponse()
+        {
+            SimpleProtectedNegotiationTokenResponse token = new SimpleProtectedNegotiationTokenResponse();
+            TokenResponseEntry entry = new TokenResponseEntry();
+            entry.NegState = NegState.AcceptCompleted;
+            token.Tokens.Add(entry);
+            return token.GetBytes();
+        }
     }
 }

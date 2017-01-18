@@ -159,6 +159,11 @@ namespace SMBLibrary.Server.SMB1
                     header.Status = NTStatus.STATUS_LOGON_FAILURE;
                     return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
+
+                if (!isRawMessage)
+                {
+                    response.SecurityBlob = GSSAPIHelper.GetGSSTokenAcceptCompletedResponse();
+                }
             }
             response.NativeOS = String.Empty; // "Windows Server 2003 3790 Service Pack 2"
             response.NativeLanMan = String.Empty; // "Windows Server 2003 5.2"
