@@ -123,14 +123,14 @@ namespace SMBLibrary.Server
             byte[] serverChallenge = GenerateServerChallenge();
 
             ChallengeMessage message = new ChallengeMessage();
-            message.NegotiateFlags = NegotiateFlags.NegotiateUnicode |
-                                     NegotiateFlags.RequestTarget |
-                                     NegotiateFlags.NegotiateNTLMKey |
-                                     NegotiateFlags.NegotiateExtendedSecurity |
-                                     NegotiateFlags.NegotiateTargetInfo |
-                                     NegotiateFlags.NegotiateVersion |
-                                     NegotiateFlags.Negotiate128 |
-                                     NegotiateFlags.Negotiate56;
+            message.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
+                                     NegotiateFlags.TargetNameSupplied |
+                                     NegotiateFlags.NTLMKey |
+                                     NegotiateFlags.ExtendedSecurity |
+                                     NegotiateFlags.TargetInfo |
+                                     NegotiateFlags.Version |
+                                     NegotiateFlags.Use128BitEncryption |
+                                     NegotiateFlags.Use56BitEncryption;
             message.TargetName = Environment.MachineName;
             message.ServerChallenge = serverChallenge;
             message.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
@@ -140,13 +140,13 @@ namespace SMBLibrary.Server
 
         public bool Authenticate(AuthenticateMessage message)
         {
-            if ((message.NegotiateFlags & NegotiateFlags.NegotiateAnonymous) > 0)
+            if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
             {
                 return this.EnableGuestLogin;
             }
 
             User user;
-            if ((message.NegotiateFlags & NegotiateFlags.NegotiateExtendedSecurity) > 0)
+            if ((message.NegotiateFlags & NegotiateFlags.ExtendedSecurity) > 0)
             {
                 user = AuthenticateV1Extended(message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
                 if (user == null)

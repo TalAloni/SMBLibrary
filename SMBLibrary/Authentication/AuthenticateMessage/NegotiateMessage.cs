@@ -38,7 +38,7 @@ namespace SMBLibrary.Authentication
             NegotiateFlags = (NegotiateFlags)LittleEndianConverter.ToUInt32(buffer, 12);
             DomainName = AuthenticationMessageUtils.ReadAnsiStringBufferPointer(buffer, 16);
             Workstation = AuthenticationMessageUtils.ReadAnsiStringBufferPointer(buffer, 24);
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 Version = new Version(buffer, 32);
             }
@@ -47,7 +47,7 @@ namespace SMBLibrary.Authentication
         public byte[] GetBytes()
         {
             int fixedLength = 32;
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 fixedLength += 8;
             }
@@ -57,7 +57,7 @@ namespace SMBLibrary.Authentication
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)MessageType);
             LittleEndianWriter.WriteUInt32(buffer, 12, (uint)NegotiateFlags);
 
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 Version.WriteBytes(buffer, 32);
             }

@@ -40,7 +40,7 @@ namespace SMBLibrary.Authentication
             ServerChallenge = ByteReader.ReadBytes(buffer, 24, 8);
             // Reserved
             TargetInfo = AuthenticationMessageUtils.ReadBufferPointer(buffer, 40);
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 Version = new Version(buffer, 48);
             }
@@ -49,7 +49,7 @@ namespace SMBLibrary.Authentication
         public byte[] GetBytes()
         {
             int fixedLength = 48;
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 fixedLength += 8;
             }
@@ -60,7 +60,7 @@ namespace SMBLibrary.Authentication
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)MessageType);
             LittleEndianWriter.WriteUInt32(buffer, 20, (uint)NegotiateFlags);
             ByteWriter.WriteBytes(buffer, 24, ServerChallenge);
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 Version.WriteBytes(buffer, 48);
             }

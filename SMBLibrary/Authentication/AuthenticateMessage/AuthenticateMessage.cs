@@ -51,7 +51,7 @@ namespace SMBLibrary.Authentication
             WorkStation = AuthenticationMessageUtils.ReadUnicodeStringBufferPointer(buffer, 44);
             EncryptedRandomSessionKey = AuthenticationMessageUtils.ReadBufferPointer(buffer, 52);
             NegotiateFlags = (NegotiateFlags)LittleEndianConverter.ToUInt32(buffer, 60);
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 Version = new Version(buffer, 64);
             }
@@ -61,7 +61,7 @@ namespace SMBLibrary.Authentication
         {
             int fixedLength = 64;
 
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 fixedLength += 8;
             }
@@ -71,7 +71,7 @@ namespace SMBLibrary.Authentication
             ByteWriter.WriteAnsiString(buffer, 0, ValidSignature, 8);
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)MessageType);
             LittleEndianWriter.WriteUInt32(buffer, 60, (uint)NegotiateFlags);
-            if ((NegotiateFlags & NegotiateFlags.NegotiateVersion) > 0)
+            if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 Version.WriteBytes(buffer, 64);
             }

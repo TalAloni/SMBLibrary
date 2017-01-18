@@ -45,7 +45,7 @@ namespace SMBLibrary.Server.Win32
         /// </summary>
         public bool Authenticate(AuthenticateMessage message)
         {
-            if ((message.NegotiateFlags & NegotiateFlags.NegotiateAnonymous) > 0)
+            if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
             {
                 return this.EnableGuestLogin;
             }
@@ -80,7 +80,7 @@ namespace SMBLibrary.Server.Win32
                 return true;
             }
 
-            if ((message.NegotiateFlags & NegotiateFlags.NegotiateExtendedSecurity) > 0)
+            if ((message.NegotiateFlags & NegotiateFlags.ExtendedSecurity) > 0)
             {
                 // NTLM v1 extended security:
                 byte[] clientChallenge = ByteReader.ReadBytes(message.LmChallengeResponse, 0, 8);

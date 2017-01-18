@@ -98,7 +98,7 @@ namespace SMBLibrary
             ChallengeMessage message = new ChallengeMessage();
             message.ServerChallenge = serverChallenge;
             message.Version = new Authentication.Version(6, 0, 6000, 15);
-            message.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.NegotiateOEM | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateSeal | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateTargetTypeServer | NegotiateFlags.NegotiateExtendedSecurity | NegotiateFlags.NegotiateTargetInfo | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.NegotiateKeyExchange | NegotiateFlags.Negotiate56;
+            message.NegotiateFlags = NegotiateFlags.UnicodeEncoding | NegotiateFlags.OEMEncoding | NegotiateFlags.Sign | NegotiateFlags.Seal | NegotiateFlags.NTLMKey | NegotiateFlags.AlwaysSign | NegotiateFlags.TargetTypeServer | NegotiateFlags.ExtendedSecurity | NegotiateFlags.TargetInfo | NegotiateFlags.Version | NegotiateFlags.Use128BitEncryption | NegotiateFlags.KeyExchange | NegotiateFlags.Use56BitEncryption;
             message.TargetName = "Server";
             byte[] serverAVPair = AVPairUtils.GetAVPairSequence("Domain", "Server");
             message.TargetInfo = serverAVPair;
@@ -139,7 +139,7 @@ namespace SMBLibrary
             AuthenticateMessage message = new AuthenticateMessage();
             message.EncryptedRandomSessionKey = sessionKey;
             message.Version = new Authentication.Version(5, 1, 2600, Authentication.Version.NTLMSSP_REVISION_W2K3);
-            message.NegotiateFlags = NegotiateFlags.NegotiateUnicode | NegotiateFlags.RequestTarget | NegotiateFlags.NegotiateSign | NegotiateFlags.NegotiateSeal | NegotiateFlags.NegotiateNTLMKey | NegotiateFlags.NegotiateAlwaysSign | NegotiateFlags.NegotiateExtendedSecurity | NegotiateFlags.NegotiateTargetInfo | NegotiateFlags.NegotiateVersion | NegotiateFlags.Negotiate128 | NegotiateFlags.NegotiateKeyExchange | NegotiateFlags.Negotiate56;
+            message.NegotiateFlags = NegotiateFlags.UnicodeEncoding | NegotiateFlags.TargetNameSupplied | NegotiateFlags.Sign | NegotiateFlags.Seal | NegotiateFlags.NTLMKey | NegotiateFlags.AlwaysSign | NegotiateFlags.ExtendedSecurity | NegotiateFlags.TargetInfo | NegotiateFlags.Version | NegotiateFlags.Use128BitEncryption | NegotiateFlags.KeyExchange | NegotiateFlags.Use56BitEncryption;
             message.DomainName = "Domain";
             message.WorkStation = "COMPUTER";
             message.UserName = "User";
