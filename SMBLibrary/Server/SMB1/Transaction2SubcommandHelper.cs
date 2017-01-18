@@ -22,19 +22,17 @@ namespace SMBLibrary.Server.SMB1
             string fileNamePattern = subcommand.FileName;
 
             List<FileSystemEntry> entries;
-            try
+            NTStatus searchStatus = NTFileSystemHelper.FindEntries(out entries, fileSystem, fileNamePattern);
+            if (searchStatus != NTStatus.STATUS_SUCCESS)
             {
-                entries = NTFileSystemHelper.FindEntries(fileSystem, fileNamePattern);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', NTStatus: {1}", fileNamePattern, searchStatus.ToString());
+                header.Status = searchStatus;
                 return null;
             }
-            state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', found {1} matching entries", fileNamePattern, entries != null ? entries.Count.ToString() : "no");
+            state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', found {1} matching entries", fileNamePattern, entries.Count);
 
             // [MS-CIFS] If no matching entries are found, the server SHOULD fail the request with STATUS_NO_SUCH_FILE.
-            if (entries == null || entries.Count == 0)
+            if (entries.Count == 0)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
                 return null;

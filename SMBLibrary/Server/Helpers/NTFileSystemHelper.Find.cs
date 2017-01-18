@@ -13,11 +13,6 @@ namespace SMBLibrary.Server
 {
     public partial class NTFileSystemHelper
     {
-        // Windows servers will return "." and ".." when enumerating directory files, Windows clients do not require it.
-        // It seems that Ubuntu 10.04.4 and 13.10 expect at least one entry in the response (so empty directory listing cause a problem when omitting both).
-        private const bool IncludeCurrentDirectoryInResults = true;
-        private const bool IncludeParentDirectoryInResults = true;
-
         // Filename pattern examples:
         // '\Directory' - Get the directory entry
         // '\Directory\*' - List the directory files
@@ -27,55 +22,75 @@ namespace SMBLibrary.Server
         /// <param name="fileNamePattern">The filename pattern to search for. This field MAY contain wildcard characters</param>
         /// <returns>null if the path does not exist</returns>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        public static List<FileSystemEntry> FindEntries(IFileSystem fileSystem, string path)
+        public static NTStatus FindEntries(out List<FileSystemEntry> entries, IFileSystem fileSystem, string fileNamePattern)
         {
-            bool isDirectoryEnumeration = false;
-            string searchPattern = String.Empty;
-            if (path.Contains("*") || path.Contains("<"))
+            int separatorIndex = fileNamePattern.LastIndexOf('\\');
+            if (separatorIndex >= 0)
             {
-                isDirectoryEnumeration = true;
-                int separatorIndex = path.LastIndexOf('\\');
-                searchPattern = path.Substring(separatorIndex + 1);
-                path = path.Substring(0, separatorIndex + 1);
-            }
-            bool exactNameWithoutExtension = searchPattern.Contains("\"");
-
-            FileSystemEntry entry = fileSystem.GetEntry(path);
-            if (entry == null)
-            {
-                return null;
-            }
-
-            List<FileSystemEntry> entries;
-            if (isDirectoryEnumeration)
-            {
-                entries = fileSystem.ListEntriesInDirectory(path);
-
-                if (searchPattern != String.Empty)
-                {
-                    entries = GetFiltered(entries, searchPattern);
-                }
-
-                if (!exactNameWithoutExtension)
-                {
-                    if (IncludeParentDirectoryInResults)
-                    {
-                        entries.Insert(0, fileSystem.GetEntry(FileSystem.GetParentDirectory(path)));
-                        entries[0].Name = "..";
-                    }
-                    if (IncludeCurrentDirectoryInResults)
-                    {
-                        entries.Insert(0, fileSystem.GetEntry(path));
-                        entries[0].Name = ".";
-                    }
-                }
+                string path = fileNamePattern.Substring(0, separatorIndex + 1);
+                string expression = fileNamePattern.Substring(separatorIndex + 1);
+                return FindEntries(out entries, fileSystem, path, expression);
             }
             else
             {
+                entries = null;
+                return NTStatus.STATUS_INVALID_PARAMETER;
+            }
+        }
+
+        /// <param name="expression">Expression as described in [MS-FSA] 2.1.4.4</param>
+        /// <returns>null if the path does not exist</returns>
+        public static NTStatus FindEntries(out List<FileSystemEntry> entries, IFileSystem fileSystem, string path, string expression)
+        {
+            entries = null;
+            FileSystemEntry entry = fileSystem.GetEntry(path);
+            if (entry == null)
+            {
+                return NTStatus.STATUS_NO_SUCH_FILE;
+            }
+
+            if (expression == String.Empty)
+            {
+                return NTStatus.STATUS_INVALID_PARAMETER;
+            }
+
+            bool findExactName = !ContainsWildcardCharacters(expression);
+
+            if (!findExactName)
+            {
+                try
+                {
+                    entries = fileSystem.ListEntriesInDirectory(path);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return NTStatus.STATUS_ACCESS_DENIED;
+                }
+
+                entries = GetFiltered(entries, expression);
+
+                // Windows will return "." and ".." when enumerating directory files.
+                // The SMB1 / SMB2 specifications mandate that when zero entries are found, the server SHOULD / MUST return STATUS_NO_SUCH_FILE.
+                // For this reason, we MUST include the current directory and/or parent directory when enumerating a directory
+                // in order to diffrentiate between a directory that does not exist and a directory with no entries.
+                FileSystemEntry currentDirectory = fileSystem.GetEntry(path);
+                currentDirectory.Name = ".";
+                FileSystemEntry parentDirectory = fileSystem.GetEntry(FileSystem.GetParentDirectory(path));
+                parentDirectory.Name = "..";
+                entries.Insert(0, parentDirectory);
+                entries.Insert(0, currentDirectory);
+            }
+            else
+            {
+                entry = fileSystem.GetEntry(path + expression);
+                if (entry == null)
+                {
+                    return NTStatus.STATUS_NO_SUCH_FILE;
+                }
                 entries = new List<FileSystemEntry>();
                 entries.Add(entry);
             }
-            return entries;
+            return NTStatus.STATUS_SUCCESS;
         }
 
         /// <param name="expression">Expression as described in [MS-FSA] 2.1.4.4</param>
@@ -95,6 +110,11 @@ namespace SMBLibrary.Server
                 }
             }
             return result;
+        }
+
+        private static bool ContainsWildcardCharacters(string expression)
+        {
+            return (expression.Contains("?") || expression.Contains("*") || expression.Contains("\"") || expression.Contains(">") || expression.Contains("<"));
         }
 
         // [MS-FSA] 2.1.4.4
