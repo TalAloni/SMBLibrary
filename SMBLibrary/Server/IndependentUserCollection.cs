@@ -126,11 +126,24 @@ namespace SMBLibrary.Server
             message.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
                                      NegotiateFlags.TargetNameSupplied |
                                      NegotiateFlags.NTLMKey |
+                                     NegotiateFlags.TargetTypeServer |
                                      NegotiateFlags.ExtendedSecurity |
                                      NegotiateFlags.TargetInfo |
-                                     NegotiateFlags.Version |
-                                     NegotiateFlags.Use128BitEncryption |
-                                     NegotiateFlags.Use56BitEncryption;
+                                     NegotiateFlags.Version;
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Sign) > 0)
+            {
+                // [MS-NLMP] If the client sends NTLMSSP_NEGOTIATE_SIGN to the server in the NEGOTIATE_MESSAGE,
+                // the server MUST return NTLMSSP_NEGOTIATE_SIGN to the client in the CHALLENGE_MESSAGE.
+                message.NegotiateFlags |= NegotiateFlags.Sign;
+            }
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Use56BitEncryption) > 0)
+            {
+                message.NegotiateFlags |= NegotiateFlags.Use56BitEncryption;
+            }
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Use128BitEncryption) > 0)
+            {
+                message.NegotiateFlags |= NegotiateFlags.Use128BitEncryption;
+            }
             message.TargetName = Environment.MachineName;
             message.ServerChallenge = serverChallenge;
             message.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
