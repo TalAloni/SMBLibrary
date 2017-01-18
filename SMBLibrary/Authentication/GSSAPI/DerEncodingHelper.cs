@@ -30,7 +30,7 @@ namespace SMBLibrary.Authentication
                 length = 0;
                 foreach (byte value in lengthField)
                 {
-                    length *= Byte.MaxValue;
+                    length *= 256;
                     length += value;
                 }
             }
@@ -44,9 +44,9 @@ namespace SMBLibrary.Authentication
                 List<byte> values = new List<byte>();
                 do
                 {
-                    byte value = (byte)(length % Byte.MaxValue);
+                    byte value = (byte)(length % 256);
                     values.Add(value);
-                    length = value / Byte.MaxValue;
+                    length = value / 256;
                 }
                 while (length > 0);
                 values.Reverse();
@@ -67,7 +67,7 @@ namespace SMBLibrary.Authentication
                 int result = 1;
                 do
                 {
-                    length = length / Byte.MaxValue;
+                    length = length / 256;
                     result++;
                 }
                 while(length > 0);
