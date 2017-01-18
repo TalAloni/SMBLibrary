@@ -98,11 +98,11 @@ namespace SMBLibrary.Server
 
                     if (ntlmResponse.Length > 24)
                     {
-                        NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(ntlmResponse, 16);
-                        byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
-                        byte[] expectedNTLMv2Response = NTAuthentication.ComputeNTLMv2Response(serverChallenge, clientChallengeStructurePadded, password, accountName, domainNameToAuth);
+                        byte[] clientNTProof = ByteReader.ReadBytes(ntlmResponse, 0, 16);
+                        byte[] clientChallengeStructurePadded = ByteReader.ReadBytes(ntlmResponse, 16, ntlmResponse.Length - 16);
+                        byte[] expectedNTProof = NTAuthentication.ComputeNTLMv2Proof(serverChallenge, clientChallengeStructurePadded, password, accountName, domainNameToAuth);
 
-                        if (ByteUtils.AreByteArraysEqual(expectedNTLMv2Response, ntlmResponse))
+                        if (ByteUtils.AreByteArraysEqual(clientNTProof, expectedNTProof))
                         {
                             return this[index];
                         }

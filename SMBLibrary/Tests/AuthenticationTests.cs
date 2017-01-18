@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -76,11 +76,10 @@ namespace SMBLibrary
             DateTime time = DateTime.FromFileTimeUtc(0); // same as new byte[8]
             NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(time, clientChallenge, "Domain", "Server");
             byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
-            byte[] response = NTAuthentication.ComputeNTLMv2Response(serverChallenge, clientChallengeStructurePadded, "Password", "User", "Domain");
+            byte[] clientNTProof = NTAuthentication.ComputeNTLMv2Proof(serverChallenge, clientChallengeStructurePadded, "Password", "User", "Domain");
 
-            byte[] expectedHash = new byte[] { 0x68, 0xcd, 0x0a, 0xb8, 0x51, 0xe5, 0x1c, 0x96, 0xaa, 0xbc, 0x92, 0x7b, 0xeb, 0xef, 0x6a, 0x1c };
-            byte[] expected = ByteUtils.Concatenate(expectedHash, clientChallengeStructurePadded);
-            bool success = ByteUtils.AreByteArraysEqual(response, expected);
+            byte[] expectedNTProof = new byte[] { 0x68, 0xcd, 0x0a, 0xb8, 0x51, 0xe5, 0x1c, 0x96, 0xaa, 0xbc, 0x92, 0x7b, 0xeb, 0xef, 0x6a, 0x1c };
+            bool success = ByteUtils.AreByteArraysEqual(clientNTProof, expectedNTProof);
             return success;
         }
 
@@ -135,6 +134,7 @@ namespace SMBLibrary
             DateTime time = DateTime.FromFileTimeUtc(0); // same as new byte[8]
             NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(time, clientChallenge, "Domain", "Server");
             byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
+            byte[] clientNTProof = NTAuthentication.ComputeNTLMv2Proof(serverChallenge, clientChallengeStructurePadded, "Password", "User", "Domain");
             
             AuthenticateMessage message = new AuthenticateMessage();
             message.EncryptedRandomSessionKey = sessionKey;
@@ -144,7 +144,7 @@ namespace SMBLibrary
             message.WorkStation = "COMPUTER";
             message.UserName = "User";
             message.LmChallengeResponse = NTAuthentication.ComputeLMv2Response(serverChallenge, clientChallenge, "Password", "User", "Domain");
-            message.NtChallengeResponse = NTAuthentication.ComputeNTLMv2Response(serverChallenge, clientChallengeStructurePadded, "Password", "User", "Domain");
+            message.NtChallengeResponse = ByteUtils.Concatenate(clientNTProof, clientChallengeStructurePadded);
             
             byte[] messageBytes = message.GetBytes();
             // The payload entries may be distributed differently so we use cmp.GetBytes()

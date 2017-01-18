@@ -100,10 +100,10 @@ namespace SMBLibrary.Server.Win32
 
                 if (message.NtChallengeResponse.Length > 24)
                 {
-                    NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(message.NtChallengeResponse, 16);
-                    byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
-                    byte[] emptyPasswordNTLMv2Response = NTAuthentication.ComputeNTLMv2Response(m_serverChallenge, clientChallengeStructurePadded, String.Empty, message.UserName, message.DomainName);
-                    if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv2Response, message.NtChallengeResponse))
+                    byte[] clientNTProof = ByteReader.ReadBytes(message.NtChallengeResponse, 0, 16);
+                    byte[] clientChallengeStructurePadded = ByteReader.ReadBytes(message.NtChallengeResponse, 16, message.NtChallengeResponse.Length - 16);
+                    byte[] emptyPasswordNTProof = NTAuthentication.ComputeNTLMv2Proof(m_serverChallenge, clientChallengeStructurePadded, String.Empty, message.UserName, message.DomainName);
+                    if (ByteUtils.AreByteArraysEqual(clientNTProof, emptyPasswordNTProof))
                     {
                         return true;
                     }

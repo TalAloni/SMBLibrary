@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -48,18 +48,17 @@ namespace SMBLibrary.Authentication
         }
 
         /// <summary>
-        /// [MS-NLMP] page 60
-        /// 'temp' is the same as ClientChallengeStructure with 4 zero bytes padding
+        /// [MS-NLMP] https://msdn.microsoft.com/en-us/library/cc236700.aspx
         /// </summary>
-        public static byte[] ComputeNTLMv2Response(byte[] serverChallenge, byte[] clientChallengeStructurePadded, string password, string user, string domain)
+        /// <param name="clientChallengeStructurePadded">ClientChallengeStructure with 4 zero bytes padding, a.k.a. temp</param>
+        public static byte[] ComputeNTLMv2Proof(byte[] serverChallenge, byte[] clientChallengeStructurePadded, string password, string user, string domain)
         {
             byte[] key = NTOWFv2(password, user, domain);
             byte[] temp = clientChallengeStructurePadded;
 
             HMACMD5 hmac = new HMACMD5(key);
             byte[] _NTProof = hmac.ComputeHash(ByteUtils.Concatenate(serverChallenge, temp), 0, serverChallenge.Length + temp.Length);
-
-            return ByteUtils.Concatenate(_NTProof, temp);
+            return _NTProof;
         }
 
         /// <summary>
