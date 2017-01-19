@@ -44,7 +44,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList = new FindInformationList();
             for (int index = 0; index < entriesToReturn; index++)
             {
-                FindInformation infoEntry = InfoHelper.FromFileSystemEntry(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
+                FindInformation infoEntry = SMB1FileSystemHelper.GetFindInformation(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
                 findInformationList.Add(infoEntry);
                 if (findInformationList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
                 {
@@ -91,7 +91,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList = new FindInformationList();
             for (int index = openSearch.EnumerationLocation; index < openSearch.Entries.Count; index++)
             {
-                FindInformation infoEntry = InfoHelper.FromFileSystemEntry(openSearch.Entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
+                FindInformation infoEntry = SMB1FileSystemHelper.GetFindInformation(openSearch.Entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
                 findInformationList.Add(infoEntry);
                 if (findInformationList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
                 {
@@ -119,7 +119,7 @@ namespace SMBLibrary.Server.SMB1
         internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, FileSystemShare share)
         {
             Transaction2QueryFSInformationResponse response = new Transaction2QueryFSInformationResponse();
-            QueryFSInformation queryFSInformation = InfoHelper.GetFSInformation(subcommand.InformationLevel, share.FileSystem);
+            QueryFSInformation queryFSInformation = SMB1FileSystemHelper.GetFileSystemInformation(subcommand.InformationLevel, share.FileSystem);
             response.SetQueryFSInformation(queryFSInformation, header.UnicodeFlag);
             return response;
         }
@@ -138,7 +138,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             Transaction2QueryPathInformationResponse response = new Transaction2QueryPathInformationResponse();
-            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, false, subcommand.InformationLevel);
+            QueryInformation queryInformation = SMB1FileSystemHelper.GetFileInformation(entry, false, subcommand.InformationLevel);
             response.SetQueryInformation(queryInformation);
 
             return response;
@@ -162,7 +162,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             Transaction2QueryFileInformationResponse response = new Transaction2QueryFileInformationResponse();
-            QueryInformation queryInformation = InfoHelper.FromFileSystemEntry(entry, openFile.DeleteOnClose, subcommand.InformationLevel);
+            QueryInformation queryInformation = SMB1FileSystemHelper.GetFileInformation(entry, openFile.DeleteOnClose, subcommand.InformationLevel);
             response.SetQueryInformation(queryInformation);
 
             return response;

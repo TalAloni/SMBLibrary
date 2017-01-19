@@ -128,7 +128,6 @@
     <Compile Include="Server\Shares\NamedPipeShare.cs" />
     <Compile Include="Server\Shares\ShareCollection.cs" />
     <Compile Include="Server\SMB1\FileSystemResponseHelper.cs" />
-    <Compile Include="Server\SMB1\InfoHelper.cs" />
     <Compile Include="Server\SMB1\NegotiateHelper.cs" />
     <Compile Include="Server\SMB1\NTCreateHelper.cs" />
     <Compile Include="Server\SMB1\NTTransactHelper.cs" />
@@ -136,6 +135,9 @@
     <Compile Include="Server\SMB1\ReadWriteResponseHelper.cs" />
     <Compile Include="Server\SMB1\ServerResponseHelper.cs" />
     <Compile Include="Server\SMB1\SessionSetupHelper.cs" />
+    <Compile Include="Server\SMB1\SMB1FileSystemHelper.Find.cs" />
+    <Compile Include="Server\SMB1\SMB1FileSystemHelper.Query.cs" />
+    <Compile Include="Server\SMB1\SMB1FileSystemHelper.QueryFileSystem.cs" />
     <Compile Include="Server\SMB1\Transaction2SubcommandHelper.cs" />
     <Compile Include="Server\SMB1\TransactionHelper.cs" />
     <Compile Include="Server\SMB1\TransactionSubcommandHelper.cs" />

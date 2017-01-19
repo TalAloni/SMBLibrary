@@ -200,7 +200,7 @@ namespace SMBLibrary.Server.SMB1
             }
 
             QueryInformationResponse response = new QueryInformationResponse();
-            response.FileAttributes = InfoHelper.GetFileAttributes(entry);
+            response.FileAttributes = SMB1FileSystemHelper.GetFileAttributes(entry);
             response.LastWriteTime = entry.LastWriteTime;
             response.FileSize = (uint)Math.Min(UInt32.MaxValue, entry.Size);
 
