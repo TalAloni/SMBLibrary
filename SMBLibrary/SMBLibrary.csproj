@@ -49,6 +49,9 @@
     <Compile Include="Authentication\MD4.cs" />
     <Compile Include="Authentication\NTAuthentication.cs" />
     <Compile Include="Client\SMBClient.cs" />
+    <Compile Include="Enums\FileSystemInformation\DeviceCharacteristics.cs" />
+    <Compile Include="Enums\FileSystemInformation\DeviceType.cs" />
+    <Compile Include="Enums\FileSystemInformation\FileSystemAttributes.cs" />
     <Compile Include="Enums\NtCreateFile\CreateDisposition.cs" />
     <Compile Include="Enums\NtCreateFile\CreateOptions.cs" />
     <Compile Include="Enums\NtCreateFile\ShareAccess.cs" />
@@ -312,9 +315,6 @@
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindInfoStandard.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FullExtendedAttribute.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FullExtendedAttributeList.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\Enums\DeviceCharacteristics.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\Enums\DeviceType.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\Enums\FileSystemAttributes.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSAttibuteInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSDeviceInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSInfoAllocation.cs" />

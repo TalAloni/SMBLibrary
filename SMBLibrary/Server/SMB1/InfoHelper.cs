@@ -259,14 +259,14 @@ namespace SMBLibrary.Server.SMB1
                 case QueryFSInformationLevel.SMB_QUERY_FS_DEVICE_INFO:
                     {
                         QueryFSDeviceInfo result = new QueryFSDeviceInfo();
-                        result.DeviceCharacteristics = DeviceCharacteristics.FILE_DEVICE_IS_MOUNTED;
-                        result.DeviceType = DeviceType.FILE_DEVICE_DISK;
+                        result.DeviceCharacteristics = DeviceCharacteristics.IsMounted;
+                        result.DeviceType = DeviceType.Disk;
                         return result;
                     }
                 case QueryFSInformationLevel.SMB_QUERY_FS_ATTRIBUTE_INFO:
                     {
                         QueryFSAttibuteInfo result = new QueryFSAttibuteInfo();
-                        result.FileSystemAttributes = FileSystemAttributes.FILE_UNICODE_ON_DISK;
+                        result.FileSystemAttributes = FileSystemAttributes.UnicodeOnDisk;
                         result.MaxFileNameLengthInBytes = 255;
                         result.FileSystemName = fileSystem.Name;
                         return result;
