@@ -72,7 +72,15 @@ namespace SMBLibrary.Server.SMB1
         private static NegotiateMessage CreateNegotiateMessage()
         {
             NegotiateMessage negotiateMessage = new NegotiateMessage();
-            negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding | NegotiateFlags.OEMEncoding | NegotiateFlags.Sign | NegotiateFlags.LanManagerKey | NegotiateFlags.NTLMKey | NegotiateFlags.AlwaysSign | NegotiateFlags.Version | NegotiateFlags.Use128BitEncryption | NegotiateFlags.Use56BitEncryption;
+            negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
+                                              NegotiateFlags.OEMEncoding |
+                                              NegotiateFlags.Sign |
+                                              NegotiateFlags.LanManagerKey |
+                                              NegotiateFlags.NTLMKey |
+                                              NegotiateFlags.AlwaysSign |
+                                              NegotiateFlags.Version |
+                                              NegotiateFlags.Use128BitEncryption |
+                                              NegotiateFlags.Use56BitEncryption;
             negotiateMessage.Version = Authentication.Version.Server2003;
             return negotiateMessage;
         }

@@ -171,13 +171,25 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        private static AuthenticateMessage CreateAuthenticateMessage(string accountNameToAuth, byte[] lmResponse, byte[] ntlmResponse)
+        private static AuthenticateMessage CreateAuthenticateMessage(string accountNameToAuth, byte[] lmChallengeResponse, byte[] ntChallengeResponse)
         {
             AuthenticateMessage authenticateMessage = new AuthenticateMessage();
-            authenticateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding | NegotiateFlags.OEMEncoding | NegotiateFlags.Sign | NegotiateFlags.LanManagerKey | NegotiateFlags.NTLMKey | NegotiateFlags.AlwaysSign | NegotiateFlags.Version | NegotiateFlags.Use128BitEncryption | NegotiateFlags.Use56BitEncryption;
+            authenticateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
+                                                 NegotiateFlags.OEMEncoding |
+                                                 NegotiateFlags.Sign |
+                                                 NegotiateFlags.LanManagerKey |
+                                                 NegotiateFlags.NTLMKey |
+                                                 NegotiateFlags.AlwaysSign |
+                                                 NegotiateFlags.Version |
+                                                 NegotiateFlags.Use128BitEncryption |
+                                                 NegotiateFlags.Use56BitEncryption;
+            if (ntChallengeResponse.Length >= 48)
+            {
+                authenticateMessage.NegotiateFlags |= NegotiateFlags.ExtendedSecurity;
+            }
             authenticateMessage.UserName = accountNameToAuth;
-            authenticateMessage.LmChallengeResponse = lmResponse;
-            authenticateMessage.NtChallengeResponse = ntlmResponse;
+            authenticateMessage.LmChallengeResponse = lmChallengeResponse;
+            authenticateMessage.NtChallengeResponse = ntChallengeResponse;
             authenticateMessage.Version = Authentication.Version.Server2003;
             return authenticateMessage;
         }
