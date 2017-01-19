@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -48,6 +48,14 @@ namespace SMBLibrary.SMB1
             SMB1Helper.WriteSMBDateTime(buffer, 8, LastWriteDateTime);
             ByteWriter.WriteBytes(buffer, 12, Reserved);
             return buffer;
+        }
+
+        public override SetInformationLevel InformationLevel
+        {
+            get
+            {
+                return SetInformationLevel.SMB_INFO_STANDARD;
+            }
         }
     }
 }

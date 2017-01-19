@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -38,6 +38,14 @@ namespace SMBLibrary.SMB1
             byte[] buffer = new byte[Length];
             LittleEndianWriter.WriteUInt64(buffer, 0, AllocationSize);
             return buffer;
+        }
+
+        public override SetInformationLevel InformationLevel
+        {
+            get
+            {
+                return SetInformationLevel.SMB_SET_FILE_ALLOCATION_INFO;
+            }
         }
     }
 }

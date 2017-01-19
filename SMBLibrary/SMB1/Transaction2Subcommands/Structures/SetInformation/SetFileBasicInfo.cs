@@ -54,5 +54,13 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt32(buffer, 36, Reserved);
             return buffer;
         }
+
+        public override SetInformationLevel InformationLevel
+        {
+            get
+            {
+                return SetInformationLevel.SMB_SET_FILE_BASIC_INFO;
+            }
+        }
     }
 }
