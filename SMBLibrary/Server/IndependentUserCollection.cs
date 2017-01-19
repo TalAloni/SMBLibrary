@@ -96,7 +96,7 @@ namespace SMBLibrary.Server
                         return this[index];
                     }
 
-                    if (ntResponse.Length >= 48)
+                    if (AuthenticationMessageUtils.IsNTLMv2NTResponse(ntResponse))
                     {
                         byte[] clientNTProof = ByteReader.ReadBytes(ntResponse, 0, 16);
                         byte[] clientChallengeStructurePadded = ByteReader.ReadBytes(ntResponse, 16, ntResponse.Length - 16);
@@ -161,8 +161,12 @@ namespace SMBLibrary.Server
             User user;
             if ((message.NegotiateFlags & NegotiateFlags.ExtendedSecurity) > 0)
             {
-                user = AuthenticateV1Extended(message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
-                if (user == null)
+                if (AuthenticationMessageUtils.IsNTLMv1ExtendedSecurity(message.LmChallengeResponse))
+                {
+                    // NTLM v1 Extended Security:
+                    user = AuthenticateV1Extended(message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
+                }
+                else
                 {
                     // NTLM v2:
                     user = AuthenticateV2(message.DomainName, message.UserName, m_serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
