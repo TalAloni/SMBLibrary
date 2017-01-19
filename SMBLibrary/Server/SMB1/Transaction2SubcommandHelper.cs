@@ -29,6 +29,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = searchStatus;
                 return null;
             }
+            // We ignore SearchAttributes
             state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', found {1} matching entries", fileNamePattern, entries.Count);
 
             // [MS-CIFS] If no matching entries are found, the server SHOULD fail the request with STATUS_NO_SUCH_FILE.
@@ -40,18 +41,9 @@ namespace SMBLibrary.Server.SMB1
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             int entriesToReturn = Math.Min(subcommand.SearchCount, entries.Count);
-            // We ignore SearchAttributes
-            FindInformationList findInformationList = new FindInformationList();
-            for (int index = 0; index < entriesToReturn; index++)
-            {
-                FindInformation infoEntry = SMB1FileSystemHelper.GetFindInformation(entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
-                findInformationList.Add(infoEntry);
-                if (findInformationList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
-                {
-                    findInformationList.RemoveAt(findInformationList.Count - 1);
-                    break;
-                }
-            }
+            List<FileSystemEntry> temp = entries.GetRange(0, entriesToReturn);
+            int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
+            FindInformationList findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
             int returnCount = findInformationList.Count;
             Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
@@ -88,22 +80,10 @@ namespace SMBLibrary.Server.SMB1
             }
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
-            FindInformationList findInformationList = new FindInformationList();
-            for (int index = openSearch.EnumerationLocation; index < openSearch.Entries.Count; index++)
-            {
-                FindInformation infoEntry = SMB1FileSystemHelper.GetFindInformation(openSearch.Entries[index], subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys);
-                findInformationList.Add(infoEntry);
-                if (findInformationList.GetLength(header.UnicodeFlag) > state.GetMaxDataCount(header.PID))
-                {
-                    findInformationList.RemoveAt(findInformationList.Count - 1);
-                    break;
-                }
-
-                if (findInformationList.Count == subcommand.SearchCount)
-                {
-                    break;
-                }
-            }
+            int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
+            int maxCount = Math.Min(openSearch.Entries.Count - openSearch.EnumerationLocation, subcommand.SearchCount);
+            List<FileSystemEntry> temp = openSearch.Entries.GetRange(openSearch.EnumerationLocation, maxCount);
+            FindInformationList findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
             int returnCount = findInformationList.Count;
             Transaction2FindNext2Response response = new Transaction2FindNext2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);

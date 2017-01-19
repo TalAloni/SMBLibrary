@@ -14,6 +14,24 @@ namespace SMBLibrary.Server.SMB1
 {
     public partial class SMB1FileSystemHelper
     {
+        /// <exception cref="SMBLibrary.UnsupportedInformationLevelException"></exception>
+        public static FindInformationList GetFindInformationList(List<FileSystemEntry> entries, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys, int maxLength)
+        {
+            FindInformationList result = new FindInformationList();
+            for (int index = 0; index < entries.Count; index++)
+            {
+                FindInformation infoEntry = GetFindInformation(entries[index], informationLevel, isUnicode, returnResumeKeys);
+                result.Add(infoEntry);
+                if (result.GetLength(isUnicode) > maxLength)
+                {
+                    result.RemoveAt(result.Count - 1);
+                    break;
+                }
+            }
+            return result;
+        }
+
+        /// <exception cref="SMBLibrary.UnsupportedInformationLevelException"></exception>
         public static FindInformation GetFindInformation(FileSystemEntry entry, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
         {
             switch (informationLevel)
