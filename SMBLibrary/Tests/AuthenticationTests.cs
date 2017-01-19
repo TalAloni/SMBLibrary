@@ -74,7 +74,7 @@ namespace SMBLibrary
             byte[] serverChallenge = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
             byte[] clientChallenge = new byte[] { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa };
             DateTime time = DateTime.FromFileTimeUtc(0); // same as new byte[8]
-            NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(time, clientChallenge, "Domain", "Server");
+            NTLMv2ClientChallenge clientChallengeStructure = new NTLMv2ClientChallenge(time, clientChallenge, "Domain", "Server");
             byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
             byte[] clientNTProof = NTAuthentication.ComputeNTLMv2Proof(serverChallenge, clientChallengeStructurePadded, "Password", "User", "Domain");
 
@@ -132,7 +132,7 @@ namespace SMBLibrary
             byte[] clientChallenge = new byte[] { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa };
             byte[] serverAVPair = AVPairUtils.GetAVPairSequence("Domain", "Server");
             DateTime time = DateTime.FromFileTimeUtc(0); // same as new byte[8]
-            NTLMv2ClientChallengeStructure clientChallengeStructure = new NTLMv2ClientChallengeStructure(time, clientChallenge, "Domain", "Server");
+            NTLMv2ClientChallenge clientChallengeStructure = new NTLMv2ClientChallenge(time, clientChallenge, "Domain", "Server");
             byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
             byte[] clientNTProof = NTAuthentication.ComputeNTLMv2Proof(serverChallenge, clientChallengeStructurePadded, "Password", "User", "Domain");
             
