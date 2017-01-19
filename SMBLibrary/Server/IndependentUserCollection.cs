@@ -96,7 +96,7 @@ namespace SMBLibrary.Server
                         return this[index];
                     }
 
-                    if (ntlmResponse.Length > 24)
+                    if (ntlmResponse.Length >= 48)
                     {
                         byte[] clientNTProof = ByteReader.ReadBytes(ntlmResponse, 0, 16);
                         byte[] clientChallengeStructurePadded = ByteReader.ReadBytes(ntlmResponse, 16, ntlmResponse.Length - 16);
