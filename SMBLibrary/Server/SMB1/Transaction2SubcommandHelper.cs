@@ -43,7 +43,16 @@ namespace SMBLibrary.Server.SMB1
             int entriesToReturn = Math.Min(subcommand.SearchCount, entries.Count);
             List<FileSystemEntry> temp = entries.GetRange(0, entriesToReturn);
             int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
-            FindInformationList findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+            FindInformationList findInformationList;
+            try
+            {
+                findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+            }
+            catch (UnsupportedInformationLevelException)
+            {
+                header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
+                return null;
+            }
             int returnCount = findInformationList.Count;
             Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
@@ -83,7 +92,16 @@ namespace SMBLibrary.Server.SMB1
             int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
             int maxCount = Math.Min(openSearch.Entries.Count - openSearch.EnumerationLocation, subcommand.SearchCount);
             List<FileSystemEntry> temp = openSearch.Entries.GetRange(openSearch.EnumerationLocation, maxCount);
-            FindInformationList findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+            FindInformationList findInformationList;
+            try
+            {
+                findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+            }
+            catch (UnsupportedInformationLevelException)
+            {
+                header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
+                return null;
+            }
             int returnCount = findInformationList.Count;
             Transaction2FindNext2Response response = new Transaction2FindNext2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
@@ -99,7 +117,13 @@ namespace SMBLibrary.Server.SMB1
         internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, FileSystemShare share)
         {
             Transaction2QueryFSInformationResponse response = new Transaction2QueryFSInformationResponse();
-            QueryFSInformation queryFSInformation = SMB1FileSystemHelper.GetFileSystemInformation(subcommand.InformationLevel, share.FileSystem);
+            QueryFSInformation queryFSInformation;
+            NTStatus queryStatus = SMB1FileSystemHelper.GetFileSystemInformation(out queryFSInformation, subcommand.InformationLevel, share.FileSystem);
+            if (queryStatus != NTStatus.STATUS_SUCCESS)
+            {
+                header.Status = queryStatus;
+                return null;
+            }
             response.SetQueryFSInformation(queryFSInformation, header.UnicodeFlag);
             return response;
         }
@@ -118,9 +142,14 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             Transaction2QueryPathInformationResponse response = new Transaction2QueryPathInformationResponse();
-            QueryInformation queryInformation = SMB1FileSystemHelper.GetFileInformation(entry, false, subcommand.InformationLevel);
+            QueryInformation queryInformation;
+            NTStatus queryStatus = SMB1FileSystemHelper.GetFileInformation(out queryInformation, entry, false, subcommand.InformationLevel);
+            if (queryStatus != NTStatus.STATUS_SUCCESS)
+            {
+                header.Status = queryStatus;
+                return null;
+            }
             response.SetQueryInformation(queryInformation);
-
             return response;
         }
 
@@ -142,9 +171,14 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
             Transaction2QueryFileInformationResponse response = new Transaction2QueryFileInformationResponse();
-            QueryInformation queryInformation = SMB1FileSystemHelper.GetFileInformation(entry, openFile.DeleteOnClose, subcommand.InformationLevel);
+            QueryInformation queryInformation;
+            NTStatus queryStatus = SMB1FileSystemHelper.GetFileInformation(out queryInformation, entry, openFile.DeleteOnClose, subcommand.InformationLevel);
+            if (queryStatus != NTStatus.STATUS_SUCCESS)
+            {
+                header.Status = queryStatus;
+                return null;
+            }
             response.SetQueryInformation(queryInformation);
-
             return response;
         }
 

@@ -14,114 +14,128 @@ namespace SMBLibrary.Server.SMB1
 {
     public partial class SMB1FileSystemHelper
     {
-        public static QueryInformation GetFileInformation(FileSystemEntry entry, bool deletePending, QueryInformationLevel informationLevel)
+        public static NTStatus GetFileInformation(out QueryInformation result, FileSystemEntry entry, bool deletePending, QueryInformationLevel informationLevel)
         {
             switch (informationLevel)
             {
                 case QueryInformationLevel.SMB_INFO_STANDARD:
                     {
-                        QueryInfoStandard result = new QueryInfoStandard();
-                        result.CreationDateTime = entry.CreationTime;
-                        result.LastAccessDateTime = entry.LastAccessTime;
-                        result.LastWriteDateTime = entry.LastWriteTime;
-                        result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
-                        return result;
+                        QueryInfoStandard information = new QueryInfoStandard();
+                        information.CreationDateTime = entry.CreationTime;
+                        information.LastAccessDateTime = entry.LastAccessTime;
+                        information.LastWriteDateTime = entry.LastWriteTime;
+                        information.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
+                        information.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_INFO_QUERY_EA_SIZE:
                     {
-                        QueryEASize result = new QueryEASize();
-                        result.CreationDateTime = entry.CreationTime;
-                        result.LastAccessDateTime = entry.LastAccessTime;
-                        result.LastWriteDateTime = entry.LastWriteTime;
-                        result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
-                        result.Attributes = GetFileAttributes(entry);
-                        result.EASize = 0;
-                        return result;
+                        QueryEASize information = new QueryEASize();
+                        information.CreationDateTime = entry.CreationTime;
+                        information.LastAccessDateTime = entry.LastAccessTime;
+                        information.LastWriteDateTime = entry.LastWriteTime;
+                        information.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
+                        information.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
+                        information.Attributes = GetFileAttributes(entry);
+                        information.EASize = 0;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
                     {
-                        throw new NotImplementedException();
+                        result = null;
+                        return NTStatus.STATUS_NOT_IMPLEMENTED;
                     }
                 case QueryInformationLevel.SMB_INFO_QUERY_ALL_EAS:
                     {
-                        throw new NotImplementedException();
+                        result = null;
+                        return NTStatus.STATUS_NOT_IMPLEMENTED;
                     }
                 case QueryInformationLevel.SMB_INFO_IS_NAME_VALID:
                     {
-                        throw new NotImplementedException();
+                        result = null;
+                        return NTStatus.STATUS_NOT_IMPLEMENTED;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_BASIC_INFO:
                     {
-                        QueryFileBasicInfo result = new QueryFileBasicInfo();
-                        result.CreationDateTime = entry.CreationTime;
-                        result.LastAccessDateTime = entry.LastAccessTime;
-                        result.LastWriteDateTime = entry.LastWriteTime;
-                        result.LastChangeTime = entry.LastWriteTime;
-                        result.ExtFileAttributes = GetExtendedFileAttributes(entry);
-                        return result;
+                        QueryFileBasicInfo information = new QueryFileBasicInfo();
+                        information.CreationDateTime = entry.CreationTime;
+                        information.LastAccessDateTime = entry.LastAccessTime;
+                        information.LastWriteDateTime = entry.LastWriteTime;
+                        information.LastChangeTime = entry.LastWriteTime;
+                        information.ExtFileAttributes = GetExtendedFileAttributes(entry);
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_STANDARD_INFO:
                     {
-                        QueryFileStandardInfo result = new QueryFileStandardInfo();
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.EndOfFile = entry.Size;
-                        result.DeletePending = deletePending;
-                        result.Directory = entry.IsDirectory;
-                        return result;
+                        QueryFileStandardInfo information = new QueryFileStandardInfo();
+                        information.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.EndOfFile = entry.Size;
+                        information.DeletePending = deletePending;
+                        information.Directory = entry.IsDirectory;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_EA_INFO:
                     {
-                        QueryFileExtendedAttributeInfo result = new QueryFileExtendedAttributeInfo();
-                        result.EASize = 0;
-                        return result;
+                        QueryFileExtendedAttributeInfo information = new QueryFileExtendedAttributeInfo();
+                        information.EASize = 0;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_NAME_INFO:
                     {
-                        QueryFileNameInfo result = new QueryFileNameInfo();
-                        result.FileName = entry.Name;
-                        return result;
+                        QueryFileNameInfo information = new QueryFileNameInfo();
+                        information.FileName = entry.Name;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_ALL_INFO:
                     {
-                        QueryFileAllInfo result = new QueryFileAllInfo();
-                        result.CreationDateTime = entry.CreationTime;
-                        result.LastAccessDateTime = entry.LastAccessTime;
-                        result.LastWriteDateTime = entry.LastWriteTime;
-                        result.ExtFileAttributes = GetExtendedFileAttributes(entry);
-                        result.LastChangeTime = entry.LastWriteTime;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.EndOfFile = entry.Size;
-                        result.DeletePending = deletePending;
-                        result.Directory = entry.IsDirectory;
-                        result.EASize = 0;
-                        result.FileName = entry.Name;
-                        return result;
+                        QueryFileAllInfo information = new QueryFileAllInfo();
+                        information.CreationDateTime = entry.CreationTime;
+                        information.LastAccessDateTime = entry.LastAccessTime;
+                        information.LastWriteDateTime = entry.LastWriteTime;
+                        information.ExtFileAttributes = GetExtendedFileAttributes(entry);
+                        information.LastChangeTime = entry.LastWriteTime;
+                        information.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.EndOfFile = entry.Size;
+                        information.DeletePending = deletePending;
+                        information.Directory = entry.IsDirectory;
+                        information.EASize = 0;
+                        information.FileName = entry.Name;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_ALT_NAME_INFO:
                     {
-                        QueryFileAltNameInfo result = new QueryFileAltNameInfo();
-                        result.FileName = NTFileSystemHelper.GetShortName(entry.Name);
-                        return result;
+                        QueryFileAltNameInfo information = new QueryFileAltNameInfo();
+                        information.FileName = NTFileSystemHelper.GetShortName(entry.Name);
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_STREAM_INFO:
                     {
-                        QueryFileStreamInfo result = new QueryFileStreamInfo();
-                        result.StreamSize = entry.Size;
-                        result.StreamAllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.StreamName = "::$DATA";
-                        return result;
+                        QueryFileStreamInfo information = new QueryFileStreamInfo();
+                        information.StreamSize = entry.Size;
+                        information.StreamAllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.StreamName = "::$DATA";
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case QueryInformationLevel.SMB_QUERY_FILE_COMPRESSION_INFO:
                     {
-                        QueryFileCompressionInfo result = new QueryFileCompressionInfo();
-                        result.CompressionFormat = CompressionFormat.COMPRESSION_FORMAT_NONE;
-                        return result;
+                        QueryFileCompressionInfo information = new QueryFileCompressionInfo();
+                        information.CompressionFormat = CompressionFormat.COMPRESSION_FORMAT_NONE;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 default:
                     {
-                        throw new UnsupportedInformationLevelException();
+                        result = null;
+                        return NTStatus.STATUS_OS2_INVALID_LEVEL;
                     }
             }
         }
