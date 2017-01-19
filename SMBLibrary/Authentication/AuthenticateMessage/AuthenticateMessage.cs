@@ -20,8 +20,8 @@ namespace SMBLibrary.Authentication
 
         public string Signature; // 8 bytes
         public MessageTypeName MessageType;
-        public byte[] LmChallengeResponse;
-        public byte[] NtChallengeResponse;
+        public byte[] LmChallengeResponse; // 1 byte for anonymous authentication, 24 bytes for NTLM v1, NTLM v1 Extended Security and NTLM v2.
+        public byte[] NtChallengeResponse; // 0 bytes for anonymous authentication, 24 bytes for NTLM v1 and NTLM v1 Extended Security, >= 48 bytes for NTLM v2.
         public string DomainName;
         public string UserName;
         public string WorkStation;
