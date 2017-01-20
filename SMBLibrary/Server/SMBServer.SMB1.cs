@@ -15,7 +15,7 @@ namespace SMBLibrary.Server
 {
     public partial class SMBServer
     {
-        public void ProcessSMB1Message(SMB1Message message, SMB1ConnectionState state)
+        public void ProcessSMB1Message(SMB1Message message, ref ConnectionState state)
         {
             SMB1Message reply = new SMB1Message();
             PrepareResponseHeader(reply, message);
@@ -23,7 +23,7 @@ namespace SMBLibrary.Server
 
             foreach (SMB1Command command in message.Commands)
             {
-                SMB1Command response = ProcessSMB1Command(reply.Header, command, state, sendQueue);
+                SMB1Command response = ProcessSMB1Command(reply.Header, command, ref state, sendQueue);
                 if (response != null)
                 {
                     reply.Commands.Add(response);
@@ -51,7 +51,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// May return null
         /// </summary>
-        public SMB1Command ProcessSMB1Command(SMB1Header header, SMB1Command command, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        public SMB1Command ProcessSMB1Command(SMB1Header header, SMB1Command command, ref ConnectionState state, List<SMB1Command> sendQueue)
         {
             if (state.ServerDialect == SMBDialect.NotSet)
             {
@@ -60,6 +60,7 @@ namespace SMBLibrary.Server
                     NegotiateRequest request = (NegotiateRequest)command;
                     if (request.Dialects.Contains(SMBServer.NTLanManagerDialect))
                     {
+                        state = new SMB1ConnectionState(state);
                         state.ServerDialect = SMBDialect.NTLM012;
                         if (EnableExtendedSecurity && header.ExtendedSecurityFlag)
                         {
@@ -89,7 +90,15 @@ namespace SMBLibrary.Server
                 header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
                 return new ErrorResponse(command.CommandName);
             }
-            else if (command is SessionSetupAndXRequest)
+            else
+            {
+                return ProcessSMB1Command(header, command, (SMB1ConnectionState)state, sendQueue);
+            }
+        }
+
+        private SMB1Command ProcessSMB1Command(SMB1Header header, SMB1Command command, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        {
+            if (command is SessionSetupAndXRequest)
             {
                 SessionSetupAndXRequest request = (SessionSetupAndXRequest)command;
                 state.MaxBufferSize = request.MaxBufferSize;
@@ -329,12 +338,12 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName);
         }
 
-        public static void TrySendMessage(SMB1ConnectionState state, SMB1Message response)
+        public static void TrySendMessage(ConnectionState state, SMB1Message response)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();
             TrySendPacket(state, packet);
-            state.LogToServer(Severity.Verbose, "Response sent: {0} Commands, First Command: {1}, Packet length: {2}", response.Commands.Count, response.Commands[0].CommandName.ToString(), packet.Length);
+            state.LogToServer(Severity.Verbose, "SMB1 message sent: {0} responses, First response: {1}, Packet length: {2}", response.Commands.Count, response.Commands[0].CommandName.ToString(), packet.Length);
         }
 
         private static void PrepareResponseHeader(SMB1Message response, SMB1Message request)

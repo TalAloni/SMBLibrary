@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using SMBLibrary.NetBios;
 using SMBLibrary.Services;
 using SMBLibrary.SMB1;
+using SMBLibrary.SMB2;
 using Utilities;
 
 namespace SMBLibrary.Server
@@ -27,6 +28,8 @@ namespace SMBLibrary.Server
         private NamedPipeShare m_services; // Named pipes
         private IPAddress m_serverAddress;
         private SMBTransportType m_transport;
+        private bool m_enableSMB1;
+        private bool m_enableSMB2;
 
         private Socket m_listenerSocket;
         private bool m_listening;
@@ -34,13 +37,19 @@ namespace SMBLibrary.Server
 
         public event EventHandler<LogEntry> OnLogEntry;
 
-        public SMBServer(ShareCollection shares, INTLMAuthenticationProvider users, IPAddress serverAddress, SMBTransportType transport)
+        public SMBServer(ShareCollection shares, INTLMAuthenticationProvider users, IPAddress serverAddress, SMBTransportType transport) : this(shares, users, serverAddress, transport, true, true)
+        {
+        }
+
+        public SMBServer(ShareCollection shares, INTLMAuthenticationProvider users, IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
         {
             m_shares = shares;
             m_users = users;
             m_serverAddress = serverAddress;
             m_serverGuid = Guid.NewGuid();
             m_transport = transport;
+            m_enableSMB1 = enableSMB1;
+            m_enableSMB2 = enableSMB2;
 
             m_services = new NamedPipeShare(shares.ListShares());
         }
@@ -93,7 +102,7 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            SMB1ConnectionState state = new SMB1ConnectionState(new ConnectionState(Log));
+            ConnectionState state = new ConnectionState(Log);
             // Disable the Nagle Algorithm for this tcp socket:
             clientSocket.NoDelay = true;
             state.ClientSocket = clientSocket;
@@ -116,7 +125,7 @@ namespace SMBLibrary.Server
 
         private void ReceiveCallback(IAsyncResult result)
         {
-            SMB1ConnectionState state = (SMB1ConnectionState)result.AsyncState;
+            ConnectionState state = (ConnectionState)result.AsyncState;
             Socket clientSocket = state.ClientSocket;
 
             if (!m_listening)
@@ -149,7 +158,7 @@ namespace SMBLibrary.Server
 
             NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
             receiveBuffer.SetNumberOfBytesReceived(numberOfBytesReceived);
-            ProcessConnectionBuffer(state);
+            ProcessConnectionBuffer(ref state);
 
             if (clientSocket.Connected)
             {
@@ -166,7 +175,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessConnectionBuffer(SMB1ConnectionState state)
+        public void ProcessConnectionBuffer(ref ConnectionState state)
         {
             Socket clientSocket = state.ClientSocket;
 
@@ -185,12 +194,12 @@ namespace SMBLibrary.Server
 
                 if (packet != null)
                 {
-                    ProcessPacket(packet, state);
+                    ProcessPacket(packet, ref state);
                 }
             }
         }
 
-        public void ProcessPacket(SessionPacket packet, SMB1ConnectionState state)
+        public void ProcessPacket(SessionPacket packet, ref ConnectionState state)
         {
             if (packet is SessionRequestPacket && m_transport == SMBTransportType.NetBiosOverTCP)
             {
@@ -203,19 +212,97 @@ namespace SMBLibrary.Server
             }
             else if (packet is SessionMessagePacket)
             {
-                SMB1Message message = null;
-                try
+                // Note: To be compatible with SMB2 specifications, we must accept SMB_COM_NEGOTIATE.
+                // We will disconnect the connection if m_enableSMB1 == false and the client does not support SMB2.
+                bool acceptSMB1 = (state.ServerDialect == SMBDialect.NotSet || state.ServerDialect == SMBDialect.NTLM012);
+                bool acceptSMB2 = (m_enableSMB2 && (state.ServerDialect == SMBDialect.NotSet || state.ServerDialect == SMBDialect.SMB202 || state.ServerDialect == SMBDialect.SMB210));
+
+                if (SMB1Header.IsValidSMB1Header(packet.Trailer))
                 {
-                    message = SMB1Message.GetSMB1Message(packet.Trailer);
+                    if (!acceptSMB1)
+                    {
+                        state.LogToServer(Severity.Verbose, "Rejected SMB1 message");
+                        state.ClientSocket.Close();
+                        return;
+                    }
+
+                    SMB1Message message = null;
+                    try
+                    {
+                        message = SMB1Message.GetSMB1Message(packet.Trailer);
+                    }
+                    catch (Exception ex)
+                    {
+                        state.LogToServer(Severity.Warning, "Invalid SMB1 message: " + ex.Message);
+                        state.ClientSocket.Close();
+                        return;
+                    }
+                    state.LogToServer(Severity.Verbose, "SMB1 message received: {0} requests, First request: {1}, Packet length: {2}", message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
+                    if (state.ServerDialect == SMBDialect.NotSet && m_enableSMB2)
+                    {
+                        // Check if the client supports SMB 2
+                        List<string> smb2Dialects = SMB2.NegotiateHelper.FindSMB2Dialects(message);
+                        if (smb2Dialects.Count > 0)
+                        {
+                            SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, state, m_serverGuid);
+                            TrySendResponse(state, response);
+                            return;
+                        }
+                    }
+
+                    if (m_enableSMB1)
+                    {
+                        ProcessSMB1Message(message, ref state);
+                    }
+                    else
+                    {
+                        // [MS-SMB2] 3.3.5.3.2 If the string is not present in the dialect list and the server does not implement SMB,
+                        // the server MUST disconnect the connection [..] without sending a response.
+                        state.LogToServer(Severity.Verbose, "Rejected SMB1 message");
+                        state.ClientSocket.Close();
+                    }
                 }
-                catch (Exception ex)
+                else if (SMB2Header.IsValidSMB2Header(packet.Trailer))
                 {
-                    state.LogToServer(Severity.Warning, "Invalid SMB1 message: " + ex.Message);
+                    if (!acceptSMB2)
+                    {
+                        state.LogToServer(Severity.Verbose, "Rejected SMB2 message");
+                        state.ClientSocket.Close();
+                        return;
+                    }
+
+                    List<SMB2Command> requestChain;
+                    try
+                    {
+                        requestChain = SMB2Command.ReadRequestChain(packet.Trailer, 0);
+                    }
+                    catch (Exception ex)
+                    {
+                        state.LogToServer(Severity.Warning, "Invalid SMB2 request chain: " + ex.Message);
+                        state.ClientSocket.Close();
+                        return;
+                    }
+                    state.LogToServer(Severity.Verbose, "SMB2 request chain received: {0} requests, First request: {1}, Packet length: {2}", requestChain.Count, requestChain[0].CommandName.ToString(), packet.Length);
+                    List<SMB2Command> responseChain = new List<SMB2Command>();
+                    foreach (SMB2Command request in requestChain)
+                    {
+                        SMB2Command response = ProcessSMB2Command(request, ref state);
+                        if (response != null)
+                        {
+                            UpdateSMB2Header(response, request);
+                            responseChain.Add(response);
+                        }
+                    }
+                    if (responseChain.Count > 0)
+                    {
+                        TrySendResponseChain(state, responseChain);
+                    }
+                }
+                else
+                {
+                    state.LogToServer(Severity.Warning, "Invalid SMB message");
                     state.ClientSocket.Close();
-                    return;
                 }
-                state.LogToServer(Severity.Verbose, "Message Received: {0} Commands, First Command: {1}, Packet length: {2}", message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
-                ProcessSMB1Message(message, state);
             }
             else
             {
@@ -225,7 +312,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public static void TrySendPacket(SMB1ConnectionState state, SessionPacket response)
+        public static void TrySendPacket(ConnectionState state, SessionPacket response)
         {
             Socket clientSocket = state.ClientSocket;
             try
