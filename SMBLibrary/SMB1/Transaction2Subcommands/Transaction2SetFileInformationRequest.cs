@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -22,7 +22,7 @@ namespace SMBLibrary.SMB1
         public SetInformationLevel InformationLevel;
         public ushort Reserved;
         // Data:
-        public SetInformation SetInfo;
+        public byte[] InformationBytes;
 
         public Transaction2SetFileInformationRequest() : base()
         {
@@ -34,7 +34,7 @@ namespace SMBLibrary.SMB1
             InformationLevel = (SetInformationLevel)LittleEndianConverter.ToUInt16(parameters, 2);
             Reserved = LittleEndianConverter.ToUInt16(parameters, 4);
 
-            SetInfo = SetInformation.GetSetInformation(data, InformationLevel);
+            InformationBytes = data;
         }
 
         public override byte[] GetSetup()
@@ -53,7 +53,12 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetData(bool isUnicode)
         {
-            return SetInfo.GetBytes();
+            return InformationBytes;
+        }
+
+        public void SetInformation(SetInformation information)
+        {
+            InformationBytes = information.GetBytes();
         }
 
         public override Transaction2SubcommandName SubcommandName

@@ -192,142 +192,37 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
-            Transaction2SetFileInformationResponse response = new Transaction2SetFileInformationResponse();
-            switch (subcommand.InformationLevel)
+            SetInformation information;
+            try
             {
-                case SetInformationLevel.SMB_INFO_STANDARD:
-                {
-                    return response;
-                }
-                case SetInformationLevel.SMB_INFO_SET_EAS:
-                {
-                    throw new NotImplementedException();
-                }
-                case SetInformationLevel.SMB_SET_FILE_BASIC_INFO:
-                {
-                    if (!share.HasWriteAccess(session.UserName))
-                    {
-                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                        return null;
-                    }
-
-                    SetFileBasicInfo info = (SetFileBasicInfo)subcommand.SetInfo;
-                    bool isHidden = (info.ExtFileAttributes & ExtendedFileAttributes.Hidden) > 0;
-                    bool isReadonly = (info.ExtFileAttributes & ExtendedFileAttributes.Readonly) > 0;
-                    bool isArchived = (info.ExtFileAttributes & ExtendedFileAttributes.Archive) > 0;
-                    try
-                    {
-                        share.FileSystem.SetAttributes(openFile.Path, isHidden, isReadonly, isArchived);
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                        return null;
-                    }
-
-                    try
-                    {
-                        share.FileSystem.SetDates(openFile.Path, info.CreationTime, info.LastWriteTime, info.LastAccessTime);
-                    }
-                    catch (IOException ex)
-                    {
-                        ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                        if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                        {
-                            // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                            state.LogToServer(Severity.Debug, "Transaction2SetFileInformation: Sharing violation setting file dates, Path: '{0}'", openFile.Path);
-                            header.Status = NTStatus.STATUS_SHARING_VIOLATION;
-                            return null;
-                        }
-                        else
-                        {
-                            header.Status = NTStatus.STATUS_DATA_ERROR;
-                            return null;
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                        return null;
-                    }
-                    return response;
-                }
-                case SetInformationLevel.SMB_SET_FILE_DISPOSITION_INFO:
-                {
-                    if (((SetFileDispositionInfo)subcommand.SetInfo).DeletePending)
-                    {
-                        // We're supposed to delete the file on close, but it's too late to report errors at this late stage
-                        if (!share.HasWriteAccess(session.UserName))
-                        {
-                            header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                            return null;
-                        }
-
-                        if (openFile.Stream != null)
-                        {
-                            openFile.Stream.Close();
-                        }
-                        try
-                        {
-                            state.LogToServer(Severity.Information, "NTCreate: Deleting file '{0}'", openFile.Path);
-                            share.FileSystem.Delete(openFile.Path);
-                        }
-                        catch (IOException)
-                        {
-                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}'", openFile.Path);
-                            header.Status = NTStatus.STATUS_SHARING_VIOLATION;
-                            return null;
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            state.LogToServer(Severity.Information, "NTCreate: Error deleting '{0}', Access Denied", openFile.Path);
-                            header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                            return null;
-                        }
-                    }
-                    return response;
-                }
-                case SetInformationLevel.SMB_SET_FILE_ALLOCATION_INFO:
-                {
-                    // This subcommand is used to set the file length in bytes.
-                    // Note: the input will NOT be a multiple of the cluster size / bytes per sector.
-                    ulong allocationSize = ((SetFileAllocationInfo)subcommand.SetInfo).AllocationSize;
-                    try
-                    {
-                        openFile.Stream.SetLength((long)allocationSize);
-                    }
-                    catch (IOException)
-                    {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'", openFile.Path);
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_ALLOCATION_INFO: Cannot set allocation for '{0}'. Access Denied", openFile.Path);
-                    }
-                    return response;
-                }
-                case SetInformationLevel.SMB_SET_FILE_END_OF_FILE_INFO:
-                {
-                    ulong endOfFile = ((SetFileEndOfFileInfo)subcommand.SetInfo).EndOfFile;
-                    try
-                    {
-                        openFile.Stream.SetLength((long)endOfFile);
-                    }
-                    catch (IOException)
-                    {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'", openFile.Path);
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        state.LogToServer(Severity.Debug, "SMB_SET_FILE_END_OF_FILE_INFO: Cannot set end of file for '{0}'. Access Denied", openFile.Path);
-                    }
-                    return response;
-                }
-                default:
-                {
-                    throw new InvalidRequestException();
-                }
+                information = SetInformation.GetSetInformation(subcommand.InformationBytes, subcommand.InformationLevel);
             }
+            catch(UnsupportedInformationLevelException)
+            {
+                header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
+                return null;
+            }
+            catch(Exception)
+            {
+                header.Status = NTStatus.STATUS_INVALID_PARAMETER;
+                return null;
+            }
+
+            if (!share.HasWriteAccess(session.UserName))
+            {
+                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                return null;
+            }
+
+            NTStatus status = SMB1FileSystemHelper.SetFileInformation(share.FileSystem, openFile, information, state);
+            if (status != NTStatus.STATUS_SUCCESS)
+            {
+                state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", openFile.Path, information.InformationLevel, status);
+                header.Status = status;
+                return null;
+            }
+            Transaction2SetFileInformationResponse response = new Transaction2SetFileInformationResponse();
+            return response;
         }
     }
 }
