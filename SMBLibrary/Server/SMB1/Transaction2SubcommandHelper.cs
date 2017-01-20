@@ -114,13 +114,14 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, FileSystemShare share)
+        internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             Transaction2QueryFSInformationResponse response = new Transaction2QueryFSInformationResponse();
             QueryFSInformation queryFSInformation;
             NTStatus queryStatus = SMB1FileSystemHelper.GetFileSystemInformation(out queryFSInformation, subcommand.InformationLevel, share.FileSystem);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "GetFileSystemInformation failed. Information level: {0}, NTStatus: {1}", subcommand.InformationLevel, queryStatus);
                 header.Status = queryStatus;
                 return null;
             }
@@ -146,6 +147,7 @@ namespace SMBLibrary.Server.SMB1
             NTStatus queryStatus = SMB1FileSystemHelper.GetFileInformation(out queryInformation, entry, false, subcommand.InformationLevel);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", path, subcommand.InformationLevel, queryStatus);
                 header.Status = queryStatus;
                 return null;
             }
@@ -175,6 +177,7 @@ namespace SMBLibrary.Server.SMB1
             NTStatus queryStatus = SMB1FileSystemHelper.GetFileInformation(out queryInformation, entry, openFile.DeleteOnClose, subcommand.InformationLevel);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", openFile.Path, subcommand.InformationLevel, queryStatus);
                 header.Status = queryStatus;
                 return null;
             }

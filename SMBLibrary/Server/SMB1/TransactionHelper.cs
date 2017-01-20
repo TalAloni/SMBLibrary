@@ -185,7 +185,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is Transaction2QueryFSInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFSInformationRequest)subcommand, fileSystemShare);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFSInformationRequest)subcommand, fileSystemShare, state);
             }
             else if (subcommand is Transaction2QueryPathInformationRequest)
             {
