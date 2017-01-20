@@ -36,3 +36,13 @@ Revision History:
         Improved connected trees management logic.
         Remove connected user from connection state on Logoff.
         Bugfix: Transaction2Open2Response: Incorrect value was set as default CreationTime.
+
+1.1.0 - Improved session management logic.
+        Improved open-search management.
+        Set DeletePending if FILE_DELETE_ON_CLOSE has been set.
+        Properly handle NegotiateRequest.
+        DerEncodingHelper: Fixed incorrect length calculation.
+        Now Returning accept-completed at the final stage of a GSS authentication.
+        LoginAPI: Properly handle ERROR_ACCOUNT_DISABLED.
+        NTLM: improved compatibility with clients.
+        Improved logging.
