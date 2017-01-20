@@ -1,0 +1,67 @@
+/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+ * 
+ * You can redistribute this program and/or modify it under the terms of
+ * the GNU Lesser Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ */
+using System;
+using System.Collections.Generic;
+using Utilities;
+
+namespace SMBLibrary
+{
+    /// <summary>
+    /// [MS-FSCC] 2.4.7 - FileBasicInformation
+    /// </summary>
+    public class FileBasicInformation : FileInformation
+    {
+        public const int FixedLength = 40;
+
+        public DateTime? CreationTime;
+        public DateTime? LastAccessTime;
+        public DateTime? LastWriteTime;
+        public DateTime? ChangeTime;
+        public FileAttributes FileAttributes;
+        public uint Reserved;
+
+        public FileBasicInformation()
+        {
+        }
+
+        public FileBasicInformation(byte[] buffer, int offset)
+        {
+            CreationTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 0);
+            LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 8);
+            LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 16);
+            ChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 24);
+            FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 32);
+            Reserved = LittleEndianConverter.ToUInt32(buffer, offset + 36);
+        }
+
+        public override void WriteBytes(byte[] buffer, int offset)
+        {
+            FileTimeHelper.WriteFileTime(buffer, offset + 0, CreationTime);
+            FileTimeHelper.WriteFileTime(buffer, offset + 8, LastAccessTime);
+            FileTimeHelper.WriteFileTime(buffer, offset + 16, LastWriteTime);
+            FileTimeHelper.WriteFileTime(buffer, offset + 24, ChangeTime);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 32, (uint)FileAttributes);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 36, Reserved);
+        }
+
+        public override FileInformationClass FileInformationClass
+        {
+            get
+            {
+                return FileInformationClass.FileBasicInformation;
+            }
+        }
+
+        public override int Length
+        {
+            get
+            {
+                return FixedLength;
+            }
+        }
+    }
+}

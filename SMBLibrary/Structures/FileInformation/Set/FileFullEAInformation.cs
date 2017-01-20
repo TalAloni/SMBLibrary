@@ -12,9 +12,9 @@ using Utilities;
 namespace SMBLibrary
 {
     /// <summary>
-    /// [MS-FSCC] 2.4.15 - FILE_FULL_EA_INFORMATION
+    /// [MS-FSCC] 2.4.15 - FileFullEaInformation
     /// </summary>
-    public class FileFullEAInformation
+    public class FileFullEAInformation : FileInformation
     {
         public const int FixedLength = 8;
 
@@ -39,7 +39,7 @@ namespace SMBLibrary
             EaValue = ByteReader.ReadAnsiString(buffer, ref offset, EaValueLength);
         }
 
-        public void WriteBytes(byte[] buffer, int offset)
+        public override void WriteBytes(byte[] buffer, int offset)
         {
             EaNameLength = (byte)EaName.Length;
             EaValueLength = (ushort)EaValue.Length;
@@ -51,7 +51,15 @@ namespace SMBLibrary
             ByteWriter.WriteAnsiString(buffer, ref offset, EaValue);
         }
 
-        public int Length
+        public override FileInformationClass FileInformationClass
+        {
+            get
+            {
+                return FileInformationClass.FileFullEaInformation;
+            }
+        }
+
+        public override int Length
         {
             get
             {
