@@ -12,7 +12,7 @@ using Utilities;
 namespace SMBLibrary
 {
     /// <summary>
-    /// [MS-FSCC] FILE_OBJECTID_BUFFER Type 1
+    /// [MS-FSCC] 2.1.3.1 - FILE_OBJECTID_BUFFER Type 1
     /// </summary>
     public class ObjectIDBufferType1
     {
