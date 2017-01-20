@@ -89,7 +89,7 @@ namespace SMBServer
                 return;
             }
 
-            m_server = new SMBLibrary.Server.SMBServer(shares, provider, serverAddress, transportType);
+            m_server = new SMBLibrary.Server.SMBServer(shares, provider, serverAddress, transportType, chkSMB1.Checked, chkSMB2.Checked);
             m_server.OnLogEntry += new EventHandler<LogEntry>(Server_OnLogEntry);
 
             try
@@ -112,6 +112,8 @@ namespace SMBServer
             comboIPAddress.Enabled = false;
             rbtDirectTCPTransport.Enabled = false;
             rbtNetBiosOverTCP.Enabled = false;
+            chkSMB1.Enabled = false;
+            chkSMB2.Enabled = false;
             chkIntegratedWindowsAuthentication.Enabled = false;
         }
 
@@ -184,6 +186,8 @@ namespace SMBServer
             comboIPAddress.Enabled = true;
             rbtDirectTCPTransport.Enabled = true;
             rbtNetBiosOverTCP.Enabled = true;
+            chkSMB1.Enabled = true;
+            chkSMB2.Enabled = true;
             chkIntegratedWindowsAuthentication.Enabled = true;
 
             if (m_nameServer != null)
@@ -221,6 +225,22 @@ namespace SMBServer
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ");
             string message = String.Format("{0} {1} {2}", entry.Severity.ToString().PadRight(12), timestamp, entry.Message);
             System.Diagnostics.Debug.Print(message);
+        }
+
+        private void chkSMB1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!chkSMB1.Checked)
+            {
+                chkSMB2.Checked = true;
+            }
+        }
+
+        private void chkSMB2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!chkSMB2.Checked)
+            {
+                chkSMB1.Checked = true;
+            }
         }
     }
 }

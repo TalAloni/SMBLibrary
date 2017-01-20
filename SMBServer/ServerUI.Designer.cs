@@ -36,6 +36,9 @@ namespace SMBServer
             this.lblTransport = new System.Windows.Forms.Label();
             this.lblAddress = new System.Windows.Forms.Label();
             this.chkIntegratedWindowsAuthentication = new System.Windows.Forms.CheckBox();
+            this.chkSMB1 = new System.Windows.Forms.CheckBox();
+            this.chkSMB2 = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // comboIPAddress
@@ -51,7 +54,7 @@ namespace SMBServer
             // 
             this.rbtNetBiosOverTCP.AutoSize = true;
             this.rbtNetBiosOverTCP.Checked = true;
-            this.rbtNetBiosOverTCP.Location = new System.Drawing.Point(79, 41);
+            this.rbtNetBiosOverTCP.Location = new System.Drawing.Point(79, 38);
             this.rbtNetBiosOverTCP.Name = "rbtNetBiosOverTCP";
             this.rbtNetBiosOverTCP.Size = new System.Drawing.Size(164, 17);
             this.rbtNetBiosOverTCP.TabIndex = 2;
@@ -62,7 +65,7 @@ namespace SMBServer
             // rbtDirectTCPTransport
             // 
             this.rbtDirectTCPTransport.AutoSize = true;
-            this.rbtDirectTCPTransport.Location = new System.Drawing.Point(79, 64);
+            this.rbtDirectTCPTransport.Location = new System.Drawing.Point(79, 61);
             this.rbtDirectTCPTransport.Name = "rbtDirectTCPTransport";
             this.rbtDirectTCPTransport.Size = new System.Drawing.Size(174, 17);
             this.rbtDirectTCPTransport.TabIndex = 3;
@@ -93,7 +96,7 @@ namespace SMBServer
             // lblTransport
             // 
             this.lblTransport.AutoSize = true;
-            this.lblTransport.Location = new System.Drawing.Point(12, 43);
+            this.lblTransport.Location = new System.Drawing.Point(12, 40);
             this.lblTransport.Name = "lblTransport";
             this.lblTransport.Size = new System.Drawing.Size(55, 13);
             this.lblTransport.TabIndex = 14;
@@ -113,18 +116,53 @@ namespace SMBServer
             this.chkIntegratedWindowsAuthentication.AutoSize = true;
             this.chkIntegratedWindowsAuthentication.Checked = true;
             this.chkIntegratedWindowsAuthentication.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkIntegratedWindowsAuthentication.Location = new System.Drawing.Point(79, 94);
+            this.chkIntegratedWindowsAuthentication.Location = new System.Drawing.Point(79, 114);
             this.chkIntegratedWindowsAuthentication.Name = "chkIntegratedWindowsAuthentication";
             this.chkIntegratedWindowsAuthentication.Size = new System.Drawing.Size(192, 17);
             this.chkIntegratedWindowsAuthentication.TabIndex = 15;
             this.chkIntegratedWindowsAuthentication.Text = "Integrated Windows Authentication";
             this.chkIntegratedWindowsAuthentication.UseVisualStyleBackColor = true;
             // 
+            // chkSMB1
+            // 
+            this.chkSMB1.AutoSize = true;
+            this.chkSMB1.Checked = true;
+            this.chkSMB1.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkSMB1.Location = new System.Drawing.Point(79, 86);
+            this.chkSMB1.Name = "chkSMB1";
+            this.chkSMB1.Size = new System.Drawing.Size(95, 17);
+            this.chkSMB1.TabIndex = 16;
+            this.chkSMB1.Text = "SMB 1.0/CIFS";
+            this.chkSMB1.UseVisualStyleBackColor = true;
+            this.chkSMB1.CheckedChanged += new System.EventHandler(this.chkSMB1_CheckedChanged);
+            // 
+            // chkSMB2
+            // 
+            this.chkSMB2.AutoSize = true;
+            this.chkSMB2.Location = new System.Drawing.Point(204, 86);
+            this.chkSMB2.Name = "chkSMB2";
+            this.chkSMB2.Size = new System.Drawing.Size(93, 17);
+            this.chkSMB2.TabIndex = 17;
+            this.chkSMB2.Text = "SMB 2.0 / 2.1";
+            this.chkSMB2.UseVisualStyleBackColor = true;
+            this.chkSMB2.CheckedChanged += new System.EventHandler(this.chkSMB2_CheckedChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 87);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(49, 13);
+            this.label1.TabIndex = 18;
+            this.label1.Text = "Protocol:";
+            // 
             // ServerUI
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(442, 123);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.ClientSize = new System.Drawing.Size(444, 145);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.chkSMB1);
+            this.Controls.Add(this.chkSMB2);
             this.Controls.Add(this.chkIntegratedWindowsAuthentication);
             this.Controls.Add(this.lblTransport);
             this.Controls.Add(this.lblAddress);
@@ -133,9 +171,10 @@ namespace SMBServer
             this.Controls.Add(this.rbtDirectTCPTransport);
             this.Controls.Add(this.rbtNetBiosOverTCP);
             this.Controls.Add(this.comboIPAddress);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(450, 150);
-            this.MinimumSize = new System.Drawing.Size(450, 150);
+            this.MaximumSize = new System.Drawing.Size(450, 170);
+            this.MinimumSize = new System.Drawing.Size(450, 170);
             this.Name = "ServerUI";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "SMB Server";
@@ -155,6 +194,9 @@ namespace SMBServer
         private System.Windows.Forms.Label lblTransport;
         private System.Windows.Forms.Label lblAddress;
         private System.Windows.Forms.CheckBox chkIntegratedWindowsAuthentication;
+        private System.Windows.Forms.CheckBox chkSMB1;
+        private System.Windows.Forms.CheckBox chkSMB2;
+        private System.Windows.Forms.Label label1;
     }
 }
 
