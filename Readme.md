@@ -1,17 +1,18 @@
 About SMBLibrary:
 =================
-SMBLibrary is an open-source C# SMB 1.0/CIFS 1.0 server implementation.  
+SMBLibrary is an open-source C# SMB 1.0/CIFS 1.0, SMB 2.0 and SMB 2.1 server implementation.  
 SMBLibrary gives .NET developers an easy way to share a directory / file system / virtual file system, with any operating system that supports the SMB protocol.  
 SMBLibrary shares can be accessed from any Windows version since Windows NT 4.0.  
 
 Supported SMB / CIFS transport methods:
 =======================================
-• NetBIOS over TCP (port 139)
+• NetBIOS over TCP (port 139)  
 • Direct TCP hosting (port 445)
 
 ###### 'NetBIOS over TCP' and 'Direct TCP hosting' are almost identical, the only differences:
 - A 'session request' packet is initiating the NBT connection.
 - A 'keep alive' packet is sent from time to time over NBT connections.
+- SMB2: Direct TCP hosting supports large MTUs.
 
 Notes:
 ======
@@ -46,7 +47,7 @@ The driver installation can be downloaded from: https://openvpn.net/index.php/op
 To get started, go to Adapter properties > 'Advanced' and set 'Media Status' to 'Always Connected'.
 
 ###### Windows 7/8/2008/2012:
-* if you want localhost access from Windows explorer to work as expected, you must use port 445, you must also specify the IP address that you selected (\\127.0.0.1 or \\localhost will not work as expected).
+* if you want localhost access from Windows explorer to work as expected, you must use port 445, you must also specify the IP address that you selected (\\\\127.0.0.1 or \\\\localhost will not work as expected).
 
 ##### Method 3: Use an IP address that is invisible to Windows File Sharing:
 Using PCap.Net you can programmatically setup a virtual Network adapter and intercept SMB traffic (similar to how a virtual machine operates), You should use the ARP protocol to notify the network about the new IP address, and then process the incoming SMB traffic using SMBLibrary, good luck! 
