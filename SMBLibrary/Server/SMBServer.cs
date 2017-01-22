@@ -245,6 +245,10 @@ namespace SMBLibrary.Server
                         if (smb2Dialects.Count > 0)
                         {
                             SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, state, m_serverGuid);
+                            if (state.ServerDialect != SMBDialect.NotSet)
+                            {
+                                state = new SMB2ConnectionState(state, AllocatePersistentFileID);
+                            }
                             TrySendResponse(state, response);
                             return;
                         }

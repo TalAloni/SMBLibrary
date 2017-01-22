@@ -47,8 +47,12 @@ namespace SMBLibrary.Server
                 if (command is NegotiateRequest)
                 {
                     NegotiateRequest request = (NegotiateRequest)command;
-                    state = new SMB2ConnectionState(state, AllocatePersistentFileID);
-                    return NegotiateHelper.GetNegotiateResponse(request, state, m_serverGuid);
+                    SMB2Command response = NegotiateHelper.GetNegotiateResponse(request, state, m_serverGuid);
+                    if (state.ServerDialect != SMBDialect.NotSet)
+                    {
+                        state = new SMB2ConnectionState(state, AllocatePersistentFileID);
+                    }
+                    return response;
                 }
                 else
                 {
