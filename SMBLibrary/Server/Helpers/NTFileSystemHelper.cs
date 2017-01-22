@@ -274,7 +274,7 @@ namespace SMBLibrary.Server
             }
             else // File
             {
-                if (stream == null)
+                if (stream == null || !stream.CanRead)
                 {
                     state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}', Invalid Operation.", openFilePath);
                     return NTStatus.STATUS_ACCESS_DENIED;
@@ -335,7 +335,7 @@ namespace SMBLibrary.Server
             }
             else // File
             {
-                if (stream == null)
+                if (stream == null || !stream.CanWrite)
                 {
                     state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Invalid Operation.", openFilePath);
                     return NTStatus.STATUS_ACCESS_DENIED;
