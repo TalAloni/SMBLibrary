@@ -45,6 +45,7 @@ namespace SMBLibrary.Server.SMB2
             response.MaxWriteSize = 65536;
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = DateTime.Today;
+            response.SecurityBuffer = GSSAPIHelper.GetGSSTokenInitNTLMSSPBytes();
             return response;
         }
 
@@ -71,6 +72,7 @@ namespace SMBLibrary.Server.SMB2
             response.MaxWriteSize = 65536;
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = DateTime.Today;
+            response.SecurityBuffer = GSSAPIHelper.GetGSSTokenInitNTLMSSPBytes();
             return response;
         }
 

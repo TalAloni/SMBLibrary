@@ -48,6 +48,16 @@ namespace SMBLibrary.Authentication
             return null;
         }
 
+        public static byte[] GetGSSTokenInitNTLMSSPBytes()
+        {
+            SimpleProtectedNegotiationTokenInit token = new SimpleProtectedNegotiationTokenInit();
+            TokenInitEntry entry = new TokenInitEntry();
+            entry.MechanismTypeList = new List<byte[]>();
+            entry.MechanismTypeList.Add(NTLMSSPIdentifier);
+            token.Tokens.Add(entry);
+            return SimpleProtectedNegotiationToken.GetTokenBytes(token);
+        }
+
         public static byte[] GetGSSTokenResponseBytesFromNTLMSSPMessage(byte[] messageBytes)
         {
             SimpleProtectedNegotiationTokenResponse token = new SimpleProtectedNegotiationTokenResponse();

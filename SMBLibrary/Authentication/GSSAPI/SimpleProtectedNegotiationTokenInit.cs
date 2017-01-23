@@ -13,9 +13,9 @@ namespace SMBLibrary.Authentication
 {
     public class TokenInitEntry
     {
-        public List<byte[]> MechanismTypeList = new List<byte[]>(); // Optional
+        public List<byte[]> MechanismTypeList; // Optional
         // reqFlags - Optional, RECOMMENDED to be left out
-        public byte[] MechanismToken = new byte[0]; // Optional
+        public byte[] MechanismToken; // Optional
         public byte[] MechanismListMIC; // Optional
     }
 
@@ -31,6 +31,10 @@ namespace SMBLibrary.Authentication
         public const byte MechanismListMICTag = 0xA3;
 
         public List<TokenInitEntry> Tokens = new List<TokenInitEntry>();
+
+        public SimpleProtectedNegotiationTokenInit()
+        {
+        }
 
         /// <param name="offset">The offset following the NegTokenInit tag</param>
         public SimpleProtectedNegotiationTokenInit(byte[] buffer, int offset)
