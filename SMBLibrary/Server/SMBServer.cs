@@ -287,20 +287,7 @@ namespace SMBLibrary.Server
                         return;
                     }
                     state.LogToServer(Severity.Verbose, "SMB2 request chain received: {0} requests, First request: {1}, Packet length: {2}", requestChain.Count, requestChain[0].CommandName.ToString(), packet.Length);
-                    List<SMB2Command> responseChain = new List<SMB2Command>();
-                    foreach (SMB2Command request in requestChain)
-                    {
-                        SMB2Command response = ProcessSMB2Command(request, ref state);
-                        if (response != null)
-                        {
-                            UpdateSMB2Header(response, request);
-                            responseChain.Add(response);
-                        }
-                    }
-                    if (responseChain.Count > 0)
-                    {
-                        TrySendResponseChain(state, responseChain);
-                    }
+                    ProcessSMB2RequestChain(requestChain, ref state);
                 }
                 else
                 {
