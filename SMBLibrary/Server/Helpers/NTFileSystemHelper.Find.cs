@@ -82,6 +82,7 @@ namespace SMBLibrary.Server
             }
             else
             {
+                path = FileSystem.GetDirectoryPath(path);
                 entry = fileSystem.GetEntry(path + expression);
                 if (entry == null)
                 {
