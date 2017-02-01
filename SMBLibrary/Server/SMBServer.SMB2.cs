@@ -155,14 +155,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is CloseRequest)
                     {
-                        CloseRequest request = (CloseRequest)command;
-                        OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
-                        if (openFile == null)
-                        {
-                            return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
-                        }
-                        session.RemoveOpenFile(request.FileId.Persistent);
-                        return new CloseResponse();
+                        return CloseHelper.GetCloseResponse((CloseRequest)command, share, state);
                     }
                     else if (command is IOCtlRequest)
                     {

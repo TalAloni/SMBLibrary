@@ -153,6 +153,7 @@
     <Compile Include="Server\SMB1\TransactionHelper.cs" />
     <Compile Include="Server\SMB1\TransactionSubcommandHelper.cs" />
     <Compile Include="Server\SMB1\TreeConnectHelper.cs" />
+    <Compile Include="Server\SMB2\CloseHelper.cs" />
     <Compile Include="Server\SMB2\CreateHelper.cs" />
     <Compile Include="Server\SMB2\IOCtlHelper.cs" />
     <Compile Include="Server\SMB2\NegotiateHelper.cs" />

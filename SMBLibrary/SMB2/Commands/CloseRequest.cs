@@ -43,6 +43,14 @@ namespace SMBLibrary.SMB2
             FileId.WriteBytes(buffer, offset + 8);
         }
 
+        public bool PostQueryAttributes
+        {
+            get
+            {
+                return ((this.Flags & CloseFlags.PostQueryAttributes) > 0);
+            }
+        }
+
         public override int CommandLength
         {
             get
