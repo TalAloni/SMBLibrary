@@ -100,7 +100,16 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(CommandName.SMB_COM_TRANSACTION);
             }
 
-            TransactionSubcommand subcommand = TransactionSubcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
+            TransactionSubcommand subcommand;
+            try
+            {
+                subcommand = TransactionSubcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
+            }
+            catch
+            {
+                header.Status = NTStatus.STATUS_INVALID_SMB;
+                return new ErrorResponse(CommandName.SMB_COM_TRANSACTION);
+            }
             TransactionSubcommand subcommandResponse = null;
 
             if (subcommand is TransactionSetNamedPipeStateRequest)
@@ -173,7 +182,16 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetCompleteTransaction2Response(SMB1Header header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
         {
-            Transaction2Subcommand subcommand = Transaction2Subcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
+            Transaction2Subcommand subcommand;
+            try
+            {
+                subcommand = Transaction2Subcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
+            }
+            catch
+            {
+                header.Status = NTStatus.STATUS_INVALID_SMB;
+                return new ErrorResponse(CommandName.SMB_COM_TRANSACTION2);
+            }
             Transaction2Subcommand subcommandResponse = null;
 
             if (!(share is FileSystemShare))
