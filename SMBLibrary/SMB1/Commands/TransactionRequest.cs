@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -97,7 +97,6 @@ namespace SMBLibrary.SMB1
             ushort ParameterOffset = (ushort)(SMB1Header.Length + 3 + (FixedSMBParametersLength + Setup.Length));
             if (this is Transaction2Request)
             {
-                ParameterOffset += 1;
             }
             else
             {
@@ -138,7 +137,7 @@ namespace SMBLibrary.SMB1
             if (this is Transaction2Request)
             {
                 offset = 0;
-                this.SMBData = new byte[1 + ParameterCount + DataCount + padding1 + padding2];
+                this.SMBData = new byte[padding1 + ParameterCount + padding2 + DataCount];
             }
             else
             {
@@ -146,15 +145,15 @@ namespace SMBLibrary.SMB1
                 {
                     int namePadding = 1;
                     offset = namePadding;
-                    this.SMBData = new byte[namePadding + Name.Length * 2 + 2 + ParameterCount + DataCount + padding1 + padding2];
+                    this.SMBData = new byte[namePadding + Name.Length * 2 + 2 + padding1 + ParameterCount + padding2 + DataCount];
                 }
                 else
                 {
                     offset = 0;
-                    this.SMBData = new byte[Name.Length + 1 + ParameterCount + DataCount + padding1 + padding2];
+                    this.SMBData = new byte[Name.Length + 1 + padding1 + ParameterCount + padding2 + DataCount];
                 }
+                SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, Name);
             }
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, Name);
             ByteWriter.WriteBytes(this.SMBData, offset + padding1, TransParameters);
             ByteWriter.WriteBytes(this.SMBData, offset + padding1 + ParameterCount + padding2, TransData);
 
