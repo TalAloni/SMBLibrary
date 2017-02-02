@@ -30,6 +30,7 @@ namespace SMBLibrary.Server.SMB1
                 request.TransData.Length < request.TotalDataCount)
             {
                 // A secondary transaction request is pending
+                processState.Name = request.Name;
                 processState.TransactionSetup = request.Setup;
                 processState.TransactionParameters = new byte[request.TotalParameterCount];
                 processState.TransactionData = new byte[request.TotalDataCount];
@@ -48,7 +49,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, request.Setup, request.TransParameters, request.TransData, share, state, sendQueue);
+                    return GetCompleteTransactionResponse(header, request.Name, request.Setup, request.TransParameters, request.TransData, share, state, sendQueue);
                 }
             }
         }
@@ -84,12 +85,12 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state, sendQueue);
+                    return GetCompleteTransactionResponse(header, processState.Name, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state, sendQueue);
                 }
             }
         }
 
-        internal static SMB1Command GetCompleteTransactionResponse(SMB1Header header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static SMB1Command GetCompleteTransactionResponse(SMB1Header header, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
         {
             TransactionSubcommand subcommand = TransactionSubcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
             TransactionSubcommand subcommandResponse = null;
