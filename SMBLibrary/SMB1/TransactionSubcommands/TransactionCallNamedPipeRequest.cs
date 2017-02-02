@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB1
     public class TransactionCallNamedPipeRequest : TransactionSubcommand
     {
         // Setup:
-        public ushort FID;
+        public ushort Priority;
         // Data:
         public byte[] WriteData;
 
@@ -28,7 +28,7 @@ namespace SMBLibrary.SMB1
 
         public TransactionCallNamedPipeRequest(byte[] setup, byte[] data) : base()
         {
-            FID = LittleEndianConverter.ToUInt16(setup, 2);
+            Priority = LittleEndianConverter.ToUInt16(setup, 2);
 
             WriteData = data;
         }
@@ -37,7 +37,7 @@ namespace SMBLibrary.SMB1
         {
             byte[] setup = new byte[4];
             LittleEndianWriter.WriteUInt16(setup, 0, (ushort)this.SubcommandName);
-            LittleEndianWriter.WriteUInt16(setup, 2, FID);
+            LittleEndianWriter.WriteUInt16(setup, 2, Priority);
             return base.GetSetup();
         }
 
