@@ -67,8 +67,14 @@ namespace SMBLibrary.Server.Win32
             }
 
             byte[] messageBytes = message.GetBytes();
-            bool success = SSPIHelper.AuthenticateType3Message(m_serverContext, messageBytes);
-            return success;
+            try
+            {
+                return SSPIHelper.AuthenticateType3Message(m_serverContext, messageBytes);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public bool IsPasswordEmpty(AuthenticateMessage message)
