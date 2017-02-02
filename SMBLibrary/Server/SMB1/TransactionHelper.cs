@@ -92,6 +92,14 @@ namespace SMBLibrary.Server.SMB1
 
         internal static SMB1Command GetCompleteTransactionResponse(SMB1Header header, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
         {
+            if (String.Equals(name, @"\pipe\lanman", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // [MS-RAP] Remote Administration Protocol request
+                state.LogToServer(Severity.Debug, "Remote Administration Protocol requests are not implemented");
+                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                return new ErrorResponse(CommandName.SMB_COM_TRANSACTION);
+            }
+
             TransactionSubcommand subcommand = TransactionSubcommand.GetSubcommandRequest(requestSetup, requestParameters, requestData, header.UnicodeFlag);
             TransactionSubcommand subcommandResponse = null;
 
