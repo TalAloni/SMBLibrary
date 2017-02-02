@@ -1,6 +1,6 @@
 About SMBLibrary:
 =================
-SMBLibrary is an open-source C# SMB 1.0/CIFS 1.0 server implementation.
+SMBLibrary is an open-source C# SMB 1.0/CIFS 1.0, SMB 2.0 and SMB 2.1 server implementation.
 SMBLibrary gives .NET developers an easy way to share a directory / file system / virtual file system, with any operating system that supports the SMB protocol.
 SMBLibrary shares can be accessed from any Windows version since Windows NT 4.0.
 
@@ -12,6 +12,7 @@ Supported SMB / CIFS transport methods:
 'NetBIOS over TCP' and 'Direct TCP hosting' are almost identical, the only differences:
 - A 'session request' packet is initiating the NBT connection.
 - A 'keep alive' packet is sent from time to time over NBT connections.
+- SMB2: Direct TCP hosting supports large MTUs.
 
 Notes:
 ======
