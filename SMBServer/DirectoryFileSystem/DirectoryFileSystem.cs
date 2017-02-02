@@ -276,9 +276,14 @@ namespace SMBServer
 
         private void ValidatePath(string path)
         {
-            if (path.StartsWith(@"..\") || path.Contains(@"\..\"))
+            if (path != String.Empty && !path.StartsWith(@"\"))
             {
-                throw new UnauthorizedAccessException("Given path is not allowed");
+                throw new ArgumentException("Path must start with a backslash");
+            }
+
+            if (path.Contains(@"\..\"))
+            {
+                throw new ArgumentException("Given path is not allowed");
             }
         }
 
