@@ -256,6 +256,53 @@ namespace SMBLibrary.Server
             }
         }
 
+        public static NTStatus OpenFile(out Stream stream, IFileSystem fileSystem, string path, FileAccess fileAccess, ShareAccess shareAccess, bool buffered, ConnectionState state)
+        {
+            stream = null;
+            FileShare fileShare = NTFileSystemHelper.ToFileShare(shareAccess);
+            state.LogToServer(Severity.Verbose, "OpenFile: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
+            try
+            {
+                stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Directory not found.", path);
+                return NTStatus.STATUS_NO_SUCH_FILE;
+            }
+            catch (FileNotFoundException)
+            {
+                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. File not found.", path);
+                return NTStatus.STATUS_NO_SUCH_FILE;
+            }
+            catch (IOException ex)
+            {
+                ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
+                if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
+                {
+                    state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Sharing violation.", path);
+                    return NTStatus.STATUS_SHARING_VIOLATION;
+                }
+                else
+                {
+                    state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Data Error.", path);
+                    return NTStatus.STATUS_DATA_ERROR;
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Access Denied.", path);
+                return NTStatus.STATUS_ACCESS_DENIED;
+            }
+
+            if (buffered)
+            {
+                stream = new PrefetchedStream(stream);
+            }
+
+            return NTStatus.STATUS_SUCCESS;
+        }
+
         public static NTStatus ReadFile(out byte[] data, OpenFileObject openFile, long offset, int maxCount, ConnectionState state)
         {
             data = null;

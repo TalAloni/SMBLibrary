@@ -57,9 +57,7 @@ namespace SMBLibrary.Server.SMB1
                     return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
                 }
 
-                IFileSystem fileSystem = fileSystemShare.FileSystem;
                 FileAccess fileAccess = NTFileSystemHelper.ToFileAccess(request.DesiredAccess);
-                FileShare fileShare = NTFileSystemHelper.ToFileShare(request.ShareAccess);
 
                 Stream stream;
                 bool deleteOnClose = false;
@@ -69,6 +67,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
+                    IFileSystem fileSystem = fileSystemShare.FileSystem;
                     // When FILE_OPEN_REPARSE_POINT is specified, the operation should continue normally if the file is not a reparse point.
                     // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file, with the exception
                     // of a file copy operation (where the caller will attempt to simply copy the reparse point).
@@ -76,37 +75,11 @@ namespace SMBLibrary.Server.SMB1
                     bool openReparsePoint = (request.CreateOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
                     bool disableBuffering = (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
                     bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
-                    state.LogToServer(Severity.Verbose, "NTCreate: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
-                    try
+                    NTStatus openStatus = NTFileSystemHelper.OpenFile(out stream, fileSystem, path, fileAccess, request.ShareAccess, buffered, state);
+                    if (openStatus != NTStatus.STATUS_SUCCESS)
                     {
-                        stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
-                    }
-                    catch (IOException ex)
-                    {
-                        ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                        if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                        {
-                            state.LogToServer(Severity.Debug, "NTCreate: Sharing violation opening '{0}'", path);
-                            header.Status = NTStatus.STATUS_SHARING_VIOLATION;
-                            return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
-                        }
-                        else
-                        {
-                            state.LogToServer(Severity.Debug, "NTCreate: Sharing violation opening '{0}', Data Error", path);
-                            header.Status = NTStatus.STATUS_DATA_ERROR;
-                            return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        state.LogToServer(Severity.Debug, "NTCreate: Sharing violation opening '{0}', Access Denied", path);
-                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                        header.Status = openStatus;
                         return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
-                    }
-        
-                    if (buffered)
-                    {
-                        stream = new PrefetchedStream(stream);
                     }
                 }
 
