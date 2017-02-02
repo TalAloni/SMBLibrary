@@ -68,7 +68,7 @@ namespace SMBLibrary.Server
                 if (entry != null)
                 {
                     // File already exists, fail the request
-                    state.LogToServer(Severity.Debug, "NTCreate: File '{0}' already exist", path);
+                    state.LogToServer(Severity.Debug, "CreateFile: File '{0}' already exist", path);
                     return NTStatus.STATUS_OBJECT_NAME_COLLISION;
                 }
 
@@ -81,12 +81,12 @@ namespace SMBLibrary.Server
                 {
                     if (forceDirectory)
                     {
-                        state.LogToServer(Severity.Information, "NTCreate: Creating directory '{0}'", path);
+                        state.LogToServer(Severity.Information, "CreateFile: Creating directory '{0}'", path);
                         entry = fileSystem.CreateDirectory(path);
                     }
                     else
                     {
-                        state.LogToServer(Severity.Information, "NTCreate: Creating file '{0}'", path);
+                        state.LogToServer(Severity.Information, "CreateFile: Creating file '{0}'", path);
                         entry = fileSystem.CreateFile(path);
                     }
                 }
@@ -95,18 +95,18 @@ namespace SMBLibrary.Server
                     ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
                     if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                     {
-                        state.LogToServer(Severity.Debug, "NTCreate: Sharing violation creating '{0}'", path);
+                        state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. Sharing violation.", path);
                         return NTStatus.STATUS_SHARING_VIOLATION;
                     }
                     else
                     {
-                        state.LogToServer(Severity.Debug, "NTCreate: Error creating '{0}'", path);
+                        state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. Data Error.", path);
                         return NTStatus.STATUS_DATA_ERROR;
                     }
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    state.LogToServer(Severity.Debug, "NTCreate: Error creating '{0}', Access Denied", path);
+                    state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. Access Denied.", path);
                     return NTStatus.STATUS_ACCESS_DENIED;
                 }
             }
@@ -132,12 +132,12 @@ namespace SMBLibrary.Server
                     {
                         if (forceDirectory)
                         {
-                            state.LogToServer(Severity.Information, "NTCreate: Creating directory '{0}'", path);
+                            state.LogToServer(Severity.Information, "CreateFile: Creating directory '{0}'", path);
                             entry = fileSystem.CreateDirectory(path);
                         }
                         else
                         {
-                            state.LogToServer(Severity.Information, "NTCreate: Creating file '{0}'", path);
+                            state.LogToServer(Severity.Information, "CreateFile: Creating file '{0}'", path);
                             entry = fileSystem.CreateFile(path);
                         }
                     }
