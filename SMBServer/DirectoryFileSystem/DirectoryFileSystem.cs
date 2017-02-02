@@ -286,7 +286,8 @@ namespace SMBServer
         {
             get
             {
-                return "DirFS";
+                DriveInfo drive = new DriveInfo(m_directory.FullName.Substring(0, 2));
+                return drive.DriveFormat;
             }
         }
 
