@@ -44,7 +44,17 @@ namespace SMBLibrary.Server
                 return NTStatus.STATUS_NO_SUCH_FILE;
             }
 
-            entry = fileSystem.GetEntry(path);
+            try
+            {
+                entry = fileSystem.GetEntry(path);
+            }
+            catch (ArgumentException)
+            {
+                state.LogToServer(Severity.Debug, "CreateFile: Error retrieving '{0}'. Argument Exception.", path);
+                entry = null;
+                return NTStatus.STATUS_OBJECT_PATH_SYNTAX_BAD;
+            }
+            
             if (createDisposition == CreateDisposition.FILE_OPEN)
             {
                 if (entry == null)
@@ -115,7 +125,6 @@ namespace SMBLibrary.Server
                      createDisposition == CreateDisposition.FILE_OVERWRITE_IF ||
                      createDisposition == CreateDisposition.FILE_SUPERSEDE)
             {
-                entry = fileSystem.GetEntry(path);
                 if (entry == null)
                 {
                     if (createDisposition == CreateDisposition.FILE_OVERWRITE)
@@ -264,6 +273,11 @@ namespace SMBLibrary.Server
             try
             {
                 stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
+            }
+            catch (ArgumentException)
+            {
+                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Argument Exception.", path);
+                return NTStatus.STATUS_OBJECT_PATH_SYNTAX_BAD;
             }
             catch (DirectoryNotFoundException)
             {
