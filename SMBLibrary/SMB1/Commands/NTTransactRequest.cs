@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -92,7 +92,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref writeOffset, (ushort)Function);
             ByteWriter.WriteBytes(this.SMBParameters, ref writeOffset, Setup);
 
-            this.SMBData = new byte[parameterCount + dataCount + padding1 + padding2];
+            this.SMBData = new byte[padding1 + parameterCount + padding2 + dataCount];
             ByteWriter.WriteBytes(this.SMBData, padding1, TransParameters);
             ByteWriter.WriteBytes(this.SMBData, (int)(padding1 + parameterCount + padding2), TransData);
 
