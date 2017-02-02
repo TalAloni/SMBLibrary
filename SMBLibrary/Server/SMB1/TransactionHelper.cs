@@ -136,7 +136,8 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!(share is NamedPipeShare))
                 {
-                    header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                    // [MS-CIFS] If the pipe is not a message mode pipe, the Trans subsystem MUST fail the request with STATUS_INVALID_PARAMETER
+                    header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                     return new ErrorResponse(CommandName.SMB_COM_TRANSACTION);
                 }
 
@@ -196,7 +197,7 @@ namespace SMBLibrary.Server.SMB1
 
             if (!(share is FileSystemShare))
             {
-                header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                 return new ErrorResponse(CommandName.SMB_COM_TRANSACTION2);
             }
 

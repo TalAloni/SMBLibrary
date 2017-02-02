@@ -146,7 +146,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         CreateDirectoryRequest request = (CreateDirectoryRequest)command;
@@ -156,7 +156,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         DeleteDirectoryRequest request = (DeleteDirectoryRequest)command;
@@ -175,7 +175,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         DeleteRequest request = (DeleteRequest)command;
@@ -185,7 +185,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         RenameRequest request = (RenameRequest)command;
@@ -195,7 +195,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         QueryInformationRequest request = (QueryInformationRequest)command;
@@ -205,7 +205,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         SetInformationRequest request = (SetInformationRequest)command;
@@ -231,7 +231,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         CheckDirectoryRequest request = (CheckDirectoryRequest)command;
@@ -249,7 +249,7 @@ namespace SMBLibrary.Server
                     {
                         if (!(share is FileSystemShare))
                         {
-                            header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
                             return new ErrorResponse(command.CommandName);
                         }
                         SetInformation2Request request = (SetInformation2Request)command;
