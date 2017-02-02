@@ -46,3 +46,16 @@ Revision History:
         LoginAPI: Properly handle ERROR_ACCOUNT_DISABLED.
         NTLM: improved compatibility with clients.
         Improved logging.
+
+1.1.1 - Added MS-FSCC enums and structures required for SMB2.
+        Added SMB2 command structures and enums.
+        Added SMB 2.0 / 2.1 server implementation
+        Updated UI to enable selection of SMB1.0/CIFS and/or SMB 2.0 / 2.1.
+        Return STATUS_ACCESS_DENIED when writing to a file that was opened for reading and vice versa.
+        SMB1: Return STATUS_NOT_IMPLEMENTED when receiving Remote Administration Protocol requests.
+        SMB1: Return STATUS_INVALID_SMB when transaction subcommand is invalid.
+        Return STATUS_INVALID_SMB instead of STATUS_SMB_BAD_COMMAND when usage of SMB_COM_NEGOTIATE is invalid.
+        Return STATUS_INVALID_PARAMETER instead of STATUS_SMB_BAD_COMMAND when client tries to perform operation on mismatching share.
+        Win32 authentication: fail authentication if AcceptSecurityContext return SEC_E_INVALID_TOKEN.
+        DirectoryFileSystem: Updated Name property to return the name of the underlying file system.
+        DirectoryFileSystem: Updated ValidatePath to verify that path starts with a blackslash.
