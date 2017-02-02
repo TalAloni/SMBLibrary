@@ -79,7 +79,7 @@ namespace SMBLibrary.Server
                 else
                 {
                     // [MS-CIFS] An SMB_COM_NEGOTIATE exchange MUST be completed before any other SMB messages are sent to the server
-                    header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                    header.Status = NTStatus.STATUS_INVALID_SMB;
                     return new ErrorResponse(command.CommandName);
                 }
             }
@@ -87,7 +87,7 @@ namespace SMBLibrary.Server
             {
                 // There MUST be only one SMB_COM_NEGOTIATE exchange per SMB connection.
                 // Subsequent SMB_COM_NEGOTIATE requests received by the server MUST be rejected with error responses.
-                header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
+                header.Status = NTStatus.STATUS_INVALID_SMB;
                 return new ErrorResponse(command.CommandName);
             }
             else
