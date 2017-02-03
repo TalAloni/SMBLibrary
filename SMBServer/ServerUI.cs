@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -29,7 +30,7 @@ namespace SMBServer
 
         private void ServerUI_Load(object sender, EventArgs e)
         {
-            List<IPAddress> localIPs = GetHostIPAddresses();
+            List<IPAddress> localIPs = NetworkInterfaceHelper.GetHostIPAddresses();
             KeyValuePairList<string, IPAddress> list = new KeyValuePairList<string, IPAddress>();
             list.Add("Any", IPAddress.Any);
             foreach (IPAddress address in localIPs)
@@ -97,8 +98,12 @@ namespace SMBServer
                 m_server.Start();
                 if (transportType == SMBTransportType.NetBiosOverTCP)
                 {
-                    m_nameServer = new NameServer(serverAddress);
-                    m_nameServer.Start();
+                    if (serverAddress.AddressFamily == AddressFamily.InterNetwork && !IPAddress.Equals(serverAddress, IPAddress.Any))
+                    {
+                        IPAddress subnetMask = NetworkInterfaceHelper.GetSubnetMask(serverAddress);
+                        m_nameServer = new NameServer(serverAddress, subnetMask);
+                        m_nameServer.Start();
+                    }
                 }
             }
             catch (Exception ex)
@@ -201,23 +206,6 @@ namespace SMBServer
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
             return doc;
-        }
-
-        private static List<IPAddress> GetHostIPAddresses()
-        {
-            List<IPAddress> result = new List<IPAddress>();
-            foreach (NetworkInterface netInterface in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                IPInterfaceProperties ipProperties = netInterface.GetIPProperties();
-                foreach (UnicastIPAddressInformation addressInfo in ipProperties.UnicastAddresses)
-                {
-                    if (addressInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                    {
-                        result.Add(addressInfo.Address);
-                    }
-                }
-            }
-            return result;
         }
 
         private void Server_OnLogEntry(object sender, LogEntry entry)

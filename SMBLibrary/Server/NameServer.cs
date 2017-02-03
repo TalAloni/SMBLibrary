@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -24,12 +24,25 @@ namespace SMBLibrary.Server
         public const string WorkgroupName = "WORKGROUP";
 
         private IPAddress m_serverAddress;
+        private IPAddress m_broadcastAddress;
         private UdpClient m_client;
         private bool m_listening;
 
-        public NameServer(IPAddress serverAddress)
+        public NameServer(IPAddress serverAddress, IPAddress subnetMask)
         {
+            if (serverAddress.AddressFamily != AddressFamily.InterNetwork)
+            {
+                throw new ArgumentException("NetBIOS name service can only supply IPv4 addresses");
+            }
+
+            if (IPAddress.Equals(serverAddress, IPAddress.Any))
+            {
+                // When registering a NetBIOS name, we must supply the client with a usable IPAddress.
+                throw new ArgumentException("NetBIOS name service requires an IPAddress that is associated with a specific network interface");
+            }
+
             m_serverAddress = serverAddress;
+            m_broadcastAddress = GetBroadcastAddress(serverAddress, subnetMask);
         }
 
         public void Start()
@@ -53,7 +66,6 @@ namespace SMBLibrary.Server
             m_client.Close();
         }
 
-
         private void ReceiveCallback(IAsyncResult result)
         {
             if (!m_listening)
@@ -66,7 +78,6 @@ namespace SMBLibrary.Server
             try
             {
                 buffer = m_client.EndReceive(result, ref remoteEP);
-                m_client.BeginReceive(ReceiveCallback, null);
             }
             catch (ObjectDisposedException)
             {
@@ -109,7 +120,6 @@ namespace SMBLibrary.Server
                                 response.Addresses.Add(m_serverAddress.GetAddressBytes(), nameFlags);
                                 byte[] responseBytes = response.GetBytes();
                                 m_client.Send(responseBytes, responseBytes.Length, remoteEP);
-                                
                             }
                         }
                         else // NBStat
@@ -162,20 +172,11 @@ namespace SMBLibrary.Server
             RegisterName(request3);
         }
 
-        private IPAddress GetLocalSubnetBroadcastAddress(IPAddress address)
-        {
-            byte[] broadcastAddress = m_serverAddress.GetAddressBytes();
-            broadcastAddress[3] = 0xFF;
-            return new IPAddress(broadcastAddress);
-        }
-
         private void RegisterName(NameRegistrationRequest request)
         {
             byte[] packet = request.GetBytes();
 
-            IPAddress broadcastAddress = GetLocalSubnetBroadcastAddress(m_serverAddress);
-
-            IPEndPoint broadcastEP = new IPEndPoint(broadcastAddress, NetBiosNameServicePort);
+            IPEndPoint broadcastEP = new IPEndPoint(m_broadcastAddress, NetBiosNameServicePort);
             for (int index = 0; index < 4; index++)
             {
                 try
@@ -191,6 +192,19 @@ namespace SMBLibrary.Server
                     System.Threading.Thread.Sleep(250);
                 }
             }
+        }
+
+        public static IPAddress GetBroadcastAddress(IPAddress address, IPAddress subnetMask)
+        {
+            byte[] ipAdressBytes = address.GetAddressBytes();
+            byte[] subnetMaskBytes = subnetMask.GetAddressBytes();
+
+            byte[] broadcastAddress = new byte[ipAdressBytes.Length];
+            for (int i = 0; i < broadcastAddress.Length; i++)
+            {
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
+            }
+            return new IPAddress(broadcastAddress);
         }
     }
 }
