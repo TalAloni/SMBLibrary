@@ -1,3 +1,9 @@
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+ * 
+ * You can redistribute this program and/or modify it under the terms of
+ * the GNU Lesser Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,17 +25,14 @@ namespace SMBLibrary.NetBios
         public OwnerNodeType NodeType;
         public bool WorkGroup;
 
-        public ushort Value
+        public static explicit operator ushort(NameFlags nameFlags)
         {
-            get
+            ushort value = (ushort)(((byte)nameFlags.NodeType) << 13);
+            if (nameFlags.WorkGroup)
             {
-                ushort value = (ushort)(((byte)NodeType) << 13);
-                if (WorkGroup)
-                {
-                    value |= 0x8000;
-                }
-                return value;
+                value |= 0x8000;
             }
+            return value;
         }
     }
 }

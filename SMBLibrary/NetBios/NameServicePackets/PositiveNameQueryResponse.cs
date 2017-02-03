@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -48,7 +48,7 @@ namespace SMBLibrary.NetBios
             int offset = 0;
             foreach (KeyValuePair<byte[], NameFlags> entry in Addresses)
             {
-                BigEndianWriter.WriteUInt16(data, ref offset, entry.Value.Value);
+                BigEndianWriter.WriteUInt16(data, ref offset, (ushort)entry.Value);
                 ByteWriter.WriteBytes(data, ref offset, entry.Key, 4);
             }
             return data;

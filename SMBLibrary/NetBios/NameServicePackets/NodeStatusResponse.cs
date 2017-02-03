@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -51,9 +51,7 @@ namespace SMBLibrary.NetBios
             foreach (KeyValuePair<string, NameFlags> entry in Names)
             {
                 ByteWriter.WriteAnsiString(stream, entry.Key);
-                //byte[] encodedName = NetBiosUtils.EncodeName(entry.Key, String.Empty);
-                //ByteWriter.WriteBytes(stream, encodedName);
-                BigEndianWriter.WriteUInt16(stream, entry.Value.Value);
+                BigEndianWriter.WriteUInt16(stream, (ushort)entry.Value);
             }
 
             ByteWriter.WriteBytes(stream, Statistics.GetBytes());
