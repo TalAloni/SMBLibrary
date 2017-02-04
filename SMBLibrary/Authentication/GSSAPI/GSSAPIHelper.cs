@@ -24,25 +24,19 @@ namespace SMBLibrary.Authentication
             {
                 if (token is SimpleProtectedNegotiationTokenInit)
                 {
-                    List<TokenInitEntry> tokens = ((SimpleProtectedNegotiationTokenInit)token).Tokens;
-                    foreach (TokenInitEntry entry in tokens)
+                    SimpleProtectedNegotiationTokenInit tokenInit = (SimpleProtectedNegotiationTokenInit)token;
+                    foreach (byte[] identifier in tokenInit.MechanismTypeList)
                     {
-                        foreach (byte[] identifier in entry.MechanismTypeList)
+                        if (ByteUtils.AreByteArraysEqual(identifier, NTLMSSPIdentifier))
                         {
-                            if (ByteUtils.AreByteArraysEqual(identifier, NTLMSSPIdentifier))
-                            {
-                                return entry.MechanismToken;
-                            }
+                            return tokenInit.MechanismToken;
                         }
                     }
                 }
                 else
                 {
-                    List<TokenResponseEntry> tokens = ((SimpleProtectedNegotiationTokenResponse)token).Tokens;
-                    if (tokens.Count > 0)
-                    {
-                        return tokens[0].ResponseToken;
-                    }
+                    SimpleProtectedNegotiationTokenResponse tokenResponse = (SimpleProtectedNegotiationTokenResponse)token;
+                    return tokenResponse.ResponseToken;
                 }
             }
             return null;
@@ -51,30 +45,24 @@ namespace SMBLibrary.Authentication
         public static byte[] GetGSSTokenInitNTLMSSPBytes()
         {
             SimpleProtectedNegotiationTokenInit token = new SimpleProtectedNegotiationTokenInit();
-            TokenInitEntry entry = new TokenInitEntry();
-            entry.MechanismTypeList = new List<byte[]>();
-            entry.MechanismTypeList.Add(NTLMSSPIdentifier);
-            token.Tokens.Add(entry);
+            token.MechanismTypeList = new List<byte[]>();
+            token.MechanismTypeList.Add(NTLMSSPIdentifier);
             return SimpleProtectedNegotiationToken.GetTokenBytes(token);
         }
 
         public static byte[] GetGSSTokenResponseBytesFromNTLMSSPMessage(byte[] messageBytes)
         {
             SimpleProtectedNegotiationTokenResponse token = new SimpleProtectedNegotiationTokenResponse();
-            TokenResponseEntry entry = new TokenResponseEntry();
-            entry.NegState = NegState.AcceptIncomplete;
-            entry.SupportedMechanism = NTLMSSPIdentifier;
-            entry.ResponseToken = messageBytes;
-            token.Tokens.Add(entry);
+            token.NegState = NegState.AcceptIncomplete;
+            token.SupportedMechanism = NTLMSSPIdentifier;
+            token.ResponseToken = messageBytes;
             return token.GetBytes();
         }
 
         public static byte[] GetGSSTokenAcceptCompletedResponse()
         {
             SimpleProtectedNegotiationTokenResponse token = new SimpleProtectedNegotiationTokenResponse();
-            TokenResponseEntry entry = new TokenResponseEntry();
-            entry.NegState = NegState.AcceptCompleted;
-            token.Tokens.Add(entry);
+            token.NegState = NegState.AcceptCompleted;
             return token.GetBytes();
         }
     }

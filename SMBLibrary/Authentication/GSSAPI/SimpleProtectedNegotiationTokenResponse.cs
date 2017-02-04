@@ -19,14 +19,6 @@ namespace SMBLibrary.Authentication
         RequestMic = 0x03,
     }
 
-    public class TokenResponseEntry
-    {
-        public NegState? NegState; // Optional
-        public byte[] SupportedMechanism; // Optional
-        public byte[] ResponseToken; // Optional
-        public byte[] MechanismListMIC; // Optional
-    }
-
     /// <summary>
     /// RFC 4178 - negTokenResp
     /// </summary>
@@ -38,7 +30,10 @@ namespace SMBLibrary.Authentication
         public const byte ResponseTokenTag = 0xA2;
         public const byte MechanismListMICTag = 0xA3;
 
-        public List<TokenResponseEntry> Tokens = new List<TokenResponseEntry>();
+        public NegState? NegState; // Optional
+        public byte[] SupportedMechanism; // Optional
+        public byte[] ResponseToken; // Optional
+        public byte[] MechanismListMIC; // Optional
 
         public SimpleProtectedNegotiationTokenResponse()
         {
@@ -48,82 +43,96 @@ namespace SMBLibrary.Authentication
         public SimpleProtectedNegotiationTokenResponse(byte[] buffer, int offset)
         {
             int constuctionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
-            int sequenceEndOffset = offset + constuctionLength;
             byte tag = ByteReader.ReadByte(buffer, ref offset);
             if (tag != (byte)DerEncodingTag.Sequence)
             {
                 throw new InvalidDataException();
             }
+            int sequenceLength = DerEncodingHelper.ReadLength(buffer, ref offset);
+            int sequenceEndOffset = offset + sequenceLength;
             while (offset < sequenceEndOffset)
             {
-                int entryLength = DerEncodingHelper.ReadLength(buffer, ref offset);
-                int entryEndOffset = offset + entryLength;
-                TokenResponseEntry entry = new TokenResponseEntry();
-                while (offset < entryEndOffset)
+                tag = ByteReader.ReadByte(buffer, ref offset);
+                if (tag == NegStateTag)
                 {
-                    tag = ByteReader.ReadByte(buffer, ref offset);
-                    if (tag == NegStateTag)
-                    {
-                        entry.NegState = ReadNegState(buffer, ref offset);
-                    }
-                    else if (tag == SupportedMechanismTag)
-                    {
-                        entry.SupportedMechanism = ReadSupportedMechanism(buffer, ref offset);
-                    }
-                    else if (tag == ResponseTokenTag)
-                    {
-                        entry.ResponseToken = ReadResponseToken(buffer, ref offset);
-                    }
-                    else if (tag == MechanismListMICTag)
-                    {
-                        entry.MechanismListMIC = ReadMechanismListMIC(buffer, ref offset);
-                    }
-                    else
-                    {
-                        throw new InvalidDataException("Invalid negTokenResp structure");
-                    }
+                    NegState = ReadNegState(buffer, ref offset);
                 }
-                Tokens.Add(entry);
+                else if (tag == SupportedMechanismTag)
+                {
+                    SupportedMechanism = ReadSupportedMechanism(buffer, ref offset);
+                }
+                else if (tag == ResponseTokenTag)
+                {
+                    ResponseToken = ReadResponseToken(buffer, ref offset);
+                }
+                else if (tag == MechanismListMICTag)
+                {
+                    MechanismListMIC = ReadMechanismListMIC(buffer, ref offset);
+                }
+                else
+                {
+                    throw new InvalidDataException("Invalid negTokenResp structure");
+                }
             }
         }
 
         public override byte[] GetBytes()
         {
-            int sequenceLength = 0;
-            foreach (TokenResponseEntry token in Tokens)
-            {
-                int entryLength = GetEntryLength(token);
-                sequenceLength += DerEncodingHelper.GetLengthFieldSize(entryLength) + entryLength;
-            }
-            int constructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(1 + sequenceLength);
-            int bufferSize = 1 + constructionLengthFieldSize + 1 + sequenceLength;
+            int sequenceLength = GetTokenFieldsLength();
+            int sequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(sequenceLength);
+            int constructionLength = 1 + sequenceLengthFieldSize + sequenceLength;
+            int constructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(constructionLength);
+            int bufferSize = 1 + constructionLengthFieldSize + 1 + sequenceLengthFieldSize + sequenceLength;
             byte[] buffer = new byte[bufferSize];
             int offset = 0;
             ByteWriter.WriteByte(buffer, ref offset, NegTokenRespTag);
-            DerEncodingHelper.WriteLength(buffer, ref offset, 1 + sequenceLength);
+            DerEncodingHelper.WriteLength(buffer, ref offset, constructionLength);
             ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.Sequence);
-            foreach (TokenResponseEntry token in Tokens)
+            DerEncodingHelper.WriteLength(buffer, ref offset, sequenceLength);
+            if (NegState.HasValue)
             {
-                int entryLength = GetEntryLength(token);
-                DerEncodingHelper.WriteLength(buffer, ref offset, entryLength);
-                if (token.NegState.HasValue)
-                {
-                    WriteNegState(buffer, ref offset, token.NegState.Value);
-                }
-                if (token.SupportedMechanism != null)
-                {
-                    WriteSupportedMechanism(buffer, ref offset, token.SupportedMechanism);
-                }
-                if (token.ResponseToken != null)
-                {
-                    WriteResponseToken(buffer, ref offset, token.ResponseToken);
-                }
-                if (token.MechanismListMIC != null)
-                {
-                    WriteMechanismListMIC(buffer, ref offset, token.MechanismListMIC);
-                }
+                WriteNegState(buffer, ref offset, NegState.Value);
+            }
+            if (SupportedMechanism != null)
+            {
+                WriteSupportedMechanism(buffer, ref offset, SupportedMechanism);
+            }
+            if (ResponseToken != null)
+            {
+                WriteResponseToken(buffer, ref offset, ResponseToken);
+            }
+            if (MechanismListMIC != null)
+            {
+                WriteMechanismListMIC(buffer, ref offset, MechanismListMIC);
             }
             return buffer;
+        }
+
+        private int GetTokenFieldsLength()
+        {
+            int result = 0;
+            if (NegState.HasValue)
+            {
+                int negStateLength = 5;
+                result += negStateLength;
+            }
+            if (SupportedMechanism != null)
+            {
+                int supportedMechanismBytesLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(SupportedMechanism.Length);
+                int supportedMechanismConstructionLength = 1 + supportedMechanismBytesLengthFieldSize + SupportedMechanism.Length;
+                int supportedMechanismConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(supportedMechanismConstructionLength);
+                int supportedMechanismLength = 1 + supportedMechanismConstructionLengthFieldSize + 1 + supportedMechanismBytesLengthFieldSize + SupportedMechanism.Length;
+                result += supportedMechanismLength;
+            }
+            if (ResponseToken != null)
+            {
+                int responseTokenBytesLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(ResponseToken.Length);
+                int responseTokenConstructionLength = 1 + responseTokenBytesLengthFieldSize + ResponseToken.Length;
+                int responseTokenConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(responseTokenConstructionLength);
+                int responseTokenLength = 1 + responseTokenConstructionLengthFieldSize + 1 + responseTokenBytesLengthFieldSize + ResponseToken.Length;
+                result += responseTokenLength;
+            }
+            return result;
         }
 
         private static NegState ReadNegState(byte[] buffer, ref int offset)
@@ -172,31 +181,6 @@ namespace SMBLibrary.Authentication
             }
             int length = DerEncodingHelper.ReadLength(buffer, ref offset);
             return ByteReader.ReadBytes(buffer, ref offset, length);
-        }
-
-        private static int GetEntryLength(TokenResponseEntry token)
-        {
-            int result = 0;
-            if (token.NegState.HasValue)
-            {
-                int negStateLength = 5;
-                result += negStateLength;
-            }
-            if (token.SupportedMechanism != null)
-            {
-                int supportedMechanismLength2FieldSize = DerEncodingHelper.GetLengthFieldSize(token.SupportedMechanism.Length);
-                int supportedMechanismLength1FieldSize = DerEncodingHelper.GetLengthFieldSize(1 + supportedMechanismLength2FieldSize + token.SupportedMechanism.Length);
-                int supportedMechanismLength = 1 + supportedMechanismLength1FieldSize + 1 + supportedMechanismLength2FieldSize + token.SupportedMechanism.Length;
-                result += supportedMechanismLength;
-            }
-            if (token.ResponseToken != null)
-            {
-                int responseToken2FieldSize = DerEncodingHelper.GetLengthFieldSize(token.ResponseToken.Length);
-                int responseToken1FieldSize = DerEncodingHelper.GetLengthFieldSize(1 + responseToken2FieldSize + token.ResponseToken.Length);
-                int responseTokenLength = 1 + responseToken1FieldSize + 1 + responseToken2FieldSize + token.ResponseToken.Length;
-                result += responseTokenLength;
-            }
-            return result;
         }
 
         private static void WriteNegState(byte[] buffer, ref int offset, NegState negState)

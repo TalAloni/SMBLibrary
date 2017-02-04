@@ -11,14 +11,6 @@ using Utilities;
 
 namespace SMBLibrary.Authentication
 {
-    public class TokenInitEntry
-    {
-        public List<byte[]> MechanismTypeList; // Optional
-        // reqFlags - Optional, RECOMMENDED to be left out
-        public byte[] MechanismToken; // Optional
-        public byte[] MechanismListMIC; // Optional
-    }
-
     /// <summary>
     /// RFC 4178 - negTokenInit
     /// </summary>
@@ -30,7 +22,10 @@ namespace SMBLibrary.Authentication
         public const byte MechanismTokenTag = 0xA2;
         public const byte MechanismListMICTag = 0xA3;
 
-        public List<TokenInitEntry> Tokens = new List<TokenInitEntry>();
+        public List<byte[]> MechanismTypeList; // Optional
+        // reqFlags - Optional, RECOMMENDED to be left out
+        public byte[] MechanismToken; // Optional
+        public byte[] MechanismListMIC; // Optional
 
         public SimpleProtectedNegotiationTokenInit()
         {
@@ -40,95 +35,85 @@ namespace SMBLibrary.Authentication
         public SimpleProtectedNegotiationTokenInit(byte[] buffer, int offset)
         {
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
-            int sequenceEndOffset = offset + constructionLength;
             byte tag = ByteReader.ReadByte(buffer, ref offset);
             if (tag != (byte)DerEncodingTag.Sequence)
             {
                 throw new InvalidDataException();
             }
+            int sequenceLength = DerEncodingHelper.ReadLength(buffer, ref offset);
+            int sequenceEndOffset = offset + sequenceLength;
             while (offset < sequenceEndOffset)
             {
-                int entryLength = DerEncodingHelper.ReadLength(buffer, ref offset);
-                int entryEndOffset = offset + entryLength;
-                TokenInitEntry entry = new TokenInitEntry();
-                while (offset < entryEndOffset)
+                tag = ByteReader.ReadByte(buffer, ref offset);
+                if (tag == MechanismTypeListTag)
                 {
-                    tag = ByteReader.ReadByte(buffer, ref offset);
-                    if (tag == MechanismTypeListTag)
-                    {
-                        entry.MechanismTypeList = ReadMechanismTypeList(buffer, ref offset);
-                    }
-                    else if (tag == RequiredFlagsTag)
-                    {
-                        throw new NotImplementedException("negTokenInit.ReqFlags is not implemented");
-                    }
-                    else if (tag == MechanismTokenTag)
-                    {
-                        entry.MechanismToken = ReadMechanismToken(buffer, ref offset);
-                    }
-                    else if (tag == MechanismListMICTag)
-                    {
-                        entry.MechanismListMIC = ReadMechanismListMIC(buffer, ref offset);
-                    }
-                    else
-                    {
-                        throw new InvalidDataException("Invalid negTokenInit structure");
-                    }
+                    MechanismTypeList = ReadMechanismTypeList(buffer, ref offset);
                 }
-                Tokens.Add(entry);
+                else if (tag == RequiredFlagsTag)
+                {
+                    throw new NotImplementedException("negTokenInit.ReqFlags is not implemented");
+                }
+                else if (tag == MechanismTokenTag)
+                {
+                    MechanismToken = ReadMechanismToken(buffer, ref offset);
+                }
+                else if (tag == MechanismListMICTag)
+                {
+                    MechanismListMIC = ReadMechanismListMIC(buffer, ref offset);
+                }
+                else
+                {
+                    throw new InvalidDataException("Invalid negTokenInit structure");
+                }
             }
         }
 
         public override byte[] GetBytes()
         {
-            int sequenceLength = 0;
-            foreach (TokenInitEntry token in Tokens)
-            {
-                int entryLength = GetEntryLength(token);
-                sequenceLength += DerEncodingHelper.GetLengthFieldSize(entryLength) + entryLength;
-            }
-            int constructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(1 + sequenceLength);
-            int bufferSize = 1 + constructionLengthFieldSize + 1 + sequenceLength;
+            int sequenceLength = GetTokenFieldsLength();
+            int sequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(sequenceLength);
+            int constructionLength = 1 + sequenceLengthFieldSize + sequenceLength;
+            int constructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(constructionLength);
+            int bufferSize = 1 + constructionLengthFieldSize + 1 + sequenceLengthFieldSize + sequenceLength;
             byte[] buffer = new byte[bufferSize];
             int offset = 0;
             ByteWriter.WriteByte(buffer, ref offset, NegTokenInitTag);
-            DerEncodingHelper.WriteLength(buffer, ref offset, 1 + sequenceLength);
+            DerEncodingHelper.WriteLength(buffer, ref offset, constructionLength);
             ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.Sequence);
-            foreach (TokenInitEntry token in Tokens)
+            DerEncodingHelper.WriteLength(buffer, ref offset, sequenceLength);
+            if (MechanismTypeList != null)
             {
-                int entryLength = GetEntryLength(token);
-                DerEncodingHelper.WriteLength(buffer, ref offset, entryLength);
-                if (token.MechanismTypeList != null)
-                {
-                    WriteMechanismTypeList(buffer, ref offset, token.MechanismTypeList);
-                }
-                if (token.MechanismToken != null)
-                {
-                    WriteMechanismToken(buffer, ref offset, token.MechanismToken);
-                }
-                if (token.MechanismListMIC != null)
-                {
-                    WriteMechanismListMIC(buffer, ref offset, token.MechanismListMIC);
-                }
+                WriteMechanismTypeList(buffer, ref offset, MechanismTypeList);
+            }
+            if (MechanismToken != null)
+            {
+                WriteMechanismToken(buffer, ref offset, MechanismToken);
+            }
+            if (MechanismListMIC != null)
+            {
+                WriteMechanismListMIC(buffer, ref offset, MechanismListMIC);
             }
             return buffer;
         }
 
-        public int GetEntryLength(TokenInitEntry token)
+        private int GetTokenFieldsLength()
         {
             int result = 0;
-            if (token.MechanismTypeList != null)
+            if (MechanismTypeList != null)
             {
-                int typeListSequenceLength = GetSequenceLength(token.MechanismTypeList);
-                int constructionLenthFieldSize = DerEncodingHelper.GetLengthFieldSize(1 + typeListSequenceLength);
-                int typeListLength = 1 + constructionLenthFieldSize + 1 + typeListSequenceLength;
+                int typeListSequenceLength = GetSequenceLength(MechanismTypeList);
+                int typeListSequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListSequenceLength);
+                int typeListConstructionLength = 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
+                int typeListConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListConstructionLength);
+                int typeListLength = 1 + typeListConstructionLengthFieldSize + 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
                 result += typeListLength;
             }
-            if (token.MechanismToken != null)
+            if (MechanismToken != null)
             {
-                int byteArrayFieldSize = DerEncodingHelper.GetLengthFieldSize(token.MechanismToken.Length);
-                int constructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(1 + byteArrayFieldSize + token.MechanismToken.Length);
-                int tokenLength = 1 + constructionLengthFieldSize + 1 + byteArrayFieldSize + token.MechanismToken.Length;
+                int mechanismTokenBytesFieldSize = DerEncodingHelper.GetLengthFieldSize(MechanismToken.Length);
+                int mechanismTokenConstructionLength = 1 + mechanismTokenBytesFieldSize + MechanismToken.Length;
+                int mechanismTokenConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismTokenConstructionLength);
+                int tokenLength = 1 + mechanismTokenConstructionLengthFieldSize + 1 + mechanismTokenBytesFieldSize + MechanismToken.Length;
                 result += tokenLength;
             }
             return result;
@@ -138,16 +123,15 @@ namespace SMBLibrary.Authentication
         {
             List<byte[]> result = new List<byte[]>();
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
-            int sequenceEndOffset = offset + constructionLength;
             byte tag = ByteReader.ReadByte(buffer, ref offset);
             if (tag != (byte)DerEncodingTag.Sequence)
             {
                 throw new InvalidDataException();
             }
+            int sequenceLength = DerEncodingHelper.ReadLength(buffer, ref offset);
+            int sequenceEndOffset = offset + sequenceLength;
             while (offset < sequenceEndOffset)
             {
-                int entryLength = DerEncodingHelper.ReadLength(buffer, ref offset);
-                int entryEndOffset = offset + entryLength;
                 tag = ByteReader.ReadByte(buffer, ref offset);
                 if (tag != (byte)DerEncodingTag.ObjectIdentifier)
                 {
@@ -192,7 +176,7 @@ namespace SMBLibrary.Authentication
             {
                 int lengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismType.Length);
                 int entryLength = 1 + lengthFieldSize + mechanismType.Length;
-                sequenceLength += DerEncodingHelper.GetLengthFieldSize(entryLength) + entryLength;
+                sequenceLength += entryLength;
             }
             return sequenceLength;
         }
@@ -200,15 +184,14 @@ namespace SMBLibrary.Authentication
         private static void WriteMechanismTypeList(byte[] buffer, ref int offset, List<byte[]> mechanismTypeList)
         {
             int sequenceLength = GetSequenceLength(mechanismTypeList);
+            int sequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(sequenceLength);
+            int constructionLength = 1 + sequenceLengthFieldSize + sequenceLength;
             ByteWriter.WriteByte(buffer, ref offset, MechanismTypeListTag);
-            DerEncodingHelper.WriteLength(buffer, ref offset, 1 + sequenceLength);
+            DerEncodingHelper.WriteLength(buffer, ref offset, constructionLength);
             ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.Sequence);
+            DerEncodingHelper.WriteLength(buffer, ref offset, sequenceLength);
             foreach (byte[] mechanismType in mechanismTypeList)
             {
-                int lengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismType.Length);
-                int entryLength = 1 + lengthFieldSize + mechanismType.Length;
-
-                DerEncodingHelper.WriteLength(buffer, ref offset, entryLength);
                 ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ObjectIdentifier);
                 DerEncodingHelper.WriteLength(buffer, ref offset, mechanismType.Length);
                 ByteWriter.WriteBytes(buffer, ref offset, mechanismType);
