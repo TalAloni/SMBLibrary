@@ -71,7 +71,8 @@ namespace SMBLibrary.SMB1
                 if (this is Transaction2Request)
                 {
                     Name = String.Empty;
-                    dataOffset += 1;
+                    int nameLength = 1;
+                    dataOffset += nameLength;
                 }
                 else
                 {
@@ -97,6 +98,7 @@ namespace SMBLibrary.SMB1
             ushort ParameterOffset = (ushort)(SMB1Header.Length + 3 + (FixedSMBParametersLength + Setup.Length));
             if (this is Transaction2Request)
             {
+                ParameterOffset += 1;
             }
             else
             {
@@ -136,21 +138,22 @@ namespace SMBLibrary.SMB1
             int offset;
             if (this is Transaction2Request)
             {
-                offset = 0;
-                this.SMBData = new byte[padding1 + ParameterCount + padding2 + DataCount];
+                int nameLength = 1;
+                this.SMBData = new byte[nameLength + padding1 + ParameterCount + padding2 + DataCount];
+                offset = nameLength;
             }
             else
             {
                 if (isUnicode)
                 {
                     int namePadding = 1;
-                    offset = namePadding;
                     this.SMBData = new byte[namePadding + Name.Length * 2 + 2 + padding1 + ParameterCount + padding2 + DataCount];
+                    offset = namePadding;
                 }
                 else
                 {
-                    offset = 0;
                     this.SMBData = new byte[Name.Length + 1 + padding1 + ParameterCount + padding2 + DataCount];
+                    offset = 0;
                 }
                 SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, Name);
             }
