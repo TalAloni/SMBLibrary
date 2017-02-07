@@ -328,6 +328,8 @@
     <Compile Include="SMB1\Transaction2Subcommands\Structures\DFSReferral\DfsReferralEntry.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\DFSReferral\RequestGetDfsReferral.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\DFSReferral\ResponseGetDfsReferral.cs" />
+    <Compile Include="SMB1\Transaction2Subcommands\Structures\ExtendedAttributeName.cs" />
+    <Compile Include="SMB1\Transaction2Subcommands\Structures\ExtendedAttributeNameList.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindFileBothDirectoryInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindFileDirectoryInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\FindInformation\FindFileFullDirectoryInfo.cs" />
