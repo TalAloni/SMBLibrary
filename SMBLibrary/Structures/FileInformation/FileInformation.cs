@@ -43,6 +43,8 @@ namespace SMBLibrary
                     return new FileInternalInformation(buffer, offset);
                 case FileInformationClass.FileEaInformation:
                     return new FileEaInformation(buffer, offset);
+                case FileInformationClass.FileAccessInformation:
+                    return new FileAccessInformation(buffer, offset);
                 case FileInformationClass.FileRenameInformation:
                     return new FileRenameInformationType2(buffer, offset);
                 case FileInformationClass.FileLinkInformation:
@@ -52,23 +54,23 @@ namespace SMBLibrary
                 case FileInformationClass.FileDispositionInformation:
                     return new FileDispositionInformation(buffer, offset);
                 case FileInformationClass.FilePositionInformation:
-                    throw new NotImplementedException();
+                    return new FilePositionInformation(buffer, offset);
                 case FileInformationClass.FileFullEaInformation:
                     return new FileFullEAInformation(buffer, offset);
                 case FileInformationClass.FileModeInformation:
                     return new FileModeInformation(buffer, offset);
                 case FileInformationClass.FileAlignmentInformation:
-                    throw new NotImplementedException();
+                    return new FileAlignmentInformation(buffer, offset);
                 case FileInformationClass.FileAllInformation:
-                    throw new NotImplementedException();
+                    return new FileAllInformation(buffer, offset);
                 case FileInformationClass.FileAllocationInformation:
                     return new FileAllocationInformation(buffer, offset);
                 case FileInformationClass.FileEndOfFileInformation:
                     return new FileEndOfFileInformation(buffer, offset);
                 case FileInformationClass.FileAlternateNameInformation:
-                    throw new NotImplementedException();
+                    return new FileAlternateNameInformation(buffer, offset);
                 case FileInformationClass.FileStreamInformation:
-                    throw new NotImplementedException();
+                    return new FileStreamInformation(buffer, offset);
                 case FileInformationClass.FilePipeInformation:
                     throw new NotImplementedException();
                 case FileInformationClass.FilePipeLocalInformation:
@@ -76,7 +78,7 @@ namespace SMBLibrary
                 case FileInformationClass.FilePipeRemoteInformation:
                     throw new NotImplementedException();
                 case FileInformationClass.FileCompressionInformation:
-                    throw new NotImplementedException();
+                    return new FileCompressionInformation(buffer, offset);
                 case FileInformationClass.FileNetworkOpenInformation:
                     return new FileNetworkOpenInformation(buffer, offset);
                 case FileInformationClass.FileAttributeTagInformation:
