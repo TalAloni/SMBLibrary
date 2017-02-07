@@ -20,10 +20,10 @@ namespace SMBLibrary.SMB1
 
         public uint NextEntryOffset;
         public uint FileIndex; // SHOULD be set to zero when sent in a response and SHOULD be ignored when received by the client
-        public DateTime CreationTime;
-        public DateTime LastAccessTime;
-        public DateTime LastWriteTime;
-        public DateTime LastChangeTime;
+        public DateTime? CreationTime;
+        public DateTime? LastAccessTime;
+        public DateTime? LastWriteTime;
+        public DateTime? LastChangeTime;
         public ulong EndOfFile;
         public ulong AllocationSize;
         public ExtendedFileAttributes ExtFileAttributes;
@@ -46,10 +46,10 @@ namespace SMBLibrary.SMB1
         {
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
             FileIndex = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            CreationTime = SMB1Helper.ReadFileTime(buffer, ref offset);
-            LastAccessTime = SMB1Helper.ReadFileTime(buffer, ref offset);
-            LastWriteTime = SMB1Helper.ReadFileTime(buffer, ref offset);
-            LastChangeTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            CreationTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             EndOfFile = LittleEndianReader.ReadUInt64(buffer, ref offset);
             AllocationSize = LittleEndianReader.ReadUInt64(buffer, ref offset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(buffer, ref offset);

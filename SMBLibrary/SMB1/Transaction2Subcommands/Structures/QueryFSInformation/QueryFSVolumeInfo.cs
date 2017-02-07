@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB1
     {
         public const int FixedLength = 18;
 
-        public DateTime VolumeCreationTime;
+        public DateTime? VolumeCreationTime;
         public uint SerialNumber;
         //uint VolumeLabelSize;
         public ushort Reserved;
@@ -31,7 +31,7 @@ namespace SMBLibrary.SMB1
 
         public QueryFSVolumeInfo(byte[] buffer, int offset)
         {
-            VolumeCreationTime = SMB1Helper.ReadFileTime(buffer, offset + 0);
+            VolumeCreationTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 0);
             SerialNumber = LittleEndianConverter.ToUInt32(buffer, offset + 8);
             uint volumeLabelSize = LittleEndianConverter.ToUInt32(buffer, offset + 12);
             Reserved = LittleEndianConverter.ToUInt16(buffer, offset + 16);

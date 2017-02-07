@@ -18,10 +18,10 @@ namespace SMBLibrary.SMB1
     {
         public const int Length = 40;
 
-        public DateTime CreationDateTime;
-        public DateTime LastAccessDateTime;
-        public DateTime LastWriteDateTime;
-        public DateTime LastChangeTime;
+        public DateTime? CreationDateTime;
+        public DateTime? LastAccessDateTime;
+        public DateTime? LastWriteDateTime;
+        public DateTime? LastChangeTime;
         public ExtendedFileAttributes ExtFileAttributes;
         public uint Reserved;
 
@@ -31,10 +31,10 @@ namespace SMBLibrary.SMB1
 
         public QueryFileBasicInfo(byte[] buffer, int offset)
         {
-            CreationDateTime = SMB1Helper.ReadFileTime(buffer, ref offset);
-            LastAccessDateTime = SMB1Helper.ReadFileTime(buffer, ref offset);
-            LastWriteDateTime = SMB1Helper.ReadFileTime(buffer, ref offset);
-            LastChangeTime = SMB1Helper.ReadFileTime(buffer, ref offset);
+            CreationDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastAccessDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastWriteDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(buffer, ref offset);
             Reserved = LittleEndianReader.ReadUInt32(buffer, ref offset);
         }
