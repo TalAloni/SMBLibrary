@@ -52,9 +52,13 @@ namespace SMBLibrary
             {
                 return DateTime.FromFileTimeUtc(span);
             }
-            else
+            else if (span == 0)
             {
                 return null;
+            }
+            else
+            {
+                throw new System.IO.InvalidDataException("FILETIME cannot be negative");
             }
         }
 
