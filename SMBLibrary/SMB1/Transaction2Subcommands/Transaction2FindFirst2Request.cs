@@ -24,11 +24,11 @@ namespace SMBLibrary.SMB1
         public SearchStorageType SearchStorageType;
         public string FileName; // SMB_STRING
         // Data:
-        public FullExtendedAttributeList GetExtendedAttributeList; // Used with FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST
+        public ExtendedAttributeNameList GetExtendedAttributeList; // Used with FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST
 
         public Transaction2FindFirst2Request() : base()
         {
-            GetExtendedAttributeList = new FullExtendedAttributeList();
+            GetExtendedAttributeList = new ExtendedAttributeNameList();
         }
 
         public Transaction2FindFirst2Request(byte[] parameters, byte[] data, bool isUnicode) : base()
@@ -42,7 +42,7 @@ namespace SMBLibrary.SMB1
 
             if (InformationLevel == FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
             {
-                GetExtendedAttributeList = new FullExtendedAttributeList(data, 0);
+                GetExtendedAttributeList = new ExtendedAttributeNameList(data, 0);
             }
         }
 
