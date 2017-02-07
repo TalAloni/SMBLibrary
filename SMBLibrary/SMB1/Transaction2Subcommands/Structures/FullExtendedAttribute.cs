@@ -12,34 +12,38 @@ using Utilities;
 namespace SMBLibrary.SMB1
 {
     /// <summary>
-    /// SMB_FEA
+    /// [MS-CIFS] 2.2.1.2.2 - SMB_FEA
     /// </summary>
     public class FullExtendedAttribute
     {
         public ExtendedAttributeFlag ExtendedAttributeFlag;
-        //byte AttributeNameLengthInBytes;
-        //ushort AttributeValueLengthInBytes;
+        private byte AttributeNameLengthInBytes;
+        private ushort AttributeValueLengthInBytes;
         public string AttributeName; // ANSI, AttributeNameLengthInBytes + 1 byte null termination
         public string AttributeValue; // ANSI
+
+        public FullExtendedAttribute()
+        {
+        }
 
         public FullExtendedAttribute(byte[] buffer, int offset)
         {
             ExtendedAttributeFlag = (ExtendedAttributeFlag)ByteReader.ReadByte(buffer, offset);
-            byte attributeNameLengthInBytes = ByteReader.ReadByte(buffer, offset + 1);
-            ushort attributeValueLengthInBytes = LittleEndianConverter.ToUInt16(buffer, offset + 2);
-            AttributeName = ByteReader.ReadAnsiString(buffer, offset + 4, attributeNameLengthInBytes);
-            AttributeValue = ByteReader.ReadAnsiString(buffer, offset + 4 + attributeNameLengthInBytes + 1, attributeValueLengthInBytes);
+            AttributeNameLengthInBytes = ByteReader.ReadByte(buffer, offset + 1);
+            AttributeValueLengthInBytes = LittleEndianConverter.ToUInt16(buffer, offset + 2);
+            AttributeName = ByteReader.ReadAnsiString(buffer, offset + 4, AttributeNameLengthInBytes);
+            AttributeValue = ByteReader.ReadAnsiString(buffer, offset + 4 + AttributeNameLengthInBytes + 1, AttributeValueLengthInBytes);
         }
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            byte attributeNameLengthInBytes = (byte)AttributeName.Length;
-            ushort attributeValueLengthInBytes = (ushort)AttributeValue.Length;
+            AttributeNameLengthInBytes = (byte)AttributeName.Length;
+            AttributeValueLengthInBytes = (ushort)AttributeValue.Length;
             ByteWriter.WriteByte(buffer, offset, (byte)ExtendedAttributeFlag);
-            ByteWriter.WriteByte(buffer, offset + 1, attributeNameLengthInBytes);
-            LittleEndianWriter.WriteUInt16(buffer, offset + 2, attributeValueLengthInBytes);
-            ByteWriter.WriteAnsiString(buffer, offset + 4, AttributeName, AttributeValue.Length);
-            ByteWriter.WriteAnsiString(buffer, offset + 4 + attributeNameLengthInBytes + 1, AttributeValue, AttributeValue.Length);
+            ByteWriter.WriteByte(buffer, offset + 1, AttributeNameLengthInBytes);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 2, AttributeValueLengthInBytes);
+            ByteWriter.WriteAnsiString(buffer, offset + 4, AttributeName, AttributeName.Length);
+            ByteWriter.WriteAnsiString(buffer, offset + 4 + AttributeNameLengthInBytes + 1, AttributeValue, AttributeValue.Length);
         }
 
         public int Length

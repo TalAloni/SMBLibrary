@@ -12,7 +12,7 @@ using Utilities;
 namespace SMBLibrary.SMB1
 {
     /// <summary>
-    /// SMB_FEA_LIST
+    /// [MS-CIFS] 2.2.1.2.2.1 - SMB_FEA_LIST
     /// </summary>
     public class FullExtendedAttributeList : List<FullExtendedAttribute>
     {
@@ -26,14 +26,14 @@ namespace SMBLibrary.SMB1
 
         public FullExtendedAttributeList(byte[] buffer, ref int offset) : this(buffer, offset)
         {
-            // length MUST contain the total size of the FEAList field, plus the size of the SizeOfListInBytes field
-            int length = (int)LittleEndianConverter.ToUInt32(buffer, offset);
+            // [MS-CIFS] length MUST contain the total size of the FEAList field, plus the size of the SizeOfListInBytes field
+            int length = (int)LittleEndianConverter.ToUInt32(buffer, offset + 0);
             offset += length;
         }
 
         public FullExtendedAttributeList(byte[] buffer, int offset)
         {
-            // length MUST contain the total size of the FEAList field, plus the size of the SizeOfListInBytes field
+            // [MS-CIFS] length MUST contain the total size of the FEAList field, plus the size of the SizeOfListInBytes field
             int length = (int)LittleEndianConverter.ToUInt32(buffer, offset);
             int position = offset + 4;
             int eof = offset + length;
@@ -60,6 +60,7 @@ namespace SMBLibrary.SMB1
 
         public void WriteBytes(byte[] buffer, int offset)
         {
+            LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)Length);
             foreach (FullExtendedAttribute entry in this)
             {
                 entry.WriteBytes(buffer, offset);
@@ -71,7 +72,7 @@ namespace SMBLibrary.SMB1
         {
             get
             {
-                int length = 0;
+                int length = 4;
                 foreach (FullExtendedAttribute entry in this)
                 {
                     length += entry.Length;
