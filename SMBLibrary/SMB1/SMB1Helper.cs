@@ -13,12 +13,16 @@ namespace SMBLibrary.SMB1
 {
     public class SMB1Helper
     {
-        public static DateTime ReadFileTime(byte[] buffer, int offset)
+        public static DateTime? ReadNullableFileTime(byte[] buffer, int offset)
         {
             long span = LittleEndianConverter.ToInt64(buffer, offset);
             if (span >= 0)
             {
                 return DateTime.FromFileTimeUtc(span);
+            }
+            else if (span == 0)
+            {
+                return null;
             }
             else
             {
@@ -27,10 +31,10 @@ namespace SMBLibrary.SMB1
             }
         }
 
-        public static DateTime ReadFileTime(byte[] buffer, ref int offset)
+        public static DateTime? ReadNullableFileTime(byte[] buffer, ref int offset)
         {
             offset += 8;
-            return ReadFileTime(buffer, offset - 8);
+            return ReadNullableFileTime(buffer, offset - 8);
         }
 
         /// <summary>
