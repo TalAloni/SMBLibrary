@@ -49,8 +49,9 @@
     <Compile Include="Authentication\MD4.cs" />
     <Compile Include="Authentication\NTAuthentication.cs" />
     <Compile Include="Client\SMBClient.cs" />
-    <Compile Include="Enums\FileAttributes.cs" />
-    <Compile Include="Enums\FileInformationClass.cs" />
+    <Compile Include="Enums\FileInformation\FileAttributes.cs" />
+    <Compile Include="Enums\FileInformation\FileInformationClass.cs" />
+    <Compile Include="Enums\FileInformation\CompressionFormat.cs" />
     <Compile Include="Enums\FileSystemInformation\DeviceCharacteristics.cs" />
     <Compile Include="Enums\FileSystemInformation\DeviceType.cs" />
     <Compile Include="Enums\FileSystemInformation\FileSystemAttributes.cs" />
@@ -348,7 +349,6 @@
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSInfoVolume.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSSizeInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSVolumeInfo.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\Enums\CompressionFormat.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\QueryAllExtendedAttributes.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\QueryEASize.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\QueryExtendedAttributesFromList.cs" />
