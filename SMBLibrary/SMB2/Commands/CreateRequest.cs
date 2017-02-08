@@ -11,7 +11,7 @@ using Utilities;
 namespace SMBLibrary.SMB2
 {
     /// <summary>
-    /// SMB2 LOGOFF Request
+    /// SMB2 CREATE Request
     /// </summary>
     public class CreateRequest : SMB2Command
     {
