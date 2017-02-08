@@ -220,6 +220,7 @@ namespace SMBLibrary.Server
         public static FileAccess ToFileAccess(FileAccessMask desiredAccess)
         {
             if ((desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
+                (desiredAccess & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
                 ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0) ||
                 ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0))
             {
