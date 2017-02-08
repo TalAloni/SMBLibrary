@@ -15,10 +15,9 @@ namespace SMBLibrary.Server
     {
         public void Add(string shareName, List<string> readAccess, List<string> writeAccess, IFileSystem fileSystem)
         {
-            FileSystemShare share = new FileSystemShare(shareName);
+            FileSystemShare share = new FileSystemShare(shareName, fileSystem);
             share.ReadAccess = readAccess;
             share.WriteAccess = writeAccess;
-            share.FileSystem = fileSystem;
             this.Add(share);
         }
 

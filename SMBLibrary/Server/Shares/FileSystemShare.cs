@@ -14,13 +14,14 @@ namespace SMBLibrary.Server
     public class FileSystemShare : ISMBShare
     {
         private string m_name;
+        public IFileSystem m_fileSystem;
         public List<string> ReadAccess;
         public List<string> WriteAccess;
-        public IFileSystem FileSystem;
 
-        public FileSystemShare(string shareName)
+        public FileSystemShare(string shareName, IFileSystem fileSystem)
         {
             m_name = shareName;
+            m_fileSystem = fileSystem;
         }
 
         public bool HasReadAccess(string userName)
@@ -55,6 +56,14 @@ namespace SMBLibrary.Server
             get
             {
                 return m_name;
+            }
+        }
+
+        public IFileSystem FileSystem
+        {
+            get
+            {
+                return m_fileSystem;
             }
         }
     }
