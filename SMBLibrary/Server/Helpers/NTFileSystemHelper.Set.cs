@@ -25,34 +25,22 @@ namespace SMBLibrary.Server
                 {
                     fileSystem.SetAttributes(openFile.Path, isHidden, isReadonly, isArchived);
                 }
-                catch (UnauthorizedAccessException)
+                catch (Exception ex)
                 {
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file attributes on '{0}'. Access Denied.", openFile.Path);
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file attributes on '{0}'. {1}.", openFile.Path, status);
+                    return status;
                 }
 
                 try
                 {
                     fileSystem.SetDates(openFile.Path, basicInformation.CreationTime, basicInformation.LastWriteTime, basicInformation.LastAccessTime);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file dates on '{0}'. Sharing Violation.", openFile.Path);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file dates on '{0}'. Data Error.", openFile.Path);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file dates on '{0}'. Access Denied.", openFile.Path);
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file dates on '{0}'. {1}.", openFile.Path, status);
+                    return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
             }
@@ -78,29 +66,11 @@ namespace SMBLibrary.Server
                     }
                     fileSystem.Move(openFile.Path, destination);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. Sharing Violation.", openFile.Path);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    if (errorCode == (ushort)Win32Error.ERROR_ALREADY_EXISTS)
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. Already Exists.", openFile.Path);
-                        return NTStatus.STATUS_OBJECT_NAME_EXISTS;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. Data Error.", openFile.Path);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. Access Denied.", openFile.Path);
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. {1}.", openFile.Path, status);
+                    return status;
                 }
                 openFile.Path = destination;
                 return NTStatus.STATUS_SUCCESS;
@@ -120,24 +90,11 @@ namespace SMBLibrary.Server
                         state.LogToServer(Severity.Information, "SetFileInformation: Deleting file '{0}'", openFile.Path);
                         fileSystem.Delete(openFile.Path);
                     }
-                    catch (IOException ex)
+                    catch (Exception ex)
                     {
-                        ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                        if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                        {
-                            state.LogToServer(Severity.Information, "SetFileInformation: Error deleting '{0}'. Sharing Violation.", openFile.Path);
-                            return NTStatus.STATUS_SHARING_VIOLATION;
-                        }
-                        else
-                        {
-                            state.LogToServer(Severity.Information, "SetFileInformation: Error deleting '{0}'. Data Error.", openFile.Path);
-                            return NTStatus.STATUS_DATA_ERROR;
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        state.LogToServer(Severity.Information, "SetFileInformation: Error deleting '{0}', Access Denied.", openFile.Path);
-                        return NTStatus.STATUS_ACCESS_DENIED;
+                        NTStatus status = ToNTStatus(ex);
+                        state.LogToServer(Severity.Debug, "SetFileInformation: Error deleting '{0}'. {1}.", openFile.Path, status);
+                        return status;
                     }
                 }
                 return NTStatus.STATUS_SUCCESS;
@@ -149,24 +106,11 @@ namespace SMBLibrary.Server
                 {
                     openFile.Stream.SetLength((long)allocationSize);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set allocation for '{0}'. Sharing Violation.", openFile.Path);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set allocation for '{0}'. Data Error.", openFile.Path);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set allocation for '{0}'. Access Denied.", openFile.Path);
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set allocation for '{0}'. {1}.", openFile.Path, status);
+                    return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
             }
@@ -177,24 +121,11 @@ namespace SMBLibrary.Server
                 {
                     openFile.Stream.SetLength((long)endOfFile);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set end of file for '{0}'. Sharing Violation.", openFile.Path);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set end of file for '{0}'. Data Error.", openFile.Path);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set end of file for '{0}'. Access Denied.", openFile.Path);
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set end of file for '{0}'. {1}.", openFile.Path, status);
+                    return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
             }

@@ -48,11 +48,12 @@ namespace SMBLibrary.Server
             {
                 entry = fileSystem.GetEntry(path);
             }
-            catch (ArgumentException)
+            catch (Exception ex)
             {
-                state.LogToServer(Severity.Debug, "CreateFile: Error retrieving '{0}'. Argument Exception.", path);
+                NTStatus status = ToNTStatus(ex);
+                state.LogToServer(Severity.Debug, "CreateFile: Error retrieving '{0}'. {1}.", path, status);
                 entry = null;
-                return NTStatus.STATUS_OBJECT_PATH_SYNTAX_BAD;
+                return status;
             }
             
             if (createDisposition == CreateDisposition.FILE_OPEN)
@@ -100,24 +101,11 @@ namespace SMBLibrary.Server
                         entry = fileSystem.CreateFile(path);
                     }
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. Sharing violation.", path);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. Data Error.", path);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. Access Denied.", path);
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                    return status;
                 }
             }
             else if (createDisposition == CreateDisposition.FILE_OPEN_IF ||
@@ -150,21 +138,11 @@ namespace SMBLibrary.Server
                             entry = fileSystem.CreateFile(path);
                         }
                     }
-                    catch (IOException ex)
+                    catch (Exception ex)
                     {
-                        ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                        if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                        {
-                            return NTStatus.STATUS_SHARING_VIOLATION;
-                        }
-                        else
-                        {
-                            return NTStatus.STATUS_DATA_ERROR;
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        return NTStatus.STATUS_ACCESS_DENIED;
+                        NTStatus status = ToNTStatus(ex);
+                        state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                        return status;
                     }
                 }
                 else
@@ -184,21 +162,11 @@ namespace SMBLibrary.Server
                             Stream temp = fileSystem.OpenFile(path, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite);
                             temp.Close();
                         }
-                        catch (IOException ex)
+                        catch (Exception ex)
                         {
-                            ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                            if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                            {
-                                return NTStatus.STATUS_SHARING_VIOLATION;
-                            }
-                            else
-                            {
-                                return NTStatus.STATUS_DATA_ERROR;
-                            }
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            return NTStatus.STATUS_ACCESS_DENIED;
+                            NTStatus status = ToNTStatus(ex);
+                            state.LogToServer(Severity.Debug, "CreateFile: Error truncating '{0}'. {1}.", path, status);
+                            return status;
                         }
                     }
                 }
@@ -220,39 +188,11 @@ namespace SMBLibrary.Server
             {
                 stream = fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
             }
-            catch (ArgumentException)
+            catch (Exception ex)
             {
-                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Argument Exception.", path);
-                return NTStatus.STATUS_OBJECT_PATH_SYNTAX_BAD;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Directory not found.", path);
-                return NTStatus.STATUS_NO_SUCH_FILE;
-            }
-            catch (FileNotFoundException)
-            {
-                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. File not found.", path);
-                return NTStatus.STATUS_NO_SUCH_FILE;
-            }
-            catch (IOException ex)
-            {
-                ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                {
-                    state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Sharing violation.", path);
-                    return NTStatus.STATUS_SHARING_VIOLATION;
-                }
-                else
-                {
-                    state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Data Error.", path);
-                    return NTStatus.STATUS_DATA_ERROR;
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. Access Denied.", path);
-                return NTStatus.STATUS_ACCESS_DENIED;
+                NTStatus status = ToNTStatus(ex);
+                state.LogToServer(Severity.Debug, "OpenFile: Cannot open '{0}'. {1}.", path, status);
+                return status;
             }
 
             if (buffered)
@@ -294,30 +234,11 @@ namespace SMBLibrary.Server
                     data = new byte[maxCount];
                     bytesRead = stream.Read(data, 0, maxCount);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                        state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}'. Sharing Violation.", openFilePath);
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}'. Data Error.", openFilePath);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}'. Offset Out Of Range.", openFilePath);
-                    return NTStatus.STATUS_DATA_ERROR;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}', Access Denied.", openFilePath);
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "ReadFile: Cannot read '{0}'. {1}.", openFilePath, status);
+                    return status;
                 }
 
                 if (bytesRead < maxCount)
@@ -352,40 +273,60 @@ namespace SMBLibrary.Server
                 {
                     stream.Seek(offset, SeekOrigin.Begin);
                     stream.Write(data, 0, data.Length);
-                    numberOfBytesWritten = data.Length;
-                    return NTStatus.STATUS_SUCCESS;
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    ushort errorCode = IOExceptionHelper.GetWin32ErrorCode(ex);
-                    if (errorCode == (ushort)Win32Error.ERROR_DISK_FULL)
-                    {
-                        state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Disk Full.", openFilePath);
-                        return NTStatus.STATUS_DISK_FULL;
-                    }
-                    else if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
-                    {
-                        state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Sharing Violation.", openFilePath);
-                        // Returning STATUS_SHARING_VIOLATION is undocumented but apparently valid
-                        return NTStatus.STATUS_SHARING_VIOLATION;
-                    }
-                    else
-                    {
-                        state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Data Error.", openFilePath);
-                        return NTStatus.STATUS_DATA_ERROR;
-                    }
+                    NTStatus status = ToNTStatus(ex);
+                    state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. {1}.", openFilePath, status);
+                    return status;
                 }
-                catch (ArgumentOutOfRangeException)
+                numberOfBytesWritten = data.Length;
+                return NTStatus.STATUS_SUCCESS;
+            }
+        }
+
+        /// <param name="exception">IFileSystem exception</param>
+        private static NTStatus ToNTStatus(Exception exception)
+        {
+            if (exception is ArgumentException)
+            {
+                return NTStatus.STATUS_OBJECT_PATH_SYNTAX_BAD;
+            }
+            else if (exception is DirectoryNotFoundException)
+            {
+                return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
+            }
+            else if (exception is FileNotFoundException)
+            {
+                return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
+            }
+            else if (exception is IOException)
+            {
+                ushort errorCode = IOExceptionHelper.GetWin32ErrorCode((IOException)exception);
+                if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                 {
-                    state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Offset Out Of Range.", openFilePath);
+                    return NTStatus.STATUS_SHARING_VIOLATION;
+                }
+                else if (errorCode == (ushort)Win32Error.ERROR_DISK_FULL)
+                {
+                    return NTStatus.STATUS_DISK_FULL;
+                }
+                else if (errorCode == (ushort)Win32Error.ERROR_ALREADY_EXISTS)
+                {
+                    return NTStatus.STATUS_OBJECT_NAME_EXISTS;
+                }
+                else
+                {
                     return NTStatus.STATUS_DATA_ERROR;
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    state.LogToServer(Severity.Debug, "WriteFile: Cannot write '{0}'. Access Denied.", openFilePath);
-                    // The user may have tried to write to a readonly file
-                    return NTStatus.STATUS_ACCESS_DENIED;
-                }
+            }
+            else if (exception is UnauthorizedAccessException)
+            {
+                return NTStatus.STATUS_ACCESS_DENIED;
+            }
+            else
+            {
+                return NTStatus.STATUS_DATA_ERROR;
             }
         }
 

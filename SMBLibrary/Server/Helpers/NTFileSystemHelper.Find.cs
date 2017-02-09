@@ -62,9 +62,10 @@ namespace SMBLibrary.Server
                 {
                     entries = fileSystem.ListEntriesInDirectory(path);
                 }
-                catch (UnauthorizedAccessException)
+                catch (Exception ex)
                 {
-                    return NTStatus.STATUS_ACCESS_DENIED;
+                    NTStatus status = ToNTStatus(ex);
+                    return status; ;
                 }
 
                 entries = GetFiltered(entries, expression);
