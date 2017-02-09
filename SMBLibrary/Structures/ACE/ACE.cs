@@ -12,7 +12,7 @@ using Utilities;
 namespace SMBLibrary
 {
     /// <summary>
-    /// [MS-DTYP] ACE (Access Control Entry(
+    /// [MS-DTYP] ACE (Access Control Entry)
     /// </summary>
     public abstract class ACE
     {
