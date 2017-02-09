@@ -33,6 +33,10 @@ namespace SMBLibrary.Server.SMB2
                 }
                 else // FileSystemShare
                 {
+                    if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                    {
+                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                    }
                     IFileSystem fileSystem = ((FileSystemShare)share).FileSystem;
                     FileSystemEntry entry = fileSystem.GetEntry(openFile.Path);
                     if (entry == null)
@@ -56,6 +60,10 @@ namespace SMBLibrary.Server.SMB2
             {
                 if (share is FileSystemShare)
                 {
+                    if (!((FileSystemShare)share).HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
+                    {
+                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                    }
                     IFileSystem fileSystem = ((FileSystemShare)share).FileSystem;
                     FileSystemInformation fileSystemInformation;
                     NTStatus queryStatus = NTFileSystemHelper.GetFileSystemInformation(out fileSystemInformation, request.FileSystemInformationClass, fileSystem);

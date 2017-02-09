@@ -26,6 +26,16 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
+
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(request.CommandName);
+                }
+            }
+
             byte[] data;
             header.Status = NTFileSystemHelper.ReadFile(out data, openFile, request.ReadOffsetInBytes, request.CountOfBytesToRead, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -48,6 +58,16 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
+
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(request.CommandName);
+                }
+            }
+
             uint maxCount = request.MaxCount;
             if ((share is FileSystemShare) && state.LargeRead)
             {
@@ -79,6 +99,16 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }
+
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(request.CommandName);
+                }
+            }
+         
             int numberOfBytesWritten;
             header.Status = NTFileSystemHelper.WriteFile(out numberOfBytesWritten, openFile, request.WriteOffsetInBytes, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)
@@ -99,6 +129,16 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }
+            
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(request.CommandName);
+                }
+            }
+
             int numberOfBytesWritten;
             header.Status = NTFileSystemHelper.WriteFile(out numberOfBytesWritten, openFile, (long)request.Offset, request.Data, state);
             if (header.Status != NTStatus.STATUS_SUCCESS)

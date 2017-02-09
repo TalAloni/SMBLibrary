@@ -48,20 +48,19 @@ namespace SMBLibrary.Server.SMB1
             else // FileSystemShare
             {
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
-                string userName = session.UserName;
-                bool hasWriteAccess = fileSystemShare.HasWriteAccess(userName);
+                FileAccess fileAccess = ToFileAccess(request.AccessMode.AccessMode);
+                if (!fileSystemShare.HasAccess(session.UserName, path, fileAccess, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(request.CommandName);
+                }
+
                 IFileSystem fileSystem = fileSystemShare.FileSystem;
 
                 OpenResult openResult;
                 FileSystemEntry entry = fileSystem.GetEntry(path);
                 if (entry != null)
                 {
-                    if (!hasWriteAccess && request.AccessMode.AccessMode == AccessMode.Write || request.AccessMode.AccessMode == AccessMode.ReadWrite)
-                    {
-                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                        return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
-                    }
-
                     if (request.OpenMode.FileExistsOpts == FileExistsOpts.ReturnError)
                     {
                         header.Status = NTStatus.STATUS_OBJECT_NAME_COLLISION;
@@ -121,7 +120,6 @@ namespace SMBLibrary.Server.SMB1
                     openResult = OpenResult.NotExistedAndWasCreated;
                 }
 
-                FileAccess fileAccess = ToFileAccess(request.AccessMode.AccessMode);
                 FileShare fileShare = ToFileShare(request.AccessMode.SharingMode);
                 Stream stream = null;
                 if (!entry.IsDirectory)

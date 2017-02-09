@@ -20,10 +20,10 @@ namespace SMBLibrary.Server
         public const int BytesPerSector = 512;
         public const int ClusterSize = 4096;
 
-        public static NTStatus CreateFile(out FileSystemEntry entry, FileSystemShare share, string userName, string path, CreateDisposition createDisposition, CreateOptions createOptions, AccessMask desiredAccess, ConnectionState state)
+        public static NTStatus CreateFile(out FileSystemEntry entry, IFileSystem fileSystem, string path, AccessMask desiredAccess, CreateDisposition createDisposition, CreateOptions createOptions, ConnectionState state)
         {
-            bool hasWriteAccess = share.HasWriteAccess(userName);
-            IFileSystem fileSystem = share.FileSystem;
+            FileAccess createAccess = ToCreateFileAccess(desiredAccess, createDisposition);
+            bool requestedWriteAccess = (createAccess & FileAccess.Write) > 0;
 
             bool forceDirectory = (createOptions & CreateOptions.FILE_DIRECTORY_FILE) > 0;
             bool forceFile = (createOptions & CreateOptions.FILE_NON_DIRECTORY_FILE) > 0;
@@ -82,7 +82,7 @@ namespace SMBLibrary.Server
                     return NTStatus.STATUS_OBJECT_NAME_COLLISION;
                 }
 
-                if (!hasWriteAccess)
+                if (!requestedWriteAccess)
                 {
                     return NTStatus.STATUS_ACCESS_DENIED;
                 }
@@ -132,7 +132,7 @@ namespace SMBLibrary.Server
                         return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
                     }
 
-                    if (!hasWriteAccess)
+                    if (!requestedWriteAccess)
                     {
                         return NTStatus.STATUS_ACCESS_DENIED;
                     }
@@ -173,7 +173,7 @@ namespace SMBLibrary.Server
                         createDisposition == CreateDisposition.FILE_OVERWRITE_IF ||
                         createDisposition == CreateDisposition.FILE_SUPERSEDE)
                     {
-                        if (!hasWriteAccess)
+                        if (!requestedWriteAccess)
                         {
                             return NTStatus.STATUS_ACCESS_DENIED;
                         }
@@ -206,12 +206,6 @@ namespace SMBLibrary.Server
             else
             {
                 return NTStatus.STATUS_INVALID_PARAMETER;
-            }
-
-            FileAccess fileAccess = ToFileAccess(desiredAccess.File);
-            if (!hasWriteAccess && (fileAccess == FileAccess.Write || fileAccess == FileAccess.ReadWrite))
-            {
-                return NTStatus.STATUS_ACCESS_DENIED;
             }
 
             return NTStatus.STATUS_SUCCESS;
@@ -393,6 +387,48 @@ namespace SMBLibrary.Server
                     return NTStatus.STATUS_ACCESS_DENIED;
                 }
             }
+        }
+
+        public static FileAccess ToCreateFileAccess(AccessMask desiredAccess, CreateDisposition createDisposition)
+        {
+            FileAccess result = 0;
+
+            if ((desiredAccess.File & FileAccessMask.FILE_READ_DATA) > 0 ||
+                (desiredAccess.File & FileAccessMask.FILE_READ_EA) > 0 ||
+                (desiredAccess.File & FileAccessMask.FILE_READ_ATTRIBUTES) > 0 ||
+                (desiredAccess.File & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
+                (desiredAccess.File & FileAccessMask.GENERIC_ALL) > 0 ||
+                (desiredAccess.File & FileAccessMask.GENERIC_READ) > 0)
+            {
+                result |= FileAccess.Read;
+            }
+
+            if ((desiredAccess.File & FileAccessMask.FILE_WRITE_DATA) > 0 ||
+                (desiredAccess.File & FileAccessMask.FILE_APPEND_DATA) > 0 ||
+                (desiredAccess.File & FileAccessMask.FILE_WRITE_EA) > 0 ||
+                (desiredAccess.File & FileAccessMask.FILE_WRITE_ATTRIBUTES) > 0 ||
+                (desiredAccess.File & FileAccessMask.DELETE) > 0 ||
+                (desiredAccess.File & FileAccessMask.WRITE_DAC) > 0 ||
+                (desiredAccess.File & FileAccessMask.WRITE_OWNER) > 0 ||
+                (desiredAccess.File & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
+                (desiredAccess.File & FileAccessMask.GENERIC_ALL) > 0 ||
+                (desiredAccess.File & FileAccessMask.GENERIC_WRITE) > 0)
+            {
+                result |= FileAccess.Write;
+            }
+
+            if ((desiredAccess.Directory & DirectoryAccessMask.FILE_DELETE_CHILD) > 0)
+            {
+                result |= FileAccess.Write;
+            }
+
+            if (createDisposition == CreateDisposition.FILE_CREATE ||
+                createDisposition == CreateDisposition.FILE_SUPERSEDE)
+            {
+                result |= FileAccess.Write;
+            }
+
+            return result;
         }
 
         public static FileAccess ToFileAccess(FileAccessMask desiredAccess)

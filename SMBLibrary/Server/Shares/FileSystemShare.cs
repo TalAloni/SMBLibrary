@@ -6,17 +6,36 @@
  */
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Text;
 using Utilities;
 
 namespace SMBLibrary.Server
 {
+    public class AccessRequestArgs : EventArgs
+    {
+        public string UserName;
+        public string Path;
+        public FileAccess RequestedAccess;
+        public IPEndPoint ClientEndPoint;
+        public bool Allow = true;
+
+        public AccessRequestArgs(string userName, string path, FileAccess requestedAccess, IPEndPoint clientEndPoint)
+        {
+            UserName = userName;
+            Path = path;
+            RequestedAccess = requestedAccess;
+            ClientEndPoint = clientEndPoint;
+        }
+    }
+
     public class FileSystemShare : ISMBShare
     {
         private string m_name;
         public IFileSystem m_fileSystem;
-        public List<string> ReadAccess;
-        public List<string> WriteAccess;
+
+        public event EventHandler<AccessRequestArgs> OnAccessRequest;
 
         public FileSystemShare(string shareName, IFileSystem fileSystem)
         {
@@ -24,31 +43,27 @@ namespace SMBLibrary.Server
             m_fileSystem = fileSystem;
         }
 
-        public bool HasReadAccess(string userName)
+        public bool HasReadAccess(string userName, string path, IPEndPoint clientEndPoint)
         {
-            return Contains(ReadAccess, userName);
+            return HasAccess(userName, path, FileAccess.Read, clientEndPoint);
         }
 
-        public bool HasWriteAccess(string userName)
+        public bool HasWriteAccess(string userName, string path, IPEndPoint clientEndPoint)
         {
-            return Contains(WriteAccess, userName);
+            return HasAccess(userName, path, FileAccess.Write, clientEndPoint);
         }
 
-        public static bool Contains(List<string> list, string value)
+        public bool HasAccess(string userName, string path, FileAccess requestedAccess, IPEndPoint clientEndPoint)
         {
-            return (IndexOf(list, value) >= 0);
-        }
-
-        public static int IndexOf(List<string> list, string value)
-        {
-            for (int index = 0; index < list.Count; index++)
+            // To be thread-safe we must capture the delegate reference first
+            EventHandler<AccessRequestArgs> handler = OnAccessRequest;
+            if (handler != null)
             {
-                if (string.Equals(list[index], value, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return index;
-                }
+                AccessRequestArgs args = new AccessRequestArgs(userName, path, requestedAccess, clientEndPoint);
+                handler(this, args);
+                return args.Allow;
             }
-            return -1;
+            return true;
         }
 
         public string Name

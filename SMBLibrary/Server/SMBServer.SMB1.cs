@@ -218,12 +218,6 @@ namespace SMBLibrary.Server
                     }
                     else if (command is WriteRequest)
                     {
-                        string userName = session.UserName;
-                        if (share is FileSystemShare && !((FileSystemShare)share).HasWriteAccess(userName))
-                        {
-                            header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         WriteRequest request = (WriteRequest)command;
                         return ReadWriteResponseHelper.GetWriteResponse(header, request, share, state);
                     }
@@ -272,12 +266,6 @@ namespace SMBLibrary.Server
                     }
                     else if (command is WriteAndXRequest)
                     {
-                        string userName = session.UserName;
-                        if (share is FileSystemShare && !((FileSystemShare)share).HasWriteAccess(userName))
-                        {
-                            header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         WriteAndXRequest request = (WriteAndXRequest)command;
                         return ReadWriteResponseHelper.GetWriteResponse(header, request, share, state);
                     }

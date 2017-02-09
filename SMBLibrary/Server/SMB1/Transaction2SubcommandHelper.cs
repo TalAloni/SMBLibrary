@@ -116,6 +116,13 @@ namespace SMBLibrary.Server.SMB1
 
         internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
+            SMB1Session session = state.GetSession(header.UID);
+            if (!share.HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
+            {
+                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                return null;
+            }
+
             Transaction2QueryFSInformationResponse response = new Transaction2QueryFSInformationResponse();
             QueryFSInformation queryFSInformation;
             NTStatus queryStatus = SMB1FileSystemHelper.GetFileSystemInformation(out queryFSInformation, subcommand.InformationLevel, share.FileSystem);
@@ -131,8 +138,15 @@ namespace SMBLibrary.Server.SMB1
 
         internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryPathInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
-            IFileSystem fileSystem = share.FileSystem;
+            SMB1Session session = state.GetSession(header.UID);
             string path = subcommand.FileName;
+            if (!share.HasReadAccess(session.UserName, path, state.ClientEndPoint))
+            {
+                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                return null;
+            }
+
+            IFileSystem fileSystem = share.FileSystem;
             FileSystemEntry entry = fileSystem.GetEntry(path);
             if (entry == null)
             {
@@ -165,6 +179,12 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
+            
+            if (!share.HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+            {
+                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                return null;
+            }
 
             FileSystemEntry entry = fileSystem.GetEntry(openFile.Path);
             if (entry == null)
@@ -195,6 +215,12 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
+            if (!share.HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+            {
+                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                return null;
+            }
+
             SetInformation information;
             try
             {
@@ -208,12 +234,6 @@ namespace SMBLibrary.Server.SMB1
             catch(Exception)
             {
                 header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                return null;
-            }
-
-            if (!share.HasWriteAccess(session.UserName))
-            {
-                header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return null;
             }
 

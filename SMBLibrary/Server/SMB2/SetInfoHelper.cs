@@ -28,10 +28,11 @@ namespace SMBLibrary.Server.SMB2
                 if (share is FileSystemShare)
                 {
                     IFileSystem fileSystem = ((FileSystemShare)share).FileSystem;
-                    if (!((FileSystemShare)share).HasWriteAccess(session.UserName))
+                    if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
                     {
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
+
                     FileInformation information;
                     try
                     {
@@ -48,6 +49,15 @@ namespace SMBLibrary.Server.SMB2
                     catch (Exception)
                     {
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
+                    }
+
+                    if (information is FileRenameInformationType2)
+                    {
+                        string newFileName = ((FileRenameInformationType2)information).FileName;
+                        if (!((FileSystemShare)share).HasWriteAccess(session.UserName, newFileName, state.ClientEndPoint))
+                        {
+                            return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                        }
                     }
 
                     NTStatus status = NTFileSystemHelper.SetFileInformation(fileSystem, openFile, information, state);

@@ -42,9 +42,14 @@ namespace SMBLibrary.Server.SMB2
             else
             {
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
+                FileAccess createAccess = NTFileSystemHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
+                if (!fileSystemShare.HasAccess(session.UserName, path, createAccess, state.ClientEndPoint))
+                {
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                }
 
                 FileSystemEntry entry;
-                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, (FileSystemShare)share, session.UserName, path, request.CreateDisposition, request.CreateOptions, request.DesiredAccess, state);
+                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, fileSystemShare.FileSystem, path, request.DesiredAccess, request.CreateDisposition, request.CreateOptions, state);
                 if (createStatus != NTStatus.STATUS_SUCCESS)
                 {
                     return new ErrorResponse(request.CommandName, createStatus);

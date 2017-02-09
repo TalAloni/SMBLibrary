@@ -28,6 +28,11 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
 
+            if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+            {
+                return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+            }
+
             FileSystemShare fileSystemShare = (FileSystemShare)share;
             IFileSystem fileSystem = fileSystemShare.FileSystem;
 

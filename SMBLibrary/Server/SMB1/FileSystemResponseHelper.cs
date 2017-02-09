@@ -18,7 +18,7 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetCreateDirectoryResponse(SMB1Header header, CreateDirectoryRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!share.HasWriteAccess(session.UserName))
+            if (!share.HasWriteAccess(session.UserName, request.DirectoryName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_CREATE_DIRECTORY);
@@ -48,7 +48,7 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetDeleteDirectoryResponse(SMB1Header header, DeleteDirectoryRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!share.HasWriteAccess(session.UserName))
+            if (!share.HasWriteAccess(session.UserName, request.DirectoryName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
@@ -103,7 +103,7 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetDeleteResponse(SMB1Header header, DeleteRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!share.HasWriteAccess(session.UserName))
+            if (!share.HasWriteAccess(session.UserName, request.FileName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_DELETE);
@@ -146,7 +146,12 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetRenameResponse(SMB1Header header, RenameRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!share.HasWriteAccess(session.UserName))
+            if (!share.HasWriteAccess(session.UserName, request.OldFileName, state.ClientEndPoint))
+            {
+                header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                return new ErrorResponse(CommandName.SMB_COM_RENAME);
+            }
+            if (!share.HasWriteAccess(session.UserName, request.NewFileName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_RENAME);
@@ -210,7 +215,7 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetSetInformationResponse(SMB1Header header, SetInformationRequest request, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!share.HasWriteAccess(session.UserName))
+            if (!share.HasWriteAccess(session.UserName, request.FileName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
@@ -259,7 +264,7 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
             }
 
-            if (!share.HasWriteAccess(session.UserName))
+            if (!share.HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);

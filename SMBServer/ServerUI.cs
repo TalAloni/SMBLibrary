@@ -165,7 +165,23 @@ namespace SMBServer
                 List<string> readAccess = ReadAccessList(readAccessNode, allUsers);
                 XmlNode writeAccessNode = shareNode.SelectSingleNode("WriteAccess");
                 List<string> writeAccess = ReadAccessList(writeAccessNode, allUsers);
-                shares.Add(shareName, readAccess, writeAccess, new DirectoryFileSystem(sharePath));
+                FileSystemShare share = new FileSystemShare(shareName, new DirectoryFileSystem(sharePath));
+                share.OnAccessRequest += delegate(object sender, AccessRequestArgs args)
+                {
+                    if (args.RequestedAccess == FileAccess.Read)
+                    {
+                        args.Allow = Contains(readAccess, args.UserName);
+                    }
+                    else if (args.RequestedAccess == FileAccess.Write)
+                    {
+                        args.Allow = Contains(writeAccess, args.UserName);
+                    }
+                    else // FileAccess.ReadWrite
+                    {
+                        args.Allow = Contains(readAccess, args.UserName) && Contains(writeAccess, args.UserName);
+                    }
+                };
+                shares.Add(share);
             }
             return shares;
         }
@@ -207,13 +223,6 @@ namespace SMBServer
             }
         }
 
-        private static XmlDocument GetXmlDocument(string path)
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path);
-            return doc;
-        }
-
         private void Server_OnLogEntry(object sender, LogEntry entry)
         {
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ");
@@ -235,6 +244,30 @@ namespace SMBServer
             {
                 chkSMB1.Checked = true;
             }
+        }
+
+        public static XmlDocument GetXmlDocument(string path)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(path);
+            return doc;
+        }
+
+        public static bool Contains(List<string> list, string value)
+        {
+            return (IndexOf(list, value) >= 0);
+        }
+
+        public static int IndexOf(List<string> list, string value)
+        {
+            for (int index = 0; index < list.Count; index++)
+            {
+                if (string.Equals(list[index], value, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return index;
+                }
+            }
+            return -1;
         }
     }
 }
