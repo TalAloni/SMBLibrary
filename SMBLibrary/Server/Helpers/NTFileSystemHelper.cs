@@ -217,55 +217,6 @@ namespace SMBLibrary.Server
             return NTStatus.STATUS_SUCCESS;
         }
 
-        public static FileAccess ToFileAccess(FileAccessMask desiredAccess)
-        {
-            if ((desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
-                (desiredAccess & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
-                ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0) ||
-                ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 && (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0))
-            {
-                return FileAccess.ReadWrite;
-            }
-            else if ((desiredAccess & FileAccessMask.GENERIC_WRITE) > 0 ||
-                     (desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0 ||
-                     (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0)
-            {
-                return FileAccess.Write;
-            }
-            else if ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0)
-            {
-                return FileAccess.Read;
-            }
-            else
-            {
-                return (FileAccess)0;
-            }
-        }
-
-        public static FileShare ToFileShare(ShareAccess shareAccess)
-        {
-            if ((shareAccess & ShareAccess.FILE_SHARE_READ) > 0 && (shareAccess & ShareAccess.FILE_SHARE_WRITE) > 0)
-            {
-                return FileShare.ReadWrite;
-            }
-            else if ((shareAccess & ShareAccess.FILE_SHARE_WRITE) > 0)
-            {
-                return FileShare.Write;
-            }
-            else if ((shareAccess & ShareAccess.FILE_SHARE_READ) > 0)
-            {
-                return FileShare.Read;
-            }
-            else if ((shareAccess & ShareAccess.FILE_SHARE_DELETE) > 0)
-            {
-                return FileShare.Delete;
-            }
-            else
-            {
-                return FileShare.None;
-            }
-        }
-
         public static NTStatus OpenFile(out Stream stream, IFileSystem fileSystem, string path, FileAccess fileAccess, ShareAccess shareAccess, bool buffered, ConnectionState state)
         {
             stream = null;
@@ -442,6 +393,50 @@ namespace SMBLibrary.Server
                     return NTStatus.STATUS_ACCESS_DENIED;
                 }
             }
+        }
+
+        public static FileAccess ToFileAccess(FileAccessMask desiredAccess)
+        {
+            FileAccess result = 0;
+            if ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 ||
+                (desiredAccess & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
+                (desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
+                (desiredAccess & FileAccessMask.GENERIC_READ) > 0)
+            {
+                result |= FileAccess.Read;
+            }
+
+            if ((desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0 ||
+                (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0 ||
+                (desiredAccess & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
+                (desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
+                (desiredAccess & FileAccessMask.GENERIC_WRITE) > 0)
+            {
+                result |= FileAccess.Write;
+            }
+
+            return result;
+        }
+
+        public static FileShare ToFileShare(ShareAccess shareAccess)
+        {
+            FileShare result = FileShare.None;
+            if ((shareAccess & ShareAccess.FILE_SHARE_READ) > 0)
+            {
+                result |= FileShare.Read;
+            }
+
+            if ((shareAccess & ShareAccess.FILE_SHARE_WRITE) > 0)
+            {
+                result |= FileShare.Write;
+            }
+
+            if ((shareAccess & ShareAccess.FILE_SHARE_DELETE) > 0)
+            {
+                result |= FileShare.Delete;
+            }
+
+            return result;
         }
 
         /// <summary>
