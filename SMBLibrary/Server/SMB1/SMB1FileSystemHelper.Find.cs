@@ -36,43 +36,6 @@ namespace SMBLibrary.Server.SMB1
         {
             switch (informationLevel)
             {
-                case FindInformationLevel.SMB_INFO_STANDARD:
-                    {
-                        FindInfoStandard result = new FindInfoStandard(returnResumeKeys);
-                        result.CreationDateTime = entry.CreationTime;
-                        result.LastAccessDateTime = entry.LastAccessTime;
-                        result.LastWriteDateTime = entry.LastWriteTime;
-                        result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
-                        result.Attributes = GetFileAttributes(entry);
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                case FindInformationLevel.SMB_INFO_QUERY_EA_SIZE:
-                    {
-                        FindInfoQueryEASize result = new FindInfoQueryEASize(returnResumeKeys);
-                        result.CreationDateTime = entry.CreationTime;
-                        result.LastAccessDateTime = entry.LastAccessTime;
-                        result.LastWriteDateTime = entry.LastWriteTime;
-                        result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
-                        result.Attributes = GetFileAttributes(entry);
-                        result.EASize = 0;
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                case FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
-                    {
-                        FindInfoQueryExtendedAttributesFromList result = new FindInfoQueryExtendedAttributesFromList(returnResumeKeys);
-                        result.CreationDateTime = entry.CreationTime;
-                        result.LastAccessDateTime = entry.LastAccessTime;
-                        result.LastWriteDateTime = entry.LastWriteTime;
-                        result.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        result.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
-                        result.Attributes = GetFileAttributes(entry);
-                        result.ExtendedAttributeList = new FullExtendedAttributeList();
-                        return result;
-                    }
                 case FindInformationLevel.SMB_FIND_FILE_DIRECTORY_INFO:
                     {
                         FindFileDirectoryInfo result = new FindFileDirectoryInfo();

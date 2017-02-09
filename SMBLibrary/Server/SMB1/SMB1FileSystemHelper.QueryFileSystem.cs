@@ -18,25 +18,6 @@ namespace SMBLibrary.Server.SMB1
         {
             switch (informationLevel)
             {
-                case QueryFSInformationLevel.SMB_INFO_ALLOCATION:
-                    {
-                        QueryFSInfoAllocation information = new QueryFSInfoAllocation();
-                        information.FileSystemID = 0;
-                        information.SectorUnit = NTFileSystemHelper.ClusterSize / NTFileSystemHelper.BytesPerSector;
-                        information.UnitsTotal = (uint)Math.Min(fileSystem.Size / NTFileSystemHelper.ClusterSize, UInt32.MaxValue);
-                        information.UnitsAvailable = (uint)Math.Min(fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize, UInt32.MaxValue);
-                        information.Sector = NTFileSystemHelper.BytesPerSector;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryFSInformationLevel.SMB_INFO_VOLUME:
-                    {
-                        QueryFSInfoVolume information = new QueryFSInfoVolume();
-                        information.VolumeLabel = String.Empty;
-                        information.VolumeSerialNumber = 0;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
                 case QueryFSInformationLevel.SMB_QUERY_FS_VOLUME_INFO:
                     {
                         QueryFSVolumeInfo information = new QueryFSVolumeInfo();

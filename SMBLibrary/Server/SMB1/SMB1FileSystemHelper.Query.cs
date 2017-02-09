@@ -18,35 +18,6 @@ namespace SMBLibrary.Server.SMB1
         {
             switch (informationLevel)
             {
-                case QueryInformationLevel.SMB_INFO_STANDARD:
-                    {
-                        QueryInfoStandard information = new QueryInfoStandard();
-                        information.CreationDateTime = entry.CreationTime;
-                        information.LastAccessDateTime = entry.LastAccessTime;
-                        information.LastWriteDateTime = entry.LastWriteTime;
-                        information.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        information.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_INFO_QUERY_EA_SIZE:
-                    {
-                        QueryEASize information = new QueryEASize();
-                        information.CreationDateTime = entry.CreationTime;
-                        information.LastAccessDateTime = entry.LastAccessTime;
-                        information.LastWriteDateTime = entry.LastWriteTime;
-                        information.FileDataSize = (uint)Math.Min(entry.Size, UInt32.MaxValue);
-                        information.AllocationSize = (uint)Math.Min(NTFileSystemHelper.GetAllocationSize(entry.Size), UInt32.MaxValue);
-                        information.Attributes = GetFileAttributes(entry);
-                        information.EASize = 0;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
-                    {
-                        result = null;
-                        return NTStatus.STATUS_NOT_IMPLEMENTED;
-                    }
                 case QueryInformationLevel.SMB_INFO_QUERY_ALL_EAS:
                     {
                         result = null;

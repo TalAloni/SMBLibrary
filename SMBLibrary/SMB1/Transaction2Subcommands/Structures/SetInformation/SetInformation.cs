@@ -24,10 +24,6 @@ namespace SMBLibrary.SMB1
         {
             switch (informationLevel)
             {
-                case SetInformationLevel.SMB_INFO_STANDARD:
-                    return new SetInfoStandard(buffer);
-                case SetInformationLevel.SMB_INFO_SET_EAS:
-                    return new SetExtendedAttributes(buffer);
                 case SetInformationLevel.SMB_SET_FILE_BASIC_INFO:
                     return new SetFileBasicInfo(buffer);
                 case SetInformationLevel.SMB_SET_FILE_DISPOSITION_INFO:

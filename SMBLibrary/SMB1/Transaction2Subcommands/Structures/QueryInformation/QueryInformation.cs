@@ -27,12 +27,6 @@ namespace SMBLibrary.SMB1
         {
             switch (informationLevel)
             {
-                case QueryInformationLevel.SMB_INFO_STANDARD:
-                    return new QueryInfoStandard(buffer, 0);
-                case QueryInformationLevel.SMB_INFO_QUERY_EA_SIZE:
-                    return new QueryEASize(buffer, 0);
-                case QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
-                    return new QueryExtendedAttributesFromList(buffer, 0);
                 case QueryInformationLevel.SMB_INFO_QUERY_ALL_EAS:
                     return new QueryAllExtendedAttributes(buffer, 0);
                 case QueryInformationLevel.SMB_QUERY_FILE_BASIC_INFO:

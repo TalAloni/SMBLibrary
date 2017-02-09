@@ -19,10 +19,6 @@ namespace SMBLibrary.SMB1
         {
             switch (informationLevel)
             {
-                case QueryFSInformationLevel.SMB_INFO_ALLOCATION:
-                    return new QueryFSInfoAllocation(buffer, 0);
-                case QueryFSInformationLevel.SMB_INFO_VOLUME:
-                    return new QueryFSInfoVolume(isUnicode, buffer, 0);
                 case QueryFSInformationLevel.SMB_QUERY_FS_VOLUME_INFO:
                     return new QueryFSVolumeInfo(buffer, 0);
                 case QueryFSInformationLevel.SMB_QUERY_FS_SIZE_INFO:

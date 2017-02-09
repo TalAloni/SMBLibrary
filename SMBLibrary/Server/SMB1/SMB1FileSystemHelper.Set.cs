@@ -17,15 +17,7 @@ namespace SMBLibrary.Server.SMB1
     {
         public static NTStatus SetFileInformation(IFileSystem fileSystem, OpenFileObject openFile, SetInformation information, ConnectionState state)
         {
-            if (information is SetInfoStandard)
-            {
-                return NTStatus.STATUS_SUCCESS;
-            }
-            else if (information is SetExtendedAttributes)
-            {
-                return NTStatus.STATUS_NOT_IMPLEMENTED;
-            }
-            else if (information is SetFileBasicInfo)
+            if (information is SetFileBasicInfo)
             {
                 SetFileBasicInfo basicInfo = (SetFileBasicInfo)information;
                 bool isHidden = (basicInfo.ExtFileAttributes & ExtendedFileAttributes.Hidden) > 0;

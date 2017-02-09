@@ -35,12 +35,6 @@ namespace SMBLibrary.SMB1
         {
             switch (informationLevel)
             {
-                case FindInformationLevel.SMB_INFO_STANDARD:
-                    return new FindInfoStandard(buffer, ref offset, isUnicode, returnResumeKeys);
-                case FindInformationLevel.SMB_INFO_QUERY_EA_SIZE:
-                    return new FindInfoQueryEASize(buffer, ref offset, isUnicode, returnResumeKeys);
-                case FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
-                    return new FindInfoQueryExtendedAttributesFromList(buffer, ref offset, isUnicode, returnResumeKeys);
                 case FindInformationLevel.SMB_FIND_FILE_DIRECTORY_INFO:
                     return new FindFileDirectoryInfo(buffer, ref offset, isUnicode);
                 case FindInformationLevel.SMB_FIND_FILE_FULL_DIRECTORY_INFO:
