@@ -30,7 +30,8 @@ namespace SMBLibrary.Server
 
             if (forceDirectory & (createDisposition != CreateDisposition.FILE_CREATE &&
                                   createDisposition != CreateDisposition.FILE_OPEN &&
-                                  createDisposition != CreateDisposition.FILE_OPEN_IF))
+                                  createDisposition != CreateDisposition.FILE_OPEN_IF &&
+                                  createDisposition != CreateDisposition.FILE_SUPERSEDE))
             {
                 entry = null;
                 return NTStatus.STATUS_INVALID_PARAMETER;
@@ -147,15 +148,14 @@ namespace SMBLibrary.Server
                 }
                 else
                 {
-                    if (createDisposition == CreateDisposition.FILE_OVERWRITE ||
-                        createDisposition == CreateDisposition.FILE_OVERWRITE_IF ||
-                        createDisposition == CreateDisposition.FILE_SUPERSEDE)
+                    if (!requestedWriteAccess)
                     {
-                        if (!requestedWriteAccess)
-                        {
-                            return NTStatus.STATUS_ACCESS_DENIED;
-                        }
+                        return NTStatus.STATUS_ACCESS_DENIED;
+                    }
 
+                    if (createDisposition == CreateDisposition.FILE_OVERWRITE ||
+                        createDisposition == CreateDisposition.FILE_OVERWRITE_IF)
+                    {
                         // Truncate the file
                         try
                         {
@@ -166,6 +166,40 @@ namespace SMBLibrary.Server
                         {
                             NTStatus status = ToNTStatus(ex);
                             state.LogToServer(Severity.Debug, "CreateFile: Error truncating '{0}'. {1}.", path, status);
+                            return status;
+                        }
+                    }
+                    else if (createDisposition == CreateDisposition.FILE_SUPERSEDE)
+                    {
+                        // Delete the old file
+                        try
+                        {
+                            fileSystem.Delete(path);
+                        }
+                        catch(Exception ex)
+                        {
+                            NTStatus status = ToNTStatus(ex);
+                            state.LogToServer(Severity.Debug, "CreateFile: Error deleting '{0}'. {1}.", path, status);
+                            return status;
+                        }
+
+                        try
+                        {
+                            if (forceDirectory)
+                            {
+                                state.LogToServer(Severity.Information, "CreateFile: Creating directory '{0}'", path);
+                                entry = fileSystem.CreateDirectory(path);
+                            }
+                            else
+                            {
+                                state.LogToServer(Severity.Information, "CreateFile: Creating file '{0}'", path);
+                                entry = fileSystem.CreateFile(path);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            NTStatus status = ToNTStatus(ex);
+                            state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
                             return status;
                         }
                     }
