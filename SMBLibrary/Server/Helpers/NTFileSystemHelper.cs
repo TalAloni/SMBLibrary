@@ -384,7 +384,8 @@ namespace SMBLibrary.Server
                 }
                 else if (errorCode == (ushort)Win32Error.ERROR_ALREADY_EXISTS)
                 {
-                    return NTStatus.STATUS_OBJECT_NAME_EXISTS;
+                    // According to [MS-FSCC], FileRenameInformation MUST return STATUS_OBJECT_NAME_COLLISION when the specified name already exists and ReplaceIfExists is zero.
+                    return NTStatus.STATUS_OBJECT_NAME_COLLISION;
                 }
                 else
                 {
