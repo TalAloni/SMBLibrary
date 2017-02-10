@@ -21,6 +21,16 @@ namespace SMBLibrary.Server.SMB1
             SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & NTCreateFlags.NT_CREATE_REQUEST_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;
+            FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasAccess(session.UserName, path, createAccess, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(request.CommandName);
+                }
+            }
+
             if (share is NamedPipeShare)
             {
                 Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
@@ -48,13 +58,7 @@ namespace SMBLibrary.Server.SMB1
             else // FileSystemShare
             {
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
-                FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
-                if (!fileSystemShare.HasAccess(session.UserName, path, createAccess, state.ClientEndPoint))
-                {
-                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                    return new ErrorResponse(request.CommandName);
-                }
-
+                
                 FileSystemEntry entry;
                 NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, fileSystemShare.FileSystem, path, request.DesiredAccess, request.CreateDisposition, request.CreateOptions, state);
                 if (createStatus != NTStatus.STATUS_SUCCESS)

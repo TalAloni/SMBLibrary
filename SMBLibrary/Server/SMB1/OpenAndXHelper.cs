@@ -21,6 +21,16 @@ namespace SMBLibrary.Server.SMB1
             SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & OpenFlags.SMB_OPEN_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;
+            FileAccess fileAccess = ToFileAccess(request.AccessMode.AccessMode);
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasAccess(session.UserName, path, fileAccess, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return new ErrorResponse(request.CommandName);
+                }
+            }
+
             if (share is NamedPipeShare)
             {
                 Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
@@ -48,12 +58,6 @@ namespace SMBLibrary.Server.SMB1
             else // FileSystemShare
             {
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
-                FileAccess fileAccess = ToFileAccess(request.AccessMode.AccessMode);
-                if (!fileSystemShare.HasAccess(session.UserName, path, fileAccess, state.ClientEndPoint))
-                {
-                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                    return new ErrorResponse(request.CommandName);
-                }
 
                 IFileSystem fileSystem = fileSystemShare.FileSystem;
 

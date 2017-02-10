@@ -22,6 +22,16 @@ namespace SMBLibrary.Server.SMB2
             {
                 path = @"\" + path;
             }
+
+            FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasAccess(session.UserName, path, createAccess, state.ClientEndPoint))
+                {
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                }
+            }
+
             if (share is NamedPipeShare)
             {
                 Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
@@ -42,11 +52,6 @@ namespace SMBLibrary.Server.SMB2
             else
             {
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
-                FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
-                if (!fileSystemShare.HasAccess(session.UserName, path, createAccess, state.ClientEndPoint))
-                {
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
-                }
 
                 FileSystemEntry entry;
                 NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, fileSystemShare.FileSystem, path, request.DesiredAccess, request.CreateDisposition, request.CreateOptions, state);
