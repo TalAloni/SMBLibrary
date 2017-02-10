@@ -54,6 +54,25 @@ namespace SMBLibrary
             LittleEndianWriter.WriteUInt32(buffer, offset + 52, Reserved);
         }
 
+        public bool IsDirectory
+        {
+            get
+            {
+                return ((FileAttributes & FileAttributes.Directory) > 0);
+            }
+            set
+            {
+                if (value)
+                {
+                    FileAttributes |= FileAttributes.Directory;
+                }
+                else
+                {
+                    FileAttributes &= ~FileAttributes.Directory;
+                }
+            }
+        }
+
         public override FileInformationClass FileInformationClass
         {
             get
