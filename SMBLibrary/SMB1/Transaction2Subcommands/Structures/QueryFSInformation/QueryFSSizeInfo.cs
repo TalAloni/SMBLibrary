@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class QueryFSSizeInfo : QueryFSInformation
     {
-        public const int Length = 24;
+        public const int FixedLength = 24;
 
         public long TotalAllocationUnits;
         public long TotalFreeAllocationUnits;
@@ -43,6 +43,22 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt32(buffer, 16, SectorsPerAllocationUnit);
             LittleEndianWriter.WriteUInt32(buffer, 20, BytesPerSector);
             return buffer;
+        }
+
+        public override int Length
+        {
+            get
+            {
+                return FixedLength;
+            }
+        }
+
+        public override QueryFSInformationLevel InformationLevel
+        {
+            get
+            {
+                return QueryFSInformationLevel.SMB_QUERY_FS_SIZE_INFO;
+            }
         }
     }
 }

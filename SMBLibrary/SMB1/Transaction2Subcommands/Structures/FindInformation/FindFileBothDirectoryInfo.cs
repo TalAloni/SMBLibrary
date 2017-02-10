@@ -98,5 +98,13 @@ namespace SMBLibrary.SMB1
             }
             return length;
         }
+
+        public override FindInformationLevel InformationLevel
+        {
+            get
+            {
+                return FindInformationLevel.SMB_FIND_FILE_BOTH_DIRECTORY_INFO;
+            }
+        }
     }
 }

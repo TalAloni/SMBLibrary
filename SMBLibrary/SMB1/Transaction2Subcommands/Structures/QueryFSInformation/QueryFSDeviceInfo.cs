@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class QueryFSDeviceInfo : QueryFSInformation
     {
-        public const int Length = 8;
+        public const int FixedLength = 8;
 
         public DeviceType DeviceType;
         public DeviceCharacteristics DeviceCharacteristics;
@@ -37,6 +37,22 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt32(buffer, 0, (uint)DeviceType);
             LittleEndianWriter.WriteUInt32(buffer, 4, (uint)DeviceCharacteristics);
             return buffer;
+        }
+
+        public override int Length
+        {
+            get
+            {
+                return FixedLength;
+            }
+        }
+
+        public override QueryFSInformationLevel InformationLevel
+        {
+            get
+            {
+                return QueryFSInformationLevel.SMB_QUERY_FS_DEVICE_INFO;
+            }
         }
     }
 }

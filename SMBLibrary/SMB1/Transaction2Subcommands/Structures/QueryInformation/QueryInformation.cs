@@ -41,7 +41,7 @@ namespace SMBLibrary.SMB1
                 case QueryInformationLevel.SMB_QUERY_FILE_COMPRESSION_INFO:
                     return new QueryFileCompressionInfo(buffer, 0);
                 default:
-                    throw new InvalidRequestException();
+                    throw new UnsupportedInformationLevelException();
             }
         }
     }

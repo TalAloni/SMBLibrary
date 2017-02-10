@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -31,6 +31,11 @@ namespace SMBLibrary.SMB1
             }
         }
 
+        public abstract FindInformationLevel InformationLevel
+        {
+            get;
+        }
+
         public static FindInformation ReadEntry(byte[] buffer, ref int offset, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
         {
             switch (informationLevel)
@@ -44,7 +49,7 @@ namespace SMBLibrary.SMB1
                 case FindInformationLevel.SMB_FIND_FILE_BOTH_DIRECTORY_INFO:
                     return new FindFileBothDirectoryInfo(buffer, ref offset, isUnicode);
                 default:
-                    throw new InvalidRequestException();;
+                    throw new UnsupportedInformationLevelException();;
             }
         }
     }

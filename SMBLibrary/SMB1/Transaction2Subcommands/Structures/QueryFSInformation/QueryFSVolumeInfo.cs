@@ -20,7 +20,7 @@ namespace SMBLibrary.SMB1
 
         public DateTime? VolumeCreationTime;
         public uint SerialNumber;
-        //uint VolumeLabelSize;
+        private uint VolumeLabelSize;
         public ushort Reserved;
         public string VolumeLabel; // Unicode
 
@@ -33,22 +33,38 @@ namespace SMBLibrary.SMB1
         {
             VolumeCreationTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 0);
             SerialNumber = LittleEndianConverter.ToUInt32(buffer, offset + 8);
-            uint volumeLabelSize = LittleEndianConverter.ToUInt32(buffer, offset + 12);
+            VolumeLabelSize = LittleEndianConverter.ToUInt32(buffer, offset + 12);
             Reserved = LittleEndianConverter.ToUInt16(buffer, offset + 16);
-            VolumeLabel = ByteReader.ReadUTF16String(buffer, offset + 18, (int)volumeLabelSize);
+            VolumeLabel = ByteReader.ReadUTF16String(buffer, offset + 18, (int)VolumeLabelSize);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            uint volumeLabelSize = (uint)(VolumeLabel.Length * 2);
+            VolumeLabelSize = (uint)(VolumeLabel.Length * 2);
 
-            byte[] buffer = new byte[FixedLength + volumeLabelSize];
+            byte[] buffer = new byte[this.Length];
             FileTimeHelper.WriteFileTime(buffer, 0, VolumeCreationTime);
             LittleEndianWriter.WriteUInt32(buffer, 8, SerialNumber);
-            LittleEndianWriter.WriteUInt32(buffer, 12, volumeLabelSize);
+            LittleEndianWriter.WriteUInt32(buffer, 12, VolumeLabelSize);
             LittleEndianWriter.WriteUInt16(buffer, 16, Reserved);
             ByteWriter.WriteUTF16String(buffer, 18, VolumeLabel);
             return buffer;
+        }
+
+        public override int Length
+        {
+            get
+            {
+                return FixedLength + VolumeLabel.Length * 2;
+            }
+        }
+
+        public override QueryFSInformationLevel InformationLevel
+        {
+            get
+            {
+                return QueryFSInformationLevel.SMB_QUERY_FS_VOLUME_INFO;
+            }
         }
     }
 }

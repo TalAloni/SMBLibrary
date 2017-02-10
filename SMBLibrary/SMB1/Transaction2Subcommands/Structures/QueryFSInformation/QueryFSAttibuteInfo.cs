@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -46,11 +46,19 @@ namespace SMBLibrary.SMB1
             return buffer;
         }
 
-        public int Length
+        public override int Length
         {
             get
             {
                 return FixedLength + FileSystemName.Length * 2;
+            }
+        }
+
+        public override QueryFSInformationLevel InformationLevel
+        {
+            get
+            {
+                return QueryFSInformationLevel.SMB_QUERY_FS_ATTRIBUTE_INFO;
             }
         }
     }
