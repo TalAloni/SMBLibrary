@@ -75,6 +75,18 @@ namespace SMBLibrary.Server
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
                     }
+                case FileInformationClass.FileAccessInformation:
+                    {
+                        result = null;
+                        return NTStatus.STATUS_NOT_IMPLEMENTED;
+                    }
+                case FileInformationClass.FileNameInformation:
+                    {
+                        FileNameInformation information = new FileNameInformation();
+                        information.FileName = entry.Name;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
+                    }
                 case FileInformationClass.FilePositionInformation:
                     {
                         result = null;
@@ -97,8 +109,19 @@ namespace SMBLibrary.Server
                     }
                 case FileInformationClass.FileAllInformation:
                     {
-                        result = null;
-                        return NTStatus.STATUS_NOT_IMPLEMENTED;
+                        FileAllInformation information = new FileAllInformation();
+                        information.BasicInformation.CreationTime = entry.CreationTime;
+                        information.BasicInformation.LastAccessTime = entry.LastAccessTime;
+                        information.BasicInformation.LastWriteTime = entry.LastWriteTime;
+                        information.BasicInformation.ChangeTime = entry.LastWriteTime;
+                        information.BasicInformation.FileAttributes = GetFileAttributes(entry);
+                        information.StandardInformation.AllocationSize = (long)GetAllocationSize(entry.Size);
+                        information.StandardInformation.EndOfFile = (long)entry.Size;
+                        information.StandardInformation.Directory = entry.IsDirectory;
+                        information.StandardInformation.DeletePending = deletePending;
+                        information.NameInformation.FileName = entry.Name;
+                        result = information;
+                        return NTStatus.STATUS_SUCCESS;
                     }
                 case FileInformationClass.FileAlternateNameInformation:
                     {
