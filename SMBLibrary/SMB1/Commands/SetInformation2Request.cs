@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -30,18 +30,18 @@ namespace SMBLibrary.SMB1
         public SetInformation2Request(byte[] buffer, int offset) : base(buffer, offset, false)
         {
             FID = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
-            CreationDateTime = ReadSetSMBDateTime(this.SMBParameters, 2);
-            LastAccessDateTime = ReadSetSMBDateTime(this.SMBParameters, 6);
-            LastWriteDateTime = ReadSetSMBDateTime(this.SMBParameters, 10);
+            CreationDateTime = SMB1Helper.ReadNullableSMBDateTime(this.SMBParameters, 2);
+            LastAccessDateTime = SMB1Helper.ReadNullableSMBDateTime(this.SMBParameters, 6);
+            LastWriteDateTime = SMB1Helper.ReadNullableSMBDateTime(this.SMBParameters, 10);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
             this.SMBParameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, FID);
-            WriteSetSMBDateTime(this.SMBParameters, 2, CreationDateTime);
-            WriteSetSMBDateTime(this.SMBParameters, 6, LastAccessDateTime);
-            WriteSetSMBDateTime(this.SMBParameters, 10, LastWriteDateTime);
+            SMB1Helper.WriteSMBDateTime(this.SMBParameters, 2, CreationDateTime);
+            SMB1Helper.WriteSMBDateTime(this.SMBParameters, 6, LastAccessDateTime);
+            SMB1Helper.WriteSMBDateTime(this.SMBParameters, 10, LastWriteDateTime);
 
             return base.GetBytes(isUnicode);
         }
@@ -51,24 +51,6 @@ namespace SMBLibrary.SMB1
             get
             {
                 return CommandName.SMB_COM_SET_INFORMATION2;
-            }
-        }
-
-        public static DateTime? ReadSetSMBDateTime(byte[] buffer, int offset)
-        {
-            uint value = LittleEndianConverter.ToUInt32(buffer, offset);
-            if (value > 0)
-            {
-                return SMB1Helper.ReadSMBDateTime(buffer, offset);
-            }
-            return null;
-        }
-
-        public static void WriteSetSMBDateTime(byte[] buffer, int offset, DateTime? datetime)
-        {
-            if (datetime.HasValue)
-            {
-                SMB1Helper.WriteSMBDateTime(buffer, offset, datetime.Value);
             }
         }
     }

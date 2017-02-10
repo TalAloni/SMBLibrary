@@ -89,6 +89,28 @@ namespace SMBLibrary.SMB1
             WriteSMBTime(buffer, offset + 2, dateTime.TimeOfDay);
         }
 
+        public static DateTime? ReadNullableSMBDateTime(byte[] buffer, int offset)
+        {
+            uint value = LittleEndianConverter.ToUInt32(buffer, offset);
+            if (value > 0)
+            {
+                return ReadSMBDateTime(buffer, offset);
+            }
+            return null;
+        }
+
+        public static void WriteSMBDateTime(byte[] buffer, int offset, DateTime? dateTime)
+        {
+            if (dateTime.HasValue)
+            {
+                WriteSMBDateTime(buffer, offset, dateTime.Value);
+            }
+            else
+            {
+                LittleEndianWriter.WriteUInt32(buffer, offset, 0);
+            }
+        }
+
         public static string ReadSMBString(byte[] buffer, int offset, bool isUnicode)
         {
             if (isUnicode)
