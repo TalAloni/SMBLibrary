@@ -83,22 +83,10 @@ namespace SMBLibrary.SMB1
             return date.Add(time);
         }
 
-        public static DateTime ReadSMBDateTime(byte[] buffer, ref int offset)
-        {
-            offset += 4;
-            return ReadSMBDateTime(buffer, offset - 4);
-        }
-
         public static void WriteSMBDateTime(byte[] buffer, int offset, DateTime dateTime)
         {
             WriteSMBDate(buffer, offset, dateTime.Date);
             WriteSMBTime(buffer, offset + 2, dateTime.TimeOfDay);
-        }
-
-        public static void WriteSMBDateTime(byte[] buffer, ref int offset, DateTime dateTime)
-        {
-            WriteSMBDateTime(buffer, offset, dateTime);
-            offset += 4;
         }
 
         public static string ReadSMBString(byte[] buffer, int offset, bool isUnicode)
