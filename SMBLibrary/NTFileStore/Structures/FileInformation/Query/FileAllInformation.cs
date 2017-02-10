@@ -27,6 +27,15 @@ namespace SMBLibrary
 
         public FileAllInformation()
         {
+            BasicInformation = new FileBasicInformation();
+            StandardInformation = new FileStandardInformation();
+            InternalInformation = new FileInternalInformation();
+            EaInformation = new FileEaInformation();
+            AccessInformation = new FileAccessInformation();
+            PositionInformation = new FilePositionInformation();
+            ModeInformation = new FileModeInformation();
+            AlignmentInformation = new FileAlignmentInformation();
+            NameInformation = new FileNameInformation();
         }
 
         public FileAllInformation(byte[] buffer, int offset)
