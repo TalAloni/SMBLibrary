@@ -391,7 +391,6 @@
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSInformation.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSSizeInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryFSInformation\QueryFSVolumeInfo.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\QueryAllExtendedAttributes.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\QueryFileAllInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\QueryFileAltNameInfo.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Structures\QueryInformation\QueryFileBasicInfo.cs" />

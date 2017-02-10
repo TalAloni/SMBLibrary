@@ -18,16 +18,6 @@ namespace SMBLibrary.Server.SMB1
         {
             switch (informationLevel)
             {
-                case QueryInformationLevel.SMB_INFO_QUERY_ALL_EAS:
-                    {
-                        result = null;
-                        return NTStatus.STATUS_NOT_IMPLEMENTED;
-                    }
-                case QueryInformationLevel.SMB_INFO_IS_NAME_VALID:
-                    {
-                        result = null;
-                        return NTStatus.STATUS_NOT_IMPLEMENTED;
-                    }
                 case QueryInformationLevel.SMB_QUERY_FILE_BASIC_INFO:
                     {
                         QueryFileBasicInfo information = new QueryFileBasicInfo();

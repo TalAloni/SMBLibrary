@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,15 +20,10 @@ namespace SMBLibrary.SMB1
             get;
         }
 
-        /// <summary>
-        /// SMB_INFO_IS_NAME_VALID will return null
-        /// </summary>
         public static QueryInformation GetQueryInformation(byte[] buffer, QueryInformationLevel informationLevel)
         {
             switch (informationLevel)
             {
-                case QueryInformationLevel.SMB_INFO_QUERY_ALL_EAS:
-                    return new QueryAllExtendedAttributes(buffer, 0);
                 case QueryInformationLevel.SMB_QUERY_FILE_BASIC_INFO:
                     return new QueryFileBasicInfo(buffer, 0);
                 case QueryInformationLevel.SMB_QUERY_FILE_STANDARD_INFO:
