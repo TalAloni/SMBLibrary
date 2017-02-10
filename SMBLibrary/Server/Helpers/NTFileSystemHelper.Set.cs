@@ -58,6 +58,7 @@ namespace SMBLibrary.Server
                     openFile.Stream.Close();
                 }
 
+                // Note: it's possible that we just want to upcase / downcase a filename letter.
                 try
                 {
                     if (renameInformation.ReplaceIfExists && (fileSystem.GetEntry(destination) != null ))
