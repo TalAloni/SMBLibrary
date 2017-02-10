@@ -101,11 +101,11 @@ namespace SMBLibrary.SMB1
             }
         }
 
-        public FileStatus FileStatus
+        public FileStatusFlags FileStatusFlags
         {
             get
             {
-                return (FileStatus)NMPipeStatus_or_FileStatusFlags;
+                return (FileStatusFlags)NMPipeStatus_or_FileStatusFlags;
             }
             set
             {

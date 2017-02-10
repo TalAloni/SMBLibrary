@@ -3,7 +3,7 @@ using System;
 namespace SMBLibrary.SMB1
 {
     [Flags]
-    public enum FileStatus : ushort
+    public enum FileStatusFlags : ushort
     {
         NO_EAS = 0x01,
         NO_SUBSTREAMS = 0x02,

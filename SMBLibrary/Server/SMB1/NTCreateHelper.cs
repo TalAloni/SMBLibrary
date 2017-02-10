@@ -198,7 +198,7 @@ namespace SMBLibrary.Server.SMB1
             response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
             response.EndOfFile = (long)entry.Size;
             response.ResourceType = ResourceType.FileTypeDisk;
-            response.FileStatus = FileStatus.NO_EAS | FileStatus.NO_SUBSTREAMS | FileStatus.NO_REPARSETAG;
+            response.FileStatusFlags = FileStatusFlags.NO_EAS | FileStatusFlags.NO_SUBSTREAMS | FileStatusFlags.NO_REPARSETAG;
             response.MaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
                                                 FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
                                                 FileAccessMask.FILE_EXECUTE |
