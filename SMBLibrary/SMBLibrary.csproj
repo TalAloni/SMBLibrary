@@ -77,6 +77,7 @@
     <Compile Include="NetBios\SessionPackets\SessionPacket.cs" />
     <Compile Include="NetBios\SessionPackets\SessionRequestPacket.cs" />
     <Compile Include="NetBios\SessionPackets\SessionRetargetResponsePacket.cs" />
+    <Compile Include="NTFileStore\Adapter\IOExceptionHelper.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\CompressionFormat.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\FileAttributes.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\FileInformationClass.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateDisposition.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateOptions.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\ShareAccess.cs" />
+    <Compile Include="NTFileStore\NTFileStoreHelper.cs" />
     <Compile Include="NTFileStore\Structures\ACE\AccessAllowedACE.cs" />
     <Compile Include="NTFileStore\Structures\ACE\ACE.cs" />
     <Compile Include="NTFileStore\Structures\ACE\AceHeader.cs" />
@@ -171,7 +173,6 @@
     <Compile Include="Server\Exceptions\EmptyPasswordNotAllowedException.cs" />
     <Compile Include="Server\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Server\Exceptions\UnsupportedInformationLevelException.cs" />
-    <Compile Include="Server\Helpers\IOExceptionHelper.cs" />
     <Compile Include="Server\Helpers\NTFileSystemHelper.cs" />
     <Compile Include="Server\Helpers\NTFileSystemHelper.Find.cs" />
     <Compile Include="Server\Helpers\NTFileSystemHelper.Query.cs" />

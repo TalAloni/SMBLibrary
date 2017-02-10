@@ -48,7 +48,7 @@ namespace SMBLibrary.Server.SMB1
             else // FileSystemShare
             {
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
-                FileAccess createAccess = NTFileSystemHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
+                FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
                 if (!fileSystemShare.HasAccess(session.UserName, path, createAccess, state.ClientEndPoint))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
@@ -63,7 +63,7 @@ namespace SMBLibrary.Server.SMB1
                     return new ErrorResponse(request.CommandName);
                 }
 
-                FileAccess fileAccess = NTFileSystemHelper.ToFileAccess(request.DesiredAccess);
+                FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(request.DesiredAccess);
 
                 Stream stream;
                 bool deleteOnClose = false;

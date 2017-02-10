@@ -22,7 +22,7 @@ namespace SMBLibrary.Server
 
         public static NTStatus CreateFile(out FileSystemEntry entry, IFileSystem fileSystem, string path, AccessMask desiredAccess, CreateDisposition createDisposition, CreateOptions createOptions, ConnectionState state)
         {
-            FileAccess createAccess = ToCreateFileAccess(desiredAccess, createDisposition);
+            FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(desiredAccess, createDisposition);
             bool requestedWriteAccess = (createAccess & FileAccess.Write) > 0;
 
             bool forceDirectory = (createOptions & CreateOptions.FILE_DIRECTORY_FILE) > 0;
@@ -216,7 +216,7 @@ namespace SMBLibrary.Server
         public static NTStatus OpenFile(out Stream stream, IFileSystem fileSystem, string path, FileAccess fileAccess, ShareAccess shareAccess, bool buffered, ConnectionState state)
         {
             stream = null;
-            FileShare fileShare = NTFileSystemHelper.ToFileShare(shareAccess);
+            FileShare fileShare = NTFileStoreHelper.ToFileShare(shareAccess);
             state.LogToServer(Severity.Verbose, "OpenFile: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
             try
             {
@@ -362,92 +362,6 @@ namespace SMBLibrary.Server
             {
                 return NTStatus.STATUS_DATA_ERROR;
             }
-        }
-
-        public static FileAccess ToCreateFileAccess(AccessMask desiredAccess, CreateDisposition createDisposition)
-        {
-            FileAccess result = 0;
-
-            if ((desiredAccess.File & FileAccessMask.FILE_READ_DATA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_READ_EA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_READ_ATTRIBUTES) > 0 ||
-                (desiredAccess.File & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_ALL) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_READ) > 0)
-            {
-                result |= FileAccess.Read;
-            }
-
-            if ((desiredAccess.File & FileAccessMask.FILE_WRITE_DATA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_APPEND_DATA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_WRITE_EA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_WRITE_ATTRIBUTES) > 0 ||
-                (desiredAccess.File & FileAccessMask.DELETE) > 0 ||
-                (desiredAccess.File & FileAccessMask.WRITE_DAC) > 0 ||
-                (desiredAccess.File & FileAccessMask.WRITE_OWNER) > 0 ||
-                (desiredAccess.File & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_ALL) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_WRITE) > 0)
-            {
-                result |= FileAccess.Write;
-            }
-
-            if ((desiredAccess.Directory & DirectoryAccessMask.FILE_DELETE_CHILD) > 0)
-            {
-                result |= FileAccess.Write;
-            }
-
-            if (createDisposition == CreateDisposition.FILE_CREATE ||
-                createDisposition == CreateDisposition.FILE_SUPERSEDE)
-            {
-                result |= FileAccess.Write;
-            }
-
-            return result;
-        }
-
-        public static FileAccess ToFileAccess(FileAccessMask desiredAccess)
-        {
-            FileAccess result = 0;
-            if ((desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 ||
-                (desiredAccess & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
-                (desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
-                (desiredAccess & FileAccessMask.GENERIC_READ) > 0)
-            {
-                result |= FileAccess.Read;
-            }
-
-            if ((desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0 ||
-                (desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0 ||
-                (desiredAccess & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
-                (desiredAccess & FileAccessMask.GENERIC_ALL) > 0 ||
-                (desiredAccess & FileAccessMask.GENERIC_WRITE) > 0)
-            {
-                result |= FileAccess.Write;
-            }
-
-            return result;
-        }
-
-        public static FileShare ToFileShare(ShareAccess shareAccess)
-        {
-            FileShare result = FileShare.None;
-            if ((shareAccess & ShareAccess.FILE_SHARE_READ) > 0)
-            {
-                result |= FileShare.Read;
-            }
-
-            if ((shareAccess & ShareAccess.FILE_SHARE_WRITE) > 0)
-            {
-                result |= FileShare.Write;
-            }
-
-            if ((shareAccess & ShareAccess.FILE_SHARE_DELETE) > 0)
-            {
-                result |= FileShare.Delete;
-            }
-
-            return result;
         }
 
         /// <summary>
