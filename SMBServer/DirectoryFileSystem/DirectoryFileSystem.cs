@@ -100,7 +100,7 @@ namespace SMBServer
             }
             else if (Directory.Exists(fullPath))
             {
-                Directory.Delete(fullPath, true);
+                Directory.Delete(fullPath, false);
             }
             else
             {

@@ -382,6 +382,12 @@ namespace SMBLibrary.Server
                 {
                     return NTStatus.STATUS_DISK_FULL;
                 }
+                else if (errorCode == (ushort)Win32Error.ERROR_DIR_NOT_EMPTY)
+                {
+                    // If a user tries to rename folder1 to folder2 when folder2 already exists, Windows 7 will offer to merge folder1 into folder2.
+                    // In such case, Windows 7 will delete folder 1 and will expect STATUS_DIRECTORY_NOT_EMPTY if there are files to merge.
+                    return NTStatus.STATUS_DIRECTORY_NOT_EMPTY;
+                }
                 else if (errorCode == (ushort)Win32Error.ERROR_ALREADY_EXISTS)
                 {
                     // According to [MS-FSCC], FileRenameInformation MUST return STATUS_OBJECT_NAME_COLLISION when the specified name already exists and ReplaceIfExists is zero.
