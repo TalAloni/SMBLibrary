@@ -29,8 +29,8 @@ namespace SMBLibrary.SMB1
         public DateTime? LastWriteTime;
         public DateTime? LastChangeTime;
         public ExtendedFileAttributes ExtFileAttributes;
-        public ulong AllocationSize;
-        public ulong EndOfFile;
+        public long AllocationSize;
+        public long EndOfFile;
         public ResourceType ResourceType;
         public NamedPipeStatus NMPipeStatus;
         public bool Directory;
@@ -50,8 +50,8 @@ namespace SMBLibrary.SMB1
             LastWriteTime = SMB1Helper.ReadNullableFileTime(buffer, ref parametersOffset);
             LastChangeTime = SMB1Helper.ReadNullableFileTime(buffer, ref parametersOffset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
-            AllocationSize = LittleEndianReader.ReadUInt64(buffer, ref parametersOffset);
-            EndOfFile = LittleEndianReader.ReadUInt64(buffer, ref parametersOffset);
+            AllocationSize = LittleEndianReader.ReadInt64(buffer, ref parametersOffset);
+            EndOfFile = LittleEndianReader.ReadInt64(buffer, ref parametersOffset);
             ResourceType = (ResourceType)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             NMPipeStatus = NamedPipeStatus.Read(this.SMBParameters, ref parametersOffset);
             Directory = (ByteReader.ReadByte(this.SMBParameters, ref parametersOffset) > 0);
@@ -69,8 +69,8 @@ namespace SMBLibrary.SMB1
             FileTimeHelper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastWriteTime);
             FileTimeHelper.WriteFileTime(this.SMBParameters, ref parametersOffset, LastChangeTime);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)ExtFileAttributes);
-            LittleEndianWriter.WriteUInt64(this.SMBParameters, ref parametersOffset, AllocationSize);
-            LittleEndianWriter.WriteUInt64(this.SMBParameters, ref parametersOffset, EndOfFile);
+            LittleEndianWriter.WriteInt64(this.SMBParameters, ref parametersOffset, AllocationSize);
+            LittleEndianWriter.WriteInt64(this.SMBParameters, ref parametersOffset, EndOfFile);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)ResourceType);
             NMPipeStatus.WriteBytes(this.SMBParameters, ref parametersOffset);
             ByteWriter.WriteByte(this.SMBParameters, ref parametersOffset, Convert.ToByte(Directory));

@@ -167,8 +167,8 @@ namespace SMBLibrary.Server.SMB1
             }
             response.FID = fileID;
             response.CreateDisposition = CreateDisposition.FILE_OPEN;
-            response.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-            response.EndOfFile = entry.Size;
+            response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+            response.EndOfFile = (long)entry.Size;
             response.CreateTime = entry.CreationTime;
             response.LastAccessTime = entry.LastAccessTime;
             response.LastWriteTime = entry.LastWriteTime;
@@ -195,8 +195,8 @@ namespace SMBLibrary.Server.SMB1
             response.LastWriteTime = entry.LastWriteTime;
             response.LastChangeTime = entry.LastWriteTime;
             response.CreateDisposition = CreateDisposition.FILE_OPEN;
-            response.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-            response.EndOfFile = entry.Size;
+            response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+            response.EndOfFile = (long)entry.Size;
             response.ResourceType = ResourceType.FileTypeDisk;
             response.FileStatus = FileStatus.NO_EAS | FileStatus.NO_SUBSTREAMS | FileStatus.NO_REPARSETAG;
             response.MaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |

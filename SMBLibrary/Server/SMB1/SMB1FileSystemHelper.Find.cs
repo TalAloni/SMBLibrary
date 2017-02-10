@@ -43,8 +43,8 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.LastAttrChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         result.FileName = entry.Name;
                         return result;
@@ -56,8 +56,8 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.LastAttrChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         result.FileName = entry.Name;
                         return result;
@@ -75,8 +75,8 @@ namespace SMBLibrary.Server.SMB1
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.LastChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         result.ShortName = NTFileSystemHelper.GetShortName(entry.Name);
                         result.FileName = entry.Name;

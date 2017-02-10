@@ -18,7 +18,7 @@ namespace SMBLibrary
     {
         public const int FixedLength = 8;
 
-        public ulong EndOfFile;
+        public long EndOfFile;
 
         public FileEndOfFileInformation()
         {
@@ -26,12 +26,12 @@ namespace SMBLibrary
 
         public FileEndOfFileInformation(byte[] buffer, int offset)
         {
-            EndOfFile = LittleEndianConverter.ToUInt64(buffer, offset);
+            EndOfFile = LittleEndianConverter.ToInt64(buffer, offset);
         }
 
         public override void WriteBytes(byte[] buffer, int offset)
         {
-            LittleEndianWriter.WriteUInt64(buffer, offset, EndOfFile);
+            LittleEndianWriter.WriteInt64(buffer, offset, EndOfFile);
         }
 
         public override FileInformationClass FileInformationClass

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,8 +20,8 @@ namespace SMBLibrary.SMB1
 
         public uint NextEntryOffset;
         //uint StreamNameLength; // In bytes
-        public ulong StreamSize;
-        public ulong StreamAllocationSize;
+        public long StreamSize;
+        public long StreamAllocationSize;
         public string StreamName; // Unicode
 
         public QueryFileStreamInfo()
@@ -32,8 +32,8 @@ namespace SMBLibrary.SMB1
         {
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
             uint streamNameLength = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            StreamSize = LittleEndianReader.ReadUInt64(buffer, ref offset);
-            StreamAllocationSize = LittleEndianReader.ReadUInt64(buffer, ref offset);
+            StreamSize = LittleEndianReader.ReadInt64(buffer, ref offset);
+            StreamAllocationSize = LittleEndianReader.ReadInt64(buffer, ref offset);
             StreamName = ByteReader.ReadUTF16String(buffer, ref offset, (int)(streamNameLength / 2));
         }
 
@@ -44,8 +44,8 @@ namespace SMBLibrary.SMB1
             int offset = 0;
             LittleEndianWriter.WriteUInt32(buffer, ref offset, NextEntryOffset);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, streamNameLength);
-            LittleEndianWriter.WriteUInt64(buffer, ref offset, StreamSize);
-            LittleEndianWriter.WriteUInt64(buffer, ref offset, StreamAllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, ref offset, StreamSize);
+            LittleEndianWriter.WriteInt64(buffer, ref offset, StreamAllocationSize);
             ByteWriter.WriteUTF16String(buffer, ref offset, StreamName);
             return buffer;
         }

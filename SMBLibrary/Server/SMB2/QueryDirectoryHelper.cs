@@ -131,8 +131,8 @@ namespace SMBLibrary.Server.SMB2
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
                         result.EaSize = 0;
                         result.ShortName = NTFileSystemHelper.GetShortName(entry.Name);
@@ -146,8 +146,8 @@ namespace SMBLibrary.Server.SMB2
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
                         result.FileName = entry.Name;
                         return result;
@@ -159,8 +159,8 @@ namespace SMBLibrary.Server.SMB2
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
                         result.EaSize = 0;
                         result.FileName = entry.Name;
@@ -173,8 +173,8 @@ namespace SMBLibrary.Server.SMB2
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
                         result.EaSize = 0;
                         result.ShortName = NTFileSystemHelper.GetShortName(entry.Name);
@@ -189,8 +189,8 @@ namespace SMBLibrary.Server.SMB2
                         result.LastAccessTime = entry.LastAccessTime;
                         result.LastWriteTime = entry.LastWriteTime;
                         result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = entry.Size;
-                        result.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        result.EndOfFile = (long)entry.Size;
+                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
                         result.EaSize = 0;
                         result.FileId = 0;

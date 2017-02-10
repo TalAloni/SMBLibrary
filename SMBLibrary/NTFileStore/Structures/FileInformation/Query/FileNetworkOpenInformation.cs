@@ -21,8 +21,8 @@ namespace SMBLibrary
         public DateTime? LastAccessTime;
         public DateTime? LastWriteTime;
         public DateTime? ChangeTime;
-        public ulong AllocationSize;
-        public ulong EndOfFile;
+        public long AllocationSize;
+        public long EndOfFile;
         public FileAttributes FileAttributes;
         public uint Reserved;
 
@@ -36,8 +36,8 @@ namespace SMBLibrary
             LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 8);
             LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 16);
             ChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 24);
-            AllocationSize = LittleEndianConverter.ToUInt64(buffer, offset + 32);
-            EndOfFile = LittleEndianConverter.ToUInt64(buffer, offset + 40);
+            AllocationSize = LittleEndianConverter.ToInt64(buffer, offset + 32);
+            EndOfFile = LittleEndianConverter.ToInt64(buffer, offset + 40);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 48);
             Reserved = LittleEndianConverter.ToUInt32(buffer, offset + 52);
         }
@@ -48,8 +48,8 @@ namespace SMBLibrary
             FileTimeHelper.WriteFileTime(buffer, offset + 8, LastAccessTime);
             FileTimeHelper.WriteFileTime(buffer, offset + 16, LastWriteTime);
             FileTimeHelper.WriteFileTime(buffer, offset + 24, ChangeTime);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 32, AllocationSize);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 40, EndOfFile);
+            LittleEndianWriter.WriteInt64(buffer, offset + 32, AllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, offset + 40, EndOfFile);
             LittleEndianWriter.WriteUInt32(buffer, offset + 48, (uint)FileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, offset + 52, Reserved);
         }

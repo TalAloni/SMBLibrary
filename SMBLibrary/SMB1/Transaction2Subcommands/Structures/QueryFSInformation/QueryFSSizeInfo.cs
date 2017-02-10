@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -18,8 +18,8 @@ namespace SMBLibrary.SMB1
     {
         public const int Length = 24;
 
-        public ulong TotalAllocationUnits;
-        public ulong TotalFreeAllocationUnits;
+        public long TotalAllocationUnits;
+        public long TotalFreeAllocationUnits;
         public uint SectorsPerAllocationUnit;
         public uint BytesPerSector;
 
@@ -29,8 +29,8 @@ namespace SMBLibrary.SMB1
 
         public QueryFSSizeInfo(byte[] buffer, int offset)
         {
-            TotalAllocationUnits = LittleEndianConverter.ToUInt64(buffer, 0);
-            TotalFreeAllocationUnits = LittleEndianConverter.ToUInt64(buffer, 8);
+            TotalAllocationUnits = LittleEndianConverter.ToInt64(buffer, 0);
+            TotalFreeAllocationUnits = LittleEndianConverter.ToInt64(buffer, 8);
             SectorsPerAllocationUnit = LittleEndianConverter.ToUInt32(buffer, 16);
             BytesPerSector = LittleEndianConverter.ToUInt32(buffer, 20);
         }
@@ -38,8 +38,8 @@ namespace SMBLibrary.SMB1
         public override byte[] GetBytes(bool isUnicode)
         {
             byte[] buffer = new byte[Length];
-            LittleEndianWriter.WriteUInt64(buffer, 0, TotalAllocationUnits);
-            LittleEndianWriter.WriteUInt64(buffer, 8, TotalFreeAllocationUnits);
+            LittleEndianWriter.WriteInt64(buffer, 0, TotalAllocationUnits);
+            LittleEndianWriter.WriteInt64(buffer, 8, TotalFreeAllocationUnits);
             LittleEndianWriter.WriteUInt32(buffer, 16, SectorsPerAllocationUnit);
             LittleEndianWriter.WriteUInt32(buffer, 20, BytesPerSector);
             return buffer;

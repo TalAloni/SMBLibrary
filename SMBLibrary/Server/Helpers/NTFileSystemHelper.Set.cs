@@ -101,10 +101,10 @@ namespace SMBLibrary.Server
             }
             else if (information is FileAllocationInformation)
             {
-                ulong allocationSize = ((FileAllocationInformation)information).AllocationSize;
+                long allocationSize = ((FileAllocationInformation)information).AllocationSize;
                 try
                 {
-                    openFile.Stream.SetLength((long)allocationSize);
+                    openFile.Stream.SetLength(allocationSize);
                 }
                 catch (Exception ex)
                 {
@@ -116,10 +116,10 @@ namespace SMBLibrary.Server
             }
             else if (information is FileEndOfFileInformation)
             {
-                ulong endOfFile = ((FileEndOfFileInformation)information).EndOfFile;
+                long endOfFile = ((FileEndOfFileInformation)information).EndOfFile;
                 try
                 {
-                    openFile.Stream.SetLength((long)endOfFile);
+                    openFile.Stream.SetLength(endOfFile);
                 }
                 catch (Exception ex)
                 {

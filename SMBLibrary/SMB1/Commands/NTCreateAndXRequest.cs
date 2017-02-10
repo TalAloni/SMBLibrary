@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -26,7 +26,7 @@ namespace SMBLibrary.SMB1
         public NTCreateFlags Flags;
         public uint RootDirectoryFID;
         public FileAccessMask DesiredAccess;
-        public ulong AllocationSize;
+        public long AllocationSize;
         public ExtendedFileAttributes ExtFileAttributes;
         public ShareAccess ShareAccess;
         public CreateDisposition CreateDisposition;
@@ -47,7 +47,7 @@ namespace SMBLibrary.SMB1
             Flags = (NTCreateFlags)LittleEndianConverter.ToUInt32(this.SMBParameters, 7);
             RootDirectoryFID = LittleEndianConverter.ToUInt32(this.SMBParameters, 11);
             DesiredAccess = (FileAccessMask)LittleEndianConverter.ToUInt32(this.SMBParameters, 15);
-            AllocationSize = LittleEndianConverter.ToUInt64(this.SMBParameters, 19);
+            AllocationSize = LittleEndianConverter.ToInt64(this.SMBParameters, 19);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianConverter.ToUInt32(this.SMBParameters, 27);
             ShareAccess = (ShareAccess)LittleEndianConverter.ToUInt32(this.SMBParameters, 31);
             CreateDisposition = (CreateDisposition)LittleEndianConverter.ToUInt32(this.SMBParameters, 35);
@@ -73,9 +73,9 @@ namespace SMBLibrary.SMB1
             ByteWriter.WriteByte(this.SMBParameters, 4, Reserved);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 5, nameLength);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 7, (uint)Flags);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, 11, (uint)RootDirectoryFID);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, 11, RootDirectoryFID);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 15, (uint)DesiredAccess);
-            LittleEndianWriter.WriteUInt64(this.SMBParameters, 19, (ulong)AllocationSize);
+            LittleEndianWriter.WriteInt64(this.SMBParameters, 19, AllocationSize);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 27, (uint)ExtFileAttributes);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 31, (uint)ShareAccess);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 35, (uint)CreateDisposition);

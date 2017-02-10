@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -18,8 +18,8 @@ namespace SMBLibrary.SMB1
     {
         public const int Length = 22;
 
-        public ulong AllocationSize;
-        public ulong EndOfFile;
+        public long AllocationSize;
+        public long EndOfFile;
         public uint NumberOfLinks;
         public bool DeletePending;
         public bool Directory;
@@ -30,8 +30,8 @@ namespace SMBLibrary.SMB1
 
         public QueryFileStandardInfo(byte[] buffer, int offset)
         {
-            AllocationSize = LittleEndianReader.ReadUInt64(buffer, ref offset);
-            EndOfFile = LittleEndianReader.ReadUInt64(buffer, ref offset);
+            AllocationSize = LittleEndianReader.ReadInt64(buffer, ref offset);
+            EndOfFile = LittleEndianReader.ReadInt64(buffer, ref offset);
             NumberOfLinks = LittleEndianReader.ReadUInt32(buffer, ref offset);
             DeletePending = (ByteReader.ReadByte(buffer, ref offset) > 0);
             Directory = (ByteReader.ReadByte(buffer, ref offset) > 0);
@@ -41,8 +41,8 @@ namespace SMBLibrary.SMB1
         {
             byte[] buffer = new byte[Length];
             int offset = 0;
-            LittleEndianWriter.WriteUInt64(buffer, ref offset, AllocationSize);
-            LittleEndianWriter.WriteUInt64(buffer, ref offset, EndOfFile);
+            LittleEndianWriter.WriteInt64(buffer, ref offset, AllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, ref offset, EndOfFile);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, NumberOfLinks);
             ByteWriter.WriteByte(buffer, ref offset, Convert.ToByte(DeletePending));
             ByteWriter.WriteByte(buffer, ref offset, Convert.ToByte(Directory));

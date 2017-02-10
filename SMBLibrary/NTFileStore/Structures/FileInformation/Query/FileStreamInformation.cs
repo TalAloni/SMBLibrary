@@ -19,8 +19,8 @@ namespace SMBLibrary
 
         public uint NextEntryOffset;
         private uint StreamNameLength;
-        public ulong StreamSize;
-        public ulong StreamAllocationSize;
+        public long StreamSize;
+        public long StreamAllocationSize;
         public string StreamName = String.Empty;
 
         public FileStreamInformation()
@@ -31,8 +31,8 @@ namespace SMBLibrary
         {
             NextEntryOffset = LittleEndianConverter.ToUInt32(buffer, offset + 0);
             StreamNameLength = LittleEndianConverter.ToUInt32(buffer, offset + 4);
-            StreamSize = LittleEndianConverter.ToUInt64(buffer, offset + 8);
-            StreamAllocationSize = LittleEndianConverter.ToUInt64(buffer, offset + 16);
+            StreamSize = LittleEndianConverter.ToInt64(buffer, offset + 8);
+            StreamAllocationSize = LittleEndianConverter.ToInt64(buffer, offset + 16);
             ByteReader.ReadUTF16String(buffer, offset + 24, (int)StreamNameLength / 2);
 
         }
@@ -42,8 +42,8 @@ namespace SMBLibrary
             StreamNameLength = (uint)(StreamName.Length * 2);
             LittleEndianWriter.WriteUInt32(buffer, offset + 0, NextEntryOffset);
             LittleEndianWriter.WriteUInt32(buffer, offset + 4, StreamNameLength);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 8, StreamSize);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 16, StreamAllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, offset + 8, StreamSize);
+            LittleEndianWriter.WriteInt64(buffer, offset + 16, StreamAllocationSize);
             ByteWriter.WriteUTF16String(buffer, offset + 24, StreamName);
         }
 

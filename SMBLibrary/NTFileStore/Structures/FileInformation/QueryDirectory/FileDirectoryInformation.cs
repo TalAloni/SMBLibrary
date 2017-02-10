@@ -21,8 +21,8 @@ namespace SMBLibrary
         public DateTime LastAccessTime;
         public DateTime LastWriteTime;
         public DateTime ChangeTime;
-        public ulong EndOfFile;
-        public ulong AllocationSize;
+        public long EndOfFile;
+        public long AllocationSize;
         public FileAttributes FileAttributes;
         private uint FileNameLength;
         public string FileName = String.Empty;
@@ -37,8 +37,8 @@ namespace SMBLibrary
             LastAccessTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 16));
             LastWriteTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 24));
             ChangeTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 32));
-            EndOfFile = LittleEndianConverter.ToUInt64(buffer, offset + 40);
-            AllocationSize = LittleEndianConverter.ToUInt64(buffer, offset + 48);
+            EndOfFile = LittleEndianConverter.ToInt64(buffer, offset + 40);
+            AllocationSize = LittleEndianConverter.ToInt64(buffer, offset + 48);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 56);
             FileNameLength = LittleEndianConverter.ToUInt32(buffer, offset + 60);
             FileName = ByteReader.ReadUTF16String(buffer, offset + 64, (int)FileNameLength / 2);
@@ -52,8 +52,8 @@ namespace SMBLibrary
             LittleEndianWriter.WriteInt64(buffer, offset + 16, LastAccessTime.ToFileTimeUtc());
             LittleEndianWriter.WriteInt64(buffer, offset + 24, LastWriteTime.ToFileTimeUtc());
             LittleEndianWriter.WriteInt64(buffer, offset + 32, ChangeTime.ToFileTimeUtc());
-            LittleEndianWriter.WriteUInt64(buffer, offset + 40, EndOfFile);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 48, AllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, offset + 40, EndOfFile);
+            LittleEndianWriter.WriteInt64(buffer, offset + 48, AllocationSize);
             LittleEndianWriter.WriteUInt32(buffer, offset + 56, (uint)FileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, offset + 60, FileNameLength);
             ByteWriter.WriteUTF16String(buffer, offset + 64, FileName);

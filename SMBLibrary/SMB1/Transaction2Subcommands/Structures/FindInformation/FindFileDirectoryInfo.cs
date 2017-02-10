@@ -24,8 +24,8 @@ namespace SMBLibrary.SMB1
         public DateTime? LastAccessTime;
         public DateTime? LastWriteTime;
         public DateTime? LastAttrChangeTime;
-        public ulong EndOfFile;
-        public ulong AllocationSize;
+        public long EndOfFile;
+        public long AllocationSize;
         public ExtendedFileAttributes ExtFileAttributes;
         //uint FileNameLength; // In bytes, MUST exclude the null termination.
         public string FileName; // OEM / Unicode character array. MUST be written as SMB_STRING, and read as fixed length string.
@@ -42,8 +42,8 @@ namespace SMBLibrary.SMB1
             LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             LastAttrChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
-            EndOfFile = LittleEndianReader.ReadUInt64(buffer, ref offset);
-            AllocationSize = LittleEndianReader.ReadUInt64(buffer, ref offset);
+            EndOfFile = LittleEndianReader.ReadInt64(buffer, ref offset);
+            AllocationSize = LittleEndianReader.ReadInt64(buffer, ref offset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(buffer, ref offset);
             uint fileNameLength = LittleEndianReader.ReadUInt32(buffer, ref offset);
             FileName = SMB1Helper.ReadFixedLengthString(buffer, ref offset, isUnicode, (int)fileNameLength);
@@ -59,8 +59,8 @@ namespace SMBLibrary.SMB1
             FileTimeHelper.WriteFileTime(buffer, ref offset, LastAccessTime);
             FileTimeHelper.WriteFileTime(buffer, ref offset, LastWriteTime);
             FileTimeHelper.WriteFileTime(buffer, ref offset, LastAttrChangeTime);
-            LittleEndianWriter.WriteUInt64(buffer, ref offset, EndOfFile);
-            LittleEndianWriter.WriteUInt64(buffer, ref offset, AllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, ref offset, EndOfFile);
+            LittleEndianWriter.WriteInt64(buffer, ref offset, AllocationSize);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)ExtFileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, fileNameLength);
             SMB1Helper.WriteSMBString(buffer, ref offset, isUnicode, FileName);

@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB1
     {
         public const int Length = 8;
 
-        public ulong AllocationSize;
+        public long AllocationSize;
 
         public SetFileAllocationInfo()
         {
@@ -30,13 +30,13 @@ namespace SMBLibrary.SMB1
 
         public SetFileAllocationInfo(byte[] buffer, int offset)
         {
-            AllocationSize = LittleEndianConverter.ToUInt64(buffer, offset);
+            AllocationSize = LittleEndianConverter.ToInt64(buffer, offset);
         }
 
         public override byte[] GetBytes()
         {
             byte[] buffer = new byte[Length];
-            LittleEndianWriter.WriteUInt64(buffer, 0, AllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, 0, AllocationSize);
             return buffer;
         }
 

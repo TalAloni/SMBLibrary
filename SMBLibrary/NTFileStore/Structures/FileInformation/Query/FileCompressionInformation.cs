@@ -17,7 +17,7 @@ namespace SMBLibrary
     {
         public const int FixedLength = 16;
 
-        public ulong CompressedFileSize;
+        public long CompressedFileSize;
         public CompressionFormat CompressionFormat;
         public byte CompressionUnitShift;
         public byte ChunkShift;
@@ -30,7 +30,7 @@ namespace SMBLibrary
 
         public FileCompressionInformation(byte[] buffer, int offset)
         {
-            CompressedFileSize = LittleEndianConverter.ToUInt64(buffer, offset + 0);
+            CompressedFileSize = LittleEndianConverter.ToInt64(buffer, offset + 0);
             CompressionFormat = (CompressionFormat)LittleEndianConverter.ToUInt16(buffer, offset + 8);
             CompressionUnitShift = ByteReader.ReadByte(buffer, offset + 10);
             ChunkShift = ByteReader.ReadByte(buffer, offset + 11);
@@ -40,7 +40,7 @@ namespace SMBLibrary
 
         public override void WriteBytes(byte[] buffer, int offset)
         {
-            LittleEndianWriter.WriteUInt64(buffer, offset + 0, CompressedFileSize);
+            LittleEndianWriter.WriteInt64(buffer, offset + 0, CompressedFileSize);
             LittleEndianWriter.WriteUInt16(buffer, offset + 8, (ushort)CompressionFormat);
             ByteWriter.WriteByte(buffer, offset + 10, CompressionUnitShift);
             ByteWriter.WriteByte(buffer, offset + 11, ChunkShift);

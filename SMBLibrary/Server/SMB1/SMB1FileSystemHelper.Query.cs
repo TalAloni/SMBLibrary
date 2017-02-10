@@ -42,8 +42,8 @@ namespace SMBLibrary.Server.SMB1
                 case QueryInformationLevel.SMB_QUERY_FILE_STANDARD_INFO:
                     {
                         QueryFileStandardInfo information = new QueryFileStandardInfo();
-                        information.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        information.EndOfFile = entry.Size;
+                        information.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.EndOfFile = (long)entry.Size;
                         information.DeletePending = deletePending;
                         information.Directory = entry.IsDirectory;
                         result = information;
@@ -71,8 +71,8 @@ namespace SMBLibrary.Server.SMB1
                         information.LastWriteDateTime = entry.LastWriteTime;
                         information.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         information.LastChangeTime = entry.LastWriteTime;
-                        information.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        information.EndOfFile = entry.Size;
+                        information.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.EndOfFile = (long)entry.Size;
                         information.DeletePending = deletePending;
                         information.Directory = entry.IsDirectory;
                         information.EASize = 0;
@@ -90,8 +90,8 @@ namespace SMBLibrary.Server.SMB1
                 case QueryInformationLevel.SMB_QUERY_FILE_STREAM_INFO:
                     {
                         QueryFileStreamInfo information = new QueryFileStreamInfo();
-                        information.StreamSize = entry.Size;
-                        information.StreamAllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.StreamSize = (long)entry.Size;
+                        information.StreamAllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         information.StreamName = "::$DATA";
                         result = information;
                         return NTStatus.STATUS_SUCCESS;

@@ -28,8 +28,8 @@ namespace SMBLibrary.Server.SMB1
                 case QueryFSInformationLevel.SMB_QUERY_FS_SIZE_INFO:
                     {
                         QueryFSSizeInfo information = new QueryFSSizeInfo();
-                        information.TotalAllocationUnits = (ulong)(fileSystem.Size / NTFileSystemHelper.ClusterSize);
-                        information.TotalFreeAllocationUnits = (ulong)(fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize);
+                        information.TotalAllocationUnits = fileSystem.Size / NTFileSystemHelper.ClusterSize;
+                        information.TotalFreeAllocationUnits = fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize;
                         information.BytesPerSector = NTFileSystemHelper.BytesPerSector;
                         information.SectorsPerAllocationUnit = NTFileSystemHelper.ClusterSize / NTFileSystemHelper.BytesPerSector;
                         result = information;

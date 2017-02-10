@@ -100,10 +100,10 @@ namespace SMBLibrary.Server.SMB1
             {
                 // This information level is used to set the file length in bytes.
                 // Note: the input will NOT be a multiple of the cluster size / bytes per sector.
-                ulong allocationSize = ((SetFileAllocationInfo)information).AllocationSize;
+                long allocationSize = ((SetFileAllocationInfo)information).AllocationSize;
                 try
                 {
-                    openFile.Stream.SetLength((long)allocationSize);
+                    openFile.Stream.SetLength(allocationSize);
                 }
                 catch (IOException ex)
                 {
@@ -128,10 +128,10 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (information is SetFileEndOfFileInfo)
             {
-                ulong endOfFile = ((SetFileEndOfFileInfo)information).EndOfFile;
+                long endOfFile = ((SetFileEndOfFileInfo)information).EndOfFile;
                 try
                 {
-                    openFile.Stream.SetLength((long)endOfFile);
+                    openFile.Stream.SetLength(endOfFile);
                 }
                 catch (IOException ex)
                 {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB1
     {
         public const int Length = 16;
 
-        public ulong CompressedFileSize;
+        public long CompressedFileSize;
         public CompressionFormat CompressionFormat;
         public byte CompressionUnitShift;
         public byte ChunkShift;
@@ -32,7 +32,7 @@ namespace SMBLibrary.SMB1
 
         public QueryFileCompressionInfo(byte[] buffer, int offset)
         {
-            CompressedFileSize = LittleEndianReader.ReadUInt64(buffer, ref offset);
+            CompressedFileSize = LittleEndianReader.ReadInt64(buffer, ref offset);
             CompressionFormat = (CompressionFormat)LittleEndianReader.ReadUInt16(buffer, ref offset);
             CompressionUnitShift = ByteReader.ReadByte(buffer, ref offset);
             ChunkShift = ByteReader.ReadByte(buffer, ref offset);
@@ -44,7 +44,7 @@ namespace SMBLibrary.SMB1
         {
             byte[] buffer = new byte[Length];
             int offset = 0;
-            LittleEndianWriter.WriteUInt64(buffer, ref offset, CompressedFileSize);
+            LittleEndianWriter.WriteInt64(buffer, ref offset, CompressedFileSize);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)CompressionFormat);
             ByteWriter.WriteByte(buffer, ref offset, CompressionUnitShift);
             ByteWriter.WriteByte(buffer, ref offset, ChunkShift);

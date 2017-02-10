@@ -55,8 +55,8 @@ namespace SMBLibrary.Server
                 case FileInformationClass.FileStandardInformation:
                     {
                         FileStandardInformation information = new FileStandardInformation();
-                        information.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        information.EndOfFile = entry.Size;
+                        information.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.EndOfFile = (long)entry.Size;
                         information.Directory = entry.IsDirectory;
                         information.DeletePending = deletePending;
                         result = information;
@@ -110,8 +110,8 @@ namespace SMBLibrary.Server
                         // This information class is used to enumerate the data streams of a file or a directory.
                         // A buffer of FileStreamInformation data elements is returned by the server.
                         FileStreamInformation information = new FileStreamInformation();
-                        information.StreamSize = entry.Size;
-                        information.StreamAllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.StreamSize = (long)entry.Size;
+                        information.StreamAllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
                         information.StreamName = "::$DATA";
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
@@ -143,8 +143,8 @@ namespace SMBLibrary.Server
                         information.LastAccessTime = entry.LastAccessTime;
                         information.LastWriteTime = entry.LastWriteTime;
                         information.ChangeTime = entry.LastWriteTime;
-                        information.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        information.EndOfFile = entry.Size;
+                        information.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.EndOfFile = (long)entry.Size;
                         information.FileAttributes = GetFileAttributes(entry);
                         result = information;
                         return NTStatus.STATUS_SUCCESS;

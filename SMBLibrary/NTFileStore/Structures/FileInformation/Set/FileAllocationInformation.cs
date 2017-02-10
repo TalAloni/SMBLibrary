@@ -18,7 +18,7 @@ namespace SMBLibrary
     {
         public const int FixedLength = 8;
 
-        public ulong AllocationSize;
+        public long AllocationSize;
 
         public FileAllocationInformation()
         {
@@ -26,12 +26,12 @@ namespace SMBLibrary
 
         public FileAllocationInformation(byte[] buffer, int offset)
         {
-            AllocationSize = LittleEndianConverter.ToUInt64(buffer, offset);
+            AllocationSize = LittleEndianConverter.ToInt64(buffer, offset);
         }
 
         public override void WriteBytes(byte[] buffer, int offset)
         {
-            LittleEndianWriter.WriteUInt64(buffer, offset, AllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, offset, AllocationSize);
         }
 
         public override FileInformationClass FileInformationClass
