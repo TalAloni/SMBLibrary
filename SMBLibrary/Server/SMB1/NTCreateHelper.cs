@@ -44,11 +44,11 @@ namespace SMBLibrary.Server.SMB1
                     }
                     if (isExtended)
                     {
-                        return CreateResponseExtendedForNamedPipe(fileID.Value);
+                        return CreateResponseExtendedForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);
                     }
                     else
                     {
-                        return CreateResponseForNamedPipe(fileID.Value);
+                        return CreateResponseForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);
                     }
                 }
 
@@ -60,7 +60,9 @@ namespace SMBLibrary.Server.SMB1
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
                 
                 FileSystemEntry entry;
-                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, fileSystemShare.FileSystem, path, request.DesiredAccess, request.CreateDisposition, request.CreateOptions, state);
+                Stream stream;
+                FileStatus fileStatus;
+                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, out stream, out fileStatus, fileSystemShare.FileSystem, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions, state);
                 if (createStatus != NTStatus.STATUS_SUCCESS)
                 {
                     header.Status = createStatus;
@@ -69,39 +71,20 @@ namespace SMBLibrary.Server.SMB1
 
                 FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(request.DesiredAccess);
 
-                Stream stream;
-                bool deleteOnClose = false;
-                if (fileAccess == (FileAccess)0 || entry.IsDirectory)
-                {
-                    stream = null;
-                }
-                else
-                {
-                    IFileSystem fileSystem = fileSystemShare.FileSystem;
-                    // When FILE_OPEN_REPARSE_POINT is specified, the operation should continue normally if the file is not a reparse point.
-                    // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file, with the exception
-                    // of a file copy operation (where the caller will attempt to simply copy the reparse point).
-                    deleteOnClose = (request.CreateOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
-                    bool openReparsePoint = (request.CreateOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
-                    bool disableBuffering = (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
-                    bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
-                    NTStatus openStatus = NTFileSystemHelper.OpenFile(out stream, fileSystem, path, fileAccess, request.ShareAccess, buffered, state);
-                    if (openStatus != NTStatus.STATUS_SUCCESS)
-                    {
-                        header.Status = openStatus;
-                        return new ErrorResponse(request.CommandName);
-                    }
-                }
-
+                bool deleteOnClose = (stream != null) && ((request.CreateOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0);
                 ushort? fileID = session.AddOpenFile(path, stream, deleteOnClose);
                 if (!fileID.HasValue)
                 {
+                    if (stream != null)
+                    {
+                        stream.Close();
+                    }
                     header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
                     return new ErrorResponse(request.CommandName);
                 }
                 if (isExtended)
                 {
-                    NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileSystemEntry(entry, fileID.Value);
+                    NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileSystemEntry(entry, fileID.Value, fileStatus);
                     if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
                     {
                         response.OpLockLevel = OpLockLevel.BatchOpLockGranted;
@@ -110,7 +93,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
-                    NTCreateAndXResponse response = CreateResponseFromFileSystemEntry(entry, fileID.Value);
+                    NTCreateAndXResponse response = CreateResponseFromFileSystemEntry(entry, fileID.Value, fileStatus);
                     if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
                     {
                         response.OpLockLevel = OpLockLevel.BatchOpLockGranted;
@@ -120,11 +103,11 @@ namespace SMBLibrary.Server.SMB1
             }
         }
 
-        private static NTCreateAndXResponse CreateResponseForNamedPipe(ushort fileID)
+        private static NTCreateAndXResponse CreateResponseForNamedPipe(ushort fileID, FileStatus fileStatus)
         {
             NTCreateAndXResponse response = new NTCreateAndXResponse();
             response.FID = fileID;
-            response.CreateDisposition = CreateDisposition.FILE_OPEN;
+            response.CreateDisposition = ToCreateDisposition(fileStatus);
             response.ExtFileAttributes = ExtendedFileAttributes.Normal;
             response.ResourceType = ResourceType.FileTypeMessageModePipe;
             response.NMPipeStatus.ICount = 255;
@@ -133,11 +116,11 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        private static NTCreateAndXResponseExtended CreateResponseExtendedForNamedPipe(ushort fileID)
+        private static NTCreateAndXResponseExtended CreateResponseExtendedForNamedPipe(ushort fileID, FileStatus fileStatus)
         {
             NTCreateAndXResponseExtended response = new NTCreateAndXResponseExtended();
             response.FID = fileID;
-            response.CreateDisposition = CreateDisposition.FILE_OPEN;
+            response.CreateDisposition = ToCreateDisposition(fileStatus);
             response.ExtFileAttributes = ExtendedFileAttributes.Normal;
             response.ResourceType = ResourceType.FileTypeMessageModePipe;
             NamedPipeStatus status = new NamedPipeStatus();
@@ -157,7 +140,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        private static NTCreateAndXResponse CreateResponseFromFileSystemEntry(FileSystemEntry entry, ushort fileID)
+        private static NTCreateAndXResponse CreateResponseFromFileSystemEntry(FileSystemEntry entry, ushort fileID, FileStatus fileStatus)
         {
             NTCreateAndXResponse response = new NTCreateAndXResponse();
             if (entry.IsDirectory)
@@ -170,7 +153,7 @@ namespace SMBLibrary.Server.SMB1
                 response.ExtFileAttributes = ExtendedFileAttributes.Normal;
             }
             response.FID = fileID;
-            response.CreateDisposition = CreateDisposition.FILE_OPEN;
+            response.CreateDisposition = ToCreateDisposition(fileStatus);
             response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
             response.EndOfFile = (long)entry.Size;
             response.CreateTime = entry.CreationTime;
@@ -181,7 +164,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        private static NTCreateAndXResponseExtended CreateResponseExtendedFromFileSystemEntry(FileSystemEntry entry, ushort fileID)
+        private static NTCreateAndXResponseExtended CreateResponseExtendedFromFileSystemEntry(FileSystemEntry entry, ushort fileID, FileStatus fileStatus)
         {
             NTCreateAndXResponseExtended response = new NTCreateAndXResponseExtended();
             if (entry.IsDirectory)
@@ -194,11 +177,11 @@ namespace SMBLibrary.Server.SMB1
                 response.ExtFileAttributes = ExtendedFileAttributes.Normal;
             }
             response.FID = fileID;
+            response.CreateDisposition = ToCreateDisposition(fileStatus);
             response.CreateTime = entry.CreationTime;
             response.LastAccessTime = entry.LastAccessTime;
             response.LastWriteTime = entry.LastWriteTime;
             response.LastChangeTime = entry.LastWriteTime;
-            response.CreateDisposition = CreateDisposition.FILE_OPEN;
             response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
             response.EndOfFile = (long)entry.Size;
             response.ResourceType = ResourceType.FileTypeDisk;
@@ -213,6 +196,26 @@ namespace SMBLibrary.Server.SMB1
                                                     FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
                                                     FileAccessMask.READ_CONTROL | FileAccessMask.SYNCHRONIZE;
             return response;
+        }
+
+        private static CreateDisposition ToCreateDisposition(FileStatus fileStatus)
+        {
+            if (fileStatus == FileStatus.FILE_SUPERSEDED)
+            {
+                return CreateDisposition.FILE_SUPERSEDE;
+            }
+            else if (fileStatus == FileStatus.FILE_CREATED)
+            {
+                return CreateDisposition.FILE_CREATE;
+            }
+            else if (fileStatus == FileStatus.FILE_OVERWRITTEN)
+            {
+                return CreateDisposition.FILE_OVERWRITE;
+            }
+            else
+            {
+                return CreateDisposition.FILE_OPEN;
+            }
         }
     }
 }

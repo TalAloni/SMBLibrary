@@ -42,7 +42,7 @@ namespace SMBLibrary.Server.SMB2
                     {
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
                     }
-                    return CreateResponseForNamedPipe(persistentFileID.Value);
+                    return CreateResponseForNamedPipe(persistentFileID.Value, FileStatus.FILE_OPENED);
                 }
                 else
                 {
@@ -54,44 +54,26 @@ namespace SMBLibrary.Server.SMB2
                 FileSystemShare fileSystemShare = (FileSystemShare)share;
 
                 FileSystemEntry entry;
-                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, fileSystemShare.FileSystem, path, request.DesiredAccess, request.CreateDisposition, request.CreateOptions, state);
+                Stream stream;
+                FileStatus fileStatus;
+                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, out stream, out fileStatus, fileSystemShare.FileSystem, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions, state);
                 if (createStatus != NTStatus.STATUS_SUCCESS)
                 {
                     return new ErrorResponse(request.CommandName, createStatus);
                 }
 
-                FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(request.DesiredAccess.File);
-
-                Stream stream;
-                bool deleteOnClose = false;
-                if (fileAccess == (FileAccess)0 || entry.IsDirectory)
-                {
-                    stream = null;
-                }
-                else
-                {
-                    IFileSystem fileSystem = fileSystemShare.FileSystem;
-                    // When FILE_OPEN_REPARSE_POINT is specified, the operation should continue normally if the file is not a reparse point.
-                    // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file, with the exception
-                    // of a file copy operation (where the caller will attempt to simply copy the reparse point).
-                    deleteOnClose = (request.CreateOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
-                    bool openReparsePoint = (request.CreateOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
-                    bool disableBuffering = (request.CreateOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
-                    bool buffered = (request.CreateOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
-                    NTStatus openStatus = NTFileSystemHelper.OpenFile(out stream, fileSystem, path, fileAccess, request.ShareAccess, buffered, state);
-                    if (openStatus != NTStatus.STATUS_SUCCESS)
-                    {
-                        return new ErrorResponse(request.CommandName, openStatus);
-                    }
-                }
-
+                bool deleteOnClose = (stream != null) && ((request.CreateOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0);
                 ulong? persistentFileID = session.AddOpenFile(path, stream, deleteOnClose);
                 if (!persistentFileID.HasValue)
                 {
+                    if (stream != null)
+                    {
+                        stream.Close();
+                    }
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
                 }
 
-                CreateResponse response = CreateResponseFromFileSystemEntry(entry, persistentFileID.Value);
+                CreateResponse response = CreateResponseFromFileSystemEntry(entry, persistentFileID.Value, fileStatus);
                 if (request.RequestedOplockLevel == OplockLevel.Batch)
                 {
                     response.OplockLevel = OplockLevel.Batch;
@@ -100,16 +82,16 @@ namespace SMBLibrary.Server.SMB2
             }
         }
 
-        private static CreateResponse CreateResponseForNamedPipe(ulong persistentFileID)
+        private static CreateResponse CreateResponseForNamedPipe(ulong persistentFileID, FileStatus fileStatus)
         {
             CreateResponse response = new CreateResponse();
-            response.FileId.Persistent = persistentFileID;
-            response.CreateAction = CreateAction.FILE_OPENED;
+            response.CreateAction = (CreateAction)fileStatus;
             response.FileAttributes = FileAttributes.Normal;
+            response.FileId.Persistent = persistentFileID;
             return response;
         }
 
-        private static CreateResponse CreateResponseFromFileSystemEntry(FileSystemEntry entry, ulong persistentFileID)
+        private static CreateResponse CreateResponseFromFileSystemEntry(FileSystemEntry entry, ulong persistentFileID, FileStatus fileStatus)
         {
             CreateResponse response = new CreateResponse();
             if (entry.IsDirectory)
@@ -120,14 +102,14 @@ namespace SMBLibrary.Server.SMB2
             {
                 response.FileAttributes = FileAttributes.Normal;
             }
-            response.FileId.Persistent = persistentFileID;
-            response.CreateAction = CreateAction.FILE_OPENED;
+            response.CreateAction = (CreateAction)fileStatus;
             response.CreationTime = entry.CreationTime;
             response.LastWriteTime = entry.LastWriteTime;
             response.ChangeTime = entry.LastWriteTime;
             response.LastAccessTime = entry.LastAccessTime;
             response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
             response.EndofFile = (long)entry.Size;
+            response.FileId.Persistent = persistentFileID;
             return response;
         }
     }

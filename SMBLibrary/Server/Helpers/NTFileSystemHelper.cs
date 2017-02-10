@@ -20,8 +20,10 @@ namespace SMBLibrary.Server
         public const int BytesPerSector = 512;
         public const int ClusterSize = 4096;
 
-        public static NTStatus CreateFile(out FileSystemEntry entry, IFileSystem fileSystem, string path, AccessMask desiredAccess, CreateDisposition createDisposition, CreateOptions createOptions, ConnectionState state)
+        public static NTStatus CreateFile(out FileSystemEntry entry, out Stream stream, out FileStatus fileStatus, IFileSystem fileSystem, string path, AccessMask desiredAccess, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, ConnectionState state)
         {
+            fileStatus = FileStatus.FILE_DOES_NOT_EXIST;
+            stream = null;
             FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(desiredAccess, createDisposition);
             bool requestedWriteAccess = (createAccess & FileAccess.Write) > 0;
 
@@ -64,6 +66,7 @@ namespace SMBLibrary.Server
                     return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
                 }
 
+                fileStatus = FileStatus.FILE_EXISTS;
                 if (entry.IsDirectory && forceFile)
                 {
                     return NTStatus.STATUS_FILE_IS_A_DIRECTORY;
@@ -81,6 +84,7 @@ namespace SMBLibrary.Server
                 {
                     // File already exists, fail the request
                     state.LogToServer(Severity.Debug, "CreateFile: File '{0}' already exist", path);
+                    fileStatus = FileStatus.FILE_EXISTS;
                     return NTStatus.STATUS_OBJECT_NAME_COLLISION;
                 }
 
@@ -108,6 +112,7 @@ namespace SMBLibrary.Server
                     state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
                     return status;
                 }
+                fileStatus = FileStatus.FILE_CREATED;
             }
             else if (createDisposition == CreateDisposition.FILE_OPEN_IF ||
                      createDisposition == CreateDisposition.FILE_OVERWRITE ||
@@ -145,9 +150,11 @@ namespace SMBLibrary.Server
                         state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
                         return status;
                     }
+                    fileStatus = FileStatus.FILE_CREATED;
                 }
                 else
                 {
+                    fileStatus = FileStatus.FILE_EXISTS;
                     if (!requestedWriteAccess)
                     {
                         return NTStatus.STATUS_ACCESS_DENIED;
@@ -168,6 +175,7 @@ namespace SMBLibrary.Server
                             state.LogToServer(Severity.Debug, "CreateFile: Error truncating '{0}'. {1}.", path, status);
                             return status;
                         }
+                        fileStatus = FileStatus.FILE_OVERWRITTEN;
                     }
                     else if (createDisposition == CreateDisposition.FILE_SUPERSEDE)
                     {
@@ -202,6 +210,7 @@ namespace SMBLibrary.Server
                             state.LogToServer(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
                             return status;
                         }
+                        fileStatus = FileStatus.FILE_SUPERSEDED;
                     }
                 }
             }
@@ -210,12 +219,40 @@ namespace SMBLibrary.Server
                 return NTStatus.STATUS_INVALID_PARAMETER;
             }
 
+            FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(desiredAccess.File);
+            bool deleteOnClose = false;
+            if (fileAccess == (FileAccess)0 || entry.IsDirectory)
+            {
+                stream = null;
+            }
+            else
+            {
+                deleteOnClose = (createOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
+                NTStatus openStatus = OpenFileStream(out stream, fileSystem, path, fileAccess, shareAccess, createOptions, state);
+                if (openStatus != NTStatus.STATUS_SUCCESS)
+                {
+                    return openStatus;
+                }
+            }
+
+            if (fileStatus != FileStatus.FILE_CREATED &&
+                fileStatus != FileStatus.FILE_OVERWRITTEN &&
+                fileStatus != FileStatus.FILE_SUPERSEDED)
+            {
+                fileStatus = FileStatus.FILE_OPENED;
+            }
             return NTStatus.STATUS_SUCCESS;
         }
 
-        public static NTStatus OpenFile(out Stream stream, IFileSystem fileSystem, string path, FileAccess fileAccess, ShareAccess shareAccess, bool buffered, ConnectionState state)
+        public static NTStatus OpenFileStream(out Stream stream, IFileSystem fileSystem, string path, FileAccess fileAccess, ShareAccess shareAccess, CreateOptions openOptions, ConnectionState state)
         {
             stream = null;
+            // When FILE_OPEN_REPARSE_POINT is specified, the operation should continue normally if the file is not a reparse point.
+            // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file, with the exception
+            // of a file copy operation (where the caller will attempt to simply copy the reparse point).
+            bool openReparsePoint = (openOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
+            bool disableBuffering = (openOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
+            bool buffered = (openOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
             FileShare fileShare = NTFileStoreHelper.ToFileShare(shareAccess);
             state.LogToServer(Severity.Verbose, "OpenFile: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
             try

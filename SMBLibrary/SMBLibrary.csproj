@@ -89,6 +89,7 @@
     <Compile Include="NTFileStore\Enums\FileSystemInformation\SectorSizeInformationFlags.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateDisposition.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateOptions.cs" />
+    <Compile Include="NTFileStore\Enums\NtCreateFile\FileStatus.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\ShareAccess.cs" />
     <Compile Include="NTFileStore\NTFileStoreHelper.cs" />
     <Compile Include="NTFileStore\Structures\ACE\AccessAllowedACE.cs" />
