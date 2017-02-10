@@ -21,7 +21,7 @@ namespace SMBLibrary.Server.SMB1
             if (!share.HasWriteAccess(session.UserName, request.DirectoryName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_CREATE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
             IFileSystem fileSystem = share.FileSystem;
 
@@ -33,13 +33,13 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Debug, "CreateDirectory: Cannot create '{0}'", request.DirectoryName);
                 header.Status = NTStatus.STATUS_OBJECT_NAME_INVALID;
-                return new ErrorResponse(CommandName.SMB_COM_CREATE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
             catch (UnauthorizedAccessException)
             {
                 state.LogToServer(Severity.Debug, "CreateDirectory: Cannot create '{0}', Access Denied", request.DirectoryName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_CREATE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
 
             return new CreateDirectoryResponse();
@@ -51,7 +51,7 @@ namespace SMBLibrary.Server.SMB1
             if (!share.HasWriteAccess(session.UserName, request.DirectoryName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
             IFileSystem fileSystem = share.FileSystem;
 
@@ -59,13 +59,13 @@ namespace SMBLibrary.Server.SMB1
             if (entry == null)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
 
             if (!entry.IsDirectory)
             {
                 header.Status = NTStatus.STATUS_OBJECT_PATH_INVALID;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
 
             try
@@ -77,13 +77,13 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Debug, "DeleteDirectory: Cannot delete '{0}'", request.DirectoryName);
                 header.Status = NTStatus.STATUS_CANNOT_DELETE;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
             catch (UnauthorizedAccessException)
             {
                 state.LogToServer(Severity.Debug, "DeleteDirectory: Cannot delete '{0}', Access Denied", request.DirectoryName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
         }
 
@@ -94,7 +94,7 @@ namespace SMBLibrary.Server.SMB1
             if (entry == null || !entry.IsDirectory)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                return new ErrorResponse(CommandName.SMB_COM_CHECK_DIRECTORY);
+                return new ErrorResponse(request.CommandName);
             }
 
             return new CheckDirectoryResponse();
@@ -106,7 +106,7 @@ namespace SMBLibrary.Server.SMB1
             if (!share.HasWriteAccess(session.UserName, request.FileName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE);
+                return new ErrorResponse(request.CommandName);
             }
             IFileSystem fileSystem = share.FileSystem;
 
@@ -114,14 +114,14 @@ namespace SMBLibrary.Server.SMB1
             if (entry == null)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE);
+                return new ErrorResponse(request.CommandName);
             }
 
             if (!entry.IsDirectory && (request.SearchAttributes & SMBFileAttributes.Directory) > 0
                 || entry.IsDirectory && (request.SearchAttributes & SMBFileAttributes.Directory) == 0)
             {
                 header.Status = NTStatus.STATUS_OBJECT_PATH_INVALID;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE);
+                return new ErrorResponse(request.CommandName);
             }
 
             try
@@ -133,13 +133,13 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Debug, "Delete: Cannot delete '{0}'", request.FileName);
                 header.Status = NTStatus.STATUS_CANNOT_DELETE;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE);
+                return new ErrorResponse(request.CommandName);
             }
             catch (UnauthorizedAccessException)
             {
                 state.LogToServer(Severity.Debug, "DeleteDirectory: Cannot delete '{0}', Access Denied", request.FileName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_DELETE);
+                return new ErrorResponse(request.CommandName);
             }
         }
 
@@ -149,12 +149,12 @@ namespace SMBLibrary.Server.SMB1
             if (!share.HasWriteAccess(session.UserName, request.OldFileName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_RENAME);
+                return new ErrorResponse(request.CommandName);
             }
             if (!share.HasWriteAccess(session.UserName, request.NewFileName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_RENAME);
+                return new ErrorResponse(request.CommandName);
             }
             IFileSystem fileSystem = share.FileSystem;
 
@@ -162,7 +162,7 @@ namespace SMBLibrary.Server.SMB1
             if (sourceEntry == null)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                return new ErrorResponse(CommandName.SMB_COM_RENAME);
+                return new ErrorResponse(request.CommandName);
             }
 
             // The file must not already exist unless we just want to upcase / downcase a filename letter
@@ -172,7 +172,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 // The new file already exists.
                 header.Status = NTStatus.STATUS_OBJECT_NAME_COLLISION;
-                return new ErrorResponse(CommandName.SMB_COM_RENAME);
+                return new ErrorResponse(request.CommandName);
             }
 
             try
@@ -184,13 +184,13 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Debug, "Rename: Sharing violation renaming '{0}'", request.OldFileName);
                 header.Status = NTStatus.STATUS_SHARING_VIOLATION;
-                return new ErrorResponse(CommandName.SMB_COM_RENAME);
+                return new ErrorResponse(request.CommandName);
             }
             catch (UnauthorizedAccessException)
             {
                 state.LogToServer(Severity.Debug, "Rename: Cannot rename '{0}', Access Denied", request.OldFileName);
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_RENAME);
+                return new ErrorResponse(request.CommandName);
             }
         }
 
@@ -201,7 +201,7 @@ namespace SMBLibrary.Server.SMB1
             if (entry == null)
             {
                 header.Status = NTStatus.STATUS_OBJECT_PATH_INVALID;
-                return new ErrorResponse(CommandName.SMB_COM_QUERY_INFORMATION);
+                return new ErrorResponse(request.CommandName);
             }
 
             QueryInformationResponse response = new QueryInformationResponse();
@@ -218,7 +218,7 @@ namespace SMBLibrary.Server.SMB1
             if (!share.HasWriteAccess(session.UserName, request.FileName, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
+                return new ErrorResponse(request.CommandName);
             }
             IFileSystem fileSystem = share.FileSystem;
 
@@ -226,7 +226,7 @@ namespace SMBLibrary.Server.SMB1
             if (entry == null)
             {
                 header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION);
+                return new ErrorResponse(request.CommandName);
             }
 
             bool? isHidden = null;
@@ -261,13 +261,13 @@ namespace SMBLibrary.Server.SMB1
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
-                return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
+                return new ErrorResponse(request.CommandName);
             }
 
             if (!share.HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return new ErrorResponse(CommandName.SMB_COM_SET_INFORMATION2);
+                return new ErrorResponse(request.CommandName);
             }
             IFileSystem fileSystem = share.FileSystem;
 

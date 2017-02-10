@@ -30,7 +30,7 @@ namespace SMBLibrary.Server.SMB1
                     if (!fileID.HasValue)
                     {
                         header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
-                        return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                        return new ErrorResponse(request.CommandName);
                     }
                     if (isExtended)
                     {
@@ -43,7 +43,7 @@ namespace SMBLibrary.Server.SMB1
                 }
 
                 header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
-                return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                return new ErrorResponse(request.CommandName);
             }
             else // FileSystemShare
             {
@@ -60,7 +60,7 @@ namespace SMBLibrary.Server.SMB1
                 if (createStatus != NTStatus.STATUS_SUCCESS)
                 {
                     header.Status = createStatus;
-                    return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
 
                 FileAccess fileAccess = NTFileSystemHelper.ToFileAccess(request.DesiredAccess);
@@ -85,7 +85,7 @@ namespace SMBLibrary.Server.SMB1
                     if (openStatus != NTStatus.STATUS_SUCCESS)
                     {
                         header.Status = openStatus;
-                        return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                        return new ErrorResponse(request.CommandName);
                     }
                 }
 
@@ -93,7 +93,7 @@ namespace SMBLibrary.Server.SMB1
                 if (!fileID.HasValue)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
-                    return new ErrorResponse(CommandName.SMB_COM_NT_CREATE_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
                 if (isExtended)
                 {

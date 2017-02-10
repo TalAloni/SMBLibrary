@@ -22,7 +22,7 @@ namespace SMBLibrary.Server.SMB1
             if (openFile == null)
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
-                return new ErrorResponse(CommandName.SMB_COM_CLOSE);
+                return new ErrorResponse(request.CommandName);
             }
 
             state.LogToServer(Severity.Verbose, "Close: Closing file '{0}'", openFile.Path);

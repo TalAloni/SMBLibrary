@@ -34,7 +34,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Information, "User '{0}' authentication using an empty password was rejected", message.UserName);
                 header.Status = NTStatus.STATUS_ACCOUNT_RESTRICTION;
-                return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                return new ErrorResponse(request.CommandName);
             }
 
             if (loginSuccess)
@@ -44,7 +44,7 @@ namespace SMBLibrary.Server.SMB1
                 if (session == null)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
-                    return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
                 header.UID = session.UserID;
                 response.PrimaryDomain = request.PrimaryDomain;
@@ -56,7 +56,7 @@ namespace SMBLibrary.Server.SMB1
                 if (session == null)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
-                    return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
                 header.UID = session.UserID;
                 response.Action = SessionSetupAction.SetupGuest;
@@ -66,7 +66,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Information, "User '{0}' failed authentication", message.UserName);
                 header.Status = NTStatus.STATUS_LOGON_FAILURE;
-                return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                return new ErrorResponse(request.CommandName);
             }
             if ((request.Capabilities & ServerCapabilities.LargeRead) > 0)
             {
@@ -97,7 +97,7 @@ namespace SMBLibrary.Server.SMB1
             if (!AuthenticationMessageUtils.IsSignatureValid(messageBytes))
             {
                 header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
-                return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                return new ErrorResponse(request.CommandName);
             }
 
             // According to [MS-SMB] 3.3.5.3, a UID MUST be allocated if the server returns STATUS_MORE_PROCESSING_REQUIRED
@@ -139,7 +139,7 @@ namespace SMBLibrary.Server.SMB1
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authentication using an empty password was rejected", authenticateMessage.UserName);
                     header.Status = NTStatus.STATUS_ACCOUNT_RESTRICTION;
-                    return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
 
                 if (loginSuccess)
@@ -157,7 +157,7 @@ namespace SMBLibrary.Server.SMB1
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication", authenticateMessage.UserName);
                     header.Status = NTStatus.STATUS_LOGON_FAILURE;
-                    return new ErrorResponse(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
 
                 if (!isRawMessage)

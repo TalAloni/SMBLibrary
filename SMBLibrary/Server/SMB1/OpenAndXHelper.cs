@@ -30,7 +30,7 @@ namespace SMBLibrary.Server.SMB1
                     if (!fileID.HasValue)
                     {
                         header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
-                        return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                        return new ErrorResponse(request.CommandName);
                     }
                     if (isExtended)
                     {
@@ -43,7 +43,7 @@ namespace SMBLibrary.Server.SMB1
                 }
 
                 header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
-                return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                return new ErrorResponse(request.CommandName);
             }
             else // FileSystemShare
             {
@@ -64,7 +64,7 @@ namespace SMBLibrary.Server.SMB1
                     if (request.OpenMode.FileExistsOpts == FileExistsOpts.ReturnError)
                     {
                         header.Status = NTStatus.STATUS_OBJECT_NAME_COLLISION;
-                        return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                        return new ErrorResponse(request.CommandName);
                     }
                     else if (request.OpenMode.FileExistsOpts == FileExistsOpts.TruncateToZero)
                     {
@@ -79,18 +79,18 @@ namespace SMBLibrary.Server.SMB1
                             if (errorCode == (ushort)Win32Error.ERROR_SHARING_VIOLATION)
                             {
                                 header.Status = NTStatus.STATUS_SHARING_VIOLATION;
-                                return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                                return new ErrorResponse(request.CommandName);
                             }
                             else
                             {
                                 header.Status = NTStatus.STATUS_DATA_ERROR;
-                                return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                                return new ErrorResponse(request.CommandName);
                             }
                         }
                         catch (UnauthorizedAccessException)
                         {
                             header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                            return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                            return new ErrorResponse(request.CommandName);
                         }
                         openResult = OpenResult.FileExistedAndWasTruncated;
                     }
@@ -104,7 +104,7 @@ namespace SMBLibrary.Server.SMB1
                     if (request.OpenMode.CreateFile == CreateFile.ReturnErrorIfNotExist)
                     {
                         header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                        return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                        return new ErrorResponse(request.CommandName);
                     }
 
                     if ((request.FileAttrs & SMBFileAttributes.Directory) > 0)
@@ -136,7 +136,7 @@ namespace SMBLibrary.Server.SMB1
                 if (!fileID.HasValue)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
-                    return new ErrorResponse(CommandName.SMB_COM_OPEN_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
                 if (isExtended)
                 {

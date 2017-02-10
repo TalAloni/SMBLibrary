@@ -252,7 +252,7 @@ namespace SMBLibrary.Server
                     else if (command is LockingAndXRequest)
                     {
                         header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                        return new ErrorResponse(CommandName.SMB_COM_LOCKING_ANDX);
+                        return new ErrorResponse(command.CommandName);
                     }
                     else if (command is OpenAndXRequest)
                     {

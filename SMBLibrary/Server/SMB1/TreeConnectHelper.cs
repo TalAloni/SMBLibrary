@@ -33,20 +33,20 @@ namespace SMBLibrary.Server.SMB1
                 if (share == null)
                 {
                     header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
-                    return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
 
                 if (!((FileSystemShare)share).HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                    return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
+                    return new ErrorResponse(request.CommandName);
                 }
             }
             ushort? treeID = session.AddConnectedTree(share);
             if (!treeID.HasValue)
             {
                 header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
-                return new ErrorResponse(CommandName.SMB_COM_TREE_CONNECT_ANDX);
+                return new ErrorResponse(request.CommandName);
             }
             header.TID = treeID.Value;
             if (isExtended)
@@ -92,7 +92,7 @@ namespace SMBLibrary.Server.SMB1
             if (!session.IsTreeConnected(header.TID))
             {
                 header.Status = NTStatus.STATUS_SMB_BAD_TID;
-                return new ErrorResponse(CommandName.SMB_COM_TREE_DISCONNECT);
+                return new ErrorResponse(request.CommandName);
             }
 
             session.RemoveConnectedTree(header.TID);
