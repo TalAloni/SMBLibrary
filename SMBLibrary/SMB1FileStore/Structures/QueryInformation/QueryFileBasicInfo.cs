@@ -18,9 +18,9 @@ namespace SMBLibrary.SMB1
     {
         public const int Length = 40;
 
-        public DateTime? CreationDateTime;
-        public DateTime? LastAccessDateTime;
-        public DateTime? LastWriteDateTime;
+        public DateTime? CreationTime;
+        public DateTime? LastAccessTime;
+        public DateTime? LastWriteTime;
         public DateTime? LastChangeTime;
         public ExtendedFileAttributes ExtFileAttributes;
         public uint Reserved;
@@ -31,9 +31,9 @@ namespace SMBLibrary.SMB1
 
         public QueryFileBasicInfo(byte[] buffer, int offset)
         {
-            CreationDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
-            LastAccessDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
-            LastWriteDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            CreationTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             LastChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(buffer, ref offset);
             Reserved = LittleEndianReader.ReadUInt32(buffer, ref offset);
@@ -43,9 +43,9 @@ namespace SMBLibrary.SMB1
         {
             byte[] buffer = new byte[Length];
             int offset = 0;
-            FileTimeHelper.WriteFileTime(buffer, ref offset, CreationDateTime);
-            FileTimeHelper.WriteFileTime(buffer, ref offset, LastAccessDateTime);
-            FileTimeHelper.WriteFileTime(buffer, ref offset, LastWriteDateTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, CreationTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, LastAccessTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, LastWriteTime);
             FileTimeHelper.WriteFileTime(buffer, ref offset, LastChangeTime);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)ExtFileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, Reserved);

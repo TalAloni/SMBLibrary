@@ -21,9 +21,9 @@ namespace SMBLibrary.Server.SMB1
                 case QueryInformationLevel.SMB_QUERY_FILE_BASIC_INFO:
                     {
                         QueryFileBasicInfo information = new QueryFileBasicInfo();
-                        information.CreationDateTime = entry.CreationTime;
-                        information.LastAccessDateTime = entry.LastAccessTime;
-                        information.LastWriteDateTime = entry.LastWriteTime;
+                        information.CreationTime = entry.CreationTime;
+                        information.LastAccessTime = entry.LastAccessTime;
+                        information.LastWriteTime = entry.LastWriteTime;
                         information.LastChangeTime = entry.LastWriteTime;
                         information.ExtFileAttributes = GetExtendedFileAttributes(entry);
                         result = information;
