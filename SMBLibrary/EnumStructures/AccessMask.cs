@@ -116,6 +116,13 @@ namespace SMBLibrary
             return result;
         }
 
+        public static implicit operator AccessMask(DirectoryAccessMask accessMask)
+        {
+            AccessMask result = new AccessMask();
+            result.Directory = accessMask;
+            return result;
+        }
+
         public static explicit operator uint(AccessMask accessMask)
         {
             uint value = (uint)accessMask.File | (uint)accessMask.Directory;
