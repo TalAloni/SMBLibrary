@@ -25,8 +25,8 @@ namespace SMBLibrary.SMB2
         public DateTime? LastAccessTime;
         public DateTime? LastWriteTime;
         public DateTime? ChangeTime;
-        public ulong AllocationSize;
-        public ulong EndofFile;
+        public long AllocationSize;
+        public long EndofFile;
         public FileAttributes FileAttributes;
         public uint Reserved2;
         public FileID FileId;
@@ -50,8 +50,8 @@ namespace SMBLibrary.SMB2
             LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + SMB2Header.Length + 16);
             LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + SMB2Header.Length + 24);
             ChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + SMB2Header.Length + 32);
-            AllocationSize = LittleEndianConverter.ToUInt64(buffer, offset + SMB2Header.Length + 40);
-            EndofFile = LittleEndianConverter.ToUInt64(buffer, offset + SMB2Header.Length + 48);
+            AllocationSize = LittleEndianConverter.ToInt64(buffer, offset + SMB2Header.Length + 40);
+            EndofFile = LittleEndianConverter.ToInt64(buffer, offset + SMB2Header.Length + 48);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 56);
             Reserved2 = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 60);
             FileId = new FileID(buffer, offset + SMB2Header.Length + 64);
@@ -73,8 +73,8 @@ namespace SMBLibrary.SMB2
             FileTimeHelper.WriteFileTime(buffer, offset + 16, LastAccessTime);
             FileTimeHelper.WriteFileTime(buffer, offset + 24, LastWriteTime);
             FileTimeHelper.WriteFileTime(buffer, offset + 32, ChangeTime);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 40, AllocationSize);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 48, EndofFile);
+            LittleEndianWriter.WriteInt64(buffer, offset + 40, AllocationSize);
+            LittleEndianWriter.WriteInt64(buffer, offset + 48, EndofFile);
             LittleEndianWriter.WriteUInt32(buffer, offset + 56, (uint)FileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, offset + 60, Reserved2);
             FileId.WriteBytes(buffer, offset + 64);

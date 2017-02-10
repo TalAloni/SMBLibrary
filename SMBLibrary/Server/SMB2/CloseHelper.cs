@@ -41,8 +41,8 @@ namespace SMBLibrary.Server.SMB2
                         response.LastAccessTime = entry.LastAccessTime;
                         response.LastWriteTime = entry.LastWriteTime;
                         response.ChangeTime = entry.LastWriteTime;
-                        response.AllocationSize = NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        response.EndofFile = entry.Size;
+                        response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        response.EndofFile = (long)entry.Size;
                         response.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
                     }
                 }
