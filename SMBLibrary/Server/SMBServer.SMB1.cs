@@ -144,23 +144,13 @@ namespace SMBLibrary.Server
 
                     if (command is CreateDirectoryRequest)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         CreateDirectoryRequest request = (CreateDirectoryRequest)command;
-                        return FileSystemResponseHelper.GetCreateDirectoryResponse(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetCreateDirectoryResponse(header, request, share, state);
                     }
                     else if (command is DeleteDirectoryRequest)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         DeleteDirectoryRequest request = (DeleteDirectoryRequest)command;
-                        return FileSystemResponseHelper.GetDeleteDirectoryResponse(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetDeleteDirectoryResponse(header, request, share, state);
                     }
                     else if (command is CloseRequest)
                     {
@@ -173,43 +163,23 @@ namespace SMBLibrary.Server
                     }
                     else if (command is DeleteRequest)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         DeleteRequest request = (DeleteRequest)command;
-                        return FileSystemResponseHelper.GetDeleteResponse(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetDeleteResponse(header, request, share, state);
                     }
                     else if (command is RenameRequest)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         RenameRequest request = (RenameRequest)command;
-                        return FileSystemResponseHelper.GetRenameResponse(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetRenameResponse(header, request, share, state);
                     }
                     else if (command is QueryInformationRequest)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         QueryInformationRequest request = (QueryInformationRequest)command;
-                        return FileSystemResponseHelper.GetQueryInformationResponse(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetQueryInformationResponse(header, request, share, state);
                     }
                     else if (command is SetInformationRequest)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         SetInformationRequest request = (SetInformationRequest)command;
-                        return FileSystemResponseHelper.GetSetInformationResponse(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetSetInformationResponse(header, request, share, state);
                     }
                     else if (command is ReadRequest)
                     {
@@ -223,13 +193,8 @@ namespace SMBLibrary.Server
                     }
                     else if (command is CheckDirectoryRequest)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         CheckDirectoryRequest request = (CheckDirectoryRequest)command;
-                        return FileSystemResponseHelper.GetCheckDirectoryResponse(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetCheckDirectoryResponse(header, request, share, state);
                     }
                     else if (command is WriteRawRequest)
                     {
@@ -241,13 +206,8 @@ namespace SMBLibrary.Server
                     }
                     else if (command is SetInformation2Request)
                     {
-                        if (!(share is FileSystemShare))
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
                         SetInformation2Request request = (SetInformation2Request)command;
-                        return FileSystemResponseHelper.GetSetInformation2Response(header, request, (FileSystemShare)share, state);
+                        return FileStoreResponseHelper.GetSetInformation2Response(header, request, share, state);
                     }
                     else if (command is LockingAndXRequest)
                     {
