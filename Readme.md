@@ -1,6 +1,6 @@
 About SMBLibrary:
 =================
-SMBLibrary is an open-source C# SMB 1.0/CIFS 1.0, SMB 2.0 and SMB 2.1 server implementation.  
+SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0 and SMB 2.1 server implementation.  
 SMBLibrary gives .NET developers an easy way to share a directory / file system / virtual file system, with any operating system that supports the SMB protocol.  
 SMBLibrary shares can be accessed from any Windows version since Windows NT 4.0.  
 
