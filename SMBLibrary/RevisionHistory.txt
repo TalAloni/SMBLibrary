@@ -59,3 +59,21 @@ Revision History:
         Win32 authentication: fail authentication if AcceptSecurityContext return SEC_E_INVALID_TOKEN.
         DirectoryFileSystem: Updated Name property to return the name of the underlying file system.
         DirectoryFileSystem: Updated ValidatePath to verify that path starts with a blackslash.
+
+1.1.2 - Improved NetBIOS name server implementation.
+        Corrected SPNEGO implementation.
+        SMB_COM_NT_CREATE_ANDX response: Added support for relative time (negative value) as specified in MS-CIFS.
+        FileTimeHelper.ReadNullableFileTime: throw InvalidDataException if FILETIME is negative.
+        Implemented additional FileInformation structures.
+        Improved CreateFile implementation.
+        OpenAndXHelper will now call NTFileSystemHelper.CreateFile.
+        Corrected SMB_COM_QUERY_INFORMATION response implementation.
+        Corrected object store related size fields from UInt64 to Int64.
+        Removed LANMAN2.0 FileInformation structures.
+        Rename will now return STATUS_OBJECT_NAME_COLLISION if the destination exists.
+        Return STATUS_DIRECTORY_NOT_EMPTY when trying to delete a folder that is not empty.
+        Return STATUS_OBJECT_PATH_INVALID when FILE_DIRECTORY_FILE is specified and a path component is not a directory.
+        API: IFileSystem: Added exception documentation.
+        API: FileSystemShare: Modified constructor.
+        API: FileSystemShare: Added OnAccessRequest event that allows the subscriber to manage read / write permissions.
+        API: INTFileStore interface was added for better separation between the object store layer and the SMB layer.
