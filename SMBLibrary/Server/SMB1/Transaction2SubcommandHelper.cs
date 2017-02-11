@@ -41,12 +41,12 @@ namespace SMBLibrary.Server.SMB1
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             int entriesToReturn = Math.Min(subcommand.SearchCount, entries.Count);
-            List<FileSystemEntry> temp = entries.GetRange(0, entriesToReturn);
+            List<FileSystemEntry> segment = entries.GetRange(0, entriesToReturn);
             int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
             FindInformationList findInformationList;
             try
             {
-                findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+                findInformationList = SMB1FileSystemHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -91,11 +91,11 @@ namespace SMBLibrary.Server.SMB1
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
             int maxCount = Math.Min(openSearch.Entries.Count - openSearch.EnumerationLocation, subcommand.SearchCount);
-            List<FileSystemEntry> temp = openSearch.Entries.GetRange(openSearch.EnumerationLocation, maxCount);
+            List<FileSystemEntry> segment = openSearch.Entries.GetRange(openSearch.EnumerationLocation, maxCount);
             FindInformationList findInformationList;
             try
             {
-                findInformationList = SMB1FileSystemHelper.GetFindInformationList(temp, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+                findInformationList = SMB1FileSystemHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -179,7 +179,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
-            
+
             if (!share.HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
             {
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
