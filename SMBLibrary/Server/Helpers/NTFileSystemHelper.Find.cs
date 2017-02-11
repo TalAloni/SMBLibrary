@@ -13,34 +13,8 @@ namespace SMBLibrary.Server
 {
     public partial class NTFileSystemHelper
     {
-        // Filename pattern examples:
-        // '\Directory' - Get the directory entry
-        // '\Directory\*' - List the directory files
-        // '\Directory\s*' - List the directory files starting with s (cmd.exe will use this syntax when entering 's' and hitting tab for autocomplete)
-        // '\Directory\<.inf' (Update driver will use this syntax)
-        // '\Directory\exefile"*' (cmd.exe will use this syntax when entering an exe without its extension, explorer will use this opening a directory from the run menu)
-        /// <param name="fileNamePattern">The filename pattern to search for. This field MAY contain wildcard characters</param>
-        /// <returns>null if the path does not exist</returns>
-        /// <exception cref="System.UnauthorizedAccessException"></exception>
-        public static NTStatus FindEntries(out List<FileSystemEntry> entries, IFileSystem fileSystem, string fileNamePattern)
-        {
-            int separatorIndex = fileNamePattern.LastIndexOf('\\');
-            if (separatorIndex >= 0)
-            {
-                string path = fileNamePattern.Substring(0, separatorIndex + 1);
-                string expression = fileNamePattern.Substring(separatorIndex + 1);
-                return FindEntries(out entries, fileSystem, path, expression);
-            }
-            else
-            {
-                entries = null;
-                return NTStatus.STATUS_INVALID_PARAMETER;
-            }
-        }
-
-        /// <param name="expression">Expression as described in [MS-FSA] 2.1.4.4</param>
-        /// <returns>null if the path does not exist</returns>
-        public static NTStatus FindEntries(out List<FileSystemEntry> entries, IFileSystem fileSystem, string path, string expression)
+        /// <param name="fileName">Expression as described in [MS-FSA] 2.1.4.4</param>
+        public static NTStatus FindEntries(out List<FileSystemEntry> entries, IFileSystem fileSystem, string path, string fileName)
         {
             entries = null;
             FileSystemEntry entry = fileSystem.GetEntry(path);
@@ -49,12 +23,17 @@ namespace SMBLibrary.Server
                 return NTStatus.STATUS_NO_SUCH_FILE;
             }
 
-            if (expression == String.Empty)
+            if (!entry.IsDirectory)
             {
                 return NTStatus.STATUS_INVALID_PARAMETER;
             }
 
-            bool findExactName = !ContainsWildcardCharacters(expression);
+            if (fileName == String.Empty)
+            {
+                return NTStatus.STATUS_INVALID_PARAMETER;
+            }
+
+            bool findExactName = !ContainsWildcardCharacters(fileName);
 
             if (!findExactName)
             {
@@ -68,7 +47,7 @@ namespace SMBLibrary.Server
                     return status; ;
                 }
 
-                entries = GetFiltered(entries, expression);
+                entries = GetFiltered(entries, fileName);
 
                 // Windows will return "." and ".." when enumerating directory files.
                 // The SMB1 / SMB2 specifications mandate that when zero entries are found, the server SHOULD / MUST return STATUS_NO_SUCH_FILE.
@@ -84,7 +63,7 @@ namespace SMBLibrary.Server
             else
             {
                 path = FileSystem.GetDirectoryPath(path);
-                entry = fileSystem.GetEntry(path + expression);
+                entry = fileSystem.GetEntry(path + fileName);
                 if (entry == null)
                 {
                     return NTStatus.STATUS_NO_SUCH_FILE;

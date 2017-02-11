@@ -14,6 +14,30 @@ namespace SMBLibrary.Server.SMB1
 {
     public partial class SMB1FileSystemHelper
     {
+        // Filename pattern examples:
+        // '\Directory' - Get the directory entry
+        // '\Directory\*' - List the directory files
+        // '\Directory\s*' - List the directory files starting with s (cmd.exe will use this syntax when entering 's' and hitting tab for autocomplete)
+        // '\Directory\<.inf' (Update driver will use this syntax)
+        // '\Directory\exefile"*' (cmd.exe will use this syntax when entering an exe without its extension, explorer will use this opening a directory from the run menu)
+        /// <param name="fileNamePattern">The filename pattern to search for. This field MAY contain wildcard characters</param>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        public static NTStatus FindEntries(out List<FileSystemEntry> entries, IFileSystem fileSystem, string fileNamePattern)
+        {
+            int separatorIndex = fileNamePattern.LastIndexOf('\\');
+            if (separatorIndex >= 0)
+            {
+                string path = fileNamePattern.Substring(0, separatorIndex + 1);
+                string fileName = fileNamePattern.Substring(separatorIndex + 1);
+                return NTFileSystemHelper.FindEntries(out entries, fileSystem, path, fileName);
+            }
+            else
+            {
+                entries = null;
+                return NTStatus.STATUS_INVALID_PARAMETER;
+            }
+        }
+
         /// <exception cref="SMBLibrary.UnsupportedInformationLevelException"></exception>
         public static FindInformationList GetFindInformationList(List<FileSystemEntry> entries, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys, int maxLength)
         {

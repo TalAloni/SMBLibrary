@@ -22,7 +22,7 @@ namespace SMBLibrary.Server.SMB1
             string fileNamePattern = subcommand.FileName;
 
             List<FileSystemEntry> entries;
-            NTStatus searchStatus = NTFileSystemHelper.FindEntries(out entries, fileSystem, fileNamePattern);
+            NTStatus searchStatus = SMB1FileSystemHelper.FindEntries(out entries, fileSystem, fileNamePattern);
             if (searchStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', NTStatus: {1}", fileNamePattern, searchStatus.ToString());
