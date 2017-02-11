@@ -134,14 +134,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is TransactionTransactNamedPipeRequest)
             {
-                if (!(share is NamedPipeShare))
-                {
-                    // [MS-CIFS] If the pipe is not a message mode pipe, the Trans subsystem MUST fail the request with STATUS_INVALID_PARAMETER
-                    header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                    return new ErrorResponse(CommandName.SMB_COM_TRANSACTION);
-                }
-
-                subcommandResponse = TransactionSubcommandHelper.GetSubcommandResponse(header, (TransactionTransactNamedPipeRequest)subcommand, (NamedPipeShare)share, state);
+                subcommandResponse = TransactionSubcommandHelper.GetSubcommandResponse(header, (TransactionTransactNamedPipeRequest)subcommand, share, state);
             }
             else if (subcommand is TransactionRawWriteNamedPipeRequest)
             {

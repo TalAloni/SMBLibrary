@@ -80,7 +80,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is NTTransactIOCTLRequest)
             {
-                subcommandResponse = GetSubcommandResponse(header, (NTTransactIOCTLRequest)subcommand);
+                subcommandResponse = GetSubcommandResponse(header, (NTTransactIOCTLRequest)subcommand, share, state);
             }
             else if (subcommand is NTTransactSetSecurityDescriptor)
             {
@@ -112,25 +112,28 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        private static NTTransactIOCTLResponse GetSubcommandResponse(SMB1Header header, NTTransactIOCTLRequest subcommand)
+        private static NTTransactIOCTLResponse GetSubcommandResponse(SMB1Header header, NTTransactIOCTLRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
-            const uint FSCTL_CREATE_OR_GET_OBJECT_ID = 0x900C0;
-
+            SMB1Session session = state.GetSession(header.UID);
             NTTransactIOCTLResponse response = new NTTransactIOCTLResponse();
             if (subcommand.IsFsctl)
             {
-                if (subcommand.FunctionCode == FSCTL_CREATE_OR_GET_OBJECT_ID)
+                OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
+                if (openFile == null)
                 {
-                    ObjectIDBufferType1 objectID = new ObjectIDBufferType1();
-                    objectID.ObjectId = Guid.NewGuid();
-                    response.Data = objectID.GetBytes();
-                    return response;
-                }
-                else
-                {
-                    header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                    header.Status = NTStatus.STATUS_INVALID_HANDLE;
                     return null;
                 }
+                int maxOutputLength = UInt16.MaxValue;
+                byte[] output;
+                header.Status = share.FileStore.DeviceIOControl(openFile.Handle, subcommand.FunctionCode, subcommand.Data, out output, maxOutputLength);
+                if (header.Status != NTStatus.STATUS_SUCCESS)
+                {
+                    return null;
+                }
+
+                response.Data = output;
+                return response;
             }
             else
             {

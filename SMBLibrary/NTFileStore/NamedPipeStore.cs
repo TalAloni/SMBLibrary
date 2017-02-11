@@ -99,6 +99,28 @@ namespace SMBLibrary
             return NTStatus.STATUS_SUCCESS;
         }
 
+        public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
+        {
+            output = null;
+            if (ctlCode == (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE)
+            {
+                int numberOfBytesWritten;
+                NTStatus writeStatus = WriteFile(out numberOfBytesWritten, handle, 0, input);
+                if (writeStatus != NTStatus.STATUS_SUCCESS)
+                {
+                    return writeStatus;
+                }
+                NTStatus readStatus = ReadFile(out output, handle, 0, maxOutputLength);
+                if (readStatus != NTStatus.STATUS_SUCCESS)
+                {
+                    return readStatus;
+                }
+                return NTStatus.STATUS_SUCCESS;
+            }
+
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
         public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object directoryHandle, string fileName, FileInformationClass informationClass)
         {
             result = null;

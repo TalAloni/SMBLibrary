@@ -33,5 +33,7 @@ namespace SMBLibrary
         NTStatus SetFileInformation(object handle, FileInformation information);
 
         NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass);
+
+        NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength);
     }
 }

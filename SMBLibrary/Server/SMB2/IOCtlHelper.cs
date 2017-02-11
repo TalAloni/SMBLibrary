@@ -14,14 +14,11 @@ namespace SMBLibrary.Server.SMB2
 {
     public class IOCtlHelper
     {
-        private const uint FSCTL_DFS_GET_REFERRALS = 0x00060194;
-        private const uint FSCTL_DFS_GET_REFERRALS_EX = 0x000601B0;
-        private const uint FSCTL_PIPE_TRANSCEIVE = 0x0011C017;
-
         internal static SMB2Command GetIOCtlResponse(IOCtlRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
-            if (request.CtlCode == FSCTL_DFS_GET_REFERRALS || request.CtlCode == FSCTL_DFS_GET_REFERRALS_EX)
+            if (request.CtlCode == (uint)IoControlCode.FSCTL_DFS_GET_REFERRALS ||
+                request.CtlCode == (uint)IoControlCode.FSCTL_DFS_GET_REFERRALS_EX)
             {
                 // [MS-SMB2] 3.3.5.15.2 Handling a DFS Referral Information Request
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FS_DRIVER_REQUIRED);
@@ -33,29 +30,18 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
 
-            if (share is NamedPipeShare)
+            int maxOutputLength = (int)request.MaxOutputResponse;
+            byte[] output;
+            NTStatus status = share.FileStore.DeviceIOControl(openFile.Handle, request.CtlCode, request.Input, out output, maxOutputLength);
+            if (status != NTStatus.STATUS_SUCCESS)
             {
-                if (request.CtlCode == FSCTL_PIPE_TRANSCEIVE)
-                {
-                    IOCtlResponse response = new IOCtlResponse();
-                    response.CtlCode = request.CtlCode;
-                    int numberOfBytesWritten;
-                    NTStatus writeStatus = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, 0, request.Input);
-                    if (writeStatus != NTStatus.STATUS_SUCCESS)
-                    {
-                        return new ErrorResponse(request.CommandName, writeStatus);
-                    }
-                    int maxCount = (int)request.MaxOutputResponse;
-                    NTStatus readStatus = share.FileStore.ReadFile(out response.Output, openFile.Handle, 0, maxCount);
-                    if (readStatus != NTStatus.STATUS_SUCCESS)
-                    {
-                        return new ErrorResponse(request.CommandName, readStatus);
-                    }
-                    return response;
-                }
+                return new ErrorResponse(request.CommandName, status);
             }
 
-            return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
+            IOCtlResponse response = new IOCtlResponse();
+            response.CtlCode = request.CtlCode;
+            response.Output = output;
+            return response;
         }
     }
 }

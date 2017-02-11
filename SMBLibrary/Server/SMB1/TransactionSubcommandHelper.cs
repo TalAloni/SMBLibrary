@@ -16,7 +16,7 @@ namespace SMBLibrary.Server.SMB1
 {
     public class TransactionSubcommandHelper
     {
-        internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, NamedPipeShare share, SMB1ConnectionState state)
+        internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
@@ -26,19 +26,15 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
+            int maxOutputLength = UInt16.MaxValue;
+            byte[] output;
+            header.Status = share.FileStore.DeviceIOControl(openFile.Handle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, subcommand.WriteData, out output, maxOutputLength);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                return null;
+            }
             TransactionTransactNamedPipeResponse response = new TransactionTransactNamedPipeResponse();
-            int numberOfBytesWritten;
-            header.Status = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, 0, subcommand.WriteData);
-            if (header.Status != NTStatus.STATUS_SUCCESS)
-            {
-                return null;
-            }
-            int maxCount = UInt16.MaxValue;
-            header.Status = share.FileStore.ReadFile(out response.ReadData, openFile.Handle, 0, maxCount);
-            if (header.Status != NTStatus.STATUS_SUCCESS)
-            {
-                return null;
-            }
+            response.ReadData = output;
             return response;
         }
     }

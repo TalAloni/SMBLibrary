@@ -93,6 +93,7 @@
     <Compile Include="NTFileStore\Enums\FileSystemInformation\FileSystemControlFlags.cs" />
     <Compile Include="NTFileStore\Enums\FileSystemInformation\FileSystemInformationClass.cs" />
     <Compile Include="NTFileStore\Enums\FileSystemInformation\SectorSizeInformationFlags.cs" />
+    <Compile Include="NTFileStore\Enums\IoControlCode.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateDisposition.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateOptions.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\FileStatus.cs" />

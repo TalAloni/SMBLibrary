@@ -370,6 +370,12 @@ namespace SMBLibrary
             return NTStatus.STATUS_SUCCESS;
         }
 
+        public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
+        {
+            output = null;
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
         public void Log(Severity severity, string message)
         {
             // To be thread-safe we must capture the delegate reference first
