@@ -195,29 +195,21 @@ namespace SMBLibrary.Server.SMB1
             }
             Transaction2Subcommand subcommandResponse = null;
 
-            if (!(share is FileSystemShare))
-            {
-                header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                return new ErrorResponse(CommandName.SMB_COM_TRANSACTION2);
-            }
-
-            FileSystemShare fileSystemShare = (FileSystemShare)share;
-
             if (subcommand is Transaction2FindFirst2Request)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2FindFirst2Request)subcommand, fileSystemShare, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2FindFirst2Request)subcommand, share, state);
             }
             else if (subcommand is Transaction2FindNext2Request)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2FindNext2Request)subcommand, fileSystemShare, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2FindNext2Request)subcommand, share, state);
             }
             else if (subcommand is Transaction2QueryFSInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFSInformationRequest)subcommand, fileSystemShare, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFSInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2QueryPathInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryPathInformationRequest)subcommand, fileSystemShare, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryPathInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2SetPathInformationRequest)
             {
@@ -225,11 +217,11 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is Transaction2QueryFileInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFileInformationRequest)subcommand, fileSystemShare, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFileInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2SetFileInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2SetFileInformationRequest)subcommand, fileSystemShare, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2SetFileInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2CreateDirectoryRequest)
             {

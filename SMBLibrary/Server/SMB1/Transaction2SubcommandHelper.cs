@@ -15,7 +15,7 @@ namespace SMBLibrary.Server.SMB1
 {
     public class Transaction2SubcommandHelper
     {
-        internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
+        internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             string fileNamePattern = subcommand.FileName;
@@ -79,7 +79,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
+        internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             OpenSearch openSearch = session.GetOpenSearch(subcommand.SID);
@@ -115,13 +115,16 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
+        internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!share.HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
+            if (share is FileSystemShare)
             {
-                header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return null;
+                if (!((FileSystemShare)share).HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return null;
+                }
             }
 
             Transaction2QueryFSInformationResponse response = new Transaction2QueryFSInformationResponse();
@@ -137,15 +140,19 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryPathInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
+        internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryPathInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             string path = subcommand.FileName;
-            if (!share.HasReadAccess(session.UserName, path, state.ClientEndPoint))
+            if (share is FileSystemShare)
             {
-                header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return null;
+                if (!((FileSystemShare)share).HasReadAccess(session.UserName, path, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return null;
+                }
             }
+
             Transaction2QueryPathInformationResponse response = new Transaction2QueryPathInformationResponse();
             QueryInformation queryInformation;
             NTStatus queryStatus = SMB1FileStoreHelper.GetFileInformation(out queryInformation, share.FileStore, path, subcommand.InformationLevel);
@@ -159,7 +166,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
+        internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
@@ -169,10 +176,13 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
-            if (!share.HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+            if (share is FileSystemShare)
             {
-                header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return null;
+                if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return null;
+                }
             }
 
             Transaction2QueryFileInformationResponse response = new Transaction2QueryFileInformationResponse();
@@ -188,7 +198,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2SetFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2SetFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
+        internal static Transaction2SetFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2SetFileInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
@@ -198,10 +208,13 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
-            if (!share.HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+            if (share is FileSystemShare)
             {
-                header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                return null;
+                if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                {
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return null;
+                }
             }
 
             SetInformation information;
