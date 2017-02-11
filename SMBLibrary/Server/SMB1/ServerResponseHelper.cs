@@ -26,20 +26,14 @@ namespace SMBLibrary.Server.SMB1
             }
 
             state.LogToServer(Severity.Verbose, "Close: Closing file '{0}'", openFile.Path);
-            session.RemoveOpenFile(request.FID);
-            if (openFile.DeleteOnClose && share is FileSystemShare)
+            header.Status = share.FileStore.CloseFile(openFile.Handle);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                try
-                {
-                    ((FileSystemShare)share).FileSystem.Delete(openFile.Path);
-                }
-                catch
-                {
-                    state.LogToServer(Severity.Debug, "Close: Cannot delete '{0}'", openFile.Path);
-                }
+                return new ErrorResponse(request.CommandName);
             }
-            CloseResponse response = new CloseResponse();
-            return response;
+
+            session.RemoveOpenFile(request.FID);
+            return new CloseResponse();
         }
 
         internal static SMB1Command GetFindClose2Request(SMB1Header header, FindClose2Request request, SMB1ConnectionState state)

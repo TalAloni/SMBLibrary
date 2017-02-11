@@ -9,12 +9,13 @@ using System.Collections.Generic;
 using System.IO;
 using Utilities;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary
 {
-    public partial class NTFileSystemHelper
+    public partial class NTFileSystemAdapter
     {
-        public static NTStatus SetFileInformation(IFileSystem fileSystem, OpenFileObject openFile, FileInformation information, ConnectionState state)
+        public NTStatus SetFileInformation(object handle, FileInformation information)
         {
+            FileHandle fileHandle = (FileHandle)handle;
             if (information is FileBasicInformation)
             {
                 FileBasicInformation basicInformation = (FileBasicInformation)information;
@@ -23,23 +24,23 @@ namespace SMBLibrary.Server
                 bool isArchived = (basicInformation.FileAttributes & FileAttributes.Archive) > 0;
                 try
                 {
-                    fileSystem.SetAttributes(openFile.Path, isHidden, isReadonly, isArchived);
+                    m_fileSystem.SetAttributes(fileHandle.Path, isHidden, isReadonly, isArchived);
                 }
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file attributes on '{0}'. {1}.", openFile.Path, status);
+                    Log(Severity.Debug, "SetFileInformation: Failed to set file attributes on '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
 
                 try
                 {
-                    fileSystem.SetDates(openFile.Path, basicInformation.CreationTime, basicInformation.LastWriteTime, basicInformation.LastAccessTime);
+                    m_fileSystem.SetDates(fileHandle.Path, basicInformation.CreationTime, basicInformation.LastWriteTime, basicInformation.LastAccessTime);
                 }
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Failed to set file dates on '{0}'. {1}.", openFile.Path, status);
+                    Log(Severity.Debug, "SetFileInformation: Failed to set file dates on '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
@@ -52,28 +53,28 @@ namespace SMBLibrary.Server
                 {
                     destination = @"\" + destination;
                 }
-                
-                if (openFile.Stream != null)
+
+                if (fileHandle.Stream != null)
                 {
-                    openFile.Stream.Close();
+                    fileHandle.Stream.Close();
                 }
 
                 // Note: it's possible that we just want to upcase / downcase a filename letter.
                 try
                 {
-                    if (renameInformation.ReplaceIfExists && (fileSystem.GetEntry(destination) != null ))
+                    if (renameInformation.ReplaceIfExists && (m_fileSystem.GetEntry(destination) != null))
                     {
-                        fileSystem.Delete(destination);
+                        m_fileSystem.Delete(destination);
                     }
-                    fileSystem.Move(openFile.Path, destination);
+                    m_fileSystem.Move(fileHandle.Path, destination);
                 }
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. {1}.", openFile.Path, status);
+                    Log(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
-                openFile.Path = destination;
+                fileHandle.Path = destination;
                 return NTStatus.STATUS_SUCCESS;
             }
             else if (information is FileDispositionInformation)
@@ -81,20 +82,20 @@ namespace SMBLibrary.Server
                 if (((FileDispositionInformation)information).DeletePending)
                 {
                     // We're supposed to delete the file on close, but it's too late to report errors at this late stage
-                    if (openFile.Stream != null)
+                    if (fileHandle.Stream != null)
                     {
-                        openFile.Stream.Close();
+                        fileHandle.Stream.Close();
                     }
 
                     try
                     {
-                        state.LogToServer(Severity.Information, "SetFileInformation: Deleting file '{0}'", openFile.Path);
-                        fileSystem.Delete(openFile.Path);
+                        Log(Severity.Information, "SetFileInformation: Deleting file '{0}'", fileHandle.Path);
+                        m_fileSystem.Delete(fileHandle.Path);
                     }
                     catch (Exception ex)
                     {
                         NTStatus status = ToNTStatus(ex);
-                        state.LogToServer(Severity.Debug, "SetFileInformation: Error deleting '{0}'. {1}.", openFile.Path, status);
+                        Log(Severity.Information, "SetFileInformation: Error deleting '{0}'. {1}.", status);
                         return status;
                     }
                 }
@@ -105,12 +106,12 @@ namespace SMBLibrary.Server
                 long allocationSize = ((FileAllocationInformation)information).AllocationSize;
                 try
                 {
-                    openFile.Stream.SetLength(allocationSize);
+                    fileHandle.Stream.SetLength(allocationSize);
                 }
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set allocation for '{0}'. {1}.", openFile.Path, status);
+                    Log(Severity.Debug, "SetFileInformation: Cannot set allocation for '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
@@ -120,12 +121,12 @@ namespace SMBLibrary.Server
                 long endOfFile = ((FileEndOfFileInformation)information).EndOfFile;
                 try
                 {
-                    openFile.Stream.SetLength(endOfFile);
+                    fileHandle.Stream.SetLength(endOfFile);
                 }
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    state.LogToServer(Severity.Debug, "SetFileInformation: Cannot set end of file for '{0}'. {1}.", openFile.Path, status);
+                    Log(Severity.Debug, "SetFileInformation: Cannot set end of file for '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
                 return NTStatus.STATUS_SUCCESS;

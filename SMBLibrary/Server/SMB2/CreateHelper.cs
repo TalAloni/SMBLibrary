@@ -32,48 +32,29 @@ namespace SMBLibrary.Server.SMB2
                 }
             }
 
+            object handle;
+            FileStatus fileStatus;
+            NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions);
+            if (createStatus != NTStatus.STATUS_SUCCESS)
+            {
+                return new ErrorResponse(request.CommandName, createStatus);
+            }
+
+            ulong? persistentFileID = session.AddOpenFile(path, handle);
+            if (!persistentFileID.HasValue)
+            {
+                share.FileStore.CloseFile(handle);
+                return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
+            }
+
             if (share is NamedPipeShare)
             {
-                Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
-                if (pipeStream != null)
-                {
-                    ulong? persistentFileID = session.AddOpenFile(path, pipeStream);
-                    if (!persistentFileID.HasValue)
-                    {
-                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
-                    }
-                    return CreateResponseForNamedPipe(persistentFileID.Value, FileStatus.FILE_OPENED);
-                }
-                else
-                {
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_OBJECT_PATH_NOT_FOUND);
-                }
+                return CreateResponseForNamedPipe(persistentFileID.Value, FileStatus.FILE_OPENED);
             }
             else
             {
-                FileSystemShare fileSystemShare = (FileSystemShare)share;
-
-                FileSystemEntry entry;
-                Stream stream;
-                FileStatus fileStatus;
-                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, out stream, out fileStatus, fileSystemShare.FileSystem, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions, state);
-                if (createStatus != NTStatus.STATUS_SUCCESS)
-                {
-                    return new ErrorResponse(request.CommandName, createStatus);
-                }
-
-                bool deleteOnClose = (stream != null) && ((request.CreateOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0);
-                ulong? persistentFileID = session.AddOpenFile(path, stream, deleteOnClose);
-                if (!persistentFileID.HasValue)
-                {
-                    if (stream != null)
-                    {
-                        stream.Close();
-                    }
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
-                }
-
-                CreateResponse response = CreateResponseFromFileSystemEntry(entry, persistentFileID.Value, fileStatus);
+                FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, handle);
+                CreateResponse response = CreateResponseFromFileSystemEntry(fileInfo, persistentFileID.Value, fileStatus);
                 if (request.RequestedOplockLevel == OplockLevel.Batch)
                 {
                     response.OplockLevel = OplockLevel.Batch;
@@ -91,24 +72,17 @@ namespace SMBLibrary.Server.SMB2
             return response;
         }
 
-        private static CreateResponse CreateResponseFromFileSystemEntry(FileSystemEntry entry, ulong persistentFileID, FileStatus fileStatus)
+        private static CreateResponse CreateResponseFromFileSystemEntry(FileNetworkOpenInformation fileInfo, ulong persistentFileID, FileStatus fileStatus)
         {
             CreateResponse response = new CreateResponse();
-            if (entry.IsDirectory)
-            {
-                response.FileAttributes = FileAttributes.Directory;
-            }
-            else
-            {
-                response.FileAttributes = FileAttributes.Normal;
-            }
             response.CreateAction = (CreateAction)fileStatus;
-            response.CreationTime = entry.CreationTime;
-            response.LastWriteTime = entry.LastWriteTime;
-            response.ChangeTime = entry.LastWriteTime;
-            response.LastAccessTime = entry.LastAccessTime;
-            response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-            response.EndofFile = (long)entry.Size;
+            response.CreationTime = fileInfo.CreationTime;
+            response.LastWriteTime = fileInfo.LastWriteTime;
+            response.ChangeTime = fileInfo.LastWriteTime;
+            response.LastAccessTime = fileInfo.LastAccessTime;
+            response.AllocationSize = fileInfo.AllocationSize;
+            response.EndofFile = fileInfo.EndOfFile;
+            response.FileAttributes = fileInfo.FileAttributes;
             response.FileId.Persistent = persistentFileID;
             return response;
         }

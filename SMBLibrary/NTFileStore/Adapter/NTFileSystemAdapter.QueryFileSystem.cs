@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using System.IO;
 using Utilities;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary
 {
-    public partial class NTFileSystemHelper
+    public partial class NTFileSystemAdapter
     {
-        public static NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass, IFileSystem fileSystem)
+        public NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass)
         {
             switch (informationClass)
             {
@@ -27,10 +27,10 @@ namespace SMBLibrary.Server
                 case FileSystemInformationClass.FileFsSizeInformation:
                     {
                         FileFsSizeInformation information = new FileFsSizeInformation();
-                        information.TotalAllocationUnits = fileSystem.Size / NTFileSystemHelper.ClusterSize;
-                        information.AvailableAllocationUnits = fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize;
-                        information.SectorsPerAllocationUnit = NTFileSystemHelper.ClusterSize / NTFileSystemHelper.BytesPerSector;
-                        information.BytesPerSector = NTFileSystemHelper.BytesPerSector;
+                        information.TotalAllocationUnits = m_fileSystem.Size / ClusterSize;
+                        information.AvailableAllocationUnits = m_fileSystem.FreeSpace / ClusterSize;
+                        information.SectorsPerAllocationUnit = ClusterSize / BytesPerSector;
+                        information.BytesPerSector = BytesPerSector;
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
                     }
@@ -47,7 +47,7 @@ namespace SMBLibrary.Server
                         FileFsAttributeInformation information = new FileFsAttributeInformation();
                         information.FileSystemAttributes = FileSystemAttributes.UnicodeOnDisk;
                         information.MaximumComponentNameLength = 255;
-                        information.FileSystemName = fileSystem.Name;
+                        information.FileSystemName = m_fileSystem.Name;
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
                     }
@@ -63,11 +63,11 @@ namespace SMBLibrary.Server
                 case FileSystemInformationClass.FileFsFullSizeInformation:
                     {
                         FileFsFullSizeInformation information = new FileFsFullSizeInformation();
-                        information.TotalAllocationUnits = fileSystem.Size / NTFileSystemHelper.ClusterSize;
-                        information.CallerAvailableAllocationUnits = fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize;
-                        information.ActualAvailableAllocationUnits = fileSystem.FreeSpace / NTFileSystemHelper.ClusterSize;
-                        information.SectorsPerAllocationUnit = NTFileSystemHelper.ClusterSize / NTFileSystemHelper.BytesPerSector;
-                        information.BytesPerSector = NTFileSystemHelper.BytesPerSector;
+                        information.TotalAllocationUnits = m_fileSystem.Size / ClusterSize;
+                        information.CallerAvailableAllocationUnits = m_fileSystem.FreeSpace / ClusterSize;
+                        information.ActualAvailableAllocationUnits = m_fileSystem.FreeSpace / ClusterSize;
+                        information.SectorsPerAllocationUnit = ClusterSize / BytesPerSector;
+                        information.BytesPerSector = BytesPerSector;
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
                     }
@@ -81,10 +81,10 @@ namespace SMBLibrary.Server
                 case FileSystemInformationClass.FileFsSectorSizeInformation:
                     {
                         FileFsSectorSizeInformation information = new FileFsSectorSizeInformation();
-                        information.LogicalBytesPerSector = NTFileSystemHelper.BytesPerSector;
-                        information.PhysicalBytesPerSectorForAtomicity = NTFileSystemHelper.BytesPerSector;
-                        information.PhysicalBytesPerSectorForPerformance = NTFileSystemHelper.BytesPerSector;
-                        information.FileSystemEffectivePhysicalBytesPerSectorForAtomicity = NTFileSystemHelper.BytesPerSector;
+                        information.LogicalBytesPerSector = BytesPerSector;
+                        information.PhysicalBytesPerSectorForAtomicity = BytesPerSector;
+                        information.PhysicalBytesPerSectorForPerformance = BytesPerSector;
+                        information.FileSystemEffectivePhysicalBytesPerSectorForAtomicity = BytesPerSector;
                         information.ByteOffsetForSectorAlignment = 0;
                         information.ByteOffsetForPartitionAlignment = 0;
                         result = information;

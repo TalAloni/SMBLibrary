@@ -18,11 +18,21 @@ namespace SMBLibrary.Server.SMB1
         internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            IFileSystem fileSystem = share.FileSystem;
             string fileNamePattern = subcommand.FileName;
 
-            List<FileSystemEntry> entries;
-            NTStatus searchStatus = SMB1FileSystemHelper.FindEntries(out entries, fileSystem, fileNamePattern);
+            List<QueryDirectoryFileInformation> entries;
+            FileInformationClass informationClass;
+            try
+            {
+                informationClass = GetFileInformationClass(subcommand.InformationLevel);
+            }
+            catch (UnsupportedInformationLevelException)
+            {
+                header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
+                return null;
+            }
+
+            NTStatus searchStatus = SMB1FileStoreHelper.QueryDirectory(out entries, share.FileStore, fileNamePattern, informationClass);
             if (searchStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', NTStatus: {1}", fileNamePattern, searchStatus.ToString());
@@ -41,18 +51,9 @@ namespace SMBLibrary.Server.SMB1
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             int entriesToReturn = Math.Min(subcommand.SearchCount, entries.Count);
-            List<FileSystemEntry> segment = entries.GetRange(0, entriesToReturn);
+            List<QueryDirectoryFileInformation> segment = entries.GetRange(0, entriesToReturn);
             int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
-            FindInformationList findInformationList;
-            try
-            {
-                findInformationList = SMB1FileSystemHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
-            }
-            catch (UnsupportedInformationLevelException)
-            {
-                header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
-                return null;
-            }
+            FindInformationList findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
             int returnCount = findInformationList.Count;
             Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
@@ -91,11 +92,11 @@ namespace SMBLibrary.Server.SMB1
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
             int maxCount = Math.Min(openSearch.Entries.Count - openSearch.EnumerationLocation, subcommand.SearchCount);
-            List<FileSystemEntry> segment = openSearch.Entries.GetRange(openSearch.EnumerationLocation, maxCount);
+            List<QueryDirectoryFileInformation> segment = openSearch.Entries.GetRange(openSearch.EnumerationLocation, maxCount);
             FindInformationList findInformationList;
             try
             {
-                findInformationList = SMB1FileSystemHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -125,7 +126,7 @@ namespace SMBLibrary.Server.SMB1
 
             Transaction2QueryFSInformationResponse response = new Transaction2QueryFSInformationResponse();
             QueryFSInformation queryFSInformation;
-            NTStatus queryStatus = SMB1FileSystemHelper.GetFileSystemInformation(out queryFSInformation, subcommand.InformationLevel, share.FileSystem);
+            NTStatus queryStatus = SMB1FileStoreHelper.GetFileSystemInformation(out queryFSInformation, share.FileStore, subcommand.InformationLevel);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "GetFileSystemInformation failed. Information level: {0}, NTStatus: {1}", subcommand.InformationLevel, queryStatus);
@@ -145,20 +146,9 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_ACCESS_DENIED;
                 return null;
             }
-
-            IFileSystem fileSystem = share.FileSystem;
-            FileSystemEntry entry = fileSystem.GetEntry(path);
-            if (entry == null)
-            {
-                // Windows Server 2003 will return STATUS_OBJECT_NAME_NOT_FOUND
-                // Returning STATUS_NO_SUCH_FILE caused an issue when executing ImageX.exe from WinPE 3.0 (32-bit)
-                state.LogToServer(Severity.Debug, "Transaction2QueryPathInformation: File not found, Path: '{0}'", path);
-                header.Status = NTStatus.STATUS_OBJECT_NAME_NOT_FOUND;
-                return null;
-            }
             Transaction2QueryPathInformationResponse response = new Transaction2QueryPathInformationResponse();
             QueryInformation queryInformation;
-            NTStatus queryStatus = SMB1FileSystemHelper.GetFileInformation(out queryInformation, entry, false, subcommand.InformationLevel);
+            NTStatus queryStatus = SMB1FileStoreHelper.GetFileInformation(out queryInformation, share.FileStore, path, subcommand.InformationLevel);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", path, subcommand.InformationLevel, queryStatus);
@@ -172,7 +162,6 @@ namespace SMBLibrary.Server.SMB1
         internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, FileSystemShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            IFileSystem fileSystem = share.FileSystem;
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
@@ -186,15 +175,9 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
-            FileSystemEntry entry = fileSystem.GetEntry(openFile.Path);
-            if (entry == null)
-            {
-                header.Status = NTStatus.STATUS_NO_SUCH_FILE;
-                return null;
-            }
             Transaction2QueryFileInformationResponse response = new Transaction2QueryFileInformationResponse();
             QueryInformation queryInformation;
-            NTStatus queryStatus = SMB1FileSystemHelper.GetFileInformation(out queryInformation, entry, openFile.DeleteOnClose, subcommand.InformationLevel);
+            NTStatus queryStatus = SMB1FileStoreHelper.GetFileInformation(out queryInformation, share.FileStore, openFile.Handle, subcommand.InformationLevel);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", openFile.Path, subcommand.InformationLevel, queryStatus);
@@ -237,7 +220,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
-            NTStatus status = SMB1FileSystemHelper.SetFileInformation(share.FileSystem, openFile, information, state);
+            NTStatus status = SMB1FileStoreHelper.SetFileInformation(share.FileStore, openFile.Handle, information);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", openFile.Path, information.InformationLevel, status);
@@ -246,6 +229,29 @@ namespace SMBLibrary.Server.SMB1
             }
             Transaction2SetFileInformationResponse response = new Transaction2SetFileInformationResponse();
             return response;
+        }
+
+        private static FileInformationClass GetFileInformationClass(FindInformationLevel informationLevel)
+        {
+            switch (informationLevel)
+            {
+                case FindInformationLevel.SMB_INFO_STANDARD:
+                    return FileInformationClass.FileDirectoryInformation;
+                case FindInformationLevel.SMB_INFO_QUERY_EA_SIZE:
+                    return FileInformationClass.FileFullDirectoryInformation;
+                case FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
+                    return FileInformationClass.FileDirectoryInformation;
+                case FindInformationLevel.SMB_FIND_FILE_DIRECTORY_INFO:
+                    return FileInformationClass.FileDirectoryInformation;
+                case FindInformationLevel.SMB_FIND_FILE_FULL_DIRECTORY_INFO:
+                    return FileInformationClass.FileFullDirectoryInformation;
+                case FindInformationLevel.SMB_FIND_FILE_NAMES_INFO:
+                    return FileInformationClass.FileNamesInformation;
+                case FindInformationLevel.SMB_FIND_FILE_BOTH_DIRECTORY_INFO:
+                    return FileInformationClass.FileBothDirectoryInformation;
+                default:
+                    throw new UnsupportedInformationLevelException();
+            }
         }
     }
 }

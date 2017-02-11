@@ -12,10 +12,10 @@ namespace SMBLibrary.Server
 {
     public class OpenSearch
     {
-        public List<FileSystemEntry> Entries;
+        public List<QueryDirectoryFileInformation> Entries;
         public int EnumerationLocation;
 
-        public OpenSearch(List<FileSystemEntry> entries, int enumerationLocation)
+        public OpenSearch(List<QueryDirectoryFileInformation> entries, int enumerationLocation)
         {
             Entries = entries;
             EnumerationLocation = enumerationLocation;

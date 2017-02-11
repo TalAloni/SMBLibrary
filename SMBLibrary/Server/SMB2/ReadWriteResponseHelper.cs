@@ -24,7 +24,7 @@ namespace SMBLibrary.Server.SMB2
             }
 
             byte[] data;
-            NTStatus readStatus = NTFileSystemHelper.ReadFile(out data, openFile, (long)request.Offset, (int)request.ReadLength, state);
+            NTStatus readStatus = share.FileStore.ReadFile(out data, openFile.Handle, (long)request.Offset, (int)request.ReadLength);
             if (readStatus != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName, readStatus);
@@ -44,7 +44,7 @@ namespace SMBLibrary.Server.SMB2
             }
 
             int numberOfBytesWritten;
-            NTStatus writeStatus = NTFileSystemHelper.WriteFile(out numberOfBytesWritten, openFile, (long)request.Offset, request.Data, state);
+            NTStatus writeStatus = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, (long)request.Offset, request.Data);
             if (writeStatus != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName, writeStatus);

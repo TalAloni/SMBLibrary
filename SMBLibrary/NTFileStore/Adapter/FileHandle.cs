@@ -9,17 +9,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary
 {
-    public class OpenFileObject
+    public class FileHandle
     {
         public string Path;
-        public object Handle;
+        public bool IsDirectory;
+        public Stream Stream;
+        public bool DeleteOnClose;
 
-        public OpenFileObject(string path, object handle)
+        public FileHandle(string path, bool isDirectory, Stream stream, bool deleteOnClose)
         {
             Path = path;
-            Handle = handle;
+            IsDirectory = isDirectory;
+            Stream = stream;
+            DeleteOnClose = deleteOnClose;
         }
     }
 }

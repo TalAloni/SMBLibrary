@@ -12,45 +12,19 @@ using SMBLibrary.Services;
 
 namespace SMBLibrary.Server
 {
-    public class NamedPipeShare : List<RemoteService>, ISMBShare
+    public class NamedPipeShare : ISMBShare
     {
         // A pipe share, as defined by the SMB Protocol, MUST always have the name "IPC$".
         public const string NamedPipeShareName = "IPC$";
 
+        private NamedPipeStore m_store;
+
         public NamedPipeShare(List<string> shareList)
         {
-            this.Add(new ServerService(Environment.MachineName, shareList));
-            this.Add(new WorkstationService(Environment.MachineName, Environment.MachineName));
-        }
-
-        public Stream OpenPipe(string path)
-        {
-            // It is possible to have a named pipe that does not use RPC (e.g. MS-WSP),
-            // However this is not currently needed by our implementation.
-            RemoteService service = GetService(path);
-            if (service != null)
-            {
-                // All instances of a named pipe share the same pipe name, but each instance has its own buffers and handles,
-                // and provides a separate conduit for client/server communication.
-                return new RPCPipeStream(service);
-            }
-            return null;
-        }
-
-        private RemoteService GetService(string path)
-        {
-            if (path.StartsWith(@"\"))
-            {
-                path = path.Substring(1);
-            }
-            foreach (RemoteService service in this)
-            {
-                if (String.Equals(path, service.PipeName, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return service;
-                }
-            }
-            return null;
+            List<RemoteService> services = new List<RemoteService>();
+            services.Add(new ServerService(Environment.MachineName, shareList));
+            services.Add(new WorkstationService(Environment.MachineName, Environment.MachineName));
+            m_store = new NamedPipeStore(services);
         }
 
         public string Name
@@ -58,6 +32,14 @@ namespace SMBLibrary.Server
             get
             {
                 return NamedPipeShareName;
+            }
+        }
+
+        public INTFileStore FileStore
+        {
+            get
+            {
+                return m_store;
             }
         }
     }

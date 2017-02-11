@@ -37,7 +37,7 @@ namespace SMBLibrary.Server.SMB1
             }
 
             byte[] data;
-            header.Status = NTFileSystemHelper.ReadFile(out data, openFile, request.ReadOffsetInBytes, request.CountOfBytesToRead, state);
+            header.Status = share.FileStore.ReadFile(out data, openFile.Handle, request.ReadOffsetInBytes, request.CountOfBytesToRead);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -74,7 +74,7 @@ namespace SMBLibrary.Server.SMB1
                 maxCount = request.MaxCountLarge;
             }
             byte[] data;
-            header.Status = NTFileSystemHelper.ReadFile(out data, openFile, (long)request.Offset, (int)maxCount, state);
+            header.Status = share.FileStore.ReadFile(out data, openFile.Handle, (long)request.Offset, (int)maxCount);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -108,9 +108,9 @@ namespace SMBLibrary.Server.SMB1
                     return new ErrorResponse(request.CommandName);
                 }
             }
-         
+
             int numberOfBytesWritten;
-            header.Status = NTFileSystemHelper.WriteFile(out numberOfBytesWritten, openFile, request.WriteOffsetInBytes, request.Data, state);
+            header.Status = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, request.WriteOffsetInBytes, request.Data);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -129,7 +129,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }
-            
+
             if (share is FileSystemShare)
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
@@ -140,7 +140,7 @@ namespace SMBLibrary.Server.SMB1
             }
 
             int numberOfBytesWritten;
-            header.Status = NTFileSystemHelper.WriteFile(out numberOfBytesWritten, openFile, (long)request.Offset, request.Data, state);
+            header.Status = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, (long)request.Offset, request.Data);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);

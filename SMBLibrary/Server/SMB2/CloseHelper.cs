@@ -22,29 +22,21 @@ namespace SMBLibrary.Server.SMB2
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
-            string path = openFile.Path;
+            share.FileStore.CloseFile(openFile.Handle);
             session.RemoveOpenFile(request.FileId.Persistent);
             CloseResponse response = new CloseResponse();
             if (request.PostQueryAttributes)
             {
-                if (share is NamedPipeShare)
+                FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, openFile.Path);
+                if (fileInfo != null)
                 {
-                    response.FileAttributes = FileAttributes.Temporary;
-                }
-                else // FileSystemShare
-                {
-                    IFileSystem fileSystem = ((FileSystemShare)share).FileSystem;
-                    FileSystemEntry entry = fileSystem.GetEntry(path);
-                    if (entry != null)
-                    {
-                        response.CreationTime = entry.CreationTime;
-                        response.LastAccessTime = entry.LastAccessTime;
-                        response.LastWriteTime = entry.LastWriteTime;
-                        response.ChangeTime = entry.LastWriteTime;
-                        response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        response.EndofFile = (long)entry.Size;
-                        response.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
-                    }
+                    response.CreationTime = fileInfo.CreationTime;
+                    response.LastAccessTime = fileInfo.LastAccessTime;
+                    response.LastWriteTime = fileInfo.LastWriteTime;
+                    response.ChangeTime = fileInfo.ChangeTime;
+                    response.AllocationSize = fileInfo.AllocationSize;
+                    response.EndofFile = fileInfo.EndOfFile;
+                    response.FileAttributes = fileInfo.FileAttributes;
                 }
             }
             return response;

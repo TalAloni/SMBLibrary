@@ -177,7 +177,11 @@ namespace SMBLibrary.Server
                         {
                             return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
                         }
-                        openFile.Stream.Flush();
+                        NTStatus status = share.FileStore.FlushFileBuffers(openFile.Handle);
+                        if (status != NTStatus.STATUS_SUCCESS)
+                        {
+                            return new ErrorResponse(request.CommandName, status);
+                        }
                         return new FlushResponse();
                     }
                     else if (command is CloseRequest)

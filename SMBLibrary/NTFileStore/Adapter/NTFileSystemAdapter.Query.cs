@@ -9,36 +9,33 @@ using System.Collections.Generic;
 using System.IO;
 using Utilities;
 
-namespace SMBLibrary.Server
+namespace SMBLibrary
 {
-    public partial class NTFileSystemHelper
+    public partial class NTFileSystemAdapter
     {
-        public static NTStatus GetNamedPipeInformation(out FileInformation result, FileInformationClass informationClass)
+        public NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass)
         {
-            switch (informationClass)
+            FileHandle fileHandle = (FileHandle)handle;
+            string path = fileHandle.Path;
+            FileSystemEntry entry;
+            try
             {
-                case FileInformationClass.FileBasicInformation:
-                    {
-                        FileBasicInformation information = new FileBasicInformation();
-                        information.FileAttributes = FileAttributes.Temporary;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case FileInformationClass.FileStandardInformation:
-                    {
-                        FileStandardInformation information = new FileStandardInformation();
-                        information.DeletePending = true;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                default:
-                    result = null;
-                    return NTStatus.STATUS_INVALID_INFO_CLASS;
+                entry = m_fileSystem.GetEntry(path);
             }
-        }
+            catch (Exception ex)
+            {
+                NTStatus status = ToNTStatus(ex);
+                Log(Severity.Debug, "GetFileInformation on '{0}' failed. {1}", path, status);
+                result = null;
+                return status;
+            }
 
-        public static NTStatus GetFileInformation(out FileInformation result, FileSystemEntry entry, bool deletePending, FileInformationClass informationClass)
-        {
+            if (entry == null)
+            {
+                result = null;
+                return NTStatus.STATUS_NO_SUCH_FILE;
+            }
+
             switch (informationClass)
             {
                 case FileInformationClass.FileBasicInformation:
@@ -55,10 +52,10 @@ namespace SMBLibrary.Server
                 case FileInformationClass.FileStandardInformation:
                     {
                         FileStandardInformation information = new FileStandardInformation();
-                        information.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.AllocationSize = (long)GetAllocationSize(entry.Size);
                         information.EndOfFile = (long)entry.Size;
                         information.Directory = entry.IsDirectory;
-                        information.DeletePending = deletePending;
+                        information.DeletePending = fileHandle.DeleteOnClose;
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
                     }
@@ -118,7 +115,7 @@ namespace SMBLibrary.Server
                         information.StandardInformation.AllocationSize = (long)GetAllocationSize(entry.Size);
                         information.StandardInformation.EndOfFile = (long)entry.Size;
                         information.StandardInformation.Directory = entry.IsDirectory;
-                        information.StandardInformation.DeletePending = deletePending;
+                        information.StandardInformation.DeletePending = fileHandle.DeleteOnClose;
                         information.NameInformation.FileName = entry.Name;
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
@@ -134,7 +131,7 @@ namespace SMBLibrary.Server
                         // A buffer of FileStreamInformation data elements is returned by the server.
                         FileStreamInformation information = new FileStreamInformation();
                         information.StreamSize = (long)entry.Size;
-                        information.StreamAllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.StreamAllocationSize = (long)GetAllocationSize(entry.Size);
                         information.StreamName = "::$DATA";
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
@@ -166,7 +163,7 @@ namespace SMBLibrary.Server
                         information.LastAccessTime = entry.LastAccessTime;
                         information.LastWriteTime = entry.LastWriteTime;
                         information.ChangeTime = entry.LastWriteTime;
-                        information.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
+                        information.AllocationSize = (long)GetAllocationSize(entry.Size);
                         information.EndOfFile = (long)entry.Size;
                         information.FileAttributes = GetFileAttributes(entry);
                         result = information;

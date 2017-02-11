@@ -31,60 +31,40 @@ namespace SMBLibrary.Server.SMB1
                 }
             }
 
+            object handle;
+            FileStatus fileStatus;
+            NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions);
+            if (createStatus != NTStatus.STATUS_SUCCESS)
+            {
+                header.Status = createStatus;
+                return new ErrorResponse(request.CommandName);
+            }
+
+            ushort? fileID = session.AddOpenFile(path, handle);
+            if (!fileID.HasValue)
+            {
+                share.FileStore.CloseFile(handle);
+                header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
+                return new ErrorResponse(request.CommandName);
+            }
+
             if (share is NamedPipeShare)
             {
-                Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
-                if (pipeStream != null)
+                if (isExtended)
                 {
-                    ushort? fileID = session.AddOpenFile(path, pipeStream);
-                    if (!fileID.HasValue)
-                    {
-                        header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
-                        return new ErrorResponse(request.CommandName);
-                    }
-                    if (isExtended)
-                    {
-                        return CreateResponseExtendedForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);
-                    }
-                    else
-                    {
-                        return CreateResponseForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);
-                    }
+                    return CreateResponseExtendedForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);
                 }
-
-                header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
-                return new ErrorResponse(request.CommandName);
+                else
+                {
+                    return CreateResponseForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);
+                }
             }
             else // FileSystemShare
             {
-                FileSystemShare fileSystemShare = (FileSystemShare)share;
-                
-                FileSystemEntry entry;
-                Stream stream;
-                FileStatus fileStatus;
-                NTStatus createStatus = NTFileSystemHelper.CreateFile(out entry, out stream, out fileStatus, fileSystemShare.FileSystem, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions, state);
-                if (createStatus != NTStatus.STATUS_SUCCESS)
-                {
-                    header.Status = createStatus;
-                    return new ErrorResponse(request.CommandName);
-                }
-
-                FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(request.DesiredAccess);
-
-                bool deleteOnClose = (stream != null) && ((request.CreateOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0);
-                ushort? fileID = session.AddOpenFile(path, stream, deleteOnClose);
-                if (!fileID.HasValue)
-                {
-                    if (stream != null)
-                    {
-                        stream.Close();
-                    }
-                    header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
-                    return new ErrorResponse(request.CommandName);
-                }
+                FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, handle);
                 if (isExtended)
                 {
-                    NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileSystemEntry(entry, fileID.Value, fileStatus);
+                    NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileInformation(fileInfo, fileID.Value, fileStatus);
                     if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
                     {
                         response.OpLockLevel = OpLockLevel.BatchOpLockGranted;
@@ -93,7 +73,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
-                    NTCreateAndXResponse response = CreateResponseFromFileSystemEntry(entry, fileID.Value, fileStatus);
+                    NTCreateAndXResponse response = CreateResponseFromFileInformation(fileInfo, fileID.Value, fileStatus);
                     if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
                     {
                         response.OpLockLevel = OpLockLevel.BatchOpLockGranted;
@@ -140,52 +120,38 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        private static NTCreateAndXResponse CreateResponseFromFileSystemEntry(FileSystemEntry entry, ushort fileID, FileStatus fileStatus)
+        private static NTCreateAndXResponse CreateResponseFromFileInformation(FileNetworkOpenInformation fileInfo, ushort fileID, FileStatus fileStatus)
         {
             NTCreateAndXResponse response = new NTCreateAndXResponse();
-            if (entry.IsDirectory)
-            {
-                response.ExtFileAttributes = ExtendedFileAttributes.Directory;
-                response.Directory = true;
-            }
-            else
-            {
-                response.ExtFileAttributes = ExtendedFileAttributes.Normal;
-            }
             response.FID = fileID;
             response.CreateDisposition = ToCreateDisposition(fileStatus);
-            response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-            response.EndOfFile = (long)entry.Size;
-            response.CreateTime = entry.CreationTime;
-            response.LastAccessTime = entry.LastAccessTime;
-            response.LastWriteTime = entry.LastWriteTime;
-            response.LastChangeTime = entry.LastWriteTime;
+            response.CreateTime = fileInfo.CreationTime;
+            response.LastAccessTime = fileInfo.LastAccessTime;
+            response.LastWriteTime = fileInfo.LastWriteTime;
+            response.LastChangeTime = fileInfo.LastWriteTime;
+            response.AllocationSize = fileInfo.AllocationSize;
+            response.EndOfFile = fileInfo.EndOfFile;
+            response.ExtFileAttributes = (ExtendedFileAttributes)fileInfo.FileAttributes;
             response.ResourceType = ResourceType.FileTypeDisk;
+            response.Directory = fileInfo.IsDirectory;
             return response;
         }
 
-        private static NTCreateAndXResponseExtended CreateResponseExtendedFromFileSystemEntry(FileSystemEntry entry, ushort fileID, FileStatus fileStatus)
+        private static NTCreateAndXResponseExtended CreateResponseExtendedFromFileInformation(FileNetworkOpenInformation fileInfo, ushort fileID, FileStatus fileStatus)
         {
             NTCreateAndXResponseExtended response = new NTCreateAndXResponseExtended();
-            if (entry.IsDirectory)
-            {
-                response.ExtFileAttributes = ExtendedFileAttributes.Directory;
-                response.Directory = true;
-            }
-            else
-            {
-                response.ExtFileAttributes = ExtendedFileAttributes.Normal;
-            }
             response.FID = fileID;
             response.CreateDisposition = ToCreateDisposition(fileStatus);
-            response.CreateTime = entry.CreationTime;
-            response.LastAccessTime = entry.LastAccessTime;
-            response.LastWriteTime = entry.LastWriteTime;
-            response.LastChangeTime = entry.LastWriteTime;
-            response.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-            response.EndOfFile = (long)entry.Size;
+            response.CreateTime = fileInfo.CreationTime;
+            response.LastAccessTime = fileInfo.LastAccessTime;
+            response.LastWriteTime = fileInfo.LastWriteTime;
+            response.LastChangeTime = fileInfo.LastWriteTime;
+            response.ExtFileAttributes = (ExtendedFileAttributes)fileInfo.FileAttributes;
+            response.AllocationSize = fileInfo.AllocationSize;
+            response.EndOfFile = fileInfo.EndOfFile;
             response.ResourceType = ResourceType.FileTypeDisk;
             response.FileStatusFlags = FileStatusFlags.NO_EAS | FileStatusFlags.NO_SUBSTREAMS | FileStatusFlags.NO_REPARSETAG;
+            response.Directory = fileInfo.IsDirectory;
             response.MaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
                                                 FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
                                                 FileAccessMask.FILE_EXECUTE |

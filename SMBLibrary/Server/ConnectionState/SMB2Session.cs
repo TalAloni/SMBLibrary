@@ -90,24 +90,13 @@ namespace SMBLibrary.Server
             return m_connectedTrees.ContainsKey(treeID);
         }
 
-        /// <param name="relativePath">Should include the path relative to the share</param>
         /// <returns>The persistent portion of the FileID</returns>
-        public ulong? AddOpenFile(string relativePath)
-        {
-            return AddOpenFile(relativePath, null);
-        }
-
-        public ulong? AddOpenFile(string relativePath, Stream stream)
-        {
-            return AddOpenFile(relativePath, stream, false);
-        }
-
-        public ulong? AddOpenFile(string relativePath, Stream stream, bool deleteOnClose)
+        public ulong? AddOpenFile(string relativePath, object handle)
         {
             ulong? persistentID = m_connection.AllocatePersistentFileID();
             if (persistentID.HasValue)
             {
-                m_openFiles.Add(persistentID.Value, new OpenFileObject(relativePath, stream, deleteOnClose));
+                m_openFiles.Add(persistentID.Value, new OpenFileObject(relativePath, handle));
             }
             return persistentID;
         }
@@ -126,16 +115,11 @@ namespace SMBLibrary.Server
 
         public void RemoveOpenFile(ulong fileID)
         {
-            Stream stream = m_openFiles[fileID].Stream;
-            if (stream != null)
-            {
-                stream.Close();
-            }
             m_openFiles.Remove(fileID);
             m_openSearches.Remove(fileID);
         }
 
-        public OpenSearch AddOpenSearch(ulong fileID, List<FileSystemEntry> entries, int enumerationLocation)
+        public OpenSearch AddOpenSearch(ulong fileID, List<QueryDirectoryFileInformation> entries, int enumerationLocation)
         {
             OpenSearch openSearch = new OpenSearch(entries, enumerationLocation);
             m_openSearches.Add(fileID, openSearch);

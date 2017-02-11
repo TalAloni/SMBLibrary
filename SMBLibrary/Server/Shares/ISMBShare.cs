@@ -14,5 +14,10 @@ namespace SMBLibrary.Server
         {
             get;
         }
+
+        INTFileStore FileStore
+        {
+            get;
+        }
     }
 }

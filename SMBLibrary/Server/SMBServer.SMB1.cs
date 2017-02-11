@@ -199,7 +199,7 @@ namespace SMBLibrary.Server
                             return new ErrorResponse(command.CommandName);
                         }
                         QueryInformationRequest request = (QueryInformationRequest)command;
-                        return FileSystemResponseHelper.GetQueryInformationResponse(header, request, (FileSystemShare)share);
+                        return FileSystemResponseHelper.GetQueryInformationResponse(header, request, (FileSystemShare)share, state);
                     }
                     else if (command is SetInformationRequest)
                     {
@@ -229,7 +229,7 @@ namespace SMBLibrary.Server
                             return new ErrorResponse(command.CommandName);
                         }
                         CheckDirectoryRequest request = (CheckDirectoryRequest)command;
-                        return FileSystemResponseHelper.GetCheckDirectoryResponse(header, request, (FileSystemShare)share);
+                        return FileSystemResponseHelper.GetCheckDirectoryResponse(header, request, (FileSystemShare)share, state);
                     }
                     else if (command is WriteRawRequest)
                     {

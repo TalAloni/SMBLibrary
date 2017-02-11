@@ -27,47 +27,37 @@ namespace SMBLibrary.Server.SMB2
 
                 if (share is FileSystemShare)
                 {
-                    IFileSystem fileSystem = ((FileSystemShare)share).FileSystem;
                     if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
                     {
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
-
-                    FileInformation information;
-                    try
-                    {
-                        information = FileInformation.GetFileInformation(request.Buffer, 0, request.FileInformationClass);
-                    }
-                    catch (UnsupportedInformationLevelException)
-                    {
-                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_INFO_CLASS);
-                    }
-                    catch (NotImplementedException)
-                    {
-                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
-                    }
-                    catch (Exception)
-                    {
-                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
-                    }
-
-                    if (information is FileRenameInformationType2)
-                    {
-                        string newFileName = ((FileRenameInformationType2)information).FileName;
-                        if (!((FileSystemShare)share).HasWriteAccess(session.UserName, newFileName, state.ClientEndPoint))
-                        {
-                            return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
-                        }
-                    }
-
-                    NTStatus status = NTFileSystemHelper.SetFileInformation(fileSystem, openFile, information, state);
-                    if (status != NTStatus.STATUS_SUCCESS)
-                    {
-                        state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}' failed. Information class: {1}, NTStatus: {2}", openFile.Path, information.FileInformationClass, status);
-                        return new ErrorResponse(request.CommandName, status);
-                    }
-                    return new SetInfoResponse();
                 }
+
+                FileInformation information;
+                try
+                {
+                    information = FileInformation.GetFileInformation(request.Buffer, 0, request.FileInformationClass);
+                }
+                catch (UnsupportedInformationLevelException)
+                {
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_INFO_CLASS);
+                }
+                catch (NotImplementedException)
+                {
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
+                }
+                catch (Exception)
+                {
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
+                }
+
+                NTStatus status = share.FileStore.SetFileInformation(openFile.Handle, information);
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}' failed. Information class: {1}, NTStatus: {2}", openFile.Path, information.FileInformationClass, status);
+                    return new ErrorResponse(request.CommandName, status);
+                }
+                return new SetInfoResponse();
             }
             return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
         }

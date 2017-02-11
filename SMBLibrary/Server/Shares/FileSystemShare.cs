@@ -33,14 +33,20 @@ namespace SMBLibrary.Server
     public class FileSystemShare : ISMBShare
     {
         private string m_name;
-        public IFileSystem m_fileSystem;
+        private INTFileStore m_fileSystem;
 
         public event EventHandler<AccessRequestArgs> OnAccessRequest;
+
+        public FileSystemShare(string shareName, INTFileStore fileSystem)
+        {
+            m_name = shareName;
+            m_fileSystem = fileSystem;
+        }
 
         public FileSystemShare(string shareName, IFileSystem fileSystem)
         {
             m_name = shareName;
-            m_fileSystem = fileSystem;
+            m_fileSystem = new NTFileSystemAdapter(fileSystem);
         }
 
         public bool HasReadAccess(string userName, string path, IPEndPoint clientEndPoint)
@@ -74,7 +80,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public IFileSystem FileSystem
+        public INTFileStore FileStore
         {
             get
             {

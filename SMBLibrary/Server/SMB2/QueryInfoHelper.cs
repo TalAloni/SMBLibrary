@@ -25,27 +25,16 @@ namespace SMBLibrary.Server.SMB2
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
                 }
 
-                FileInformation fileInformation;
-                NTStatus queryStatus;
-                if (share is NamedPipeShare)
-                {
-                    queryStatus = NTFileSystemHelper.GetNamedPipeInformation(out fileInformation, request.FileInformationClass);
-                }
-                else // FileSystemShare
+                if (share is FileSystemShare)
                 {
                     if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
                     {
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
-                    IFileSystem fileSystem = ((FileSystemShare)share).FileSystem;
-                    FileSystemEntry entry = fileSystem.GetEntry(openFile.Path);
-                    if (entry == null)
-                    {
-                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_NO_SUCH_FILE);
-                    }
-                    queryStatus = NTFileSystemHelper.GetFileInformation(out fileInformation, entry, openFile.DeleteOnClose, request.FileInformationClass);
                 }
 
+                FileInformation fileInformation;
+                NTStatus queryStatus = share.FileStore.GetFileInformation(out fileInformation, openFile.Handle, request.FileInformationClass);
                 if (queryStatus != NTStatus.STATUS_SUCCESS)
                 {
                     state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information class: {1}, NTStatus: {2}", openFile.Path, request.FileInformationClass, queryStatus);
@@ -64,9 +53,9 @@ namespace SMBLibrary.Server.SMB2
                     {
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
-                    IFileSystem fileSystem = ((FileSystemShare)share).FileSystem;
+
                     FileSystemInformation fileSystemInformation;
-                    NTStatus queryStatus = NTFileSystemHelper.GetFileSystemInformation(out fileSystemInformation, request.FileSystemInformationClass, fileSystem);
+                    NTStatus queryStatus = share.FileStore.GetFileSystemInformation(out fileSystemInformation, request.FileSystemInformationClass);
                     if (queryStatus != NTStatus.STATUS_SUCCESS)
                     {
                         state.LogToServer(Severity.Verbose, "GetFileSystemInformation failed. Information class: {0}, NTStatus: {1}", request.FileSystemInformationClass, queryStatus);

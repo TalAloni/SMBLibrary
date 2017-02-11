@@ -48,38 +48,18 @@ namespace SMBLibrary.Server.SMB1
                 }
             }
 
-            FileSystemEntry entry = null;
-            Stream stream = null;
+            object handle;
             FileStatus fileStatus;
-            if (share is NamedPipeShare)
+            header.Status = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, shareAccess, createDisposition, createOptions);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                Stream pipeStream = ((NamedPipeShare)share).OpenPipe(path);
-                if (pipeStream == null)
-                {
-                    header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
-                    return new ErrorResponse(request.CommandName);
-                }
-                fileStatus = FileStatus.FILE_OPENED;
-            }
-            else // FileSystemShare
-            {
-                FileSystemShare fileSystemShare = (FileSystemShare)share;
-                IFileSystem fileSystem = fileSystemShare.FileSystem;
-
-                header.Status = NTFileSystemHelper.CreateFile(out entry, out stream, out fileStatus, fileSystem, path, desiredAccess, shareAccess, createDisposition, createOptions, state);
-                if (header.Status != NTStatus.STATUS_SUCCESS)
-                {
-                    return new ErrorResponse(request.CommandName);
-                }
+                return new ErrorResponse(request.CommandName);
             }
 
-            ushort? fileID = session.AddOpenFile(path, stream);
+            ushort? fileID = session.AddOpenFile(path, handle);
             if (!fileID.HasValue)
             {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
+                share.FileStore.CloseFile(handle);
                 header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
                 return new ErrorResponse(request.CommandName);
             }
@@ -98,13 +78,14 @@ namespace SMBLibrary.Server.SMB1
             }
             else // FileSystemShare
             {
+                FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, handle);
                 if (isExtended)
                 {
-                    return CreateResponseExtendedFromFileSystemEntry(entry, fileID.Value, openResult);
+                    return CreateResponseExtendedFromFileInfo(fileInfo, fileID.Value, openResult);
                 }
                 else
                 {
-                    return CreateResponseFromFileSystemEntry(entry, fileID.Value, openResult);
+                    return CreateResponseFromFileInfo(fileInfo, fileID.Value, openResult);
                 }
             }
         }
@@ -288,40 +269,26 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        private static OpenAndXResponse CreateResponseFromFileSystemEntry(FileSystemEntry entry, ushort fileID, OpenResult openResult)
+        private static OpenAndXResponse CreateResponseFromFileInfo(FileNetworkOpenInformation fileInfo, ushort fileID, OpenResult openResult)
         {
             OpenAndXResponse response = new OpenAndXResponse();
             response.FID = fileID;
-            if (entry.IsDirectory)
-            {
-                response.FileAttrs = SMBFileAttributes.Directory;
-            }
-            else
-            {
-                response.FileAttrs = SMBFileAttributes.Normal;
-            }
-            response.LastWriteTime = entry.LastWriteTime;
-            response.FileDataSize = (uint)Math.Min(UInt32.MaxValue, entry.Size);
+            response.FileAttrs = SMB1FileStoreHelper.GetFileAttributes(fileInfo.FileAttributes);
+            response.LastWriteTime = fileInfo.LastWriteTime;
+            response.FileDataSize = (uint)Math.Min(UInt32.MaxValue, fileInfo.EndOfFile);
             response.AccessRights = AccessRights.SMB_DA_ACCESS_READ;
             response.ResourceType = ResourceType.FileTypeDisk;
             response.OpenResults.OpenResult = openResult;
             return response;
         }
 
-        private static OpenAndXResponseExtended CreateResponseExtendedFromFileSystemEntry(FileSystemEntry entry, ushort fileID, OpenResult openResult)
+        private static OpenAndXResponseExtended CreateResponseExtendedFromFileInfo(FileNetworkOpenInformation fileInfo, ushort fileID, OpenResult openResult)
         {
             OpenAndXResponseExtended response = new OpenAndXResponseExtended();
             response.FID = fileID;
-            if (entry.IsDirectory)
-            {
-                response.FileAttrs = SMBFileAttributes.Directory;
-            }
-            else
-            {
-                response.FileAttrs = SMBFileAttributes.Normal;
-            }
-            response.LastWriteTime = entry.LastWriteTime;
-            response.FileDataSize = (uint)Math.Min(UInt32.MaxValue, entry.Size);
+            response.FileAttrs = SMB1FileStoreHelper.GetFileAttributes(fileInfo.FileAttributes);
+            response.LastWriteTime = fileInfo.LastWriteTime;
+            response.FileDataSize = (uint)Math.Min(UInt32.MaxValue, fileInfo.EndOfFile);
             response.AccessRights = AccessRights.SMB_DA_ACCESS_READ;
             response.ResourceType = ResourceType.FileTypeDisk;
             response.OpenResults.OpenResult = openResult;

@@ -70,17 +70,12 @@ namespace SMBLibrary.Server
             return AddOpenFile(relativePath, null);
         }
 
-        public ushort? AddOpenFile(string relativePath, Stream stream)
-        {
-            return AddOpenFile(relativePath, stream, false);
-        }
-
-        public ushort? AddOpenFile(string relativePath, Stream stream, bool deleteOnClose)
+        public ushort? AddOpenFile(string relativePath, object handle)
         {
             ushort? fileID = m_connection.AllocateFileID();
             if (fileID.HasValue)
             {
-                m_openFiles.Add(fileID.Value, new OpenFileObject(relativePath, stream, deleteOnClose));
+                m_openFiles.Add(fileID.Value, new OpenFileObject(relativePath, handle));
             }
             return fileID;
         }
@@ -94,11 +89,6 @@ namespace SMBLibrary.Server
 
         public void RemoveOpenFile(ushort fileID)
         {
-            Stream stream = m_openFiles[fileID].Stream;
-            if (stream != null)
-            {
-                stream.Close();
-            }
             m_openFiles.Remove(fileID);
         }
 
@@ -120,7 +110,7 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public ushort? AddOpenSearch(List<FileSystemEntry> entries, int enumerationLocation)
+        public ushort? AddOpenSearch(List<QueryDirectoryFileInformation> entries, int enumerationLocation)
         {
             ushort? searchHandle = AllocateSearchHandle();
             if (searchHandle.HasValue)

@@ -39,8 +39,18 @@ namespace SMBLibrary.Server.SMB2
                 {
                     IOCtlResponse response = new IOCtlResponse();
                     response.CtlCode = request.CtlCode;
-                    openFile.Stream.Write(request.Input, 0, request.Input.Length);
-                    response.Output = ByteReader.ReadAllBytes(openFile.Stream);
+                    int numberOfBytesWritten;
+                    NTStatus writeStatus = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, 0, request.Input);
+                    if (writeStatus != NTStatus.STATUS_SUCCESS)
+                    {
+                        return new ErrorResponse(request.CommandName, writeStatus);
+                    }
+                    int maxCount = (int)request.MaxOutputResponse;
+                    NTStatus readStatus = share.FileStore.ReadFile(out response.Output, openFile.Handle, 0, maxCount);
+                    if (readStatus != NTStatus.STATUS_SUCCESS)
+                    {
+                        return new ErrorResponse(request.CommandName, readStatus);
+                    }
                     return response;
                 }
             }

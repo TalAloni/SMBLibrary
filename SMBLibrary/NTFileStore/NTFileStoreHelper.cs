@@ -98,5 +98,36 @@ namespace SMBLibrary
 
             return result;
         }
+
+        public static FileNetworkOpenInformation GetNetworkOpenInformation(INTFileStore fileStore, string path)
+        {
+            object handle;
+            FileStatus fileStatus;
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_READ_ATTRIBUTES, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0);
+            if (openStatus != NTStatus.STATUS_SUCCESS)
+            {
+                return null;
+            }
+            FileInformation fileInfo;
+            NTStatus queryStatus = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileNetworkOpenInformation);
+            fileStore.CloseFile(handle);
+            if (queryStatus != NTStatus.STATUS_SUCCESS)
+            {
+                return null;
+            }
+            return (FileNetworkOpenInformation)fileInfo;
+        }
+
+        public static FileNetworkOpenInformation GetNetworkOpenInformation(INTFileStore fileStore, object handle)
+        {
+            FileInformation fileInfo;
+            NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileNetworkOpenInformation);
+            if (status != NTStatus.STATUS_SUCCESS)
+            {
+                return null;
+            }
+
+            return (FileNetworkOpenInformation)fileInfo;
+        }
     }
 }

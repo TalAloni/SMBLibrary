@@ -27,8 +27,18 @@ namespace SMBLibrary.Server.SMB1
             }
 
             TransactionTransactNamedPipeResponse response = new TransactionTransactNamedPipeResponse();
-            openFile.Stream.Write(subcommand.WriteData, 0, subcommand.WriteData.Length);
-            response.ReadData = ByteReader.ReadAllBytes(openFile.Stream);
+            int numberOfBytesWritten;
+            header.Status = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, 0, subcommand.WriteData);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                return null;
+            }
+            int maxCount = UInt16.MaxValue;
+            header.Status = share.FileStore.ReadFile(out response.ReadData, openFile.Handle, 0, maxCount);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                return null;
+            }
             return response;
         }
     }

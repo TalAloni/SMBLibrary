@@ -34,19 +34,6 @@ namespace SMBLibrary.Server.SMB2
             }
 
             FileSystemShare fileSystemShare = (FileSystemShare)share;
-            IFileSystem fileSystem = fileSystemShare.FileSystem;
-
-            if (!fileSystem.GetEntry(openFile.Path).IsDirectory)
-            {
-                if ((request.Flags & QueryDirectoryFlags.SMB2_REOPEN) > 0)
-                {
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
-                }
-                else
-                {
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
-                }
-            }
 
             ulong fileID = request.FileId.Persistent;
             OpenSearch openSearch = session.GetOpenSearch(fileID);
@@ -56,8 +43,8 @@ namespace SMBLibrary.Server.SMB2
                 {
                     session.RemoveOpenSearch(fileID);
                 }
-                List<FileSystemEntry> entries;
-                NTStatus searchStatus = NTFileSystemHelper.FindEntries(out entries, fileSystemShare.FileSystem, openFile.Path, request.FileName);
+                List<QueryDirectoryFileInformation> entries;
+                NTStatus searchStatus = share.FileStore.QueryDirectory(out entries, openFile.Handle, request.FileName, request.FileInformationClass);
                 if (searchStatus != NTStatus.STATUS_SUCCESS)
                 {
                     state.LogToServer(Severity.Verbose, "Query Directory: Path: '{0}', Searched for '{1}', NTStatus: {2}", openFile.Path, request.FileName, searchStatus.ToString());
@@ -88,14 +75,11 @@ namespace SMBLibrary.Server.SMB2
             int pageLength = 0;
             for (int index = openSearch.EnumerationLocation; index < openSearch.Entries.Count; index++)
             {
-                QueryDirectoryFileInformation fileInformation;
-                try
+                QueryDirectoryFileInformation fileInformation = openSearch.Entries[index];
+                if (fileInformation.FileInformationClass != request.FileInformationClass)
                 {
-                    fileInformation = FromFileSystemEntry(openSearch.Entries[index], request.FileInformationClass);
-                }
-                catch (UnsupportedInformationLevelException)
-                {
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_INFO_CLASS);
+                    // We do not support changing FileInformationClass during a search (unless SMB2_REOPEN is set).
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
                 }
 
                 if (pageLength + fileInformation.Length <= request.OutputBufferLength)
@@ -118,96 +102,6 @@ namespace SMBLibrary.Server.SMB2
             QueryDirectoryResponse response = new QueryDirectoryResponse();
             response.SetFileInformationList(page);
             return response;
-        }
-
-        internal static QueryDirectoryFileInformation FromFileSystemEntry(FileSystemEntry entry, FileInformationClass informationClass)
-        {
-            switch (informationClass)
-            {
-                case FileInformationClass.FileBothDirectoryInformation:
-                    {
-                        FileBothDirectoryInformation result = new FileBothDirectoryInformation();
-                        result.CreationTime = entry.CreationTime;
-                        result.LastAccessTime = entry.LastAccessTime;
-                        result.LastWriteTime = entry.LastWriteTime;
-                        result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = (long)entry.Size;
-                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
-                        result.EaSize = 0;
-                        result.ShortName = NTFileSystemHelper.GetShortName(entry.Name);
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                case FileInformationClass.FileDirectoryInformation:
-                    {
-                        FileDirectoryInformation result = new FileDirectoryInformation();
-                        result.CreationTime = entry.CreationTime;
-                        result.LastAccessTime = entry.LastAccessTime;
-                        result.LastWriteTime = entry.LastWriteTime;
-                        result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = (long)entry.Size;
-                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                case FileInformationClass.FileFullDirectoryInformation:
-                    {
-                        FileFullDirectoryInformation result = new FileFullDirectoryInformation();
-                        result.CreationTime = entry.CreationTime;
-                        result.LastAccessTime = entry.LastAccessTime;
-                        result.LastWriteTime = entry.LastWriteTime;
-                        result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = (long)entry.Size;
-                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
-                        result.EaSize = 0;
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                case FileInformationClass.FileIdBothDirectoryInformation:
-                    {
-                        FileIdBothDirectoryInformation result = new FileIdBothDirectoryInformation();
-                        result.CreationTime = entry.CreationTime;
-                        result.LastAccessTime = entry.LastAccessTime;
-                        result.LastWriteTime = entry.LastWriteTime;
-                        result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = (long)entry.Size;
-                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
-                        result.EaSize = 0;
-                        result.ShortName = NTFileSystemHelper.GetShortName(entry.Name);
-                        result.FileId = 0;
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                case FileInformationClass.FileIdFullDirectoryInformation:
-                    {
-                        FileIdFullDirectoryInformation result = new FileIdFullDirectoryInformation();
-                        result.CreationTime = entry.CreationTime;
-                        result.LastAccessTime = entry.LastAccessTime;
-                        result.LastWriteTime = entry.LastWriteTime;
-                        result.ChangeTime = entry.LastWriteTime;
-                        result.EndOfFile = (long)entry.Size;
-                        result.AllocationSize = (long)NTFileSystemHelper.GetAllocationSize(entry.Size);
-                        result.FileAttributes = NTFileSystemHelper.GetFileAttributes(entry);
-                        result.EaSize = 0;
-                        result.FileId = 0;
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                case FileInformationClass.FileNamesInformation:
-                    {
-                        FileNamesInformation result = new FileNamesInformation();
-                        result.FileName = entry.Name;
-                        return result;
-                    }
-                default:
-                    {
-                        throw new UnsupportedInformationLevelException();
-                    }
-            }
         }
     }
 }
