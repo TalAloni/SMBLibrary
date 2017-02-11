@@ -16,11 +16,6 @@ namespace SMBLibrary.Server.SMB2
     {
         internal static SMB2Command GetQueryDirectoryResponse(QueryDirectoryRequest request, ISMBShare share, SMB2ConnectionState state)
         {
-            if (!(share is FileSystemShare))
-            {
-                return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
-            }
-
             SMB2Session session = state.GetSession(request.Header.SessionID);
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
             if (openFile == null)
