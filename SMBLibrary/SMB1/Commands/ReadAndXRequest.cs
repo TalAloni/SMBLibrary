@@ -31,7 +31,7 @@ namespace SMBLibrary.SMB1
         /// MaxCountHigh and the two unused bytes MUST be zero.
         /// When reading from a name pipe or I/O device, the field MUST be interpreted as Timeout.
         /// </summary>
-        public uint Timeout_or_MaxCountHigh; // CIFS 1.0: Timeout only
+        public uint Timeout_or_MaxCountHigh; // CIFS: Timeout only
         public ushort Remaining;
 
         public ReadAndXRequest() : base()
