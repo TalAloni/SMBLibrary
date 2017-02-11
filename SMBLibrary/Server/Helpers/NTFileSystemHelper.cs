@@ -58,7 +58,7 @@ namespace SMBLibrary.Server
                 entry = null;
                 return status;
             }
-            
+
             if (createDisposition == CreateDisposition.FILE_OPEN)
             {
                 if (entry == null)
@@ -74,8 +74,7 @@ namespace SMBLibrary.Server
 
                 if (!entry.IsDirectory && forceDirectory)
                 {
-                    // Not sure if that's the correct response
-                    return NTStatus.STATUS_OBJECT_NAME_COLLISION;
+                    return NTStatus.STATUS_OBJECT_PATH_INVALID;
                 }
             }
             else if (createDisposition == CreateDisposition.FILE_CREATE)
