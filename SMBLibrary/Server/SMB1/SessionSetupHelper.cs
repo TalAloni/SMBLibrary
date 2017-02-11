@@ -40,7 +40,7 @@ namespace SMBLibrary.Server.SMB1
             if (loginSuccess)
             {
                 state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", message.UserName);
-                SMB1Session session = state.CreateSession(message.UserName);
+                SMB1Session session = state.CreateSession(message.UserName, message.WorkStation);
                 if (session == null)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
@@ -52,7 +52,7 @@ namespace SMBLibrary.Server.SMB1
             else if (users.FallbackToGuest(message.UserName))
             {
                 state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", message.UserName);
-                SMB1Session session = state.CreateSession("Guest");
+                SMB1Session session = state.CreateSession("Guest", message.WorkStation);
                 if (session == null)
                 {
                     header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
@@ -145,12 +145,12 @@ namespace SMBLibrary.Server.SMB1
                 if (loginSuccess)
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", authenticateMessage.UserName);
-                    state.CreateSession(header.UID, authenticateMessage.UserName);
+                    state.CreateSession(header.UID, authenticateMessage.UserName, authenticateMessage.WorkStation);
                 }
                 else if (users.FallbackToGuest(authenticateMessage.UserName))
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", authenticateMessage.UserName);
-                    state.CreateSession(header.UID, "Guest");
+                    state.CreateSession(header.UID, "Guest", authenticateMessage.WorkStation);
                     response.Action = SessionSetupAction.SetupGuest;
                 }
                 else

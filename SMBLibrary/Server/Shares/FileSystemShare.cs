@@ -18,14 +18,16 @@ namespace SMBLibrary.Server
         public string UserName;
         public string Path;
         public FileAccess RequestedAccess;
+        public string MachineName;
         public IPEndPoint ClientEndPoint;
         public bool Allow = true;
 
-        public AccessRequestArgs(string userName, string path, FileAccess requestedAccess, IPEndPoint clientEndPoint)
+        public AccessRequestArgs(string userName, string path, FileAccess requestedAccess, string machineName, IPEndPoint clientEndPoint)
         {
             UserName = userName;
             Path = path;
             RequestedAccess = requestedAccess;
+            MachineName = machineName;
             ClientEndPoint = clientEndPoint;
         }
     }
@@ -49,23 +51,23 @@ namespace SMBLibrary.Server
             m_fileSystem = new NTFileSystemAdapter(fileSystem);
         }
 
-        public bool HasReadAccess(string userName, string path, IPEndPoint clientEndPoint)
+        public bool HasReadAccess(SecurityContext securityContext, string path)
         {
-            return HasAccess(userName, path, FileAccess.Read, clientEndPoint);
+            return HasAccess(securityContext, path, FileAccess.Read);
         }
 
-        public bool HasWriteAccess(string userName, string path, IPEndPoint clientEndPoint)
+        public bool HasWriteAccess(SecurityContext securityContext, string path)
         {
-            return HasAccess(userName, path, FileAccess.Write, clientEndPoint);
+            return HasAccess(securityContext, path, FileAccess.Write);
         }
 
-        public bool HasAccess(string userName, string path, FileAccess requestedAccess, IPEndPoint clientEndPoint)
+        public bool HasAccess(SecurityContext securityContext, string path, FileAccess requestedAccess)
         {
             // To be thread-safe we must capture the delegate reference first
             EventHandler<AccessRequestArgs> handler = OnAccessRequest;
             if (handler != null)
             {
-                AccessRequestArgs args = new AccessRequestArgs(userName, path, requestedAccess, clientEndPoint);
+                AccessRequestArgs args = new AccessRequestArgs(securityContext.UserName, path, requestedAccess, securityContext.MachineName, securityContext.ClientEndPoint);
                 handler(this, args);
                 return args.Allow;
             }

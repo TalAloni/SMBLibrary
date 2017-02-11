@@ -41,7 +41,7 @@ namespace SMBLibrary.Server.SMB1
             FileAccess fileAccess = ToFileAccess(request.AccessMode.AccessMode);
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasAccess(session.UserName, path, fileAccess, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasAccess(session.SecurityContext, path, fileAccess))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
@@ -50,7 +50,7 @@ namespace SMBLibrary.Server.SMB1
 
             object handle;
             FileStatus fileStatus;
-            header.Status = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, shareAccess, createDisposition, createOptions);
+            header.Status = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, shareAccess, createDisposition, createOptions, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);

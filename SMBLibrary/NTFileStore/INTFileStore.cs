@@ -16,7 +16,7 @@ namespace SMBLibrary
     /// </summary>
     public interface INTFileStore
     {
-        NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions);
+        NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext);
 
         NTStatus CloseFile(object handle);
 

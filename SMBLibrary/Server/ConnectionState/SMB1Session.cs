@@ -17,7 +17,7 @@ namespace SMBLibrary.Server
 
         private SMB1ConnectionState m_connection;
         private ushort m_userID;
-        private string m_userName;
+        private SecurityContext m_securityContext;
 
         // Key is TID
         private Dictionary<ushort, ISMBShare> m_connectedTrees = new Dictionary<ushort, ISMBShare>();
@@ -29,11 +29,11 @@ namespace SMBLibrary.Server
         private Dictionary<ushort, OpenSearch> m_openSearches = new Dictionary<ushort, OpenSearch>();
         private ushort m_nextSearchHandle = 1;
 
-        public SMB1Session(SMB1ConnectionState connection, ushort userID, string userName)
+        public SMB1Session(SMB1ConnectionState connection, ushort userID, string userName, string machineName)
         {
             m_connection = connection;
             m_userID = userID;
-            m_userName = userName;
+            m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint);
         }
 
         public ushort? AddConnectedTree(ISMBShare share)
@@ -141,11 +141,19 @@ namespace SMBLibrary.Server
             }
         }
 
+        public SecurityContext SecurityContext
+        {
+            get
+            {
+                return m_securityContext;
+            }
+        }
+
         public string UserName
         {
             get
             {
-                return m_userName;
+                return m_securityContext.UserName;
             }
         }
     }

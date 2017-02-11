@@ -32,7 +32,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
-            NTStatus searchStatus = SMB1FileStoreHelper.QueryDirectory(out entries, share.FileStore, fileNamePattern, informationClass);
+            NTStatus searchStatus = SMB1FileStoreHelper.QueryDirectory(out entries, share.FileStore, fileNamePattern, informationClass, session.SecurityContext);
             if (searchStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', NTStatus: {1}", fileNamePattern, searchStatus.ToString());
@@ -120,7 +120,7 @@ namespace SMBLibrary.Server.SMB1
             SMB1Session session = state.GetSession(header.UID);
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, @"\"))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return null;
@@ -146,7 +146,7 @@ namespace SMBLibrary.Server.SMB1
             string path = subcommand.FileName;
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasReadAccess(session.UserName, path, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, path))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return null;
@@ -178,7 +178,7 @@ namespace SMBLibrary.Server.SMB1
 
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, openFile.Path))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return null;
@@ -210,7 +210,7 @@ namespace SMBLibrary.Server.SMB1
 
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, openFile.Path))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return null;

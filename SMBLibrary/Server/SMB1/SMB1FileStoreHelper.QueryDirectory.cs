@@ -22,7 +22,7 @@ namespace SMBLibrary.Server.SMB1
         // '\Directory\exefile"*' (cmd.exe will use this syntax when entering an exe without its extension, explorer will use this opening a directory from the run menu)
         /// <param name="fileNamePattern">The filename pattern to search for. This field MAY contain wildcard characters</param>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        public static NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, INTFileStore fileStore, string fileNamePattern, FileInformationClass fileInformation)
+        public static NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, INTFileStore fileStore, string fileNamePattern, FileInformationClass fileInformation, SecurityContext securityContext)
         {
             int separatorIndex = fileNamePattern.LastIndexOf('\\');
             if (separatorIndex >= 0)
@@ -31,7 +31,7 @@ namespace SMBLibrary.Server.SMB1
                 string fileName = fileNamePattern.Substring(separatorIndex + 1);
                 object handle;
                 FileStatus fileStatus;
-                NTStatus createStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.FILE_LIST_DIRECTORY | DirectoryAccessMask.FILE_TRAVERSE, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE);
+                NTStatus createStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.FILE_LIST_DIRECTORY | DirectoryAccessMask.FILE_TRAVERSE, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
                 if (createStatus != NTStatus.STATUS_SUCCESS)
                 {
                     result = null;

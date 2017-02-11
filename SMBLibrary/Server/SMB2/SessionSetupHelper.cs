@@ -76,12 +76,12 @@ namespace SMBLibrary.Server.SMB2
                 if (loginSuccess)
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", authenticateMessage.UserName);
-                    state.CreateSession(request.Header.SessionID, authenticateMessage.UserName);
+                    state.CreateSession(request.Header.SessionID, authenticateMessage.UserName, authenticateMessage.WorkStation);
                 }
                 else if (users.FallbackToGuest(authenticateMessage.UserName))
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", authenticateMessage.UserName);
-                    state.CreateSession(request.Header.SessionID, "Guest");
+                    state.CreateSession(request.Header.SessionID, "Guest", authenticateMessage.WorkStation);
                     response.SessionFlags = SessionFlags.IsGuest;
                 }
                 else

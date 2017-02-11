@@ -29,7 +29,7 @@ namespace SMBLibrary.Server.SMB1
 
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, openFile.Path))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
@@ -61,7 +61,7 @@ namespace SMBLibrary.Server.SMB1
 
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, openFile.Path))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
@@ -102,7 +102,7 @@ namespace SMBLibrary.Server.SMB1
 
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, openFile.Path))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
@@ -132,7 +132,7 @@ namespace SMBLibrary.Server.SMB1
 
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, openFile.Path))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);

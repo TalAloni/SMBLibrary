@@ -99,11 +99,11 @@ namespace SMBLibrary
             return result;
         }
 
-        public static FileNetworkOpenInformation GetNetworkOpenInformation(INTFileStore fileStore, string path)
+        public static FileNetworkOpenInformation GetNetworkOpenInformation(INTFileStore fileStore, string path, SecurityContext securityContext)
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_READ_ATTRIBUTES, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_READ_ATTRIBUTES, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return null;

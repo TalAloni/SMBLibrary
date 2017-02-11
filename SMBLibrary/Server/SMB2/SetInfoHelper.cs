@@ -27,7 +27,7 @@ namespace SMBLibrary.Server.SMB2
 
                 if (share is FileSystemShare)
                 {
-                    if (!((FileSystemShare)share).HasWriteAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+                    if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, openFile.Path))
                     {
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }

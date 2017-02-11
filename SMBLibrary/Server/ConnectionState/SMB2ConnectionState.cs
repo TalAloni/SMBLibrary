@@ -44,9 +44,9 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public SMB2Session CreateSession(ulong sessionID, string userName)
+        public SMB2Session CreateSession(ulong sessionID, string userName, string machineName)
         {
-            SMB2Session session = new SMB2Session(this, sessionID, userName);
+            SMB2Session session = new SMB2Session(this, sessionID, userName, machineName);
             m_sessions.Add(sessionID, session);
             return session;
         }

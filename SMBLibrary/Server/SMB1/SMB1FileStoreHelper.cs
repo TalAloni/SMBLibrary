@@ -14,11 +14,11 @@ namespace SMBLibrary.Server.SMB1
 {
     public partial class SMB1FileStoreHelper
     {
-        public static NTStatus CreateDirectory(INTFileStore fileStore, string path)
+        public static NTStatus CreateDirectory(INTFileStore fileStore, string path, SecurityContext securityContext)
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus createStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.FILE_ADD_SUBDIRECTORY, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_CREATE, CreateOptions.FILE_DIRECTORY_FILE);
+            NTStatus createStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.FILE_ADD_SUBDIRECTORY, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_CREATE, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
             if (createStatus != NTStatus.STATUS_SUCCESS)
             {
                 return createStatus;
@@ -27,21 +27,21 @@ namespace SMBLibrary.Server.SMB1
             return createStatus;
         }
 
-        public static NTStatus DeleteDirectory(INTFileStore fileStore, string path)
+        public static NTStatus DeleteDirectory(INTFileStore fileStore, string path, SecurityContext securityContext)
         {
-            return Delete(fileStore, path, CreateOptions.FILE_DIRECTORY_FILE);
+            return Delete(fileStore, path, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
         }
 
-        public static NTStatus DeleteFile(INTFileStore fileStore, string path)
+        public static NTStatus DeleteFile(INTFileStore fileStore, string path, SecurityContext securityContext)
         {
-            return Delete(fileStore, path, CreateOptions.FILE_NON_DIRECTORY_FILE);
+            return Delete(fileStore, path, CreateOptions.FILE_NON_DIRECTORY_FILE, securityContext);
         }
 
-        public static NTStatus Delete(INTFileStore fileStore, string path, CreateOptions createOptions)
+        public static NTStatus Delete(INTFileStore fileStore, string path, CreateOptions createOptions, SecurityContext securityContext)
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.DELETE, 0, CreateDisposition.FILE_OPEN, createOptions);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.DELETE, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return openStatus;
@@ -57,7 +57,7 @@ namespace SMBLibrary.Server.SMB1
             return closeStatus;
         }
 
-        public static NTStatus Rename(INTFileStore fileStore, string oldName, string newName, SMBFileAttributes searchAttributes)
+        public static NTStatus Rename(INTFileStore fileStore, string oldName, string newName, SMBFileAttributes searchAttributes, SecurityContext securityContext)
         {
             object handle;
             FileStatus fileStatus;
@@ -70,7 +70,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 createOptions = CreateOptions.FILE_DIRECTORY_FILE;
             }
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, oldName, DirectoryAccessMask.DELETE, 0, CreateDisposition.FILE_OPEN, createOptions);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, oldName, DirectoryAccessMask.DELETE, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return openStatus;
@@ -87,11 +87,11 @@ namespace SMBLibrary.Server.SMB1
             return closeStatus;
         }
 
-        public static NTStatus CheckDirectory(INTFileStore fileStore, string path)
+        public static NTStatus CheckDirectory(INTFileStore fileStore, string path, SecurityContext securityContext)
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return openStatus;
@@ -101,11 +101,11 @@ namespace SMBLibrary.Server.SMB1
             return NTStatus.STATUS_SUCCESS;
         }
 
-        public static NTStatus QueryInformation(out FileNetworkOpenInformation fileInfo, INTFileStore fileStore, string path)
+        public static NTStatus QueryInformation(out FileNetworkOpenInformation fileInfo, INTFileStore fileStore, string path, SecurityContext securityContext)
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_READ_ATTRIBUTES, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_READ_ATTRIBUTES, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 fileInfo = null;
@@ -116,11 +116,11 @@ namespace SMBLibrary.Server.SMB1
             return NTStatus.STATUS_SUCCESS;
         }
 
-        public static NTStatus SetInformation(INTFileStore fileStore, string path, SMBFileAttributes fileAttributes, DateTime? lastWriteTime)
+        public static NTStatus SetInformation(INTFileStore fileStore, string path, SMBFileAttributes fileAttributes, DateTime? lastWriteTime, SecurityContext securityContext)
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_WRITE_ATTRIBUTES, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_WRITE_ATTRIBUTES, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return openStatus;

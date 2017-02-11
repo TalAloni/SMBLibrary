@@ -36,7 +36,7 @@ namespace SMBLibrary.Server.SMB1
                     return new ErrorResponse(request.CommandName);
                 }
 
-                if (!((FileSystemShare)share).HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, @"\"))
                 {
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);

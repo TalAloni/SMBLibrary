@@ -23,7 +23,7 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
 
-            if (!((FileSystemShare)share).HasReadAccess(session.UserName, openFile.Path, state.ClientEndPoint))
+            if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, openFile.Path))
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
             }

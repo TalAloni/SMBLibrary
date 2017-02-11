@@ -37,7 +37,7 @@ namespace SMBLibrary.Server.SMB2
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_OBJECT_PATH_NOT_FOUND);
                 }
 
-                if (!((FileSystemShare)share).HasReadAccess(session.UserName, @"\", state.ClientEndPoint))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, @"\"))
                 {
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                 }

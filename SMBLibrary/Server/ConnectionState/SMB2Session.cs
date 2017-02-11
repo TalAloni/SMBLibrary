@@ -16,7 +16,7 @@ namespace SMBLibrary.Server
     {
         private SMB2ConnectionState m_connection;
         private ulong m_sessionID;
-        private string m_userName;
+        private SecurityContext m_securityContext;
 
         // Key is TreeID
         private Dictionary<uint, ISMBShare> m_connectedTrees = new Dictionary<uint, ISMBShare>();
@@ -28,11 +28,11 @@ namespace SMBLibrary.Server
         // Key is the persistent portion of the FileID
         private Dictionary<ulong, OpenSearch> m_openSearches = new Dictionary<ulong, OpenSearch>();
 
-        public SMB2Session(SMB2ConnectionState connecton, ulong sessionID, string userName)
+        public SMB2Session(SMB2ConnectionState connecton, ulong sessionID, string userName, string machineName)
         {
             m_connection = connecton;
             m_sessionID = sessionID;
-            m_userName = userName;
+            m_securityContext = new SecurityContext(userName, machineName, connecton.ClientEndPoint);
         }
 
         private uint? AllocateTreeID()
@@ -138,11 +138,19 @@ namespace SMBLibrary.Server
             m_openSearches.Remove(fileID);
         }
 
+        public SecurityContext SecurityContext
+        {
+            get
+            {
+                return m_securityContext;
+            }
+        }
+
         public string UserName
         {
             get
             {
-                return m_userName;
+                return m_securityContext.UserName;
             }
         }
     }
