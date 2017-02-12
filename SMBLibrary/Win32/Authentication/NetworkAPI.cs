@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -73,7 +73,7 @@ namespace SMBLibrary.Authentication.Win32
                 for (int i = 0; i < entriesRead; i++)
                 {
                     RetGroups[i] = (LOCALGROUP_USERS_INFO_0)Marshal.PtrToStructure(iter, typeof(LOCALGROUP_USERS_INFO_0));
-                    iter = (IntPtr)((int)iter + Marshal.SizeOf(typeof(LOCALGROUP_USERS_INFO_0)));
+                    iter = new IntPtr(iter.ToInt64() + Marshal.SizeOf(typeof(LOCALGROUP_USERS_INFO_0)));
                     result.Add(RetGroups[i].groupname);
                 }
                 NetApiBufferFree(bufPtr);
@@ -101,7 +101,7 @@ namespace SMBLibrary.Authentication.Win32
                 for (int i = 0; i < entriesRead; i++)
                 {
                     Users[i] = (USER_INFO_0)Marshal.PtrToStructure(iter, typeof(USER_INFO_0));
-                    iter = (IntPtr)((int)iter + Marshal.SizeOf(typeof(USER_INFO_0)));
+                    iter = new IntPtr(iter.ToInt64() + Marshal.SizeOf(typeof(USER_INFO_0)));
                     result.Add(Users[i].Username);
                 }
                 NetApiBufferFree(bufPtr);
@@ -129,7 +129,7 @@ namespace SMBLibrary.Authentication.Win32
                 for (int i = 0; i < entriesRead; i++)
                 {
                     Users[i] = (USER_INFO_1)Marshal.PtrToStructure(iter, typeof(USER_INFO_1));
-                    iter = (IntPtr)((int)iter + Marshal.SizeOf(typeof(USER_INFO_1)));
+                    iter = new IntPtr(iter.ToInt64() + Marshal.SizeOf(typeof(USER_INFO_1)));
                     if ((Users[i].Flags & UF_ACCOUNTDISABLE) == 0)
                     {
                         result.Add(Users[i].Username);
