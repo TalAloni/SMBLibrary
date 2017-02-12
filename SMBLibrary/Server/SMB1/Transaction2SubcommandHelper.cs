@@ -155,7 +155,7 @@ namespace SMBLibrary.Server.SMB1
 
             Transaction2QueryPathInformationResponse response = new Transaction2QueryPathInformationResponse();
             QueryInformation queryInformation;
-            NTStatus queryStatus = SMB1FileStoreHelper.GetFileInformation(out queryInformation, share.FileStore, path, subcommand.InformationLevel);
+            NTStatus queryStatus = SMB1FileStoreHelper.GetFileInformation(out queryInformation, share.FileStore, path, subcommand.InformationLevel, session.SecurityContext);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", path, subcommand.InformationLevel, queryStatus);
