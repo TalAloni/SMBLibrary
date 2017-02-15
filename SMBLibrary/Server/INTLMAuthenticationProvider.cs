@@ -29,7 +29,5 @@ namespace SMBLibrary.Server
         ///    The password is correct but 'limitblankpassworduse' is set to 1 (logon over a network is disabled for accounts without a password).
         /// </remarks>
         bool FallbackToGuest(string userName);
-
-        List<string> ListUsers();
     }
 }

@@ -84,11 +84,10 @@ namespace SMBServer
             }
 
 
-            List<string> allUsers = provider.ListUsers();
             ShareCollection shares;
             try
             {
-                shares = ReadShareSettings(allUsers);
+                shares = ReadShareSettings();
             }
             catch (Exception)
             {
@@ -150,7 +149,7 @@ namespace SMBServer
             return users;
         }
 
-        private ShareCollection ReadShareSettings(List<string> allUsers)
+        private ShareCollection ReadShareSettings()
         {
             ShareCollection shares = new ShareCollection();
             XmlDocument document = GetSettingsXML();
@@ -162,23 +161,25 @@ namespace SMBServer
                 string sharePath = shareNode.Attributes["Path"].Value;
 
                 XmlNode readAccessNode = shareNode.SelectSingleNode("ReadAccess");
-                List<string> readAccess = ReadAccessList(readAccessNode, allUsers);
+                List<string> readAccess = ReadAccessList(readAccessNode);
                 XmlNode writeAccessNode = shareNode.SelectSingleNode("WriteAccess");
-                List<string> writeAccess = ReadAccessList(writeAccessNode, allUsers);
+                List<string> writeAccess = ReadAccessList(writeAccessNode);
                 FileSystemShare share = new FileSystemShare(shareName, new DirectoryFileSystem(sharePath));
                 share.OnAccessRequest += delegate(object sender, AccessRequestArgs args)
                 {
+                    bool hasReadAccess = Contains(readAccess, "Users") || Contains(readAccess, args.UserName);
+                    bool hasWriteAccess = Contains(writeAccess, "Users") || Contains(writeAccess, args.UserName);
                     if (args.RequestedAccess == FileAccess.Read)
                     {
-                        args.Allow = Contains(readAccess, args.UserName);
+                        args.Allow = hasReadAccess;
                     }
                     else if (args.RequestedAccess == FileAccess.Write)
                     {
-                        args.Allow = Contains(writeAccess, args.UserName);
+                        args.Allow = hasWriteAccess;
                     }
                     else // FileAccess.ReadWrite
                     {
-                        args.Allow = Contains(readAccess, args.UserName) && Contains(writeAccess, args.UserName);
+                        args.Allow = hasReadAccess && hasWriteAccess;
                     }
                 };
                 shares.Add(share);
@@ -186,7 +187,7 @@ namespace SMBServer
             return shares;
         }
 
-        private List<string> ReadAccessList(XmlNode node, List<string> allUsers)
+        private List<string> ReadAccessList(XmlNode node)
         {
             List<string> result = new List<string>();
             if (node != null)
@@ -194,7 +195,7 @@ namespace SMBServer
                 string accounts = node.Attributes["Accounts"].Value;
                 if (accounts == "*")
                 {
-                    result.AddRange(allUsers);
+                    result.Add("Users");
                 }
                 else
                 {
