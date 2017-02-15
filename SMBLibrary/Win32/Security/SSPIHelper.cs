@@ -7,9 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace SMBLibrary.Authentication.Win32
+namespace SMBLibrary.Win32.Security
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct SecHandle

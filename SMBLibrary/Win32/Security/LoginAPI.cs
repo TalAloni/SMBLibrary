@@ -7,10 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using Utilities;
 
-namespace SMBLibrary.Authentication.Win32
+namespace SMBLibrary.Win32.Security
 {
     public enum LogonType
     {

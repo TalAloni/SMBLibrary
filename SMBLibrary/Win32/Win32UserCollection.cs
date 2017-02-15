@@ -10,7 +10,7 @@ using System.Net;
 using System.Text;
 using Utilities;
 using SMBLibrary.Authentication;
-using SMBLibrary.Authentication.Win32;
+using SMBLibrary.Win32.Security;
 using Microsoft.Win32;
 
 namespace SMBLibrary.Server.Win32

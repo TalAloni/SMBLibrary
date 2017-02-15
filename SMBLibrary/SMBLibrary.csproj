@@ -532,10 +532,11 @@
     <Compile Include="Utilities\LogEntry.cs" />
     <Compile Include="Utilities\PrefetchedStream.cs" />
     <Compile Include="Utilities\SocketUtils.cs" />
-    <Compile Include="Win32\Authentication\LoginAPI.cs" />
-    <Compile Include="Win32\Authentication\NetworkAPI.cs" />
-    <Compile Include="Win32\Authentication\SecBufferDesc.cs" />
-    <Compile Include="Win32\Authentication\SSPIHelper.cs" />
+    <Compile Include="Win32\Security\LoginAPI.cs" />
+    <Compile Include="Win32\Security\NetworkAPI.cs" />
+    <Compile Include="Win32\Security\SSPIHelper.cs" />
+    <Compile Include="Win32\Security\Structures\SecBuffer.cs" />
+    <Compile Include="Win32\Security\Structures\SecBufferDesc.cs" />
     <Compile Include="Win32\Win32UserCollection.cs" />
   </ItemGroup>
   <ItemGroup>
