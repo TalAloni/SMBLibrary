@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using Utilities;
 
-namespace SMBLibrary.Authentication
+namespace SMBLibrary.Authentication.GSSAPI
 {
     /// <summary>
     /// RFC 4178 - negTokenInit

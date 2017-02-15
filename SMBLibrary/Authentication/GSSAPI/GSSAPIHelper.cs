@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using Utilities;
 
-namespace SMBLibrary.Authentication
+namespace SMBLibrary.Authentication.GSSAPI
 {
     public class GSSAPIHelper
     {

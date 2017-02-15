@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using Utilities;
 
-namespace SMBLibrary.Authentication
+namespace SMBLibrary.Authentication.GSSAPI
 {
     public enum NegState : byte
     {

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using Utilities;
 
-namespace SMBLibrary.Authentication
+namespace SMBLibrary.Authentication.GSSAPI
 {
     public abstract class SimpleProtectedNegotiationToken
     {
