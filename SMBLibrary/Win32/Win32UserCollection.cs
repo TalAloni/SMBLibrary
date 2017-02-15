@@ -92,7 +92,7 @@ namespace SMBLibrary.Server.Win32
                 {
                     // NTLM v1 extended security:
                     byte[] clientChallenge = ByteReader.ReadBytes(message.LmChallengeResponse, 0, 8);
-                    byte[] emptyPasswordNTLMv1Response = NTAuthentication.ComputeNTLMv1ExtendedSecurityResponse(m_serverChallenge, clientChallenge, String.Empty);
+                    byte[] emptyPasswordNTLMv1Response = NTLMCryptography.ComputeNTLMv1ExtendedSecurityResponse(m_serverChallenge, clientChallenge, String.Empty);
                     if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv1Response, message.NtChallengeResponse))
                     {
                         return true;
@@ -102,7 +102,7 @@ namespace SMBLibrary.Server.Win32
                 {
                     // NTLM v2:
                     byte[] _LMv2ClientChallenge = ByteReader.ReadBytes(message.LmChallengeResponse, 16, 8);
-                    byte[] emptyPasswordLMv2Response = NTAuthentication.ComputeLMv2Response(m_serverChallenge, _LMv2ClientChallenge, String.Empty, message.UserName, message.DomainName);
+                    byte[] emptyPasswordLMv2Response = NTLMCryptography.ComputeLMv2Response(m_serverChallenge, _LMv2ClientChallenge, String.Empty, message.UserName, message.DomainName);
                     if (ByteUtils.AreByteArraysEqual(emptyPasswordLMv2Response, message.LmChallengeResponse))
                     {
                         return true;
@@ -112,7 +112,7 @@ namespace SMBLibrary.Server.Win32
                     {
                         byte[] clientNTProof = ByteReader.ReadBytes(message.NtChallengeResponse, 0, 16);
                         byte[] clientChallengeStructurePadded = ByteReader.ReadBytes(message.NtChallengeResponse, 16, message.NtChallengeResponse.Length - 16);
-                        byte[] emptyPasswordNTProof = NTAuthentication.ComputeNTLMv2Proof(m_serverChallenge, clientChallengeStructurePadded, String.Empty, message.UserName, message.DomainName);
+                        byte[] emptyPasswordNTProof = NTLMCryptography.ComputeNTLMv2Proof(m_serverChallenge, clientChallengeStructurePadded, String.Empty, message.UserName, message.DomainName);
                         if (ByteUtils.AreByteArraysEqual(clientNTProof, emptyPasswordNTProof))
                         {
                             return true;
@@ -123,13 +123,13 @@ namespace SMBLibrary.Server.Win32
             else
             {
                 // NTLM v1:
-                byte[] emptyPasswordLMv1Response = NTAuthentication.ComputeLMv1Response(m_serverChallenge, String.Empty);
+                byte[] emptyPasswordLMv1Response = NTLMCryptography.ComputeLMv1Response(m_serverChallenge, String.Empty);
                 if (ByteUtils.AreByteArraysEqual(emptyPasswordLMv1Response, message.LmChallengeResponse))
                 {
                     return true;
                 }
 
-                byte[] emptyPasswordNTLMv1Response = NTAuthentication.ComputeNTLMv1Response(m_serverChallenge, String.Empty);
+                byte[] emptyPasswordNTLMv1Response = NTLMCryptography.ComputeNTLMv1Response(m_serverChallenge, String.Empty);
                 if (ByteUtils.AreByteArraysEqual(emptyPasswordNTLMv1Response, message.NtChallengeResponse))
                 {
                     return true;

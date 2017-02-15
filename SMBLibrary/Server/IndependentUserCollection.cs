@@ -37,13 +37,13 @@ namespace SMBLibrary.Server
 
                 if (String.Equals(accountName, accountNameToAuth, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    byte[] expectedLMResponse = NTAuthentication.ComputeLMv1Response(serverChallenge, password);
+                    byte[] expectedLMResponse = NTLMCryptography.ComputeLMv1Response(serverChallenge, password);
                     if (ByteUtils.AreByteArraysEqual(expectedLMResponse, lmResponse))
                     {
                         return this[index];
                     }
 
-                    byte[] expectedNTResponse = NTAuthentication.ComputeNTLMv1Response(serverChallenge, password);
+                    byte[] expectedNTResponse = NTLMCryptography.ComputeNTLMv1Response(serverChallenge, password);
                     if (ByteUtils.AreByteArraysEqual(expectedNTResponse, ntResponse))
                     {
                         return this[index];
@@ -66,7 +66,7 @@ namespace SMBLibrary.Server
                 if (String.Equals(accountName, accountNameToAuth, StringComparison.InvariantCultureIgnoreCase))
                 {
                     byte[] clientChallenge = ByteReader.ReadBytes(lmResponse, 0, 8);
-                    byte[] expectedNTLMv1Response = NTAuthentication.ComputeNTLMv1ExtendedSecurityResponse(serverChallenge, clientChallenge, password);
+                    byte[] expectedNTLMv1Response = NTLMCryptography.ComputeNTLMv1ExtendedSecurityResponse(serverChallenge, clientChallenge, password);
 
                     if (ByteUtils.AreByteArraysEqual(expectedNTLMv1Response, ntResponse))
                     {
@@ -90,7 +90,7 @@ namespace SMBLibrary.Server
                 if (String.Equals(accountName, accountNameToAuth, StringComparison.InvariantCultureIgnoreCase))
                 {
                     byte[] _LMv2ClientChallenge = ByteReader.ReadBytes(lmResponse, 16, 8);
-                    byte[] expectedLMv2Response = NTAuthentication.ComputeLMv2Response(serverChallenge, _LMv2ClientChallenge, password, accountName, domainNameToAuth);
+                    byte[] expectedLMv2Response = NTLMCryptography.ComputeLMv2Response(serverChallenge, _LMv2ClientChallenge, password, accountName, domainNameToAuth);
                     if (ByteUtils.AreByteArraysEqual(expectedLMv2Response, lmResponse))
                     {
                         return this[index];
@@ -100,7 +100,7 @@ namespace SMBLibrary.Server
                     {
                         byte[] clientNTProof = ByteReader.ReadBytes(ntResponse, 0, 16);
                         byte[] clientChallengeStructurePadded = ByteReader.ReadBytes(ntResponse, 16, ntResponse.Length - 16);
-                        byte[] expectedNTProof = NTAuthentication.ComputeNTLMv2Proof(serverChallenge, clientChallengeStructurePadded, password, accountName, domainNameToAuth);
+                        byte[] expectedNTProof = NTLMCryptography.ComputeNTLMv2Proof(serverChallenge, clientChallengeStructurePadded, password, accountName, domainNameToAuth);
 
                         if (ByteUtils.AreByteArraysEqual(clientNTProof, expectedNTProof))
                         {

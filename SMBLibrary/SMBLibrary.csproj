@@ -47,7 +47,7 @@
     <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenInit.cs" />
     <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenResponse.cs" />
     <Compile Include="Authentication\MD4.cs" />
-    <Compile Include="Authentication\NTAuthentication.cs" />
+    <Compile Include="Authentication\NTLMCryptography.cs" />
     <Compile Include="Client\SMBClient.cs" />
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />

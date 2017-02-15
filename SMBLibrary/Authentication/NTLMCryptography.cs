@@ -14,7 +14,7 @@ using Utilities;
 
 namespace SMBLibrary.Authentication
 {
-    public class NTAuthentication
+    public class NTLMCryptography
     {
         public static byte[] ComputeLMv1Response(byte[] challenge, string password)
         {
@@ -59,22 +59,6 @@ namespace SMBLibrary.Authentication
             HMACMD5 hmac = new HMACMD5(key);
             byte[] _NTProof = hmac.ComputeHash(ByteUtils.Concatenate(serverChallenge, temp), 0, serverChallenge.Length + temp.Length);
             return _NTProof;
-        }
-
-        /// <summary>
-        /// NTLMv2_CLIENT_CHALLENGE
-        /// </summary>
-        [Obsolete]
-        public static byte[] GetNTLMv2ClientChallengeStructure(byte[] clientChallenge, byte responseVersion, byte responseVersionHigh, byte[] time, byte[] serverAVPair)
-        {
-            byte[] temp = new byte[28 + serverAVPair.Length];
-            temp[0] = responseVersion;
-            temp[1] = responseVersionHigh;
-            Array.Copy(time, 0, temp, 8, 8);
-            Array.Copy(clientChallenge, 0, temp, 16, 8);
-            Array.Copy(serverAVPair, 0, temp, 28, serverAVPair.Length);
-
-            return temp;
         }
 
         public static byte[] DesEncrypt(byte[] key, byte[] plainText)
