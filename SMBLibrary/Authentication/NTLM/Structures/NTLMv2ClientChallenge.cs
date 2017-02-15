@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using Utilities;
 
-namespace SMBLibrary.Authentication
+namespace SMBLibrary.Authentication.NTLM
 {
     /// <summary>
     /// NTLMv2_CLIENT_CHALLENGE

@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Utilities;
-using SMBLibrary.Authentication;
+using SMBLibrary.Authentication.NTLM;
 
 namespace SMBLibrary
 {

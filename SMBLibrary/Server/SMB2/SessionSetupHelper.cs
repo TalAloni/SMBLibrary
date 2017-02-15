@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using SMBLibrary.Authentication;
+using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.SMB2;
 using Utilities;
 

@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SMBLibrary.Authentication;
+using SMBLibrary.Authentication.NTLM;
 
 namespace SMBLibrary.Server
 {

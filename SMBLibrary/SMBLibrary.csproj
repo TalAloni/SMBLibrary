@@ -31,23 +31,23 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Authentication\AuthenticateMessage\AuthenticateMessage.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\AuthenticationMessageUtils.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\AVPairUtils.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\ChallengeMessage.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\Enums\AVPairKey.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\Enums\MessageTypeName.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\Enums\NegotiateFlags.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\NegotiateMessage.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\NTLMv2ClientChallenge.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\NTLMVersion.cs" />
     <Compile Include="Authentication\GSSAPI\DerEncodingHelper.cs" />
     <Compile Include="Authentication\GSSAPI\GSSAPIHelper.cs" />
     <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationToken.cs" />
     <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenInit.cs" />
     <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenResponse.cs" />
-    <Compile Include="Authentication\MD4.cs" />
-    <Compile Include="Authentication\NTLMCryptography.cs" />
+    <Compile Include="Authentication\NTLM\Helpers\AuthenticationMessageUtils.cs" />
+    <Compile Include="Authentication\NTLM\Helpers\AVPairUtils.cs" />
+    <Compile Include="Authentication\NTLM\Helpers\MD4.cs" />
+    <Compile Include="Authentication\NTLM\Helpers\NTLMCryptography.cs" />
+    <Compile Include="Authentication\NTLM\Structures\AuthenticateMessage.cs" />
+    <Compile Include="Authentication\NTLM\Structures\ChallengeMessage.cs" />
+    <Compile Include="Authentication\NTLM\Structures\Enums\AVPairKey.cs" />
+    <Compile Include="Authentication\NTLM\Structures\Enums\MessageTypeName.cs" />
+    <Compile Include="Authentication\NTLM\Structures\Enums\NegotiateFlags.cs" />
+    <Compile Include="Authentication\NTLM\Structures\NegotiateMessage.cs" />
+    <Compile Include="Authentication\NTLM\Structures\NTLMv2ClientChallenge.cs" />
+    <Compile Include="Authentication\NTLM\Structures\NTLMVersion.cs" />
     <Compile Include="Client\SMBClient.cs" />
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />

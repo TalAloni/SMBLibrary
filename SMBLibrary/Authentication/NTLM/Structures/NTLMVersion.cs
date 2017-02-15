@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using Utilities;
 
-namespace SMBLibrary.Authentication
+namespace SMBLibrary.Authentication.NTLM
 {
     /// <summary>
     /// [MS-NLMP] 2.2.2.10 - VERSION
