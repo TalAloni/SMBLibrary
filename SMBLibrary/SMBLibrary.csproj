@@ -31,11 +31,11 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Authentication\GSSAPI\DerEncodingHelper.cs" />
     <Compile Include="Authentication\GSSAPI\GSSAPIHelper.cs" />
-    <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationToken.cs" />
-    <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenInit.cs" />
-    <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationTokenResponse.cs" />
+    <Compile Include="Authentication\GSSAPI\SPNEGO\DerEncodingHelper.cs" />
+    <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationToken.cs" />
+    <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenInit.cs" />
+    <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenResponse.cs" />
     <Compile Include="Authentication\NTLM\Helpers\AuthenticationMessageUtils.cs" />
     <Compile Include="Authentication\NTLM\Helpers\AVPairUtils.cs" />
     <Compile Include="Authentication\NTLM\Helpers\MD4.cs" />
