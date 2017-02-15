@@ -81,7 +81,7 @@ namespace SMBLibrary.Server.SMB1
                                               NegotiateFlags.Version |
                                               NegotiateFlags.Use128BitEncryption |
                                               NegotiateFlags.Use56BitEncryption;
-            negotiateMessage.Version = Authentication.Version.Server2003;
+            negotiateMessage.Version = NTLMVersion.Server2003;
             return negotiateMessage;
         }
     }

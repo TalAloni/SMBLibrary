@@ -11,7 +11,10 @@ using Utilities;
 
 namespace SMBLibrary.Authentication
 {
-    public class Version
+    /// <summary>
+    /// [MS-NLMP] 2.2.2.10 - VERSION
+    /// </summary>
+    public class NTLMVersion
     {
         public const byte NTLMSSP_REVISION_W2K3 = 0x0F;
 
@@ -21,7 +24,7 @@ namespace SMBLibrary.Authentication
         // Reserved - 3 bytes
         public byte NTLMRevisionCurrent;
 
-        public Version(byte majorVersion, byte minorVersion, ushort build, byte ntlmRevisionCurrent)
+        public NTLMVersion(byte majorVersion, byte minorVersion, ushort build, byte ntlmRevisionCurrent)
         {
             ProductMajorVersion = majorVersion;
             ProductMinorVersion = minorVersion;
@@ -29,7 +32,7 @@ namespace SMBLibrary.Authentication
             NTLMRevisionCurrent = ntlmRevisionCurrent;
         }
 
-        public Version(byte[] buffer, int offset)
+        public NTLMVersion(byte[] buffer, int offset)
         {
             ProductMajorVersion = ByteReader.ReadByte(buffer, offset + 0);
             ProductMinorVersion = ByteReader.ReadByte(buffer, offset + 1);
@@ -45,19 +48,19 @@ namespace SMBLibrary.Authentication
             ByteWriter.WriteByte(buffer, offset + 7, NTLMRevisionCurrent);
         }
 
-        public static Version WindowsXP
+        public static NTLMVersion WindowsXP
         {
             get
             {
-                return new Version(5, 1, 2600, NTLMSSP_REVISION_W2K3);
+                return new NTLMVersion(5, 1, 2600, NTLMSSP_REVISION_W2K3);
             }
         }
 
-        public static Version Server2003
+        public static NTLMVersion Server2003
         {
             get
             {
-                return new Version(5, 2, 3790, NTLMSSP_REVISION_W2K3);
+                return new NTLMVersion(5, 2, 3790, NTLMSSP_REVISION_W2K3);
             }
         }
     }

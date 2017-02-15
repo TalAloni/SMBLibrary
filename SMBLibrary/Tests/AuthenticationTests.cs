@@ -96,7 +96,7 @@ namespace SMBLibrary
             byte[] serverChallenge = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
             ChallengeMessage message = new ChallengeMessage();
             message.ServerChallenge = serverChallenge;
-            message.Version = new Authentication.Version(6, 0, 6000, 15);
+            message.Version = new NTLMVersion(6, 0, 6000, 15);
             message.NegotiateFlags = NegotiateFlags.UnicodeEncoding | NegotiateFlags.OEMEncoding | NegotiateFlags.Sign | NegotiateFlags.Seal | NegotiateFlags.NTLMKey | NegotiateFlags.AlwaysSign | NegotiateFlags.TargetTypeServer | NegotiateFlags.ExtendedSecurity | NegotiateFlags.TargetInfo | NegotiateFlags.Version | NegotiateFlags.Use128BitEncryption | NegotiateFlags.KeyExchange | NegotiateFlags.Use56BitEncryption;
             message.TargetName = "Server";
             byte[] serverAVPair = AVPairUtils.GetAVPairSequence("Domain", "Server");
@@ -138,7 +138,7 @@ namespace SMBLibrary
             
             AuthenticateMessage message = new AuthenticateMessage();
             message.EncryptedRandomSessionKey = sessionKey;
-            message.Version = new Authentication.Version(5, 1, 2600, Authentication.Version.NTLMSSP_REVISION_W2K3);
+            message.Version = new NTLMVersion(5, 1, 2600, Authentication.NTLMVersion.NTLMSSP_REVISION_W2K3);
             message.NegotiateFlags = NegotiateFlags.UnicodeEncoding | NegotiateFlags.TargetNameSupplied | NegotiateFlags.Sign | NegotiateFlags.Seal | NegotiateFlags.NTLMKey | NegotiateFlags.AlwaysSign | NegotiateFlags.ExtendedSecurity | NegotiateFlags.TargetInfo | NegotiateFlags.Version | NegotiateFlags.Use128BitEncryption | NegotiateFlags.KeyExchange | NegotiateFlags.Use56BitEncryption;
             message.DomainName = "Domain";
             message.WorkStation = "COMPUTER";

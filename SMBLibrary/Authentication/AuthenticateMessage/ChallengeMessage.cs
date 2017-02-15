@@ -23,7 +23,7 @@ namespace SMBLibrary.Authentication
         public byte[] ServerChallenge; // 8 bytes
         // Reserved - 8 bytes
         public byte[] TargetInfo; // sequence of AV_PAIR structures
-        public Version Version;
+        public NTLMVersion Version;
 
         public ChallengeMessage()
         {
@@ -42,7 +42,7 @@ namespace SMBLibrary.Authentication
             TargetInfo = AuthenticationMessageUtils.ReadBufferPointer(buffer, 40);
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
-                Version = new Version(buffer, 48);
+                Version = new NTLMVersion(buffer, 48);
             }
         }
 

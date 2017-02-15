@@ -147,7 +147,7 @@ namespace SMBLibrary.Server
             message.TargetName = Environment.MachineName;
             message.ServerChallenge = serverChallenge;
             message.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
-            message.Version = Authentication.Version.Server2003;
+            message.Version = NTLMVersion.Server2003;
             return message;
         }
 

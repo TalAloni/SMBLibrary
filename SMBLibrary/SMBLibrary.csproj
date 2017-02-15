@@ -40,7 +40,7 @@
     <Compile Include="Authentication\AuthenticateMessage\Enums\NegotiateFlags.cs" />
     <Compile Include="Authentication\AuthenticateMessage\NegotiateMessage.cs" />
     <Compile Include="Authentication\AuthenticateMessage\NTLMv2ClientChallenge.cs" />
-    <Compile Include="Authentication\AuthenticateMessage\Version.cs" />
+    <Compile Include="Authentication\AuthenticateMessage\NTLMVersion.cs" />
     <Compile Include="Authentication\GSSAPI\DerEncodingHelper.cs" />
     <Compile Include="Authentication\GSSAPI\GSSAPIHelper.cs" />
     <Compile Include="Authentication\GSSAPI\SimpleProtectedNegotiationToken.cs" />

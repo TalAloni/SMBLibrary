@@ -21,7 +21,7 @@ namespace SMBLibrary.Authentication
         public NegotiateFlags NegotiateFlags;
         public string DomainName;
         public string Workstation;
-        public Version Version;
+        public NTLMVersion Version;
 
         public NegotiateMessage()
         {
@@ -40,7 +40,7 @@ namespace SMBLibrary.Authentication
             Workstation = AuthenticationMessageUtils.ReadAnsiStringBufferPointer(buffer, 24);
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
-                Version = new Version(buffer, 32);
+                Version = new NTLMVersion(buffer, 32);
             }
         }
 

@@ -191,7 +191,7 @@ namespace SMBLibrary.Server.SMB1
             authenticateMessage.UserName = accountNameToAuth;
             authenticateMessage.LmChallengeResponse = lmChallengeResponse;
             authenticateMessage.NtChallengeResponse = ntChallengeResponse;
-            authenticateMessage.Version = Authentication.Version.Server2003;
+            authenticateMessage.Version = NTLMVersion.Server2003;
             return authenticateMessage;
         }
     }

@@ -27,7 +27,7 @@ namespace SMBLibrary.Authentication
         public string WorkStation;
         public byte[] EncryptedRandomSessionKey;
         public NegotiateFlags NegotiateFlags;
-        public Version Version;
+        public NTLMVersion Version;
         // 16-byte MIC field is omitted for Windows NT / 2000 / XP / Server 2003
 
         public AuthenticateMessage()
@@ -53,7 +53,7 @@ namespace SMBLibrary.Authentication
             NegotiateFlags = (NegotiateFlags)LittleEndianConverter.ToUInt32(buffer, 60);
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
-                Version = new Version(buffer, 64);
+                Version = new NTLMVersion(buffer, 64);
             }
         }
 
