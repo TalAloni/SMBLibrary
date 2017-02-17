@@ -228,7 +228,7 @@ namespace SMBLibrary.Win32.Security
                 }
             }
             FreeCredentialsHandle(ref credentialsHandle);
-            byte[] messageBytes = outputBuffer.GetBufferBytes();
+            byte[] messageBytes = output.GetBufferBytes(0);
             outputBuffer.Dispose();
             output.Dispose();
             return messageBytes;
@@ -260,7 +260,7 @@ namespace SMBLibrary.Win32.Security
                     throw new Exception("InitializeSecurityContext failed, error code " + ((uint)result).ToString("X"));
                 }
             }
-            byte[] messageBytes = outputBuffer.GetBufferBytes();
+            byte[] messageBytes = output.GetBufferBytes(0);
             inputBuffer.Dispose();
             input.Dispose();
             outputBuffer.Dispose();
@@ -296,7 +296,7 @@ namespace SMBLibrary.Win32.Security
                 }
             }
             FreeCredentialsHandle(ref credentialsHandle);
-            byte[] messageBytes = outputBuffer.GetBufferBytes();
+            byte[] messageBytes = output.GetBufferBytes(0);
             inputBuffer.Dispose();
             input.Dispose();
             outputBuffer.Dispose();

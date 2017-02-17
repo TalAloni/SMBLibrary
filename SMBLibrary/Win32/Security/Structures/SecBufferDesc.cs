@@ -37,6 +37,19 @@ namespace SMBLibrary.Win32.Security
             }
         }
 
+        public byte[] GetBufferBytes(int bufferIndex)
+        {
+            if (pBuffers == IntPtr.Zero)
+            {
+                throw new ObjectDisposedException("pBuffers");
+            }
+
+            int secBufferSize = Marshal.SizeOf(typeof(SecBuffer));
+            IntPtr pBuffer = new IntPtr(pBuffers.ToInt64() + secBufferSize * bufferIndex);
+            SecBuffer secBuffer = (SecBuffer)Marshal.PtrToStructure(pBuffer, typeof(SecBuffer));
+            return secBuffer.GetBufferBytes();
+        }
+
         public void Dispose()
         {
             if (pBuffers != IntPtr.Zero)
