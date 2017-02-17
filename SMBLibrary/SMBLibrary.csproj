@@ -31,6 +31,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authentication\GSSAPI\Enums\GSSAttributeName.cs" />
     <Compile Include="Authentication\GSSAPI\GSSAPIHelper.cs" />
     <Compile Include="Authentication\GSSAPI\SPNEGO\DerEncodingHelper.cs" />
     <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationToken.cs" />
@@ -40,6 +41,8 @@
     <Compile Include="Authentication\NTLM\Helpers\AVPairUtils.cs" />
     <Compile Include="Authentication\NTLM\Helpers\MD4.cs" />
     <Compile Include="Authentication\NTLM\Helpers\NTLMCryptography.cs" />
+    <Compile Include="Authentication\NTLM\IndependentNTLMAuthenticationProvider.cs" />
+    <Compile Include="Authentication\NTLM\NTLMAuthenticationProviderBase.cs" />
     <Compile Include="Authentication\NTLM\Structures\AuthenticateMessage.cs" />
     <Compile Include="Authentication\NTLM\Structures\ChallengeMessage.cs" />
     <Compile Include="Authentication\NTLM\Structures\Enums\AVPairKey.cs" />
@@ -181,12 +184,10 @@
     <Compile Include="Server\ConnectionState\SMB1Session.cs" />
     <Compile Include="Server\ConnectionState\SMB2ConnectionState.cs" />
     <Compile Include="Server\ConnectionState\SMB2Session.cs" />
-    <Compile Include="Server\Exceptions\EmptyPasswordNotAllowedException.cs" />
     <Compile Include="Server\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Server\Exceptions\UnsupportedInformationLevelException.cs" />
+    <Compile Include="Server\Helpers\LogonHelper.cs" />
     <Compile Include="Server\Helpers\ServerPathUtils.cs" />
-    <Compile Include="Server\IndependentUserCollection.cs" />
-    <Compile Include="Server\INTLMAuthenticationProvider.cs" />
     <Compile Include="Server\NameServer.cs" />
     <Compile Include="Server\Shares\FileSystemShare.cs" />
     <Compile Include="Server\Shares\ISMBShare.cs" />
@@ -222,8 +223,6 @@
     <Compile Include="Server\SMBServer.cs" />
     <Compile Include="Server\SMBServer.SMB1.cs" />
     <Compile Include="Server\SMBServer.SMB2.cs" />
-    <Compile Include="Server\User.cs" />
-    <Compile Include="Server\UserCollection.cs" />
     <Compile Include="Services\Enums\PlatformName.cs" />
     <Compile Include="Services\RemoteService.cs" />
     <Compile Include="Services\RemoteServiceHelper.cs" />
@@ -532,12 +531,12 @@
     <Compile Include="Utilities\LogEntry.cs" />
     <Compile Include="Utilities\PrefetchedStream.cs" />
     <Compile Include="Utilities\SocketUtils.cs" />
+    <Compile Include="Win32\IntegratedNTLMAuthenticationProvider.cs" />
     <Compile Include="Win32\Security\LoginAPI.cs" />
     <Compile Include="Win32\Security\NetworkAPI.cs" />
     <Compile Include="Win32\Security\SSPIHelper.cs" />
     <Compile Include="Win32\Security\Structures\SecBuffer.cs" />
     <Compile Include="Win32\Security\Structures\SecBufferDesc.cs" />
-    <Compile Include="Win32\Win32UserCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />

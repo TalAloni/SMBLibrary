@@ -29,6 +29,16 @@ namespace SMBLibrary.Server
             return -1;
         }
 
+        public string GetUserPassword(string accountName)
+        {
+            int index = IndexOf(accountName);
+            if (index >= 0)
+            {
+                return this[index].Password;
+            }
+            return null;
+        }
+
         public List<string> ListUsers()
         {
             List<string> result = new List<string>();

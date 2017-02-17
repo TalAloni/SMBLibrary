@@ -70,6 +70,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="User.cs" />
+    <Compile Include="UserCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SMBLibrary\SMBLibrary.csproj">

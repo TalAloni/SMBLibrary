@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.NetBios;
 using SMBLibrary.Services;
 using SMBLibrary.SMB1;
@@ -24,7 +25,7 @@ namespace SMBLibrary.Server
         public const bool EnableExtendedSecurity = true;
 
         private ShareCollection m_shares; // e.g. Shared folders
-        private INTLMAuthenticationProvider m_users;
+        private NTLMAuthenticationProviderBase m_securityProvider;
         private NamedPipeShare m_services; // Named pipes
         private IPAddress m_serverAddress;
         private SMBTransportType m_transport;
@@ -37,14 +38,14 @@ namespace SMBLibrary.Server
 
         public event EventHandler<LogEntry> OnLogEntry;
 
-        public SMBServer(ShareCollection shares, INTLMAuthenticationProvider users, IPAddress serverAddress, SMBTransportType transport) : this(shares, users, serverAddress, transport, true, true)
+        public SMBServer(ShareCollection shares, NTLMAuthenticationProviderBase securityProvider, IPAddress serverAddress, SMBTransportType transport) : this(shares, securityProvider, serverAddress, transport, true, true)
         {
         }
 
-        public SMBServer(ShareCollection shares, INTLMAuthenticationProvider users, IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
+        public SMBServer(ShareCollection shares, NTLMAuthenticationProviderBase securityProvider, IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
         {
             m_shares = shares;
-            m_users = users;
+            m_securityProvider = securityProvider;
             m_serverAddress = serverAddress;
             m_serverGuid = Guid.NewGuid();
             m_transport = transport;

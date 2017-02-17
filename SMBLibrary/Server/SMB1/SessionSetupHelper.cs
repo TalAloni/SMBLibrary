@@ -19,56 +19,43 @@ namespace SMBLibrary.Server.SMB1
     /// </summary>
     public class SessionSetupHelper
     {
-        internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, INTLMAuthenticationProvider users, SMB1ConnectionState state)
+        internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, NTLMAuthenticationProviderBase securityProvider, SMB1ConnectionState state)
         {
             SessionSetupAndXResponse response = new SessionSetupAndXResponse();
             // The PrimaryDomain field in the request is used to determine with domain controller should authenticate the user credentials,
             // However, the domain controller itself does not use this field.
             // See: http://msdn.microsoft.com/en-us/library/windows/desktop/aa378749%28v=vs.85%29.aspx
             AuthenticateMessage message = CreateAuthenticateMessage(request.AccountName, request.OEMPassword, request.UnicodePassword);
-            bool loginSuccess;
-            try
+            Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, message);
+            if (loginStatus != Win32Error.ERROR_SUCCESS)
             {
-                loginSuccess = users.Authenticate(message);
-            }
-            catch (EmptyPasswordNotAllowedException)
-            {
-                state.LogToServer(Severity.Information, "User '{0}' authentication using an empty password was rejected", message.UserName);
-                header.Status = NTStatus.STATUS_ACCOUNT_RESTRICTION;
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication. Win32 error: {1}", message.UserName, loginStatus);
+                header.Status = LogonHelper.ToNTStatus(loginStatus);
                 return new ErrorResponse(request.CommandName);
             }
 
-            if (loginSuccess)
+            bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
+            SMB1Session session;
+            if (!isGuest.HasValue || !isGuest.Value)
             {
                 state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", message.UserName);
-                SMB1Session session = state.CreateSession(message.UserName, message.WorkStation);
-                if (session == null)
-                {
-                    header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
-                    return new ErrorResponse(request.CommandName);
-                }
-                header.UID = session.UserID;
-                response.PrimaryDomain = request.PrimaryDomain;
-            }
-            else if (users.FallbackToGuest(message.UserName))
-            {
-                state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", message.UserName);
-                SMB1Session session = state.CreateSession("Guest", message.WorkStation);
-                if (session == null)
-                {
-                    header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
-                    return new ErrorResponse(request.CommandName);
-                }
-                header.UID = session.UserID;
-                response.Action = SessionSetupAction.SetupGuest;
-                response.PrimaryDomain = request.PrimaryDomain;
+                session = state.CreateSession(message.UserName, message.WorkStation);
             }
             else
             {
-                state.LogToServer(Severity.Information, "User '{0}' failed authentication", message.UserName);
-                header.Status = NTStatus.STATUS_LOGON_FAILURE;
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", message.UserName);
+                session = state.CreateSession("Guest", message.WorkStation);
+                response.Action = SessionSetupAction.SetupGuest;
+            }
+
+            if (session == null)
+            {
+                header.Status = NTStatus.STATUS_TOO_MANY_SESSIONS;
                 return new ErrorResponse(request.CommandName);
             }
+
+            header.UID = session.UserID;
+            response.PrimaryDomain = request.PrimaryDomain;
             if ((request.Capabilities & ServerCapabilities.LargeRead) > 0)
             {
                 state.LargeRead = true;
@@ -83,7 +70,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static SMB1Command GetSessionSetupResponseExtended(SMB1Header header, SessionSetupAndXRequestExtended request, INTLMAuthenticationProvider users, SMB1ConnectionState state)
+        internal static SMB1Command GetSessionSetupResponseExtended(SMB1Header header, SessionSetupAndXRequestExtended request, NTLMAuthenticationProviderBase securityProvider, SMB1ConnectionState state)
         {
             SessionSetupAndXResponseExtended response = new SessionSetupAndXResponseExtended();
 
@@ -117,7 +104,14 @@ namespace SMBLibrary.Server.SMB1
             if (messageType == MessageTypeName.Negotiate)
             {
                 NegotiateMessage negotiateMessage = new NegotiateMessage(messageBytes);
-                ChallengeMessage challengeMessage = users.GetChallengeMessage(negotiateMessage);
+                ChallengeMessage challengeMessage;
+                Win32Error status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
+                if (status != Win32Error.ERROR_SUCCESS)
+                {
+                    header.Status = NTStatus.STATUS_LOGON_FAILURE;
+                    return new ErrorResponse(request.CommandName);
+                }
+
                 if (isRawMessage)
                 {
                     response.SecurityBlob = challengeMessage.GetBytes();
@@ -131,34 +125,25 @@ namespace SMBLibrary.Server.SMB1
             else // MessageTypeName.Authenticate
             {
                 AuthenticateMessage authenticateMessage = new AuthenticateMessage(messageBytes);
-                bool loginSuccess;
-                try
+                Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
+                if (loginStatus != Win32Error.ERROR_SUCCESS)
                 {
-                    loginSuccess = users.Authenticate(authenticateMessage);
-                }
-                catch (EmptyPasswordNotAllowedException)
-                {
-                    state.LogToServer(Severity.Information, "User '{0}' authentication using an empty password was rejected", authenticateMessage.UserName);
-                    header.Status = NTStatus.STATUS_ACCOUNT_RESTRICTION;
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication. Win32 error: {0}", authenticateMessage.UserName, loginStatus);
+                    header.Status = LogonHelper.ToNTStatus(loginStatus);
                     return new ErrorResponse(request.CommandName);
                 }
 
-                if (loginSuccess)
+                bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
+                if (!isGuest.HasValue || !isGuest.Value)
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", authenticateMessage.UserName);
                     state.CreateSession(header.UID, authenticateMessage.UserName, authenticateMessage.WorkStation);
                 }
-                else if (users.FallbackToGuest(authenticateMessage.UserName))
+                else
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", authenticateMessage.UserName);
                     state.CreateSession(header.UID, "Guest", authenticateMessage.WorkStation);
                     response.Action = SessionSetupAction.SetupGuest;
-                }
-                else
-                {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication", authenticateMessage.UserName);
-                    header.Status = NTStatus.STATUS_LOGON_FAILURE;
-                    return new ErrorResponse(request.CommandName);
                 }
 
                 if (!isRawMessage)

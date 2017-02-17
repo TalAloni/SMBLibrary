@@ -18,7 +18,7 @@ namespace SMBLibrary.Server.SMB2
     /// </summary>
     public class SessionSetupHelper
     {
-        internal static SMB2Command GetSessionSetupResponse(SessionSetupRequest request, INTLMAuthenticationProvider users, SMB2ConnectionState state)
+        internal static SMB2Command GetSessionSetupResponse(SessionSetupRequest request, NTLMAuthenticationProviderBase securityProvider, SMB2ConnectionState state)
         {
             // [MS-SMB2] Windows [..] will also accept raw Kerberos messages and implicit NTLM messages as part of GSS authentication.
             SessionSetupResponse response = new SessionSetupResponse();
@@ -49,7 +49,13 @@ namespace SMBLibrary.Server.SMB2
             if (messageType == MessageTypeName.Negotiate)
             {
                 NegotiateMessage negotiateMessage = new NegotiateMessage(messageBytes);
-                ChallengeMessage challengeMessage = users.GetChallengeMessage(negotiateMessage);
+                ChallengeMessage challengeMessage;
+                Win32Error status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
+                if (status != Win32Error.ERROR_SUCCESS)
+                {
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_LOGON_FAILURE);
+                }
+
                 if (isRawMessage)
                 {
                     response.SecurityBuffer = challengeMessage.GetBytes();
@@ -63,32 +69,25 @@ namespace SMBLibrary.Server.SMB2
             else // MessageTypeName.Authenticate
             {
                 AuthenticateMessage authenticateMessage = new AuthenticateMessage(messageBytes);
-                bool loginSuccess;
-                try
+                Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
+                if (loginStatus != Win32Error.ERROR_SUCCESS)
                 {
-                    loginSuccess = users.Authenticate(authenticateMessage);
-                }
-                catch (EmptyPasswordNotAllowedException)
-                {
-                    state.LogToServer(Severity.Information, "User '{0}' authentication using an empty password was rejected", authenticateMessage.UserName);
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCOUNT_RESTRICTION);
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication. Win32 error: {1}", authenticateMessage.UserName, loginStatus);
+                    NTStatus status = LogonHelper.ToNTStatus(loginStatus);
+                    return new ErrorResponse(request.CommandName, status);
                 }
 
-                if (loginSuccess)
+                bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
+                if (!isGuest.HasValue || !isGuest.Value)
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", authenticateMessage.UserName);
                     state.CreateSession(request.Header.SessionID, authenticateMessage.UserName, authenticateMessage.WorkStation);
                 }
-                else if (users.FallbackToGuest(authenticateMessage.UserName))
+                else
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", authenticateMessage.UserName);
                     state.CreateSession(request.Header.SessionID, "Guest", authenticateMessage.WorkStation);
                     response.SessionFlags = SessionFlags.IsGuest;
-                }
-                else
-                {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication", authenticateMessage.UserName);
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_LOGON_FAILURE);
                 }
 
                 if (!isRawMessage)

@@ -109,7 +109,7 @@ namespace SMBLibrary.Server
         {
             if (command is SessionSetupRequest)
             {
-                return SessionSetupHelper.GetSessionSetupResponse((SessionSetupRequest)command, m_users, state);
+                return SessionSetupHelper.GetSessionSetupResponse((SessionSetupRequest)command, m_securityProvider, state);
             }
             else if (command is EchoRequest)
             {

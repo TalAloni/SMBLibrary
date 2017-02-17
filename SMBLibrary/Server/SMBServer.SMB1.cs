@@ -68,7 +68,7 @@ namespace SMBLibrary.Server
                         }
                         else
                         {
-                            return NegotiateHelper.GetNegotiateResponse(header, request, m_users);
+                            return NegotiateHelper.GetNegotiateResponse(header, request, m_securityProvider, state);
                         }
                     }
                     else
@@ -102,13 +102,13 @@ namespace SMBLibrary.Server
             {
                 SessionSetupAndXRequest request = (SessionSetupAndXRequest)command;
                 state.MaxBufferSize = request.MaxBufferSize;
-                return SessionSetupHelper.GetSessionSetupResponse(header, request, m_users, state);
+                return SessionSetupHelper.GetSessionSetupResponse(header, request, m_securityProvider, state);
             }
             else if (command is SessionSetupAndXRequestExtended)
             {
                 SessionSetupAndXRequestExtended request = (SessionSetupAndXRequestExtended)command;
                 state.MaxBufferSize = request.MaxBufferSize;
-                return SessionSetupHelper.GetSessionSetupResponseExtended(header, request, m_users, state);
+                return SessionSetupHelper.GetSessionSetupResponseExtended(header, request, m_securityProvider, state);
             }
             else if (command is EchoRequest)
             {

@@ -19,7 +19,7 @@ namespace SMBLibrary.Server.SMB1
     /// </summary>
     public class NegotiateHelper
     {
-        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, INTLMAuthenticationProvider users)
+        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, NTLMAuthenticationProviderBase securityProvider, ConnectionState state)
         {
             NegotiateResponseNTLM response = new NegotiateResponseNTLM();
 
@@ -38,8 +38,13 @@ namespace SMBLibrary.Server.SMB1
                                     ServerCapabilities.LargeWrite;
             response.SystemTime = DateTime.UtcNow;
             response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
-            ChallengeMessage challengeMessage = users.GetChallengeMessage(CreateNegotiateMessage());
-            response.Challenge = challengeMessage.ServerChallenge;
+            NegotiateMessage negotiateMessage = CreateNegotiateMessage();
+            ChallengeMessage challengeMessage;
+            Win32Error status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
+            if (status == Win32Error.ERROR_SUCCESS)
+            {
+                response.Challenge = challengeMessage.ServerChallenge;
+            }
             response.DomainName = String.Empty;
             response.ServerName = String.Empty;
 

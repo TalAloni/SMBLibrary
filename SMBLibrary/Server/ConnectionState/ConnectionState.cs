@@ -30,6 +30,7 @@ namespace SMBLibrary.Server
         public NBTConnectionReceiveBuffer ReceiveBuffer;
         protected LogDelegate LogToServerHandler;
         public SMBDialect ServerDialect;
+        public object AuthenticationContext;
 
         public ConnectionState(LogDelegate logToServerHandler)
         {

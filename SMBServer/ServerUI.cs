@@ -17,8 +17,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using SMBLibrary;
+using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.Server;
-using SMBLibrary.Server.Win32;
+using SMBLibrary.Win32.Security;
 using Utilities;
 
 namespace SMBServer
@@ -61,10 +62,10 @@ namespace SMBServer
                 transportType = SMBTransportType.DirectTCPTransport;
             }
 
-            INTLMAuthenticationProvider provider;
+            NTLMAuthenticationProviderBase provider;
             if (chkIntegratedWindowsAuthentication.Checked)
             {
-                provider = new Win32UserCollection();
+                provider = new IntegratedNTLMAuthenticationProvider();
                 
             }
             else
@@ -80,7 +81,7 @@ namespace SMBServer
                     return;
                 }
                 
-                provider = new IndependentUserCollection(users);
+                provider = new IndependentNTLMAuthenticationProvider(users.GetUserPassword);
             }
 
 
