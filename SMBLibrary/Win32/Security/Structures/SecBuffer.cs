@@ -12,7 +12,6 @@ namespace SMBLibrary.Win32.Security
 {
     public enum SecBufferType : uint
     {
-        SECBUFFER_VERSION = 0,
         SECBUFFER_EMPTY = 0,
         SECBUFFER_DATA = 1,
         SECBUFFER_TOKEN = 2

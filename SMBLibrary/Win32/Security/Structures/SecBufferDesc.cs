@@ -13,6 +13,8 @@ namespace SMBLibrary.Win32.Security
     [StructLayout(LayoutKind.Sequential)]
     public struct SecBufferDesc : IDisposable
     {
+        public const uint SECBUFFER_VERSION = 0;
+
         public uint ulVersion;
         public uint cBuffers;    // Indicates the number of SecBuffer structures in the pBuffers array.
         public IntPtr pBuffers; // Pointer to an array of SecBuffer structures.
@@ -24,7 +26,7 @@ namespace SMBLibrary.Win32.Security
         public SecBufferDesc(SecBuffer[] buffers)
         {
             int secBufferSize = Marshal.SizeOf(typeof(SecBuffer));
-            ulVersion = (uint)SecBufferType.SECBUFFER_VERSION;
+            ulVersion = SECBUFFER_VERSION;
             cBuffers = (uint)buffers.Length;
             pBuffers = Marshal.AllocHGlobal(buffers.Length * secBufferSize);
             IntPtr currentBuffer = pBuffers;
