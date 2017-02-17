@@ -27,7 +27,7 @@ namespace SMBLibrary.Server.SMB2
             CloseResponse response = new CloseResponse();
             if (request.PostQueryAttributes)
             {
-                FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, openFile.Path);
+                FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, openFile.Path, session.SecurityContext);
                 if (fileInfo != null)
                 {
                     response.CreationTime = fileInfo.CreationTime;
