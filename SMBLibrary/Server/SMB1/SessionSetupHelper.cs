@@ -29,7 +29,7 @@ namespace SMBLibrary.Server.SMB1
             Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, message);
             if (loginStatus != Win32Error.ERROR_SUCCESS)
             {
-                state.LogToServer(Severity.Information, "User '{0}' failed authentication. Win32 error: {1}", message.UserName, loginStatus);
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication, Win32 error: {1}", message.UserName, loginStatus);
                 header.Status = LogonHelper.ToNTStatus(loginStatus);
                 return new ErrorResponse(request.CommandName);
             }
@@ -38,12 +38,12 @@ namespace SMBLibrary.Server.SMB1
             SMB1Session session;
             if (!isGuest.HasValue || !isGuest.Value)
             {
-                state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", message.UserName);
+                state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", message.UserName);
                 session = state.CreateSession(message.UserName, message.WorkStation);
             }
             else
             {
-                state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", message.UserName);
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", message.UserName);
                 session = state.CreateSession("Guest", message.WorkStation);
                 response.Action = SessionSetupAction.SetupGuest;
             }
@@ -128,7 +128,7 @@ namespace SMBLibrary.Server.SMB1
                 Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
                 if (loginStatus != Win32Error.ERROR_SUCCESS)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication. Win32 error: {0}", authenticateMessage.UserName, loginStatus);
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, Win32 error: {1}", authenticateMessage.UserName, loginStatus);
                     header.Status = LogonHelper.ToNTStatus(loginStatus);
                     return new ErrorResponse(request.CommandName);
                 }
@@ -136,12 +136,12 @@ namespace SMBLibrary.Server.SMB1
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully", authenticateMessage.UserName);
+                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", authenticateMessage.UserName);
                     state.CreateSession(header.UID, authenticateMessage.UserName, authenticateMessage.WorkStation);
                 }
                 else
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication. logged in as guest", authenticateMessage.UserName);
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", authenticateMessage.UserName);
                     state.CreateSession(header.UID, "Guest", authenticateMessage.WorkStation);
                     response.Action = SessionSetupAction.SetupGuest;
                 }
