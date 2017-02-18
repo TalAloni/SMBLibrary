@@ -62,13 +62,11 @@ namespace SMBLibrary.Server.SMB1
             object handle;
             FileStatus fileStatus;
             CreateOptions createOptions = 0;
-            if (searchAttributes == SMBFileAttributes.Normal)
+            // Windows 2000 SP4 clients will use this command to rename directories.
+            // Hidden, System and Directory attributes are inclusive.
+            if ((searchAttributes & SMBFileAttributes.Directory) == 0)
             {
                 createOptions = CreateOptions.FILE_NON_DIRECTORY_FILE;
-            }
-            else if ((searchAttributes & SMBFileAttributes.Directory) > 0)
-            {
-                createOptions = CreateOptions.FILE_DIRECTORY_FILE;
             }
             NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, oldName, DirectoryAccessMask.DELETE, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
