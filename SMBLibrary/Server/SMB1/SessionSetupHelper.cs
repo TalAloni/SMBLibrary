@@ -26,11 +26,10 @@ namespace SMBLibrary.Server.SMB1
             // However, the domain controller itself does not use this field.
             // See: http://msdn.microsoft.com/en-us/library/windows/desktop/aa378749%28v=vs.85%29.aspx
             AuthenticateMessage message = CreateAuthenticateMessage(request.AccountName, request.OEMPassword, request.UnicodePassword);
-            Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, message);
-            if (loginStatus != Win32Error.ERROR_SUCCESS)
+            header.Status = securityProvider.Authenticate(state.AuthenticationContext, message);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Information, "User '{0}' failed authentication, Win32 error: {1}", message.UserName, loginStatus);
-                header.Status = LogonHelper.ToNTStatus(loginStatus);
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", message.UserName, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
 
@@ -105,10 +104,10 @@ namespace SMBLibrary.Server.SMB1
             {
                 NegotiateMessage negotiateMessage = new NegotiateMessage(messageBytes);
                 ChallengeMessage challengeMessage;
-                Win32Error status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
-                if (status != Win32Error.ERROR_SUCCESS)
+                NTStatus status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
+                if (status != NTStatus.SEC_I_CONTINUE_NEEDED)
                 {
-                    header.Status = NTStatus.STATUS_LOGON_FAILURE;
+                    header.Status = status;
                     return new ErrorResponse(request.CommandName);
                 }
 
@@ -125,11 +124,10 @@ namespace SMBLibrary.Server.SMB1
             else // MessageTypeName.Authenticate
             {
                 AuthenticateMessage authenticateMessage = new AuthenticateMessage(messageBytes);
-                Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
-                if (loginStatus != Win32Error.ERROR_SUCCESS)
+                header.Status = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
+                if (header.Status != NTStatus.STATUS_SUCCESS)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, Win32 error: {1}", authenticateMessage.UserName, loginStatus);
-                    header.Status = LogonHelper.ToNTStatus(loginStatus);
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", authenticateMessage.UserName, header.Status);
                     return new ErrorResponse(request.CommandName);
                 }
 

@@ -40,8 +40,8 @@ namespace SMBLibrary.Server.SMB1
             response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
             NegotiateMessage negotiateMessage = CreateNegotiateMessage();
             ChallengeMessage challengeMessage;
-            Win32Error status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
-            if (status == Win32Error.ERROR_SUCCESS)
+            NTStatus status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
+            if (status == NTStatus.SEC_I_CONTINUE_NEEDED)
             {
                 response.Challenge = challengeMessage.ServerChallenge;
             }

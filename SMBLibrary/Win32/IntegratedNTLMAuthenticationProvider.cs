@@ -33,7 +33,7 @@ namespace SMBLibrary.Win32.Security
             }
         }
 
-        public override Win32Error GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
+        public override NTStatus GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
         {
             byte[] negotiateMessageBytes = negotiateMessage.GetBytes();
             SecHandle serverContext;
@@ -46,12 +46,13 @@ namespace SMBLibrary.Win32.Security
             {
                 context = null;
                 challengeMessage = null;
-                return (Win32Error)Marshal.GetLastWin32Error();
+                // We assume that the problem is not with our implementation.
+                return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
             context = new AuthContext(serverContext, negotiateMessage.Workstation);
             challengeMessage = new ChallengeMessage(challengeMessageBytes);
-            return Win32Error.ERROR_SUCCESS;
+            return NTStatus.SEC_I_CONTINUE_NEEDED;
         }
 
         /// <summary>
@@ -59,12 +60,17 @@ namespace SMBLibrary.Win32.Security
         /// 1. The correct password is blank and 'limitblankpassworduse' is set to 1.
         /// 2. The user is listed in the "Deny access to this computer from the network" list.
         /// </summary>
-        public override Win32Error Authenticate(object context, AuthenticateMessage message)
+        public override NTStatus Authenticate(object context, AuthenticateMessage message)
         {
             AuthContext authContext = context as AuthContext;
             if (authContext == null)
             {
-                return Win32Error.ERROR_NO_TOKEN;
+                // There are two possible reasons for authContext to be null:
+                // 1. We have a bug in our implementation, let's assume that's not the case,
+                //    according to [MS-SMB2] 3.3.5.5.1 we aren't allowed to return SEC_E_INVALID_HANDLE anyway.
+                // 2. The client sent AuthenticateMessage without sending NegotiateMessage first,
+                //    in this case the correct response is SEC_E_INVALID_TOKEN.
+                return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
             authContext.UserName = message.UserName;
@@ -74,11 +80,11 @@ namespace SMBLibrary.Win32.Security
                 if (this.EnableGuestLogin)
                 {
                     authContext.IsGuest = true;
-                    return Win32Error.ERROR_SUCCESS;
+                    return NTStatus.STATUS_SUCCESS;
                 }
                 else
                 {
-                    return Win32Error.ERROR_LOGON_FAILURE;
+                    return NTStatus.STATUS_LOGON_FAILURE;
                 }
             }
 
@@ -90,12 +96,13 @@ namespace SMBLibrary.Win32.Security
             }
             catch (Exception)
             {
-                return (Win32Error)Marshal.GetLastWin32Error();
+                // We assume that the problem is not with our implementation.
+                return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
             if (success)
             {
-                return Win32Error.ERROR_SUCCESS;
+                return NTStatus.STATUS_SUCCESS;
             }
             else
             {
@@ -110,11 +117,11 @@ namespace SMBLibrary.Win32.Security
                 if (allowFallback && this.EnableGuestLogin)
                 {
                     authContext.IsGuest = true;
-                    return Win32Error.ERROR_SUCCESS;
+                    return NTStatus.STATUS_SUCCESS;
                 }
                 else
                 {
-                    return result;
+                    return ToNTStatus(result);
                 }
             }
         }
@@ -171,6 +178,35 @@ namespace SMBLibrary.Win32.Security
         public static bool IsUserExists(string userName)
         {
             return NetworkAPI.IsUserExists(userName);
+        }
+
+        public static NTStatus ToNTStatus(Win32Error errorCode)
+        {
+            switch (errorCode)
+            {
+                case Win32Error.ERROR_NO_TOKEN:
+                    return NTStatus.SEC_E_INVALID_TOKEN;
+                case Win32Error.ERROR_ACCOUNT_RESTRICTION:
+                    return NTStatus.STATUS_ACCOUNT_RESTRICTION;
+                case Win32Error.ERROR_INVALID_LOGON_HOURS:
+                    return NTStatus.STATUS_INVALID_LOGON_HOURS;
+                case Win32Error.ERROR_INVALID_WORKSTATION:
+                    return NTStatus.STATUS_INVALID_WORKSTATION;
+                case Win32Error.ERROR_PASSWORD_EXPIRED:
+                    return NTStatus.STATUS_PASSWORD_EXPIRED;
+                case Win32Error.ERROR_ACCOUNT_DISABLED:
+                    return NTStatus.STATUS_ACCOUNT_DISABLED;
+                case Win32Error.ERROR_LOGON_TYPE_NOT_GRANTED:
+                    return NTStatus.STATUS_LOGON_TYPE_NOT_GRANTED;
+                case Win32Error.ERROR_ACCOUNT_EXPIRED:
+                    return NTStatus.STATUS_ACCOUNT_EXPIRED;
+                case Win32Error.ERROR_PASSWORD_MUST_CHANGE:
+                    return NTStatus.STATUS_PASSWORD_MUST_CHANGE;
+                case Win32Error.ERROR_ACCOUNT_LOCKED_OUT:
+                    return NTStatus.STATUS_ACCOUNT_LOCKED_OUT;
+                default:
+                    return NTStatus.STATUS_LOGON_FAILURE;
+            }
         }
     }
 }

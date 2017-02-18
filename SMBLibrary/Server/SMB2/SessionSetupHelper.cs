@@ -50,10 +50,10 @@ namespace SMBLibrary.Server.SMB2
             {
                 NegotiateMessage negotiateMessage = new NegotiateMessage(messageBytes);
                 ChallengeMessage challengeMessage;
-                Win32Error status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
-                if (status != Win32Error.ERROR_SUCCESS)
+                NTStatus status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
+                if (status != NTStatus.SEC_I_CONTINUE_NEEDED)
                 {
-                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_LOGON_FAILURE);
+                    return new ErrorResponse(request.CommandName, status);
                 }
 
                 if (isRawMessage)
@@ -69,12 +69,11 @@ namespace SMBLibrary.Server.SMB2
             else // MessageTypeName.Authenticate
             {
                 AuthenticateMessage authenticateMessage = new AuthenticateMessage(messageBytes);
-                Win32Error loginStatus = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
-                if (loginStatus != Win32Error.ERROR_SUCCESS)
+                NTStatus loginStatus = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
+                if (loginStatus != NTStatus.STATUS_SUCCESS)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, Win32 error: {1}", authenticateMessage.UserName, loginStatus);
-                    NTStatus status = LogonHelper.ToNTStatus(loginStatus);
-                    return new ErrorResponse(request.CommandName, status);
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", authenticateMessage.UserName, loginStatus);
+                    return new ErrorResponse(request.CommandName, loginStatus);
                 }
 
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;

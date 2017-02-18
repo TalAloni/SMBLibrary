@@ -12,9 +12,9 @@ namespace SMBLibrary.Authentication.NTLM
 {
     public abstract class NTLMAuthenticationProviderBase
     {
-        public abstract Win32Error GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage);
+        public abstract NTStatus GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage);
 
-        public abstract Win32Error Authenticate(object context, AuthenticateMessage authenticateMessage);
+        public abstract NTStatus Authenticate(object context, AuthenticateMessage authenticateMessage);
 
         public abstract void DeleteSecurityContext(ref object context);
 

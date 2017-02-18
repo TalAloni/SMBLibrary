@@ -40,7 +40,7 @@ namespace SMBLibrary.Authentication.NTLM
             m_GetUserPassword = getUserPassword;
         }
 
-        public override Win32Error GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
+        public override NTStatus GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
         {
             byte[] serverChallenge = GenerateServerChallenge();
             context = new AuthContext(negotiateMessage.Workstation, serverChallenge);
@@ -71,15 +71,20 @@ namespace SMBLibrary.Authentication.NTLM
             challengeMessage.ServerChallenge = serverChallenge;
             challengeMessage.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
             challengeMessage.Version = NTLMVersion.Server2003;
-            return Win32Error.ERROR_SUCCESS;
+            return NTStatus.SEC_I_CONTINUE_NEEDED;
         }
 
-        public override Win32Error Authenticate(object context, AuthenticateMessage message)
+        public override NTStatus Authenticate(object context, AuthenticateMessage message)
         {
             AuthContext authContext = context as AuthContext;
             if (authContext == null)
             {
-                return Win32Error.ERROR_NO_TOKEN;
+                // There are two possible reasons for authContext to be null:
+                // 1. We have a bug in our implementation, let's assume that's not the case,
+                //    according to [MS-SMB2] 3.3.5.5.1 we aren't allowed to return SEC_E_INVALID_HANDLE anyway.
+                // 2. The client sent AuthenticateMessage without sending NegotiateMessage first,
+                //    in this case the correct response is SEC_E_INVALID_TOKEN.
+                return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
             authContext.UserName = message.UserName;
@@ -89,11 +94,11 @@ namespace SMBLibrary.Authentication.NTLM
                 if (this.EnableGuestLogin)
                 {
                     authContext.IsGuest = true;
-                    return Win32Error.ERROR_SUCCESS;
+                    return NTStatus.STATUS_SUCCESS;
                 }
                 else
                 {
-                    return Win32Error.ERROR_LOGON_FAILURE;
+                    return NTStatus.STATUS_LOGON_FAILURE;
                 }
             }
 
@@ -103,11 +108,11 @@ namespace SMBLibrary.Authentication.NTLM
                 if (this.EnableGuestLogin)
                 {
                     authContext.IsGuest = true;
-                    return Win32Error.ERROR_SUCCESS;
+                    return NTStatus.STATUS_SUCCESS;
                 }
                 else
                 {
-                    return Win32Error.ERROR_LOGON_FAILURE;
+                    return NTStatus.STATUS_LOGON_FAILURE;
                 }
             }
 
@@ -133,11 +138,11 @@ namespace SMBLibrary.Authentication.NTLM
 
             if (success)
             {
-                return Win32Error.ERROR_SUCCESS;
+                return NTStatus.STATUS_SUCCESS;
             }
             else
             {
-                return Win32Error.ERROR_LOGON_FAILURE;
+                return NTStatus.STATUS_LOGON_FAILURE;
             }
         }
 
