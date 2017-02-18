@@ -29,11 +29,11 @@ namespace SMBLibrary.Server
         private Dictionary<ushort, OpenSearch> m_openSearches = new Dictionary<ushort, OpenSearch>();
         private ushort m_nextSearchHandle = 1;
 
-        public SMB1Session(SMB1ConnectionState connection, ushort userID, string userName, string machineName)
+        public SMB1Session(SMB1ConnectionState connection, ushort userID, string userName, string machineName, object accessToken)
         {
             m_connection = connection;
             m_userID = userID;
-            m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint);
+            m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
         }
 
         public ushort? AddConnectedTree(ISMBShare share)

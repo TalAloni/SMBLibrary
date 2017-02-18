@@ -33,17 +33,18 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
+            object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
             bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
             SMB1Session session;
             if (!isGuest.HasValue || !isGuest.Value)
             {
                 state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", message.UserName);
-                session = state.CreateSession(message.UserName, message.WorkStation);
+                session = state.CreateSession(message.UserName, message.WorkStation, accessToken);
             }
             else
             {
                 state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", message.UserName);
-                session = state.CreateSession("Guest", message.WorkStation);
+                session = state.CreateSession("Guest", message.WorkStation, accessToken);
                 response.Action = SessionSetupAction.SetupGuest;
             }
 
@@ -109,16 +110,17 @@ namespace SMBLibrary.Server.SMB1
             {
                 string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
                 string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
+                object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", userName);
-                    state.CreateSession(header.UID, userName, machineName);
+                    state.CreateSession(header.UID, userName, machineName, accessToken);
                 }
                 else
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", userName);
-                    state.CreateSession(header.UID, "Guest", machineName);
+                    state.CreateSession(header.UID, "Guest", machineName, accessToken);
                     response.Action = SessionSetupAction.SetupGuest;
                 }
             }

@@ -52,20 +52,20 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public SMB1Session CreateSession(ushort userID, string userName, string machineName)
+        public SMB1Session CreateSession(ushort userID, string userName, string machineName, object accessToken)
         {
-            SMB1Session session = new SMB1Session(this, userID, userName, machineName);
+            SMB1Session session = new SMB1Session(this, userID, userName, machineName, accessToken);
             m_sessions.Add(userID, session);
             return session;
         }
 
         /// <returns>null if all UserID values have already been allocated</returns>
-        public SMB1Session CreateSession(string userName, string machineName)
+        public SMB1Session CreateSession(string userName, string machineName, object accessToken)
         {
             ushort? userID = AllocateUserID();
             if (userID.HasValue)
             {
-                return CreateSession(userID.Value, userName, machineName);
+                return CreateSession(userID.Value, userName, machineName, accessToken);
             }
             return null;
         }

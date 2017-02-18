@@ -15,12 +15,16 @@ namespace SMBLibrary
         private string m_userName;
         private string m_machineName;
         private IPEndPoint m_clientEndPoint;
+        public object AuthenticationContext;
+        public object AccessToken;
 
-        public SecurityContext(string userName, string machineName, IPEndPoint clientEndPoint)
+        public SecurityContext(string userName, string machineName, IPEndPoint clientEndPoint, object authenticationContext, object accessToken)
         {
             m_userName = userName;
             m_machineName = machineName;
             m_clientEndPoint = clientEndPoint;
+            AuthenticationContext = authenticationContext;
+            AccessToken = accessToken;
         }
 
         public string UserName

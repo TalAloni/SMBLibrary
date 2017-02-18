@@ -28,11 +28,11 @@ namespace SMBLibrary.Server
         // Key is the persistent portion of the FileID
         private Dictionary<ulong, OpenSearch> m_openSearches = new Dictionary<ulong, OpenSearch>();
 
-        public SMB2Session(SMB2ConnectionState connecton, ulong sessionID, string userName, string machineName)
+        public SMB2Session(SMB2ConnectionState connection, ulong sessionID, string userName, string machineName, object accessToken)
         {
-            m_connection = connecton;
+            m_connection = connection;
             m_sessionID = sessionID;
-            m_securityContext = new SecurityContext(userName, machineName, connecton.ClientEndPoint);
+            m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
         }
 
         private uint? AllocateTreeID()
