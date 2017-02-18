@@ -283,6 +283,7 @@ namespace SMBLibrary
             FileHandle fileHandle = (FileHandle)handle;
             if (fileHandle.Stream != null)
             {
+                Log(Severity.Debug, "CloseFile: Closing '{0}'.", fileHandle.Path);
                 fileHandle.Stream.Close();
             }
 
@@ -290,6 +291,7 @@ namespace SMBLibrary
             {
                 try
                 {
+                    Log(Severity.Debug, "CloseFile: Deleting '{0}'.", fileHandle.Path);
                     m_fileSystem.Delete(fileHandle.Path);
                 }
                 catch
@@ -382,7 +384,7 @@ namespace SMBLibrary
             EventHandler<LogEntry> handler = OnLogEntry;
             if (handler != null)
             {
-                handler(this, new LogEntry(DateTime.Now, severity, "NT FileSystem", message));
+                handler(this, new LogEntry(DateTime.Now, severity, "NT FileSystem Adapter", message));
             }
         }
 
