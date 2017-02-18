@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="Authentication\GSSAPI\Enums\GSSAttributeName.cs" />
     <Compile Include="Authentication\GSSAPI\GSSAPIHelper.cs" />
+    <Compile Include="Authentication\GSSAPI\IGSSMechanism.cs" />
     <Compile Include="Authentication\GSSAPI\SPNEGO\DerEncodingHelper.cs" />
     <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationToken.cs" />
     <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenInit.cs" />
