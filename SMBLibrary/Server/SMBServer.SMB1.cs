@@ -130,6 +130,7 @@ namespace SMBLibrary.Server
                 }
                 else if (command is LogoffAndXRequest)
                 {
+                    m_securityProvider.DeleteSecurityContext(ref session.SecurityContext.AuthenticationContext);
                     state.RemoveSession(header.UID);
                     return new LogoffAndXResponse();
                 }
