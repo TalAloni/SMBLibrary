@@ -19,14 +19,14 @@ namespace SMBLibrary.Server.SMB1
     /// </summary>
     public class SessionSetupHelper
     {
-        internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, NTLMAuthenticationProviderBase securityProvider, SMB1ConnectionState state)
+        internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, GSSProvider securityProvider, SMB1ConnectionState state)
         {
             SessionSetupAndXResponse response = new SessionSetupAndXResponse();
             // The PrimaryDomain field in the request is used to determine with domain controller should authenticate the user credentials,
             // However, the domain controller itself does not use this field.
             // See: http://msdn.microsoft.com/en-us/library/windows/desktop/aa378749%28v=vs.85%29.aspx
             AuthenticateMessage message = CreateAuthenticateMessage(request.AccountName, request.OEMPassword, request.UnicodePassword);
-            header.Status = securityProvider.Authenticate(state.AuthenticationContext, message);
+            header.Status = securityProvider.NTLMAuthenticate(state.AuthenticationContext, message);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", message.UserName, header.Status);
@@ -69,22 +69,24 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static SMB1Command GetSessionSetupResponseExtended(SMB1Header header, SessionSetupAndXRequestExtended request, NTLMAuthenticationProviderBase securityProvider, SMB1ConnectionState state)
+        internal static SMB1Command GetSessionSetupResponseExtended(SMB1Header header, SessionSetupAndXRequestExtended request, GSSProvider securityProvider, SMB1ConnectionState state)
         {
             SessionSetupAndXResponseExtended response = new SessionSetupAndXResponseExtended();
 
             // [MS-SMB] The Windows GSS implementation supports raw Kerberos / NTLM messages in the SecurityBlob
-            byte[] messageBytes = request.SecurityBlob;
-            bool isRawMessage = true;
-            if (!AuthenticationMessageUtils.IsSignatureValid(messageBytes))
+            byte[] outputToken;
+            NTStatus status = securityProvider.AcceptSecurityContext(ref state.AuthenticationContext, request.SecurityBlob, out outputToken);
+            if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.SEC_I_CONTINUE_NEEDED)
             {
-                messageBytes = GSSAPIHelper.GetNTLMSSPMessage(request.SecurityBlob);
-                isRawMessage = false;
-            }
-            if (!AuthenticationMessageUtils.IsSignatureValid(messageBytes))
-            {
-                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", userName, status);
+                header.Status = status;
                 return new ErrorResponse(request.CommandName);
+            }
+
+            if (outputToken != null)
+            {
+                response.SecurityBlob = outputToken;
             }
 
             // According to [MS-SMB] 3.3.5.3, a UID MUST be allocated if the server returns STATUS_MORE_PROCESSING_REQUIRED
@@ -99,54 +101,25 @@ namespace SMBLibrary.Server.SMB1
                 header.UID = userID.Value;
             }
 
-            MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(messageBytes);
-            if (messageType == MessageTypeName.Negotiate)
+            if (status == NTStatus.SEC_I_CONTINUE_NEEDED)
             {
-                NegotiateMessage negotiateMessage = new NegotiateMessage(messageBytes);
-                ChallengeMessage challengeMessage;
-                NTStatus status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
-                if (status != NTStatus.SEC_I_CONTINUE_NEEDED)
-                {
-                    header.Status = status;
-                    return new ErrorResponse(request.CommandName);
-                }
-
-                if (isRawMessage)
-                {
-                    response.SecurityBlob = challengeMessage.GetBytes();
-                }
-                else
-                {
-                    response.SecurityBlob = GSSAPIHelper.GetGSSTokenResponseBytesFromNTLMSSPMessage(challengeMessage.GetBytes());
-                }
                 header.Status = NTStatus.STATUS_MORE_PROCESSING_REQUIRED;
             }
-            else // MessageTypeName.Authenticate
+            else // header.Status == NTStatus.STATUS_SUCCESS
             {
-                AuthenticateMessage authenticateMessage = new AuthenticateMessage(messageBytes);
-                header.Status = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
-                if (header.Status != NTStatus.STATUS_SUCCESS)
-                {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", authenticateMessage.UserName, header.Status);
-                    return new ErrorResponse(request.CommandName);
-                }
-
+                string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
+                string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", authenticateMessage.UserName);
-                    state.CreateSession(header.UID, authenticateMessage.UserName, authenticateMessage.WorkStation);
+                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", userName);
+                    state.CreateSession(header.UID, userName, machineName);
                 }
                 else
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", authenticateMessage.UserName);
-                    state.CreateSession(header.UID, "Guest", authenticateMessage.WorkStation);
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", userName);
+                    state.CreateSession(header.UID, "Guest", machineName);
                     response.Action = SessionSetupAction.SetupGuest;
-                }
-
-                if (!isRawMessage)
-                {
-                    response.SecurityBlob = GSSAPIHelper.GetGSSTokenAcceptCompletedResponse();
                 }
             }
             response.NativeOS = String.Empty; // "Windows Server 2003 3790 Service Pack 2"

@@ -17,6 +17,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using SMBLibrary;
+using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.Server;
 using SMBLibrary.Win32.Security;
@@ -62,11 +63,10 @@ namespace SMBServer
                 transportType = SMBTransportType.DirectTCPTransport;
             }
 
-            NTLMAuthenticationProviderBase provider;
+            NTLMAuthenticationProviderBase authenticationMechanism;
             if (chkIntegratedWindowsAuthentication.Checked)
             {
-                provider = new IntegratedNTLMAuthenticationProvider();
-                
+                authenticationMechanism = new IntegratedNTLMAuthenticationProvider();
             }
             else
             {
@@ -80,8 +80,8 @@ namespace SMBServer
                     MessageBox.Show("Cannot read " + SettingsFileName, "Error");
                     return;
                 }
-                
-                provider = new IndependentNTLMAuthenticationProvider(users.GetUserPassword);
+
+                authenticationMechanism = new IndependentNTLMAuthenticationProvider(users.GetUserPassword);
             }
 
 
@@ -96,7 +96,8 @@ namespace SMBServer
                 return;
             }
 
-            m_server = new SMBLibrary.Server.SMBServer(shares, provider, serverAddress, transportType, chkSMB1.Checked, chkSMB2.Checked);
+            GSSProvider securityProvider = new GSSProvider(authenticationMechanism);
+            m_server = new SMBLibrary.Server.SMBServer(shares, securityProvider, serverAddress, transportType, chkSMB1.Checked, chkSMB2.Checked);
             m_server.OnLogEntry += new EventHandler<LogEntry>(Server_OnLogEntry);
 
             try

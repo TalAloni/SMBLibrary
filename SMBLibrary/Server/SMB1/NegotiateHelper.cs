@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SMBLibrary.Authentication;
+using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.SMB1;
 using Utilities;
@@ -19,7 +19,7 @@ namespace SMBLibrary.Server.SMB1
     /// </summary>
     public class NegotiateHelper
     {
-        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, NTLMAuthenticationProviderBase securityProvider, ConnectionState state)
+        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, GSSProvider securityProvider, ConnectionState state)
         {
             NegotiateResponseNTLM response = new NegotiateResponseNTLM();
 
@@ -40,7 +40,7 @@ namespace SMBLibrary.Server.SMB1
             response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
             NegotiateMessage negotiateMessage = CreateNegotiateMessage();
             ChallengeMessage challengeMessage;
-            NTStatus status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
+            NTStatus status = securityProvider.GetNTLMChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
             if (status == NTStatus.SEC_I_CONTINUE_NEEDED)
             {
                 response.Challenge = challengeMessage.ServerChallenge;

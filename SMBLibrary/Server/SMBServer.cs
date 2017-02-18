@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using SMBLibrary.Authentication.NTLM;
+using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.NetBios;
 using SMBLibrary.Services;
 using SMBLibrary.SMB1;
@@ -25,7 +25,7 @@ namespace SMBLibrary.Server
         public const bool EnableExtendedSecurity = true;
 
         private ShareCollection m_shares; // e.g. Shared folders
-        private NTLMAuthenticationProviderBase m_securityProvider;
+        private GSSProvider m_securityProvider;
         private NamedPipeShare m_services; // Named pipes
         private IPAddress m_serverAddress;
         private SMBTransportType m_transport;
@@ -38,11 +38,11 @@ namespace SMBLibrary.Server
 
         public event EventHandler<LogEntry> OnLogEntry;
 
-        public SMBServer(ShareCollection shares, NTLMAuthenticationProviderBase securityProvider, IPAddress serverAddress, SMBTransportType transport) : this(shares, securityProvider, serverAddress, transport, true, true)
+        public SMBServer(ShareCollection shares, GSSProvider securityProvider, IPAddress serverAddress, SMBTransportType transport) : this(shares, securityProvider, serverAddress, transport, true, true)
         {
         }
 
-        public SMBServer(ShareCollection shares, NTLMAuthenticationProviderBase securityProvider, IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
+        public SMBServer(ShareCollection shares, GSSProvider securityProvider, IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
         {
             m_shares = shares;
             m_securityProvider = securityProvider;
@@ -245,7 +245,7 @@ namespace SMBLibrary.Server
                         List<string> smb2Dialects = SMB2.NegotiateHelper.FindSMB2Dialects(message);
                         if (smb2Dialects.Count > 0)
                         {
-                            SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, state, m_serverGuid);
+                            SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, m_securityProvider, state, m_serverGuid);
                             if (state.ServerDialect != SMBDialect.NotSet)
                             {
                                 state = new SMB2ConnectionState(state, AllocatePersistentFileID);

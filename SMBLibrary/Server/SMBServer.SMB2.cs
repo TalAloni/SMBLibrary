@@ -74,7 +74,7 @@ namespace SMBLibrary.Server
                 if (command is NegotiateRequest)
                 {
                     NegotiateRequest request = (NegotiateRequest)command;
-                    SMB2Command response = NegotiateHelper.GetNegotiateResponse(request, state, m_serverGuid);
+                    SMB2Command response = NegotiateHelper.GetNegotiateResponse(request, m_securityProvider, state, m_serverGuid);
                     if (state.ServerDialect != SMBDialect.NotSet)
                     {
                         state = new SMB2ConnectionState(state, AllocatePersistentFileID);

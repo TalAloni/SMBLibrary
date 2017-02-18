@@ -21,7 +21,7 @@ namespace SMBLibrary.Server.SMB2
         public const string SMB2xxxDialect = "SMB 2.???";
 
         // Special case - SMB2 client initially connecting using SMB1
-        internal static SMB2Command GetNegotiateResponse(List<string> smb2Dialects, ConnectionState state, Guid serverGuid)
+        internal static SMB2Command GetNegotiateResponse(List<string> smb2Dialects, GSSProvider securityProvider, ConnectionState state, Guid serverGuid)
         {
             NegotiateResponse response = new NegotiateResponse();
             response.Header.Credits = 1;
@@ -45,11 +45,11 @@ namespace SMBLibrary.Server.SMB2
             response.MaxWriteSize = 65536;
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = DateTime.Today;
-            response.SecurityBuffer = GSSAPIHelper.GetGSSTokenInitNTLMSSPBytes();
+            response.SecurityBuffer = securityProvider.GetSPNEGOTokenInitBytes();
             return response;
         }
 
-        internal static SMB2Command GetNegotiateResponse(NegotiateRequest request, ConnectionState state, Guid serverGuid)
+        internal static SMB2Command GetNegotiateResponse(NegotiateRequest request, GSSProvider securityProvider, ConnectionState state, Guid serverGuid)
         {
             NegotiateResponse response = new NegotiateResponse();
             if (request.Dialects.Contains(SMB2Dialect.SMB210))
@@ -72,7 +72,7 @@ namespace SMBLibrary.Server.SMB2
             response.MaxWriteSize = 65536;
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = DateTime.Today;
-            response.SecurityBuffer = GSSAPIHelper.GetGSSTokenInitNTLMSSPBytes();
+            response.SecurityBuffer = securityProvider.GetSPNEGOTokenInitBytes();
             return response;
         }
 

@@ -18,20 +18,22 @@ namespace SMBLibrary.Server.SMB2
     /// </summary>
     public class SessionSetupHelper
     {
-        internal static SMB2Command GetSessionSetupResponse(SessionSetupRequest request, NTLMAuthenticationProviderBase securityProvider, SMB2ConnectionState state)
+        internal static SMB2Command GetSessionSetupResponse(SessionSetupRequest request, GSSProvider securityProvider, SMB2ConnectionState state)
         {
             // [MS-SMB2] Windows [..] will also accept raw Kerberos messages and implicit NTLM messages as part of GSS authentication.
             SessionSetupResponse response = new SessionSetupResponse();
-            byte[] messageBytes = request.SecurityBuffer;
-            bool isRawMessage = true;
-            if (!AuthenticationMessageUtils.IsSignatureValid(messageBytes))
+            byte[] outputToken;
+            NTStatus status = securityProvider.AcceptSecurityContext(ref state.AuthenticationContext, request.SecurityBuffer, out outputToken);
+            if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.SEC_I_CONTINUE_NEEDED)
             {
-                messageBytes = GSSAPIHelper.GetNTLMSSPMessage(request.SecurityBuffer);
-                isRawMessage = false;
+                string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
+                state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", userName, status);
+                return new ErrorResponse(request.CommandName, status);
             }
-            if (!AuthenticationMessageUtils.IsSignatureValid(messageBytes))
+
+            if (outputToken != null)
             {
-                return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
+                response.SecurityBuffer = outputToken;
             }
 
             // According to [MS-SMB2] 3.3.5.5.3, response.Header.SessionID must be allocated if the server returns STATUS_MORE_PROCESSING_REQUIRED
@@ -45,53 +47,25 @@ namespace SMBLibrary.Server.SMB2
                 response.Header.SessionID = sessionID.Value;
             }
 
-            MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(messageBytes);
-            if (messageType == MessageTypeName.Negotiate)
+            if (status == NTStatus.SEC_I_CONTINUE_NEEDED)
             {
-                NegotiateMessage negotiateMessage = new NegotiateMessage(messageBytes);
-                ChallengeMessage challengeMessage;
-                NTStatus status = securityProvider.GetChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
-                if (status != NTStatus.SEC_I_CONTINUE_NEEDED)
-                {
-                    return new ErrorResponse(request.CommandName, status);
-                }
-
-                if (isRawMessage)
-                {
-                    response.SecurityBuffer = challengeMessage.GetBytes();
-                }
-                else
-                {
-                    response.SecurityBuffer = GSSAPIHelper.GetGSSTokenResponseBytesFromNTLMSSPMessage(challengeMessage.GetBytes());
-                }
                 response.Header.Status = NTStatus.STATUS_MORE_PROCESSING_REQUIRED;
             }
-            else // MessageTypeName.Authenticate
+            else // status == STATUS_SUCCESS
             {
-                AuthenticateMessage authenticateMessage = new AuthenticateMessage(messageBytes);
-                NTStatus loginStatus = securityProvider.Authenticate(state.AuthenticationContext, authenticateMessage);
-                if (loginStatus != NTStatus.STATUS_SUCCESS)
-                {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", authenticateMessage.UserName, loginStatus);
-                    return new ErrorResponse(request.CommandName, loginStatus);
-                }
-
+                string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
+                string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", authenticateMessage.UserName);
-                    state.CreateSession(request.Header.SessionID, authenticateMessage.UserName, authenticateMessage.WorkStation);
+                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", userName);
+                    state.CreateSession(request.Header.SessionID, userName, machineName);
                 }
                 else
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", authenticateMessage.UserName);
-                    state.CreateSession(request.Header.SessionID, "Guest", authenticateMessage.WorkStation);
+                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", userName);
+                    state.CreateSession(request.Header.SessionID, "Guest", machineName);
                     response.SessionFlags = SessionFlags.IsGuest;
-                }
-
-                if (!isRawMessage)
-                {
-                    response.SecurityBuffer = GSSAPIHelper.GetGSSTokenAcceptCompletedResponse();
                 }
             }
             return response;
