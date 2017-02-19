@@ -310,9 +310,11 @@
     <Compile Include="SMB1\Commands\SetInformationResponse.cs" />
     <Compile Include="SMB1\Commands\SMB1Command.cs" />
     <Compile Include="SMB1\Commands\SMBAndXCommand.cs" />
+    <Compile Include="SMB1\Commands\Transaction2InterimResponse.cs" />
     <Compile Include="SMB1\Commands\Transaction2Request.cs" />
     <Compile Include="SMB1\Commands\Transaction2Response.cs" />
     <Compile Include="SMB1\Commands\Transaction2SecondaryRequest.cs" />
+    <Compile Include="SMB1\Commands\TransactionInterimResponse.cs" />
     <Compile Include="SMB1\Commands\TransactionRequest.cs" />
     <Compile Include="SMB1\Commands\TransactionResponse.cs" />
     <Compile Include="SMB1\Commands\TransactionSecondaryRequest.cs" />

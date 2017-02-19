@@ -17,7 +17,6 @@ namespace SMBLibrary.Server.SMB1
     public class TransactionHelper
     {
         /// <summary>
-        /// There are no interim response messages.
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.
         /// The server MUST respond to the transaction request as a whole.
         /// </summary>
@@ -38,7 +37,14 @@ namespace SMBLibrary.Server.SMB1
                 ByteWriter.WriteBytes(processState.TransactionData, 0, request.TransData);
                 processState.TransactionParametersReceived += request.TransParameters.Length;
                 processState.TransactionDataReceived += request.TransData.Length;
-                return new List<SMB1Command>();
+                if (request is Transaction2Request)
+                {
+                    return new Transaction2InterimResponse();
+                }
+                else
+                {
+                    return new TransactionInterimResponse();
+                }
             }
             else
             {

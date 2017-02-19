@@ -196,7 +196,16 @@ namespace SMBLibrary.SMB1
                 case CommandName.SMB_COM_LOCKING_ANDX:
                     return new LockingAndXResponse(buffer, offset);
                 case CommandName.SMB_COM_TRANSACTION:
-                    return new TransactionResponse(buffer, offset);
+                    {
+                        if (wordCount * 2 == TransactionInterimResponse.ParametersLength)
+                        {
+                            return new TransactionInterimResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            return new TransactionResponse(buffer, offset);
+                        }
+                    }
                 case CommandName.SMB_COM_ECHO:
                     return new EchoResponse(buffer, offset);
                 case CommandName.SMB_COM_OPEN_ANDX:
@@ -219,7 +228,16 @@ namespace SMBLibrary.SMB1
                 case CommandName.SMB_COM_WRITE_ANDX:
                     return new WriteAndXResponse(buffer, offset);
                 case CommandName.SMB_COM_TRANSACTION2:
-                    return new Transaction2Response(buffer, offset);
+                    {
+                        if (wordCount * 2 == Transaction2InterimResponse.ParametersLength)
+                        {
+                            return new Transaction2InterimResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            return new Transaction2Response(buffer, offset);
+                        }
+                    }
                 case CommandName.SMB_COM_FIND_CLOSE2:
                     return new FindClose2Response(buffer, offset);
                 case CommandName.SMB_COM_TREE_DISCONNECT:
