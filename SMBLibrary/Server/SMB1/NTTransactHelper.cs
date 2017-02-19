@@ -17,7 +17,7 @@ namespace SMBLibrary.Server.SMB1
         /// <summary>
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.
         /// </summary>
-        internal static SMB1Command GetNTTransactResponse(SMB1Header header, NTTransactRequest request, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetNTTransactResponse(SMB1Header header, NTTransactRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             if (request.TransParameters.Length < request.TotalParameterCount ||
                 request.TransData.Length < request.TotalDataCount)
@@ -37,7 +37,7 @@ namespace SMBLibrary.Server.SMB1
             else
             {
                 // We have a complete command
-                return GetCompleteNTTransactResponse(header, request.Function, request.Setup, request.TransParameters, request.TransData, share, state, sendQueue);
+                return GetCompleteNTTransactResponse(header, request.Function, request.Setup, request.TransParameters, request.TransData, share, state);
             }
         }
 
@@ -45,7 +45,7 @@ namespace SMBLibrary.Server.SMB1
         /// There are no secondary response messages.
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.
         /// </summary>
-        internal static SMB1Command GetNTTransactResponse(SMB1Header header, NTTransactSecondaryRequest request, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetNTTransactResponse(SMB1Header header, NTTransactSecondaryRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             ProcessStateObject processState = state.GetProcessState(header.PID);
             if (processState == null)
@@ -60,16 +60,16 @@ namespace SMBLibrary.Server.SMB1
             if (processState.TransactionParametersReceived < processState.TransactionParameters.Length ||
                 processState.TransactionDataReceived < processState.TransactionData.Length)
             {
-                return null;
+                return new List<SMB1Command>();
             }
             else
             {
                 // We have a complete command
-                return GetCompleteNTTransactResponse(header, (NTTransactSubcommandName)processState.SubcommandID, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state, sendQueue);
+                return GetCompleteNTTransactResponse(header, (NTTransactSubcommandName)processState.SubcommandID, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
             }
         }
 
-        internal static SMB1Command GetCompleteNTTransactResponse(SMB1Header header, NTTransactSubcommandName subcommandName, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetCompleteNTTransactResponse(SMB1Header header, NTTransactSubcommandName subcommandName, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             NTTransactSubcommand subcommand = NTTransactSubcommand.GetSubcommandRequest(subcommandName, requestSetup, requestParameters, requestData, header.UnicodeFlag);
             NTTransactSubcommand subcommandResponse = null;
@@ -107,9 +107,7 @@ namespace SMBLibrary.Server.SMB1
             byte[] responseSetup = subcommandResponse.GetSetup();
             byte[] responseParameters = subcommandResponse.GetParameters(header.UnicodeFlag);
             byte[] responseData = subcommandResponse.GetData();
-            NTTransactResponse response = new NTTransactResponse();
-            PrepareResponse(response, responseSetup, responseParameters, responseData, state.MaxBufferSize, sendQueue);
-            return response;
+            return GetNTTransactResponse(responseSetup, responseParameters, responseData, state.MaxBufferSize);
         }
 
         private static NTTransactIOCTLResponse GetSubcommandResponse(SMB1Header header, NTTransactIOCTLRequest subcommand, ISMBShare share, SMB1ConnectionState state)
@@ -143,15 +141,17 @@ namespace SMBLibrary.Server.SMB1
             }
         }
 
-        private static void PrepareResponse(NTTransactResponse response, byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize, List<SMB1Command> sendQueue)
+        private static List<SMB1Command> GetNTTransactResponse(byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize)
         {
             if (NTTransactResponse.CalculateMessageSize(responseSetup.Length, responseParameters.Length, responseData.Length) <= maxBufferSize)
             {
+                NTTransactResponse response = new NTTransactResponse();
                 response.Setup = responseSetup;
                 response.TotalParameterCount = (ushort)responseParameters.Length;
                 response.TotalDataCount = (ushort)responseData.Length;
                 response.TransParameters = responseParameters;
                 response.TransData = responseData;
+                return response;
             }
             else
             {

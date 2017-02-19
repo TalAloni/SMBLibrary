@@ -43,17 +43,15 @@ namespace SMBLibrary.Server.SMB1
             return new FindClose2Response();
         }
 
-        internal static EchoResponse GetEchoResponse(EchoRequest request, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetEchoResponse(EchoRequest request)
         {
-            EchoResponse response = new EchoResponse();
-            response.SequenceNumber = 0;
-            response.SMBData = request.SMBData;
-            for (int index = 1; index < request.EchoCount; index++)
+            List<SMB1Command> response = new List<SMB1Command>();
+            for (int index = 0; index < request.EchoCount; index++)
             {
                 EchoResponse echo = new EchoResponse();
                 echo.SequenceNumber = (ushort)index;
                 echo.SMBData = request.SMBData;
-                sendQueue.Add(echo);
+                response.Add(echo);
             }
             return response;
         }

@@ -21,7 +21,7 @@ namespace SMBLibrary.Server.SMB1
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.
         /// The server MUST respond to the transaction request as a whole.
         /// </summary>
-        internal static SMB1Command GetTransactionResponse(SMB1Header header, TransactionRequest request, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetTransactionResponse(SMB1Header header, TransactionRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             ProcessStateObject processState = state.ObtainProcessState(header.PID);
             processState.MaxDataCount = request.MaxDataCount;
@@ -38,18 +38,18 @@ namespace SMBLibrary.Server.SMB1
                 ByteWriter.WriteBytes(processState.TransactionData, 0, request.TransData);
                 processState.TransactionParametersReceived += request.TransParameters.Length;
                 processState.TransactionDataReceived += request.TransData.Length;
-                return null;
+                return new List<SMB1Command>();
             }
             else
             {
                 // We have a complete command
                 if (request is Transaction2Request)
                 {
-                    return GetCompleteTransaction2Response(header, request.Setup, request.TransParameters, request.TransData, share, state, sendQueue);
+                    return GetCompleteTransaction2Response(header, request.Setup, request.TransParameters, request.TransData, share, state);
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, request.Name, request.Setup, request.TransParameters, request.TransData, share, state, sendQueue);
+                    return GetCompleteTransactionResponse(header, request.Name, request.Setup, request.TransParameters, request.TransData, share, state);
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace SMBLibrary.Server.SMB1
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.
         /// The server MUST respond to the transaction request as a whole.
         /// </summary>
-        internal static SMB1Command GetTransactionResponse(SMB1Header header, TransactionSecondaryRequest request, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetTransactionResponse(SMB1Header header, TransactionSecondaryRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             ProcessStateObject processState = state.GetProcessState(header.PID);
             if (processState == null)
@@ -74,23 +74,23 @@ namespace SMBLibrary.Server.SMB1
             if (processState.TransactionParametersReceived < processState.TransactionParameters.Length ||
                 processState.TransactionDataReceived < processState.TransactionData.Length)
             {
-                return null;
+                return new List<SMB1Command>();
             }
             else
             {
                 // We have a complete command
                 if (request is Transaction2SecondaryRequest)
                 {
-                    return GetCompleteTransaction2Response(header, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state, sendQueue);
+                    return GetCompleteTransaction2Response(header, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, processState.Name, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state, sendQueue);
+                    return GetCompleteTransactionResponse(header, processState.Name, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
                 }
             }
         }
 
-        internal static SMB1Command GetCompleteTransactionResponse(SMB1Header header, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetCompleteTransactionResponse(SMB1Header header, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             if (String.Equals(name, @"\pipe\lanman", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -169,12 +169,10 @@ namespace SMBLibrary.Server.SMB1
             byte[] responseSetup = subcommandResponse.GetSetup();
             byte[] responseParameters = subcommandResponse.GetParameters(header.UnicodeFlag);
             byte[] responseData = subcommandResponse.GetData();
-            TransactionResponse response = new TransactionResponse();
-            PrepareResponse(response, responseSetup, responseParameters, responseData, state.MaxBufferSize, sendQueue);
-            return response;
+            return GetTransactionResponse(false, responseSetup, responseParameters, responseData, state.MaxBufferSize);
         }
 
-        internal static SMB1Command GetCompleteTransaction2Response(SMB1Header header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetCompleteTransaction2Response(SMB1Header header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             Transaction2Subcommand subcommand;
             try
@@ -237,13 +235,22 @@ namespace SMBLibrary.Server.SMB1
             byte[] responseSetup = subcommandResponse.GetSetup();
             byte[] responseParameters = subcommandResponse.GetParameters(header.UnicodeFlag);
             byte[] responseData = subcommandResponse.GetData(header.UnicodeFlag);
-            Transaction2Response response = new Transaction2Response();
-            PrepareResponse(response, responseSetup, responseParameters, responseData, state.MaxBufferSize, sendQueue);
-            return response;
+            return GetTransactionResponse(true, responseSetup, responseParameters, responseData, state.MaxBufferSize);
         }
 
-        internal static void PrepareResponse(TransactionResponse response, byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize, List<SMB1Command> sendQueue)
+        internal static List<SMB1Command> GetTransactionResponse(bool transaction2Response, byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize)
         {
+            List<SMB1Command> result = new List<SMB1Command>();
+            TransactionResponse response;
+            if (transaction2Response)
+            {
+                response = new Transaction2Response();
+            }
+            else
+            {
+                response = new TransactionResponse();
+            }
+            result.Add(response);
             int responseSize = TransactionResponse.CalculateMessageSize(responseSetup.Length, responseParameters.Length, responseData.Length);
             if (responseSize <= maxBufferSize)
             {
@@ -268,7 +275,7 @@ namespace SMBLibrary.Server.SMB1
                 while (dataBytesLeftToSend > 0)
                 {
                     TransactionResponse additionalResponse;
-                    if (response is Transaction2Response)
+                    if (transaction2Response)
                     {
                         additionalResponse = new Transaction2Response();
                     }
@@ -290,11 +297,12 @@ namespace SMBLibrary.Server.SMB1
                     additionalResponse.TransData = buffer;
                     additionalResponse.ParameterDisplacement = (ushort)response.TransParameters.Length;
                     additionalResponse.DataDisplacement = (ushort)dataBytesSent;
-                    sendQueue.Add(additionalResponse);
+                    result.Add(additionalResponse);
 
                     dataBytesLeftToSend -= currentDataLength;
                 }
             }
+            return result;
         }
     }
 }

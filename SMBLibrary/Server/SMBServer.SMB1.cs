@@ -17,41 +17,55 @@ namespace SMBLibrary.Server
     {
         public void ProcessSMB1Message(SMB1Message message, ref ConnectionState state)
         {
-            SMB1Message reply = new SMB1Message();
-            PrepareResponseHeader(reply, message);
+            SMB1Header header = new SMB1Header();
+            PrepareResponseHeader(header, message.Header);
             List<SMB1Command> sendQueue = new List<SMB1Command>();
 
+            bool isBatchedRequest = (message.Commands.Count > 1);
             foreach (SMB1Command command in message.Commands)
             {
-                SMB1Command response = ProcessSMB1Command(reply.Header, command, ref state, sendQueue);
-                if (response != null)
-                {
-                    reply.Commands.Add(response);
-                }
-                if (reply.Header.Status != NTStatus.STATUS_SUCCESS)
+                List<SMB1Command> responses = ProcessSMB1Command(header, command, ref state);
+                sendQueue.AddRange(responses);
+
+                if (header.Status != NTStatus.STATUS_SUCCESS)
                 {
                     break;
                 }
             }
 
-            if (reply.Commands.Count > 0)
+            if (isBatchedRequest)
             {
-                TrySendMessage(state, reply);
-
-                foreach (SMB1Command command in sendQueue)
+                if (sendQueue.Count > 0)
                 {
-                    SMB1Message secondaryReply = new SMB1Message();
-                    secondaryReply.Header = reply.Header;
-                    secondaryReply.Commands.Add(command);
-                    TrySendMessage(state, secondaryReply);
+                    // The server MUST batch the response into an AndX Response chain.
+                    SMB1Message reply = new SMB1Message();
+                    reply.Header = header;
+                    for (int index = 0; index < sendQueue.Count; index++)
+                    {
+                        if (sendQueue[index] is SMBAndXCommand || index == sendQueue.Count - 1)
+                        {
+                            reply.Commands.Add(sendQueue[index]);
+                            sendQueue.RemoveAt(index);
+                            index--;
+                        }
+                    }
+                    TrySendMessage(state, reply);
                 }
+            }
+
+            foreach (SMB1Command response in sendQueue)
+            {
+                SMB1Message reply = new SMB1Message();
+                reply.Header = header;
+                reply.Commands.Add(response);
+                TrySendMessage(state, reply);
             }
         }
 
         /// <summary>
-        /// May return null
+        /// May return an empty list
         /// </summary>
-        public SMB1Command ProcessSMB1Command(SMB1Header header, SMB1Command command, ref ConnectionState state, List<SMB1Command> sendQueue)
+        public List<SMB1Command> ProcessSMB1Command(SMB1Header header, SMB1Command command, ref ConnectionState state)
         {
             if (state.ServerDialect == SMBDialect.NotSet)
             {
@@ -92,11 +106,11 @@ namespace SMBLibrary.Server
             }
             else
             {
-                return ProcessSMB1Command(header, command, (SMB1ConnectionState)state, sendQueue);
+                return ProcessSMB1Command(header, command, (SMB1ConnectionState)state);
             }
         }
 
-        private SMB1Command ProcessSMB1Command(SMB1Header header, SMB1Command command, SMB1ConnectionState state, List<SMB1Command> sendQueue)
+        private List<SMB1Command> ProcessSMB1Command(SMB1Header header, SMB1Command command, SMB1ConnectionState state)
         {
             if (command is SessionSetupAndXRequest)
             {
@@ -112,7 +126,7 @@ namespace SMBLibrary.Server
             }
             else if (command is EchoRequest)
             {
-                return ServerResponseHelper.GetEchoResponse((EchoRequest)command, sendQueue);
+                return ServerResponseHelper.GetEchoResponse((EchoRequest)command);
             }
             else
             {
@@ -244,7 +258,7 @@ namespace SMBLibrary.Server
                         TransactionRequest request = (TransactionRequest)command;
                         try
                         {
-                            return TransactionHelper.GetTransactionResponse(header, request, share, state, sendQueue);
+                            return TransactionHelper.GetTransactionResponse(header, request, share, state);
                         }
                         catch (UnsupportedInformationLevelException)
                         {
@@ -257,7 +271,7 @@ namespace SMBLibrary.Server
                         TransactionSecondaryRequest request = (TransactionSecondaryRequest)command;
                         try
                         {
-                            return TransactionHelper.GetTransactionResponse(header, request, share, state, sendQueue);
+                            return TransactionHelper.GetTransactionResponse(header, request, share, state);
                         }
                         catch (UnsupportedInformationLevelException)
                         {
@@ -268,12 +282,12 @@ namespace SMBLibrary.Server
                     else if (command is NTTransactRequest)
                     {
                         NTTransactRequest request = (NTTransactRequest)command;
-                        return NTTransactHelper.GetNTTransactResponse(header, request, share, state, sendQueue);
+                        return NTTransactHelper.GetNTTransactResponse(header, request, share, state);
                     }
                     else if (command is NTTransactSecondaryRequest)
                     {
                         NTTransactSecondaryRequest request = (NTTransactSecondaryRequest)command;
-                        return NTTransactHelper.GetNTTransactResponse(header, request, share, state, sendQueue);
+                        return NTTransactHelper.GetNTTransactResponse(header, request, share, state);
                     }
                     else if (command is NTCreateAndXRequest)
                     {
@@ -295,31 +309,31 @@ namespace SMBLibrary.Server
             state.LogToServer(Severity.Verbose, "SMB1 message sent: {0} responses, First response: {1}, Packet length: {2}", response.Commands.Count, response.Commands[0].CommandName.ToString(), packet.Length);
         }
 
-        private static void PrepareResponseHeader(SMB1Message response, SMB1Message request)
+        private static void PrepareResponseHeader(SMB1Header responseHeader, SMB1Header requestHeader)
         {
-            response.Header.Status = NTStatus.STATUS_SUCCESS;
-            response.Header.Flags = HeaderFlags.CaseInsensitive | HeaderFlags.CanonicalizedPaths | HeaderFlags.Reply;
-            response.Header.Flags2 = HeaderFlags2.NTStatusCode;
-            if ((request.Header.Flags2 & HeaderFlags2.LongNamesAllowed) > 0)
+            responseHeader.Status = NTStatus.STATUS_SUCCESS;
+            responseHeader.Flags = HeaderFlags.CaseInsensitive | HeaderFlags.CanonicalizedPaths | HeaderFlags.Reply;
+            responseHeader.Flags2 = HeaderFlags2.NTStatusCode;
+            if ((requestHeader.Flags2 & HeaderFlags2.LongNamesAllowed) > 0)
             {
-                response.Header.Flags2 |= HeaderFlags2.LongNamesAllowed | HeaderFlags2.LongNameUsed;
+                responseHeader.Flags2 |= HeaderFlags2.LongNamesAllowed | HeaderFlags2.LongNameUsed;
             }
-            if ((request.Header.Flags2 & HeaderFlags2.ExtendedAttributes) > 0)
+            if ((requestHeader.Flags2 & HeaderFlags2.ExtendedAttributes) > 0)
             {
-                response.Header.Flags2 |= HeaderFlags2.ExtendedAttributes;
+                responseHeader.Flags2 |= HeaderFlags2.ExtendedAttributes;
             }
-            if ((request.Header.Flags2 & HeaderFlags2.ExtendedSecurity) > 0)
+            if ((requestHeader.Flags2 & HeaderFlags2.ExtendedSecurity) > 0)
             {
-                response.Header.Flags2 |= HeaderFlags2.ExtendedSecurity;
+                responseHeader.Flags2 |= HeaderFlags2.ExtendedSecurity;
             }
-            if ((request.Header.Flags2 & HeaderFlags2.Unicode) > 0)
+            if ((requestHeader.Flags2 & HeaderFlags2.Unicode) > 0)
             {
-                response.Header.Flags2 |= HeaderFlags2.Unicode;
+                responseHeader.Flags2 |= HeaderFlags2.Unicode;
             }
-            response.Header.MID = request.Header.MID;
-            response.Header.PID = request.Header.PID;
-            response.Header.UID = request.Header.UID;
-            response.Header.TID = request.Header.TID;
+            responseHeader.MID = requestHeader.MID;
+            responseHeader.PID = requestHeader.PID;
+            responseHeader.UID = requestHeader.UID;
+            responseHeader.TID = requestHeader.TID;
         }
     }
 }
