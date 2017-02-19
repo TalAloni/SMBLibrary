@@ -29,12 +29,13 @@ namespace SMBLibrary.Win32.Security
             string lpszPassword,
             int dwLogonType,
             int dwLogonProvider,
-            out IntPtr phToken
-            );
+            out IntPtr phToken);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool CloseHandle(IntPtr hObject);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern bool ImpersonateLoggedOnUser(IntPtr hToken);
 
         public static bool ValidateUserPassword(string userName, string password, LogonType logonType)
         {
