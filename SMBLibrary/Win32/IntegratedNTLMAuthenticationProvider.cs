@@ -146,7 +146,7 @@ namespace SMBLibrary.Win32.Security
                 switch (attributeName)
                 {
                     case GSSAttributeName.AccessToken:
-                        return authContext.ServerContext;
+                        return SSPIHelper.GetAccessToken(authContext.ServerContext);
                     case GSSAttributeName.IsGuest:
                         return authContext.IsGuest;
                     case GSSAttributeName.MachineName:
