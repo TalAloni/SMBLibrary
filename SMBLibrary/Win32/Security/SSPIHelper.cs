@@ -28,24 +28,24 @@ namespace SMBLibrary.Win32.Security
         private const uint SEC_E_LOGON_DENIED = 0x8009030C;
         private const uint SEC_E_BUFFER_TOO_SMALL = 0x80090321;
 
-        private const int SECURITY_NETWORK_DREP = 0x00;
-        private const int SECURITY_NATIVE_DREP = 0x10;
+        private const uint SECURITY_NETWORK_DREP = 0x00;
+        private const uint SECURITY_NATIVE_DREP = 0x10;
 
-        private const int SECPKG_CRED_INBOUND = 0x01;
-        private const int SECPKG_CRED_OUTBOUND = 0x02;
-        private const int SECPKG_CRED_BOTH = 0x03;
+        private const uint SECPKG_CRED_INBOUND = 0x01;
+        private const uint SECPKG_CRED_OUTBOUND = 0x02;
+        private const uint SECPKG_CRED_BOTH = 0x03;
 
-        private const int ISC_REQ_CONFIDENTIALITY = 0x00000010;
-        private const int ISC_REQ_ALLOCATE_MEMORY = 0x00000100;
-        private const int ISC_REQ_INTEGRITY = 0x00010000;
+        private const uint ISC_REQ_CONFIDENTIALITY = 0x00000010;
+        private const uint ISC_REQ_ALLOCATE_MEMORY = 0x00000100;
+        private const uint ISC_REQ_INTEGRITY = 0x00010000;
 
-        private const int ASC_REQ_REPLAY_DETECT = 0x00000004;
-        private const int ASC_REQ_CONFIDENTIALITY = 0x00000010;
-        private const int ASC_REQ_USE_SESSION_KEY = 0x00000020;
-        private const int ASC_REQ_INTEGRITY = 0x00020000;
+        private const uint ASC_REQ_REPLAY_DETECT = 0x00000004;
+        private const uint ASC_REQ_CONFIDENTIALITY = 0x00000010;
+        private const uint ASC_REQ_USE_SESSION_KEY = 0x00000020;
+        private const uint ASC_REQ_INTEGRITY = 0x00020000;
 
-        private const int SEC_WINNT_AUTH_IDENTITY_ANSI = 1;
-        private const int SEC_WINNT_AUTH_IDENTITY_UNICODE = 2;
+        private const uint SEC_WINNT_AUTH_IDENTITY_ANSI = 1;
+        private const uint SEC_WINNT_AUTH_IDENTITY_UNICODE = 2;
         
         [StructLayout(LayoutKind.Sequential)]
         private struct SECURITY_INTEGER
@@ -61,19 +61,19 @@ namespace SMBLibrary.Win32.Security
         private struct SEC_WINNT_AUTH_IDENTITY
         {
             public string User;
-            public int UserLength;
+            public uint UserLength;
             public string Domain;
-            public int DomainLength;
+            public uint DomainLength;
             public string Password;
-            public int PasswordLength;
-            public int Flags;
+            public uint PasswordLength;
+            public uint Flags;
         };
 
         [DllImport("secur32.dll", SetLastError = true)]
         private static extern int AcquireCredentialsHandle(
           string pszPrincipal,
           string pszPackage,
-          int fCredentialUse,
+          uint fCredentialUse,
           IntPtr pvLogonID,
           IntPtr pAuthData,
           IntPtr pGetKeyFn,
@@ -86,11 +86,11 @@ namespace SMBLibrary.Win32.Security
             ref SecHandle phCredential,
             IntPtr phContext,
             string pszTargetName,
-            int fContextReq,
-            int Reserved1,
-            int TargetDataRep,
+            uint fContextReq,
+            uint Reserved1,
+            uint TargetDataRep,
             IntPtr pInput,
-            int Reserved2,
+            uint Reserved2,
             ref SecHandle phNewContext,
             ref SecBufferDesc pOutput,
             out uint pfContextAttr,
@@ -101,11 +101,11 @@ namespace SMBLibrary.Win32.Security
             IntPtr phCredential,
             ref SecHandle phContext,
             string pszTargetName,
-            int fContextReq,
-            int Reserved1,
-            int TargetDataRep,
+            uint fContextReq,
+            uint Reserved1,
+            uint TargetDataRep,
             ref SecBufferDesc pInput,
-            int Reserved2,
+            uint Reserved2,
             ref SecHandle phNewContext,
             ref SecBufferDesc pOutput,
             out uint pfContextAttr,
@@ -159,11 +159,11 @@ namespace SMBLibrary.Win32.Security
         {
             SEC_WINNT_AUTH_IDENTITY auth = new SEC_WINNT_AUTH_IDENTITY();
             auth.Domain = domainName;
-            auth.DomainLength = domainName.Length;
+            auth.DomainLength = (uint)domainName.Length;
             auth.User = userName;
-            auth.UserLength = userName.Length;
+            auth.UserLength = (uint)userName.Length;
             auth.Password = password;
-            auth.PasswordLength = password.Length;
+            auth.PasswordLength = (uint)password.Length;
             auth.Flags = SEC_WINNT_AUTH_IDENTITY_ANSI;
             return AcquireNTLMCredentialsHandle(auth);
         }
