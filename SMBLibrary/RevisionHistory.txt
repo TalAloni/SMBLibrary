@@ -77,3 +77,15 @@ Revision History:
         API: FileSystemShare: Modified constructor.
         API: FileSystemShare: Added OnAccessRequest event that allows the subscriber to manage read / write permissions.
         API: INTFileStore interface was added for better separation between the object store layer and the SMB layer.
+
+1.1.3 - Fixed InvalidCastException.
+        NetworkAPI: Fixed compatibility with 64-bit environment and other improvements.
+        SSPIHelper: Improved implementation.
+        LoginAPI: Added ImpersonateLoggedOnUser method
+        Improved NTLM authentication API.
+        Improved Integrated Windows Authentication implementation.
+        Corrected handling of SMB_COM_RENAME.
+        NTFileSystemAdapter: Improved logging.
+        API: GSS-style authentication, additional IGSSMechanism implementations can be provided.
+        API: Added DeviceIOControl to the INTFileStore interface, relevant functionality moved to the object store layer.
+        API: Added a SecurityContext class which will be passes to the underlying object store.
