@@ -46,6 +46,8 @@ namespace SMBLibrary.Win32.Security
 
         private const uint SEC_WINNT_AUTH_IDENTITY_ANSI = 1;
         private const uint SEC_WINNT_AUTH_IDENTITY_UNICODE = 2;
+
+        private const uint SECPKG_ATTR_ACCESS_TOKEN = 18;
         
         [StructLayout(LayoutKind.Sequential)]
         private struct SECURITY_INTEGER
@@ -134,6 +136,12 @@ namespace SMBLibrary.Win32.Security
             ref SecBufferDesc pOutput,
             out uint pfContextAttr,
             out SECURITY_INTEGER ptsTimeStamp);
+
+        [DllImport("secur32.Dll", SetLastError = true)]
+        private static extern int QueryContextAttributes(
+            ref SecHandle phContext,
+            uint ulAttribute,
+            out IntPtr pBuffer);
 
         [DllImport("Secur32.dll")]
         private extern static int FreeContextBuffer(
@@ -365,6 +373,20 @@ namespace SMBLibrary.Win32.Security
                 {
                     throw new Exception("AcceptSecurityContext failed, error code 0x" + ((uint)result).ToString("X"));
                 }
+            }
+        }
+
+        public static IntPtr GetAccessToken(SecHandle serverContext)
+        {
+            IntPtr pBuffer;
+            int result = QueryContextAttributes(ref serverContext, SECPKG_ATTR_ACCESS_TOKEN, out pBuffer);
+            if (result == SEC_E_OK)
+            {
+                return pBuffer;
+            }
+            else
+            {
+                return IntPtr.Zero;
             }
         }
     }
