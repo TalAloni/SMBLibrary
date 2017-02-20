@@ -55,6 +55,7 @@ namespace SMBLibrary.NetBios
         /// HasCompletePacket must be called and return true before calling DequeuePacket
         /// </summary>
         /// <exception cref="System.IO.InvalidDataException"></exception>
+        /// <exception cref="SMBLibrary.InvalidRequestException"></exception>
         public SessionPacket DequeuePacket()
         {
             SessionPacket packet;
@@ -64,7 +65,7 @@ namespace SMBLibrary.NetBios
             }
             catch (IndexOutOfRangeException ex)
             {
-                throw new System.IO.InvalidDataException("Invalid Packet", ex);
+                throw new System.IO.InvalidDataException("Invalid NetBIOS session packet", ex);
             }
             RemovePacketBytes();
             return packet;
