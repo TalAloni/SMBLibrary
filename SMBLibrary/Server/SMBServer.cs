@@ -188,9 +188,11 @@ namespace SMBLibrary.Server
                 {
                     packet = receiveBuffer.DequeuePacket();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     state.ClientSocket.Close();
+                    Log(Severity.Warning, "Rejected Invalid NetBIOS session packet: " + ex.ToString());
+                    break;
                 }
 
                 if (packet != null)
