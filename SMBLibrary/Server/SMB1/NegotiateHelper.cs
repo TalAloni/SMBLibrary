@@ -19,9 +19,9 @@ namespace SMBLibrary.Server.SMB1
     /// </summary>
     public class NegotiateHelper
     {
-        internal static NegotiateResponseNTLM GetNegotiateResponse(SMB1Header header, NegotiateRequest request, GSSProvider securityProvider, ConnectionState state)
+        internal static NegotiateResponse GetNegotiateResponse(SMB1Header header, NegotiateRequest request, GSSProvider securityProvider, ConnectionState state)
         {
-            NegotiateResponseNTLM response = new NegotiateResponseNTLM();
+            NegotiateResponse response = new NegotiateResponse();
 
             response.DialectIndex = (ushort)request.Dialects.IndexOf(SMBServer.NTLanManagerDialect);
             response.SecurityMode = SecurityMode.UserSecurityMode | SecurityMode.EncryptPasswords;
@@ -51,9 +51,9 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static NegotiateResponseNTLMExtended GetNegotiateResponseExtended(NegotiateRequest request, Guid serverGuid)
+        internal static NegotiateResponseExtended GetNegotiateResponseExtended(NegotiateRequest request, Guid serverGuid)
         {
-            NegotiateResponseNTLMExtended response = new NegotiateResponseNTLMExtended();
+            NegotiateResponseExtended response = new NegotiateResponseExtended();
             response.DialectIndex = (ushort)request.Dialects.IndexOf(SMBServer.NTLanManagerDialect);
             response.SecurityMode = SecurityMode.UserSecurityMode | SecurityMode.EncryptPasswords;
             response.MaxMpxCount = 50;

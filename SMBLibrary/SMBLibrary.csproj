@@ -279,9 +279,9 @@
     <Compile Include="SMB1\Commands\LogoffAndXRequest.cs" />
     <Compile Include="SMB1\Commands\LogoffAndXResponse.cs" />
     <Compile Include="SMB1\Commands\NegotiateRequest.cs" />
+    <Compile Include="SMB1\Commands\NegotiateResponse.cs" />
+    <Compile Include="SMB1\Commands\NegotiateResponseExtended.cs" />
     <Compile Include="SMB1\Commands\NegotiateResponseNotSupported.cs" />
-    <Compile Include="SMB1\Commands\NegotiateResponseNTLM.cs" />
-    <Compile Include="SMB1\Commands\NegotiateResponseNTLMExtended.cs" />
     <Compile Include="SMB1\Commands\NTCreateAndXRequest.cs" />
     <Compile Include="SMB1\Commands\NTCreateAndXResponse.cs" />
     <Compile Include="SMB1\Commands\NTCreateAndXResponseExtended.cs" />

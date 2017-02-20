@@ -244,15 +244,13 @@ namespace SMBLibrary.SMB1
                     return new TreeDisconnectResponse(buffer, offset);
                 case CommandName.SMB_COM_NEGOTIATE:
                     {
-                        if (wordCount * 2 == NegotiateResponseNTLM.ParametersLength)
+                        if (wordCount * 2 == NegotiateResponse.ParametersLength)
                         {
-                            throw new NotImplementedException();
-                            //return new NegotiateResponseNTLM(header.UnicodeFlag);
+                            return new NegotiateResponse(buffer, offset, isUnicode);
                         }
-                        else if (wordCount * 2 == NegotiateResponseNTLMExtended.ParametersLength)
+                        else if (wordCount * 2 == NegotiateResponseExtended.ParametersLength)
                         {
-                            throw new NotImplementedException();
-                            //return new NegotiateResponseNTLMExtended(header.UnicodeFlag);
+                            return new NegotiateResponseExtended(buffer, offset);
                         }
                         else
                         {
