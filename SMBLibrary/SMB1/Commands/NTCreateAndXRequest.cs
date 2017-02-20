@@ -22,7 +22,7 @@ namespace SMBLibrary.SMB1
         //byte AndXReserved;
         //ushort AndXOffset;
         public byte Reserved;
-        //ushort NameLength; // in bytes
+        private ushort NameLength; // in bytes
         public NTCreateFlags Flags;
         public uint RootDirectoryFID;
         public FileAccessMask DesiredAccess;
@@ -43,7 +43,7 @@ namespace SMBLibrary.SMB1
         public NTCreateAndXRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
             Reserved = ByteReader.ReadByte(this.SMBParameters, 4);
-            ushort nameLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 5);
+            NameLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 5);
             Flags = (NTCreateFlags)LittleEndianConverter.ToUInt32(this.SMBParameters, 7);
             RootDirectoryFID = LittleEndianConverter.ToUInt32(this.SMBParameters, 11);
             DesiredAccess = (FileAccessMask)LittleEndianConverter.ToUInt32(this.SMBParameters, 15);
@@ -58,20 +58,22 @@ namespace SMBLibrary.SMB1
             int dataOffset = 0;
             if (isUnicode)
             {
-                dataOffset = 1; // 1 byte padding for 2 byte alignment
+                // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
+                // Note: SMBData starts at an odd offset.
+                dataOffset = 1;
             }
             FileName = SMB1Helper.ReadSMBString(this.SMBData, dataOffset, isUnicode);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            ushort nameLength = (ushort)FileName.Length;
+            NameLength = (ushort)FileName.Length;
             this.SMBParameters = new byte[ParametersLength];
             ByteWriter.WriteByte(this.SMBParameters, 0, (byte)AndXCommand);
             ByteWriter.WriteByte(this.SMBParameters, 1, AndXReserved);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 2, AndXOffset);
             ByteWriter.WriteByte(this.SMBParameters, 4, Reserved);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 5, nameLength);
+            LittleEndianWriter.WriteUInt16(this.SMBParameters, 5, NameLength);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 7, (uint)Flags);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 11, RootDirectoryFID);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 15, (uint)DesiredAccess);
@@ -83,18 +85,17 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 43, (uint)ImpersonationLevel);
             ByteWriter.WriteByte(this.SMBParameters, 47, (byte)SecurityFlags);
 
+            int padding = 0;
             if (isUnicode)
             {
-                int padding = 1;
+                padding = 1;
                 this.SMBData = new byte[padding + FileName.Length * 2 + 2];
-                int offset = padding;
-                ByteWriter.WriteNullTerminatedUTF16String(this.SMBData, offset, FileName);
             }
             else
             {
                 this.SMBData = new byte[FileName.Length + 1];
-                ByteWriter.WriteNullTerminatedUTF16String(this.SMBData, 0, FileName);
             }
+            SMB1Helper.WriteSMBString(this.SMBData, padding, isUnicode, FileName);
 
             return base.GetBytes(isUnicode);
         }
