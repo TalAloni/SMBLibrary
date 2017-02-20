@@ -258,7 +258,18 @@ namespace SMBLibrary.SMB1
                         }
                     }
                 case CommandName.SMB_COM_SESSION_SETUP_ANDX:
-                    return new SessionSetupAndXResponse(buffer, offset, isUnicode);
+                    if (wordCount * 2 == SessionSetupAndXResponse.ParametersLength)
+                    {
+                        return new SessionSetupAndXResponse(buffer, offset, isUnicode);
+                    }
+                    else if (wordCount * 2 == SessionSetupAndXResponseExtended.ParametersLength)
+                    {
+                        return new SessionSetupAndXResponseExtended(buffer, offset, isUnicode);
+                    }
+                    else
+                    {
+                        throw new InvalidRequestException(); ;
+                    }
                 case CommandName.SMB_COM_LOGOFF_ANDX:
                     return new LogoffAndXResponse(buffer, offset);
                 case CommandName.SMB_COM_TREE_CONNECT_ANDX:

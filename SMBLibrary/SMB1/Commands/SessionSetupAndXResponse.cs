@@ -35,6 +35,8 @@ namespace SMBLibrary.SMB1
             int dataOffset = 0;
             if (isUnicode)
             {
+                // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
+                // Note: SMBData starts at an odd offset.
                 dataOffset++;
             }
             NativeOS = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
@@ -50,7 +52,9 @@ namespace SMBLibrary.SMB1
             int offset = 0;
             if (isUnicode)
             {
-                int padding = 1; // 1 byte padding for 2 byte alignment
+                // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
+                // Note: SMBData starts at an odd offset.
+                int padding = 1;
                 this.SMBData = new byte[padding + NativeOS.Length * 2 + NativeLanMan.Length * 2 + PrimaryDomain.Length * 2 + 6];
                 offset = padding;
             }
