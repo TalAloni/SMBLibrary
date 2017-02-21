@@ -89,3 +89,11 @@ Revision History:
         API: GSS-style authentication, additional IGSSMechanism implementations can be provided.
         API: Added DeviceIOControl to the INTFileStore interface, relevant functionality moved to the object store layer.
         API: Added a SecurityContext class which will be passes to the underlying object store.
+
+1.1.4 - Fixed infinite loop condition.
+        SMB1: SMB_COM_TRANSACTION / SMB_COM_TRANSACTION2: interim response will now be sent when required.
+        SMB1: Improved SMB_COM_NEGOTIATE response implementation.
+        SMB1: Improved SMB_COM_SESSION_SETUP_ANDX request and response implementations.
+        SMB1: Improved SMB_COM_NT_CREATE_ANDX request implementation.
+        Improved NetBIOS related exception messages and documentation.
+        Win32: Improved secur32.dll and Netapi32.dll API compatibility.
