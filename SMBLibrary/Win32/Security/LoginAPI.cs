@@ -43,15 +43,15 @@ namespace SMBLibrary.Win32.Security
             bool success = LogonUser(userName, String.Empty, password, (int)logonType, LOGON32_PROVIDER_WINNT40, out token);
             if (!success)
             {
-                uint error = (uint)Marshal.GetLastWin32Error();
-                if (error == (uint)Win32Error.ERROR_ACCOUNT_RESTRICTION ||
-                    error == (uint)Win32Error.ERROR_ACCOUNT_DISABLED ||
-                    error == (uint)Win32Error.ERROR_LOGON_FAILURE ||
-                    error == (uint)Win32Error.ERROR_LOGON_TYPE_NOT_GRANTED)
+                Win32Error error = (Win32Error)Marshal.GetLastWin32Error();
+                if (error == Win32Error.ERROR_ACCOUNT_RESTRICTION ||
+                    error == Win32Error.ERROR_ACCOUNT_DISABLED ||
+                    error == Win32Error.ERROR_LOGON_FAILURE ||
+                    error == Win32Error.ERROR_LOGON_TYPE_NOT_GRANTED)
                 {
                     return false;
                 }
-                throw new Exception("ValidateUser failed, error: 0x" + ((uint)error).ToString("X"));
+                throw new Exception("ValidateUser failed, Win32 error: " + error.ToString("D"));
             }
             CloseHandle(token);
             return success;
@@ -68,10 +68,10 @@ namespace SMBLibrary.Win32.Security
             }
             else
             {
-                uint error = (uint)Marshal.GetLastWin32Error();
-                return (error == (uint)Win32Error.ERROR_ACCOUNT_RESTRICTION ||
-                        error == (uint)Win32Error.ERROR_ACCOUNT_DISABLED ||
-                        error == (uint)Win32Error.ERROR_LOGON_TYPE_NOT_GRANTED);
+                Win32Error error = (Win32Error)Marshal.GetLastWin32Error();
+                return (error == Win32Error.ERROR_ACCOUNT_RESTRICTION ||
+                        error == Win32Error.ERROR_ACCOUNT_DISABLED ||
+                        error == Win32Error.ERROR_LOGON_TYPE_NOT_GRANTED);
             }
         }
     }

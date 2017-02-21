@@ -156,7 +156,7 @@ namespace SMBLibrary.SMB1
                 case CommandName.SMB_COM_NT_CREATE_ANDX:
                     return new NTCreateAndXRequest(buffer, offset, isUnicode);
                 default:
-                    throw new NotImplementedException("SMB Command 0x" + ((byte)commandName).ToString("X"));
+                    throw new NotImplementedException("SMB Command 0x" + commandName.ToString("X"));
             }
         }
 
@@ -288,7 +288,7 @@ namespace SMBLibrary.SMB1
                 case CommandName.SMB_COM_NT_CREATE_ANDX:
                     return new NTCreateAndXResponse(buffer, offset);
                 default:
-                    throw new NotImplementedException("SMB Command 0x" + ((byte)commandName).ToString("X"));
+                    throw new NotImplementedException("SMB Command 0x" + commandName.ToString("X"));
             }
         }
 
