@@ -22,7 +22,7 @@ namespace SMBLibrary.Win32.Security
         private const int MAX_TOKEN_SIZE = 12000;
 
         private const uint SEC_E_OK = 0;
-        private const uint SEC_I_CONTINUE_NEEDED = 0x90312;
+        private const uint SEC_I_CONTINUE_NEEDED = 0x00090312;
         private const uint SEC_E_INVALID_HANDLE = 0x80090301;
         private const uint SEC_E_INVALID_TOKEN = 0x80090308;
         private const uint SEC_E_LOGON_DENIED = 0x8009030C;
@@ -72,7 +72,7 @@ namespace SMBLibrary.Win32.Security
         };
 
         [DllImport("secur32.dll", SetLastError = true)]
-        private static extern int AcquireCredentialsHandle(
+        private static extern uint AcquireCredentialsHandle(
           string pszPrincipal,
           string pszPackage,
           uint fCredentialUse,
@@ -84,7 +84,7 @@ namespace SMBLibrary.Win32.Security
           out SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        private static extern int InitializeSecurityContext(
+        private static extern uint InitializeSecurityContext(
             ref SecHandle phCredential,
             IntPtr phContext,
             string pszTargetName,
@@ -99,7 +99,7 @@ namespace SMBLibrary.Win32.Security
             out SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        private static extern int InitializeSecurityContext(
+        private static extern uint InitializeSecurityContext(
             IntPtr phCredential,
             ref SecHandle phContext,
             string pszTargetName,
@@ -114,7 +114,7 @@ namespace SMBLibrary.Win32.Security
             out SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        private static extern int AcceptSecurityContext(
+        private static extern uint AcceptSecurityContext(
             ref SecHandle phCredential,
             IntPtr phContext,
             ref SecBufferDesc pInput,
@@ -126,7 +126,7 @@ namespace SMBLibrary.Win32.Security
             out SECURITY_INTEGER ptsTimeStamp);
 
         [DllImport("secur32.dll", SetLastError = true)]
-        private static extern int AcceptSecurityContext(
+        private static extern uint AcceptSecurityContext(
             IntPtr phCredential,
             ref SecHandle phContext,
             ref SecBufferDesc pInput,
@@ -138,23 +138,23 @@ namespace SMBLibrary.Win32.Security
             out SECURITY_INTEGER ptsTimeStamp);
 
         [DllImport("secur32.Dll", SetLastError = true)]
-        private static extern int QueryContextAttributes(
+        private static extern uint QueryContextAttributes(
             ref SecHandle phContext,
             uint ulAttribute,
             out IntPtr pBuffer);
 
         [DllImport("Secur32.dll")]
-        private extern static int FreeContextBuffer(
+        private extern static uint FreeContextBuffer(
             IntPtr pvContextBuffer
         );
 
         [DllImport("Secur32.dll")]
-        private extern static int FreeCredentialsHandle(
+        private extern static uint FreeCredentialsHandle(
             ref SecHandle phCredential
         );
 
         [DllImport("Secur32.dll")]
-        public extern static int DeleteSecurityContext(
+        public extern static uint DeleteSecurityContext(
             ref SecHandle phContext
         );
 
@@ -192,14 +192,14 @@ namespace SMBLibrary.Win32.Security
                 pAuthData = IntPtr.Zero;
             }
 
-            int result = AcquireCredentialsHandle(null, "NTLM", SECPKG_CRED_BOTH, IntPtr.Zero, pAuthData, IntPtr.Zero, IntPtr.Zero, out credential, out expiry);
+            uint result = AcquireCredentialsHandle(null, "NTLM", SECPKG_CRED_BOTH, IntPtr.Zero, pAuthData, IntPtr.Zero, IntPtr.Zero, out credential, out expiry);
             if (pAuthData != IntPtr.Zero)
             {
                 Marshal.FreeHGlobal(pAuthData);
             }
             if (result != SEC_E_OK)
             {
-                throw new Exception("AcquireCredentialsHandle failed, Error code 0x" + ((uint)result).ToString("X"));
+                throw new Exception("AcquireCredentialsHandle failed, Error code 0x" + result.ToString("X"));
             }
 
             return credential;
@@ -219,20 +219,20 @@ namespace SMBLibrary.Win32.Security
             uint contextAttributes;
             SECURITY_INTEGER expiry;
 
-            int result = InitializeSecurityContext(ref credentialsHandle, IntPtr.Zero, null, ISC_REQ_CONFIDENTIALITY | ISC_REQ_INTEGRITY, 0, SECURITY_NATIVE_DREP, IntPtr.Zero, 0, ref clientContext, ref output, out contextAttributes, out expiry);
+            uint result = InitializeSecurityContext(ref credentialsHandle, IntPtr.Zero, null, ISC_REQ_CONFIDENTIALITY | ISC_REQ_INTEGRITY, 0, SECURITY_NATIVE_DREP, IntPtr.Zero, 0, ref clientContext, ref output, out contextAttributes, out expiry);
             if (result != SEC_E_OK && result != SEC_I_CONTINUE_NEEDED)
             {
-                if ((uint)result == SEC_E_INVALID_HANDLE)
+                if (result == SEC_E_INVALID_HANDLE)
                 {
                     throw new Exception("InitializeSecurityContext failed, Invalid handle");
                 }
-                else if ((uint)result == SEC_E_BUFFER_TOO_SMALL)
+                else if (result == SEC_E_BUFFER_TOO_SMALL)
                 {
                     throw new Exception("InitializeSecurityContext failed, Buffer too small");
                 }
                 else
                 {
-                    throw new Exception("InitializeSecurityContext failed, Error code 0x" + ((uint)result).ToString("X"));
+                    throw new Exception("InitializeSecurityContext failed, Error code 0x" + result.ToString("X"));
                 }
             }
             FreeCredentialsHandle(ref credentialsHandle);
@@ -252,24 +252,24 @@ namespace SMBLibrary.Win32.Security
             uint contextAttributes;
             SECURITY_INTEGER expiry;
 
-            int result = InitializeSecurityContext(IntPtr.Zero, ref clientContext, null, ISC_REQ_CONFIDENTIALITY | ISC_REQ_INTEGRITY, 0, SECURITY_NATIVE_DREP, ref input, 0, ref newContext, ref output, out contextAttributes, out expiry);
+            uint result = InitializeSecurityContext(IntPtr.Zero, ref clientContext, null, ISC_REQ_CONFIDENTIALITY | ISC_REQ_INTEGRITY, 0, SECURITY_NATIVE_DREP, ref input, 0, ref newContext, ref output, out contextAttributes, out expiry);
             if (result != SEC_E_OK)
             {
-                if ((uint)result == SEC_E_INVALID_HANDLE)
+                if (result == SEC_E_INVALID_HANDLE)
                 {
                     throw new Exception("InitializeSecurityContext failed, invalid handle");
                 }
-                else if ((uint)result == SEC_E_INVALID_TOKEN)
+                else if (result == SEC_E_INVALID_TOKEN)
                 {
                     throw new Exception("InitializeSecurityContext failed, Invalid token");
                 }
-                else if ((uint)result == SEC_E_BUFFER_TOO_SMALL)
+                else if (result == SEC_E_BUFFER_TOO_SMALL)
                 {
                     throw new Exception("InitializeSecurityContext failed, buffer too small");
                 }
                 else
                 {
-                    throw new Exception("InitializeSecurityContext failed, error code 0x" + ((uint)result).ToString("X"));
+                    throw new Exception("InitializeSecurityContext failed, error code 0x" + result.ToString("X"));
                 }
             }
             byte[] messageBytes = output.GetBufferBytes(0);
@@ -291,24 +291,24 @@ namespace SMBLibrary.Win32.Security
             uint contextAttributes;
             SECURITY_INTEGER timestamp;
 
-            int result = AcceptSecurityContext(ref credentialsHandle, IntPtr.Zero, ref input, ASC_REQ_INTEGRITY | ASC_REQ_CONFIDENTIALITY, SECURITY_NATIVE_DREP, ref serverContext, ref output, out contextAttributes, out timestamp);
+            uint result = AcceptSecurityContext(ref credentialsHandle, IntPtr.Zero, ref input, ASC_REQ_INTEGRITY | ASC_REQ_CONFIDENTIALITY, SECURITY_NATIVE_DREP, ref serverContext, ref output, out contextAttributes, out timestamp);
             if (result != SEC_E_OK && result != SEC_I_CONTINUE_NEEDED)
             {
-                if ((uint)result == SEC_E_INVALID_HANDLE)
+                if (result == SEC_E_INVALID_HANDLE)
                 {
                     throw new Exception("AcceptSecurityContext failed, invalid handle");
                 }
-                else if ((uint)result == SEC_E_INVALID_TOKEN)
+                else if (result == SEC_E_INVALID_TOKEN)
                 {
                     throw new Exception("InitializeSecurityContext failed, Invalid token");
                 }
-                else if ((uint)result == SEC_E_BUFFER_TOO_SMALL)
+                else if (result == SEC_E_BUFFER_TOO_SMALL)
                 {
                     throw new Exception("AcceptSecurityContext failed, buffer too small");
                 }
                 else
                 {
-                    throw new Exception("AcceptSecurityContext failed, error code 0x" + ((uint)result).ToString("X"));
+                    throw new Exception("AcceptSecurityContext failed, error code 0x" + result.ToString("X"));
                 }
             }
             FreeCredentialsHandle(ref credentialsHandle);
@@ -344,7 +344,7 @@ namespace SMBLibrary.Win32.Security
             uint contextAttributes;
             SECURITY_INTEGER timestamp;
 
-            int result = AcceptSecurityContext(IntPtr.Zero, ref serverContext, ref input, ASC_REQ_INTEGRITY | ASC_REQ_CONFIDENTIALITY, SECURITY_NATIVE_DREP, ref newContext, ref output, out contextAttributes, out timestamp);
+            uint result = AcceptSecurityContext(IntPtr.Zero, ref serverContext, ref input, ASC_REQ_INTEGRITY | ASC_REQ_CONFIDENTIALITY, SECURITY_NATIVE_DREP, ref newContext, ref output, out contextAttributes, out timestamp);
 
             inputBuffer.Dispose();
             input.Dispose();
@@ -361,17 +361,17 @@ namespace SMBLibrary.Win32.Security
             }
             else
             {
-                if ((uint)result == SEC_E_INVALID_HANDLE)
+                if (result == SEC_E_INVALID_HANDLE)
                 {
                     throw new Exception("AcceptSecurityContext failed, invalid handle");
                 }
-                else if ((uint)result == SEC_E_INVALID_TOKEN)
+                else if (result == SEC_E_INVALID_TOKEN)
                 {
                     throw new Exception("AcceptSecurityContext failed, invalid security token");
                 }
                 else
                 {
-                    throw new Exception("AcceptSecurityContext failed, error code 0x" + ((uint)result).ToString("X"));
+                    throw new Exception("AcceptSecurityContext failed, error code 0x" + result.ToString("X"));
                 }
             }
         }
@@ -379,7 +379,7 @@ namespace SMBLibrary.Win32.Security
         public static IntPtr GetAccessToken(SecHandle serverContext)
         {
             IntPtr pBuffer;
-            int result = QueryContextAttributes(ref serverContext, SECPKG_ATTR_ACCESS_TOKEN, out pBuffer);
+            uint result = QueryContextAttributes(ref serverContext, SECPKG_ATTR_ACCESS_TOKEN, out pBuffer);
             if (result == SEC_E_OK)
             {
                 return pBuffer;
