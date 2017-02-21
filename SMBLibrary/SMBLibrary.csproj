@@ -52,7 +52,8 @@
     <Compile Include="Authentication\NTLM\Structures\NegotiateMessage.cs" />
     <Compile Include="Authentication\NTLM\Structures\NTLMv2ClientChallenge.cs" />
     <Compile Include="Authentication\NTLM\Structures\NTLMVersion.cs" />
-    <Compile Include="Client\SMBClient.cs" />
+    <Compile Include="Client\ConnectionState.cs" />
+    <Compile Include="Client\SMB1Client.cs" />
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />
     <Compile Include="Enums\Win32Error.cs" />
