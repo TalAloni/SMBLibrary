@@ -49,6 +49,25 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt32(buffer, offset + 28, Reserved);
         }
 
+        public bool WatchTree
+        {
+            get
+            {
+                return ((Flags & ChangeNotifyFlags.WatchTree) > 0);
+            }
+            set
+            {
+                if (value)
+                {
+                    Flags |= ChangeNotifyFlags.WatchTree;
+                }
+                else
+                {
+                    Flags &= ~ChangeNotifyFlags.WatchTree;
+                }
+            }
+        }
+
         public override int CommandLength
         {
             get

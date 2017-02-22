@@ -51,6 +51,16 @@ namespace SMBLibrary.SMB2
             ByteWriter.WriteBytes(buffer, offset + FixedSize, OutputBuffer);
         }
 
+        public List<FileNotifyInformation> GetFileNotifyInformation()
+        {
+            return FileNotifyInformation.ReadList(OutputBuffer, 0);
+        }
+
+        public void SetFileNotifyInformation(List<FileNotifyInformation> notifyInformationList)
+        {
+            OutputBuffer = FileNotifyInformation.GetBytes(notifyInformationList);
+        }
+
         public override int CommandLength
         {
             get
