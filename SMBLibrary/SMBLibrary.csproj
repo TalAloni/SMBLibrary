@@ -101,6 +101,7 @@
     <Compile Include="NTFileStore\Enums\FileSystemInformation\FileSystemInformationClass.cs" />
     <Compile Include="NTFileStore\Enums\FileSystemInformation\SectorSizeInformationFlags.cs" />
     <Compile Include="NTFileStore\Enums\IoControlCode.cs" />
+    <Compile Include="NTFileStore\Enums\NotifyChangeFilter.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateDisposition.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateOptions.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\FileStatus.cs" />
@@ -356,7 +357,6 @@
     <Compile Include="SMB1\Enums\Write\WriteMode.cs" />
     <Compile Include="SMB1\EnumStructures\NamedPipeStatus.cs" />
     <Compile Include="SMB1\EnumStructures\OpenResults.cs" />
-    <Compile Include="SMB1\NTTransactSubcommands\Enums\CompletionFilter.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\Enums\NTTransactSubcommandName.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\Enums\SecurityInfoFields.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactCreateRequest.cs" />
@@ -500,7 +500,6 @@
     <Compile Include="SMB2\Commands\WriteRequest.cs" />
     <Compile Include="SMB2\Commands\WriteResponse.cs" />
     <Compile Include="SMB2\Enums\ChangeNotify\ChangeNotifyFlags.cs" />
-    <Compile Include="SMB2\Enums\ChangeNotify\NotifyChange.cs" />
     <Compile Include="SMB2\Enums\Close\CloseFlags.cs" />
     <Compile Include="SMB2\Enums\Create\CreateAction.cs" />
     <Compile Include="SMB2\Enums\Create\CreateResponseFlags.cs" />

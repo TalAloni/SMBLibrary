@@ -21,7 +21,7 @@ namespace SMBLibrary.SMB2
         public ChangeNotifyFlags Flags;
         public uint OutputBufferLength;
         public FileID FileId;
-        public NotifyChange CompletionFilter;
+        public NotifyChangeFilter CompletionFilter;
         public uint Reserved;
 
         public ChangeNotifyRequest() : base(SMB2CommandName.ChangeNotify)
@@ -35,7 +35,7 @@ namespace SMBLibrary.SMB2
             Flags = (ChangeNotifyFlags)LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 2);
             OutputBufferLength = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 4);
             FileId = new FileID(buffer, offset + SMB2Header.Length + 8);
-            CompletionFilter = (NotifyChange)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 24);
+            CompletionFilter = (NotifyChangeFilter)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 24);
             Reserved = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 28);
         }
 

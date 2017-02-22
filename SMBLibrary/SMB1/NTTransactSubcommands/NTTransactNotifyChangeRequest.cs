@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB1
     {
         public const int SetupLength = 8;
         // Setup:
-        public CompletionFilter CompletionFilter;
+        public NotifyChangeFilter CompletionFilter;
         public ushort FID;
         public bool WatchTree;
         public byte Reserved;
@@ -29,7 +29,7 @@ namespace SMBLibrary.SMB1
 
         public NTTransactNotifyChangeRequest(byte[] setup) : base()
         {
-            CompletionFilter = (CompletionFilter)LittleEndianConverter.ToUInt32(setup, 0);
+            CompletionFilter = (NotifyChangeFilter)LittleEndianConverter.ToUInt32(setup, 0);
             FID = LittleEndianConverter.ToUInt16(setup, 4);
             WatchTree = (ByteReader.ReadByte(setup, 6) != 0);
             Reserved = ByteReader.ReadByte(setup, 7);

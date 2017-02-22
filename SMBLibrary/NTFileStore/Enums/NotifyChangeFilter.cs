@@ -1,9 +1,9 @@
 using System;
 
-namespace SMBLibrary.SMB2
+namespace SMBLibrary
 {
     [Flags]
-    public enum NotifyChange : uint
+    public enum NotifyChangeFilter : uint
     {
         FileName = 0x0000001,     // FILE_NOTIFY_CHANGE_FILE_NAME
         DirName = 0x0000002,      // FILE_NOTIFY_CHANGE_DIR_NAME
