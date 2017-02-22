@@ -364,6 +364,7 @@
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactIOCTLRequest.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactIOCTLResponse.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactNotifyChangeRequest.cs" />
+    <Compile Include="SMB1\NTTransactSubcommands\NTTransactNotifyChangeResponse.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactQuerySecurityDescriptorRequest.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactQuerySecurityDescriptorResponse.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactSetSecurityDescriptor.cs" />
