@@ -108,6 +108,25 @@ namespace SMBLibrary.SMB2
                 }
             }
         }
+        
+        public bool IsAsync
+        {
+            get
+            {
+                return (Flags & SMB2PacketHeaderFlags.AsyncCommand) > 0;
+            }
+            set
+            {
+                if (value)
+                {
+                    Flags |= SMB2PacketHeaderFlags.AsyncCommand;
+                }
+                else
+                {
+                    Flags &= ~SMB2PacketHeaderFlags.AsyncCommand;
+                }
+            }
+        }
 
         public bool IsRelatedOperations
         {
@@ -124,6 +143,25 @@ namespace SMBLibrary.SMB2
                 else
                 {
                     Flags &= ~SMB2PacketHeaderFlags.RelatedOperations;
+                }
+            }
+        }
+        
+        public bool IsSigned
+        {
+            get
+            {
+                return (Flags & SMB2PacketHeaderFlags.Signed) > 0;
+            }
+            set
+            {
+                if (value)
+                {
+                    Flags |= SMB2PacketHeaderFlags.Signed;
+                }
+                else
+                {
+                    Flags &= ~SMB2PacketHeaderFlags.Signed;
                 }
             }
         }
