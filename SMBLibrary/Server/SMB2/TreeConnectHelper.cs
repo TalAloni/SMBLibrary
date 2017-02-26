@@ -21,7 +21,7 @@ namespace SMBLibrary.Server.SMB2
             string shareName = ServerPathUtils.GetShareName(request.Path);
             ISMBShare share;
             ShareType shareType;
-            ShareFlags shareFlags = ShareFlags.ManualCaching;
+            ShareFlags shareFlags;
             if (String.Equals(shareName, NamedPipeShare.NamedPipeShareName, StringComparison.InvariantCultureIgnoreCase))
             {
                 share = services;
@@ -32,6 +32,7 @@ namespace SMBLibrary.Server.SMB2
             {
                 share = shares.GetShareFromName(shareName);
                 shareType = ShareType.Disk;
+                shareFlags = ShareFlags.ManualCaching;
                 if (share == null)
                 {
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_OBJECT_PATH_NOT_FOUND);
