@@ -28,9 +28,12 @@ namespace SMBLibrary.Server.SMB2
             object handle;
             if (openFile == null)
             {
-                if (request.CtlCode == (uint)IoControlCode.FSCTL_PIPE_WAIT)
+                if (request.CtlCode == (uint)IoControlCode.FSCTL_PIPE_WAIT ||
+                    request.CtlCode == (uint)IoControlCode.FSCTL_VALIDATE_NEGOTIATE_INFO ||
+                    request.CtlCode == (uint)IoControlCode.FSCTL_QUERY_NETWORK_INTERFACE_INFO)
                 {
-                    // [MS-SMB2] 3.2.4.20.9 - FSCTL_PIPE_WAIT request has FileId set to 0xFFFFFFFFFFFFFFFF
+                    // [MS-SMB2] 3.3.5.1.5 - FSCTL_PIPE_WAIT / FSCTL_QUERY_NETWORK_INTERFACE_INFO /
+                    // FSCTL_VALIDATE_NEGOTIATE_INFO requests have FileId set to 0xFFFFFFFFFFFFFFFF.
                     handle = null;
                 }
                 else
@@ -53,6 +56,7 @@ namespace SMBLibrary.Server.SMB2
 
             IOCtlResponse response = new IOCtlResponse();
             response.CtlCode = request.CtlCode;
+            response.FileId = request.FileId;
             response.Output = output;
             return response;
         }
