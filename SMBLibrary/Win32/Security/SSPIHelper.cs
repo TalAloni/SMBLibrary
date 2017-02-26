@@ -325,6 +325,8 @@ namespace SMBLibrary.Win32.Security
         /// 1. The account is listed under the "Deny access to this computer from the network" list.
         /// 2. 'limitblankpassworduse' is set to 1, non-guest is attempting to login with an empty password,
         ///    and the Guest account is disabled, has non-empty pasword set or listed under the "Deny access to this computer from the network" list.
+        /// 
+        /// Note: "If the Guest account is enabled, SSPI logon may succeed as Guest for user credentials that are not valid".
         /// </summary>
         /// <remarks>
         /// 1. 'limitblankpassworduse' will not affect the Guest account.

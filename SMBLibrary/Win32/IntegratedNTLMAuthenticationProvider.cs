@@ -75,7 +75,8 @@ namespace SMBLibrary.Win32.Security
 
             authContext.UserName = message.UserName;
             authContext.SessionKey = message.EncryptedRandomSessionKey;
-            if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
+            if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0 ||
+                !IsUserExists(message.UserName))
             {
                 if (this.EnableGuestLogin)
                 {
@@ -113,7 +114,7 @@ namespace SMBLibrary.Win32.Security
                 // 3. The specified account does not exist.
                 //    OR:
                 //    The password is correct but 'limitblankpassworduse' is set to 1 (logon over a network is disabled for accounts without a password).
-                bool allowFallback = (!IsUserExists(message.UserName) || result == Win32Error.ERROR_ACCOUNT_RESTRICTION);
+                bool allowFallback = (result == Win32Error.ERROR_ACCOUNT_RESTRICTION);
                 if (allowFallback && this.EnableGuestLogin)
                 {
                     authContext.IsGuest = true;
