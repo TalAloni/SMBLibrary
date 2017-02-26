@@ -25,14 +25,27 @@ namespace SMBLibrary.Server.SMB2
             }
 
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+            object handle;
             if (openFile == null)
             {
-                return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
+                if (request.CtlCode == (uint)IoControlCode.FSCTL_PIPE_WAIT)
+                {
+                    // [MS-SMB2] 3.2.4.20.9 - FSCTL_PIPE_WAIT request has FileId set to 0xFFFFFFFFFFFFFFFF
+                    handle = null;
+                }
+                else
+                {
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
+                }
+            }
+            else
+            {
+                handle = openFile.Handle;
             }
 
             int maxOutputLength = (int)request.MaxOutputResponse;
             byte[] output;
-            NTStatus status = share.FileStore.DeviceIOControl(openFile.Handle, request.CtlCode, request.Input, out output, maxOutputLength);
+            NTStatus status = share.FileStore.DeviceIOControl(handle, request.CtlCode, request.Input, out output, maxOutputLength);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName, status);
