@@ -21,15 +21,18 @@ namespace SMBLibrary.Server.SMB1
             string shareName = ServerPathUtils.GetShareName(request.Path);
             ISMBShare share;
             ServiceName serviceName;
+            OptionalSupportFlags supportFlags;
             if (String.Equals(shareName, NamedPipeShare.NamedPipeShareName, StringComparison.InvariantCultureIgnoreCase))
             {
                 share = services;
                 serviceName = ServiceName.NamedPipe;
+                supportFlags = OptionalSupportFlags.SMB_SUPPORT_SEARCH_BITS | OptionalSupportFlags.SMB_CSC_NO_CACHING;
             }
             else
             {
                 share = shares.GetShareFromName(shareName);
                 serviceName = ServiceName.DiskShare;
+                supportFlags = OptionalSupportFlags.SMB_SUPPORT_SEARCH_BITS | OptionalSupportFlags.SMB_CSC_CACHE_MANUAL_REINT;
                 if (share == null)
                 {
                     header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
@@ -51,27 +54,27 @@ namespace SMBLibrary.Server.SMB1
             header.TID = treeID.Value;
             if (isExtended)
             {
-                return CreateTreeConnectResponseExtended(serviceName);
+                return CreateTreeConnectResponseExtended(serviceName, supportFlags);
             }
             else
             {
-                return CreateTreeConnectResponse(serviceName);
+                return CreateTreeConnectResponse(serviceName, supportFlags);
             }
         }
 
-        private static TreeConnectAndXResponse CreateTreeConnectResponse(ServiceName serviceName)
+        private static TreeConnectAndXResponse CreateTreeConnectResponse(ServiceName serviceName, OptionalSupportFlags supportFlags)
         {
             TreeConnectAndXResponse response = new TreeConnectAndXResponse();
-            response.OptionalSupport = OptionalSupportFlags.SMB_SUPPORT_SEARCH_BITS;
+            response.OptionalSupport = supportFlags;
             response.NativeFileSystem = String.Empty;
             response.Service = serviceName;
             return response;
         }
 
-        private static TreeConnectAndXResponseExtended CreateTreeConnectResponseExtended(ServiceName serviceName)
+        private static TreeConnectAndXResponseExtended CreateTreeConnectResponseExtended(ServiceName serviceName, OptionalSupportFlags supportFlags)
         {
             TreeConnectAndXResponseExtended response = new TreeConnectAndXResponseExtended();
-            response.OptionalSupport = OptionalSupportFlags.SMB_SUPPORT_SEARCH_BITS;
+            response.OptionalSupport = supportFlags;
             response.MaximalShareAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
                                                         FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
                                                         FileAccessMask.FILE_EXECUTE |
