@@ -199,5 +199,45 @@ namespace SMBLibrary.Authentication.NTLM
 
             return result;
         }
+
+        /// <summary>
+        /// [MS-NLMP] 3.4.5.1 - KXKEY - NTLM v1
+        /// </summary>
+        /// <remarks>
+        /// If NTLM v2 is used, KeyExchangeKey MUST be set to the value of SessionBaseKey.
+        /// </remarks>
+        public static byte[] KXKey(byte[] sessionBaseKey, NegotiateFlags negotiateFlags, byte[] lmChallengeResponse, byte[] serverChallenge, byte[] lmowf)
+        {
+            if ((negotiateFlags & NegotiateFlags.ExtendedSecurity) == 0)
+            {
+                if ((negotiateFlags & NegotiateFlags.LanManagerKey) > 0)
+                {
+                    byte[] k1 = ByteReader.ReadBytes(lmowf, 0, 7);
+                    byte[] k2 = ByteUtils.Concatenate(ByteReader.ReadBytes(lmowf, 7, 1), new byte[] { 0xBD, 0xBD, 0xBD, 0xBD, 0xBD, 0xBD });
+                    byte[] temp1 = DesEncrypt(ExtendDESKey(k1), ByteReader.ReadBytes(lmChallengeResponse, 0, 8));
+                    byte[] temp2 = DesEncrypt(ExtendDESKey(k2), ByteReader.ReadBytes(lmChallengeResponse, 0, 8));
+                    byte[] keyExchangeKey = ByteUtils.Concatenate(temp1, temp2);
+                    return keyExchangeKey;
+                }
+                else
+                {
+                    if ((negotiateFlags & NegotiateFlags.RequestLMSessionKey) > 0)
+                    {
+                        byte[] keyExchangeKey = ByteUtils.Concatenate(ByteReader.ReadBytes(lmowf, 0, 8), new byte[8]);
+                        return keyExchangeKey;
+                    }
+                    else
+                    {
+                        return sessionBaseKey;
+                    }
+                }
+            }
+            else
+            {
+                byte[] buffer = ByteUtils.Concatenate(serverChallenge, ByteReader.ReadBytes(lmChallengeResponse, 0, 8));
+                byte[] keyExchangeKey = new HMACMD5(sessionBaseKey).ComputeHash(buffer);
+                return keyExchangeKey;
+            }
+        }
     }
 }

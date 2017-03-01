@@ -532,6 +532,7 @@
     <Compile Include="SMB2\Structures\NegotiateContext.cs" />
     <Compile Include="Tests\NetBiosTests.cs" />
     <Compile Include="Tests\NTLMAuthenticationTests.cs" />
+    <Compile Include="Tests\NTLMSigningTests.cs" />
     <Compile Include="Tests\RC4Tests.cs" />
     <Compile Include="Tests\RPCTests.cs" />
     <Compile Include="Utilities\LogEntry.cs" />
