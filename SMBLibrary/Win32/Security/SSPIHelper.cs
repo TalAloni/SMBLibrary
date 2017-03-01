@@ -47,6 +47,8 @@ namespace SMBLibrary.Win32.Security
         private const uint SEC_WINNT_AUTH_IDENTITY_ANSI = 1;
         private const uint SEC_WINNT_AUTH_IDENTITY_UNICODE = 2;
 
+        private const uint SECPKG_ATTR_NAME = 1; // Username
+        private const uint SECPKG_ATTR_SESSION_KEY = 9;
         private const uint SECPKG_ATTR_ACCESS_TOKEN = 18;
         
         [StructLayout(LayoutKind.Sequential)]
@@ -70,6 +72,13 @@ namespace SMBLibrary.Win32.Security
             public uint PasswordLength;
             public uint Flags;
         };
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SecPkgContext_SessionKey
+        {
+            public uint SessionKeyLength;
+            public IntPtr SessionKey;
+        }
 
         [DllImport("secur32.dll", SetLastError = true)]
         private static extern uint AcquireCredentialsHandle(
@@ -141,7 +150,19 @@ namespace SMBLibrary.Win32.Security
         private static extern uint QueryContextAttributes(
             ref SecHandle phContext,
             uint ulAttribute,
-            out IntPtr pBuffer);
+            out string value);
+
+        [DllImport("secur32.Dll", SetLastError = true)]
+        private static extern uint QueryContextAttributes(
+            ref SecHandle phContext,
+            uint ulAttribute,
+            out IntPtr value);
+
+        [DllImport("secur32.Dll", SetLastError = true)]
+        private static extern uint QueryContextAttributes(
+            ref SecHandle phContext,
+            uint ulAttribute,
+            out SecPkgContext_SessionKey value);
 
         [DllImport("Secur32.dll")]
         private extern static uint FreeContextBuffer(
@@ -378,13 +399,48 @@ namespace SMBLibrary.Win32.Security
             }
         }
 
-        public static IntPtr GetAccessToken(SecHandle serverContext)
+        public static string GetUserName(SecHandle context)
         {
-            IntPtr pBuffer;
-            uint result = QueryContextAttributes(ref serverContext, SECPKG_ATTR_ACCESS_TOKEN, out pBuffer);
+            string userName;
+            uint result = QueryContextAttributes(ref context, SECPKG_ATTR_NAME, out userName);
             if (result == SEC_E_OK)
             {
-                return pBuffer;
+                return userName;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Windows Vista or newer is required for SECPKG_ATTR_SESSION_KEY to work.
+        /// Windows XP / Server 2003 will return SEC_E_INVALID_TOKEN.
+        /// </summary>
+        public static byte[] GetSessionKey(SecHandle context)
+        {
+            SecPkgContext_SessionKey sessionKey;
+            uint result = QueryContextAttributes(ref context, SECPKG_ATTR_SESSION_KEY, out sessionKey);
+            if (result == SEC_E_OK)
+            {
+                int length = (int)sessionKey.SessionKeyLength;
+                byte[] sessionKeyBytes = new byte[length];
+                Marshal.Copy(sessionKey.SessionKey, sessionKeyBytes, 0, length);
+                return sessionKeyBytes;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static IntPtr GetAccessToken(SecHandle serverContext)
+        {
+            IntPtr accessToken;
+            uint result = QueryContextAttributes(ref serverContext, SECPKG_ATTR_ACCESS_TOKEN, out accessToken);
+            if (result == SEC_E_OK)
+            {
+                return accessToken;
             }
             else
             {
