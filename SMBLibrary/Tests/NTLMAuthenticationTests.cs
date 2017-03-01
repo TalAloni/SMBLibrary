@@ -15,7 +15,7 @@ namespace SMBLibrary
     /// <summary>
     /// [MS-NLMP] Tests
     /// </summary>
-    public class AuthenticationTests
+    public class NTLMAuthenticationTests
     {
         public static bool LMv1HashTest()
         {
