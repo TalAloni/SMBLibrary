@@ -208,7 +208,7 @@ namespace SMBLibrary.Authentication.NTLM
         /// </remarks>
         public static byte[] KXKey(byte[] sessionBaseKey, NegotiateFlags negotiateFlags, byte[] lmChallengeResponse, byte[] serverChallenge, byte[] lmowf)
         {
-            if ((negotiateFlags & NegotiateFlags.ExtendedSecurity) == 0)
+            if ((negotiateFlags & NegotiateFlags.ExtendedSessionSecurity) == 0)
             {
                 if ((negotiateFlags & NegotiateFlags.LanManagerKey) > 0)
                 {

@@ -48,9 +48,9 @@ namespace SMBLibrary.Authentication.NTLM
             challengeMessage = new ChallengeMessage();
             challengeMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
                                      NegotiateFlags.TargetNameSupplied |
-                                     NegotiateFlags.NTLMKey |
+                                     NegotiateFlags.NTLMSessionSecurity |
                                      NegotiateFlags.TargetTypeServer |
-                                     NegotiateFlags.ExtendedSecurity |
+                                     NegotiateFlags.ExtendedSessionSecurity |
                                      NegotiateFlags.TargetInfo |
                                      NegotiateFlags.Version;
             if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Sign) > 0)
@@ -118,7 +118,7 @@ namespace SMBLibrary.Authentication.NTLM
 
             bool success;
             byte[] serverChallenge = authContext.ServerChallenge;
-            if ((message.NegotiateFlags & NegotiateFlags.ExtendedSecurity) > 0)
+            if ((message.NegotiateFlags & NegotiateFlags.ExtendedSessionSecurity) > 0)
             {
                 if (AuthenticationMessageUtils.IsNTLMv1ExtendedSecurity(message.LmChallengeResponse))
                 {

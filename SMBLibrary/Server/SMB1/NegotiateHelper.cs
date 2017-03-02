@@ -82,7 +82,7 @@ namespace SMBLibrary.Server.SMB1
                                               NegotiateFlags.OEMEncoding |
                                               NegotiateFlags.Sign |
                                               NegotiateFlags.LanManagerKey |
-                                              NegotiateFlags.NTLMKey |
+                                              NegotiateFlags.NTLMSessionSecurity |
                                               NegotiateFlags.AlwaysSign |
                                               NegotiateFlags.Version |
                                               NegotiateFlags.Use128BitEncryption |

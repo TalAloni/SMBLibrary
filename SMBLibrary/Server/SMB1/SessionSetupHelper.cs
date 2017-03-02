@@ -137,7 +137,7 @@ namespace SMBLibrary.Server.SMB1
                                                  NegotiateFlags.OEMEncoding |
                                                  NegotiateFlags.Sign |
                                                  NegotiateFlags.LanManagerKey |
-                                                 NegotiateFlags.NTLMKey |
+                                                 NegotiateFlags.NTLMSessionSecurity |
                                                  NegotiateFlags.AlwaysSign |
                                                  NegotiateFlags.Version |
                                                  NegotiateFlags.Use128BitEncryption |
@@ -145,7 +145,7 @@ namespace SMBLibrary.Server.SMB1
             if (AuthenticationMessageUtils.IsNTLMv1ExtendedSecurity(lmChallengeResponse) ||
                 AuthenticationMessageUtils.IsNTLMv2NTResponse(ntChallengeResponse))
             {
-                authenticateMessage.NegotiateFlags |= NegotiateFlags.ExtendedSecurity;
+                authenticateMessage.NegotiateFlags |= NegotiateFlags.ExtendedSessionSecurity;
             }
             authenticateMessage.UserName = accountNameToAuth;
             authenticateMessage.LmChallengeResponse = lmChallengeResponse;
