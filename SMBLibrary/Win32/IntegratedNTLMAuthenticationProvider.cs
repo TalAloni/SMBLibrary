@@ -23,7 +23,6 @@ namespace SMBLibrary.Win32.Security
             public SecHandle ServerContext;
             public string WorkStation;
             public string UserName;
-            public byte[] SessionKey;
             public bool IsGuest;
 
             public AuthContext(SecHandle serverContext, string workStation)
@@ -74,7 +73,6 @@ namespace SMBLibrary.Win32.Security
             }
 
             authContext.UserName = message.UserName;
-            authContext.SessionKey = message.EncryptedRandomSessionKey;
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0 ||
                 !IsUserExists(message.UserName))
             {
@@ -153,7 +151,7 @@ namespace SMBLibrary.Win32.Security
                     case GSSAttributeName.MachineName:
                         return authContext.WorkStation;
                     case GSSAttributeName.SessionKey:
-                        return authContext.SessionKey;
+                        return SSPIHelper.GetSessionKey(authContext.ServerContext);
                     case GSSAttributeName.UserName:
                         return authContext.UserName;
                 }
