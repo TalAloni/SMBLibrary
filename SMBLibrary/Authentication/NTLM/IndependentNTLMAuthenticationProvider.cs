@@ -46,26 +46,63 @@ namespace SMBLibrary.Authentication.NTLM
             context = new AuthContext(negotiateMessage.Workstation, serverChallenge);
 
             challengeMessage = new ChallengeMessage();
-            challengeMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
-                                     NegotiateFlags.TargetNameSupplied |
-                                     NegotiateFlags.NTLMSessionSecurity |
-                                     NegotiateFlags.TargetTypeServer |
-                                     NegotiateFlags.ExtendedSessionSecurity |
-                                     NegotiateFlags.TargetInfo |
-                                     NegotiateFlags.Version;
+            // https://msdn.microsoft.com/en-us/library/cc236691.aspx
+            challengeMessage.NegotiateFlags = NegotiateFlags.TargetTypeServer |
+                                              NegotiateFlags.TargetInfo |
+                                              NegotiateFlags.TargetNameSupplied |
+                                              NegotiateFlags.Version;
+            // [MS-NLMP] NTLMSSP_NEGOTIATE_NTLM MUST be set in the [..] CHALLENGE_MESSAGE to the client.
+            challengeMessage.NegotiateFlags |= NegotiateFlags.NTLMSessionSecurity;
+
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.UnicodeEncoding) > 0)
+            {
+                challengeMessage.NegotiateFlags |= NegotiateFlags.UnicodeEncoding;
+            }
+            else if ((negotiateMessage.NegotiateFlags & NegotiateFlags.OEMEncoding) > 0)
+            {
+                challengeMessage.NegotiateFlags |= NegotiateFlags.OEMEncoding;
+            }
+
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.ExtendedSessionSecurity) > 0)
+            {
+                challengeMessage.NegotiateFlags |= NegotiateFlags.ExtendedSessionSecurity;
+            }
+            else if ((negotiateMessage.NegotiateFlags & NegotiateFlags.LanManagerKey) > 0)
+            {
+                challengeMessage.NegotiateFlags |= NegotiateFlags.LanManagerKey;
+            }
+
             if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Sign) > 0)
             {
                 // [MS-NLMP] If the client sends NTLMSSP_NEGOTIATE_SIGN to the server in the NEGOTIATE_MESSAGE,
                 // the server MUST return NTLMSSP_NEGOTIATE_SIGN to the client in the CHALLENGE_MESSAGE.
                 challengeMessage.NegotiateFlags |= NegotiateFlags.Sign;
             }
-            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Use56BitEncryption) > 0)
+
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Seal) > 0)
             {
-                challengeMessage.NegotiateFlags |= NegotiateFlags.Use56BitEncryption;
+                // [MS-NLMP] If the client sends NTLMSSP_NEGOTIATE_SEAL to the server in the NEGOTIATE_MESSAGE,
+                // the server MUST return NTLMSSP_NEGOTIATE_SEAL to the client in the CHALLENGE_MESSAGE.
+                challengeMessage.NegotiateFlags |= NegotiateFlags.Seal;
             }
-            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Use128BitEncryption) > 0)
+
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Sign) > 0 ||
+                (negotiateMessage.NegotiateFlags & NegotiateFlags.Seal) > 0)
             {
-                challengeMessage.NegotiateFlags |= NegotiateFlags.Use128BitEncryption;
+                if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Use56BitEncryption) > 0)
+                {
+                    // [MS-NLMP] If the client sends NTLMSSP_NEGOTIATE_SEAL or NTLMSSP_NEGOTIATE_SIGN with
+                    // NTLMSSP_NEGOTIATE_56 to the server in the NEGOTIATE_MESSAGE, the server MUST return
+                    // NTLMSSP_NEGOTIATE_56 to the client in the CHALLENGE_MESSAGE.
+                    challengeMessage.NegotiateFlags |= NegotiateFlags.Use56BitEncryption;
+                }
+                if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Use128BitEncryption) > 0)
+                {
+                    // [MS-NLMP] If the client sends NTLMSSP_NEGOTIATE_128 to the server in the NEGOTIATE_MESSAGE,
+                    // the server MUST return NTLMSSP_NEGOTIATE_128 to the client in the CHALLENGE_MESSAGE only if
+                    // the client sets NTLMSSP_NEGOTIATE_SEAL or NTLMSSP_NEGOTIATE_SIGN.
+                    challengeMessage.NegotiateFlags |= NegotiateFlags.Use128BitEncryption;
+                }
             }
             challengeMessage.TargetName = Environment.MachineName;
             challengeMessage.ServerChallenge = serverChallenge;
