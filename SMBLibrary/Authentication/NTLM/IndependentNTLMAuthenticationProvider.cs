@@ -105,6 +105,12 @@ namespace SMBLibrary.Authentication.NTLM
                     challengeMessage.NegotiateFlags |= NegotiateFlags.Use128BitEncryption;
                 }
             }
+
+            if ((negotiateMessage.NegotiateFlags & NegotiateFlags.KeyExchange) > 0)
+            {
+                challengeMessage.NegotiateFlags |= NegotiateFlags.KeyExchange;
+            }
+
             challengeMessage.TargetName = Environment.MachineName;
             challengeMessage.ServerChallenge = serverChallenge;
             challengeMessage.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
