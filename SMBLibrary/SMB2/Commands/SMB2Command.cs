@@ -6,6 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Utilities;
 
 namespace SMBLibrary.SMB2
@@ -122,6 +123,14 @@ namespace SMBLibrary.SMB2
 
         public static byte[] GetCommandChainBytes(List<SMB2Command> commands)
         {
+            return GetCommandChainBytes(commands, null);
+        }
+
+        /// <param name="sessionKey">
+        /// command will be signed using this key if (not null and) SMB2_FLAGS_SIGNED is set.
+        /// </param>
+        public static byte[] GetCommandChainBytes(List<SMB2Command> commands, byte[] sessionKey)
+        {
             int totalLength = 0;
             for (int index = 0; index < commands.Count; index++)
             {
@@ -143,12 +152,24 @@ namespace SMBLibrary.SMB2
             {
                 SMB2Command command = commands[index];
                 int commandLength = command.Length;
-                int paddedLength = (int)Math.Ceiling((double)commandLength / 8) * 8;
+                int paddedLength;
                 if (index < commands.Count - 1)
                 {
+                    paddedLength = (int)Math.Ceiling((double)commandLength / 8) * 8;
                     command.Header.NextCommand = (uint)paddedLength;
                 }
+                else
+                {
+                    paddedLength = commandLength;
+                }
                 command.WriteBytes(buffer, offset);
+                if (command.Header.IsSigned && sessionKey != null)
+                {
+                    // [MS-SMB2] Any padding at the end of the message MUST be used in the hash computation.
+                    byte[] signature = new HMACSHA256(sessionKey).ComputeHash(buffer, offset, paddedLength);
+                    // [MS-SMB2] The first 16 bytes of the hash MUST be copied into the 16-byte signature field of the SMB2 Header.
+                    ByteWriter.WriteBytes(buffer, offset + SMB2Header.SignatureOffset, signature, 16);
+                }
                 offset += paddedLength;
             }
             return buffer;
