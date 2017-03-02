@@ -6,6 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using SMBLibrary.Authentication.GSSAPI;
 using Utilities;
 
@@ -125,7 +126,6 @@ namespace SMBLibrary.Authentication.NTLM
             }
 
             authContext.UserName = message.UserName;
-            authContext.SessionKey = message.EncryptedRandomSessionKey;
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
             {
                 if (this.EnableGuestLogin)
@@ -155,26 +155,60 @@ namespace SMBLibrary.Authentication.NTLM
 
             bool success;
             byte[] serverChallenge = authContext.ServerChallenge;
+            byte[] sessionBaseKey;
+            byte[] keyExchangeKey = null;
             if ((message.NegotiateFlags & NegotiateFlags.ExtendedSessionSecurity) > 0)
             {
                 if (AuthenticationMessageUtils.IsNTLMv1ExtendedSecurity(message.LmChallengeResponse))
                 {
                     // NTLM v1 Extended Security:
                     success = AuthenticateV1Extended(password, serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
+                    if (success)
+                    {
+                        // https://msdn.microsoft.com/en-us/library/cc236699.aspx
+                        sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
+                        byte[] lmowf = NTLMCryptography.LMOWFv1(password);
+                        keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
+                    }
                 }
                 else
                 {
                     // NTLM v2:
                     success = AuthenticateV2(message.DomainName, message.UserName, password, serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
+                    if (success)
+                    {
+                        // https://msdn.microsoft.com/en-us/library/cc236700.aspx
+                        byte[] responseKeyNT = NTLMCryptography.NTOWFv2(password, message.UserName, message.DomainName);
+                        byte[] ntProofStr = ByteReader.ReadBytes(message.NtChallengeResponse, 0, 16);
+                        sessionBaseKey = new HMACMD5(responseKeyNT).ComputeHash(ntProofStr);
+                        keyExchangeKey = sessionBaseKey;
+                    }
                 }
             }
             else
             {
                 success = AuthenticateV1(password, serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
+                if (success)
+                {
+                    // https://msdn.microsoft.com/en-us/library/cc236699.aspx
+                    sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
+                    byte[] lmowf = NTLMCryptography.LMOWFv1(password);
+                    keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
+                }
             }
 
             if (success)
             {
+                // https://msdn.microsoft.com/en-us/library/cc236676.aspx
+                // https://blogs.msdn.microsoft.com/openspecification/2010/04/19/ntlm-keys-and-sundry-stuff/
+                if ((message.NegotiateFlags & NegotiateFlags.KeyExchange) > 0)
+                {
+                    authContext.SessionKey = RC4.Decrypt(keyExchangeKey, message.EncryptedRandomSessionKey);
+                }
+                else
+                {
+                    authContext.SessionKey = keyExchangeKey;
+                }
                 return NTStatus.STATUS_SUCCESS;
             }
             else
