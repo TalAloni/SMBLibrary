@@ -12,6 +12,8 @@ namespace SMBLibrary.SMB2
     public class SMB2Header
     {
         public const int Length = 64;
+        public const int SignatureOffset = 48;
+
         public static readonly byte[] ProtocolSignature = new byte[] { 0xFE, 0x53, 0x4D, 0x42 };
 
         public byte[] ProtocolId; // 4 bytes, 0xFE followed by "SMB"
@@ -34,6 +36,7 @@ namespace SMBLibrary.SMB2
             ProtocolId = ProtocolSignature;
             StructureSize = Length;
             Command = commandName;
+            Signature = new byte[16];
         }
 
         public SMB2Header(byte[] buffer, int offset)
