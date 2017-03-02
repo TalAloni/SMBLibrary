@@ -55,17 +55,18 @@ namespace SMBLibrary.Server.SMB2
             {
                 string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
                 string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
+                byte[] sessionKey = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.SessionKey) as byte[];
                 object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
                     state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", userName);
-                    state.CreateSession(request.Header.SessionID, userName, machineName, accessToken);
+                    state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken);
                 }
                 else
                 {
                     state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", userName);
-                    state.CreateSession(request.Header.SessionID, "Guest", machineName, accessToken);
+                    state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken);
                     response.SessionFlags = SessionFlags.IsGuest;
                 }
             }
