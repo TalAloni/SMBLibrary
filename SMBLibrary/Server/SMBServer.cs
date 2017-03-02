@@ -35,6 +35,7 @@ namespace SMBLibrary.Server
         private Socket m_listenerSocket;
         private bool m_listening;
         private Guid m_serverGuid;
+        private DateTime m_serverStartTime;
 
         public event EventHandler<LogEntry> OnLogEntry;
 
@@ -48,6 +49,7 @@ namespace SMBLibrary.Server
             m_securityProvider = securityProvider;
             m_serverAddress = serverAddress;
             m_serverGuid = Guid.NewGuid();
+            m_serverStartTime = DateTime.Now;
             m_transport = transport;
             m_enableSMB1 = enableSMB1;
             m_enableSMB2 = enableSMB2;
@@ -247,7 +249,7 @@ namespace SMBLibrary.Server
                         List<string> smb2Dialects = SMB2.NegotiateHelper.FindSMB2Dialects(message);
                         if (smb2Dialects.Count > 0)
                         {
-                            SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, m_securityProvider, state, m_serverGuid);
+                            SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, m_securityProvider, state, m_serverGuid, m_serverStartTime);
                             if (state.ServerDialect != SMBDialect.NotSet)
                             {
                                 state = new SMB2ConnectionState(state, AllocatePersistentFileID);
