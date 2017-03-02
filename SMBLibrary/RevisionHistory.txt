@@ -97,3 +97,16 @@ Revision History:
         SMB1: Improved SMB_COM_NT_CREATE_ANDX request implementation.
         Improved NetBIOS related exception messages and documentation.
         Win32: Improved secur32.dll and Netapi32.dll API compatibility.
+
+1.1.5 - NTLM: Added session key computation helper method and tests.
+        SSPIHelper: Added GetUserName and GetSessionKey methods.
+        IntegratedNTLMAuthenticationProvider: Bugfix: IsGuest was not always set when the username did not exist.
+        IntegratedNTLMAuthenticationProvider: The correct SessionKey will now be returned instead of EncryptedRandomSessionKey.
+        IndependentNTLMAuthenticationProvider: ChallengeMessage.NegotiateFlags are now properly set.
+        IndependentNTLMAuthenticationProvider: Compute and store SessionKey.
+        IndependentNTLMAuthenticationProvider: Set KeyExchange NTLM flag if client request it.
+        SMB2Command: Implemented signing in GetCommandChainBytes.
+        SMB2: Workaround to prevent Windows 7 / 8 / 10 from sending ChangeNotify requests infinitely.
+        SMB2: Correctly report server start time in SMB_NEGOTIATE response.
+        SMB2: Retrieve SessionKey from GSS mechanism and store it in SMB2Session.
+        SMB2: Enable message signing if client request it.
