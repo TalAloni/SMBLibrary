@@ -232,8 +232,25 @@ namespace SMBLibrary.Server
 
         public static void TrySendResponseChain(ConnectionState state, List<SMB2Command> responseChain)
         {
+            byte[] sessionKey = null;
+            if (state is SMB2ConnectionState)
+            {
+                // Note: multiple sessions MAY be multiplexed on the same connection, so theoretically
+                // we could have compounding unrelated requests from different sessions.
+                // In practice however this is not a real problem.
+                ulong sessionID = responseChain[0].Header.SessionID;
+                if (sessionID != 0)
+                {
+                    SMB2Session session = ((SMB2ConnectionState)state).GetSession(sessionID);
+                    if (session != null)
+                    {
+                        sessionKey = session.SessionKey;
+                    }
+                }
+            }
+
             SessionMessagePacket packet = new SessionMessagePacket();
-            packet.Trailer = SMB2Command.GetCommandChainBytes(responseChain);
+            packet.Trailer = SMB2Command.GetCommandChainBytes(responseChain, sessionKey);
             TrySendPacket(state, packet);
             state.LogToServer(Severity.Verbose, "SMB2 response chain sent: Response count: {0}, First response: {1}, Packet length: {2}", responseChain.Count, responseChain[0].CommandName.ToString(), packet.Length);
         }
@@ -244,6 +261,10 @@ namespace SMBLibrary.Server
             response.Header.CreditCharge = request.Header.CreditCharge;
             response.Header.Credits = Math.Max((ushort)1, request.Header.Credits);
             response.Header.IsRelatedOperations = request.Header.IsRelatedOperations;
+            // [MS-SMB2] The server SHOULD sign the message [..] if the request was signed by the client,
+            // and the response is not an interim response to an asynchronously processed request.
+            bool isInterimResponse = (request.Header.IsAsync && request.Header.Status == NTStatus.STATUS_PENDING);
+            response.Header.IsSigned = request.Header.IsSigned && !isInterimResponse;
             response.Header.Reserved = request.Header.Reserved;
             if (response.Header.SessionID == 0)
             {

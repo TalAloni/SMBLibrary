@@ -39,6 +39,7 @@ namespace SMBLibrary.Server.SMB2
             {
                 throw new ArgumentException("SMB2 dialect is not present");
             }
+            response.SecurityMode = SecurityMode.SigningEnabled;
             response.ServerGuid = serverGuid;
             response.MaxTransactSize = 65536;
             response.MaxReadSize = 65536;
@@ -66,6 +67,7 @@ namespace SMBLibrary.Server.SMB2
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
             }
+            response.SecurityMode = SecurityMode.SigningEnabled;
             response.ServerGuid = serverGuid;
             response.MaxTransactSize = 65536;
             response.MaxReadSize = 65536;
