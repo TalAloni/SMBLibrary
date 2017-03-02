@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary
 {
-    public class SigningTests
+    public class NTLMSigningTests
     {
         public static bool TestLMMIC()
         {
