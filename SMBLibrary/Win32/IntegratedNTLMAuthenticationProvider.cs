@@ -125,16 +125,22 @@ namespace SMBLibrary.Win32.Security
             }
         }
 
-        public override void DeleteSecurityContext(ref object context)
+        public override bool DeleteSecurityContext(ref object context)
         {
             AuthContext authContext = context as AuthContext;
             if (authContext == null)
             {
-                return;
+                return false;
             }
 
             SecHandle handle = ((AuthContext)context).ServerContext;
-            SSPIHelper.DeleteSecurityContext(ref handle);
+            uint result = SSPIHelper.DeleteSecurityContext(ref handle);
+            bool success = (result == 0); // SEC_E_OK
+            if (success)
+            {
+                context = null;
+            }
+            return success;
         }
 
         public override object GetContextAttribute(object context, GSSAttributeName attributeName)

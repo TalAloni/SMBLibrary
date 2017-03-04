@@ -112,17 +112,23 @@ namespace SMBLibrary.Authentication.GSSAPI
             return mechanism.GetContextAttribute(context, attributeName);
         }
 
-        public void DeleteSecurityContext(ref object context)
+        public bool DeleteSecurityContext(ref object context)
         {
+            bool result = false;
             if (context != null)
             {
                 IGSSMechanism mechanism;
                 if (m_contextToMechanism.TryGetValue(context, out mechanism))
                 {
-                    mechanism.DeleteSecurityContext(ref context);
-                    m_contextToMechanism.Remove(context);
+                    object contextReference = context;
+                    result = mechanism.DeleteSecurityContext(ref context);
+                    if (result)
+                    {
+                        m_contextToMechanism.Remove(contextReference);
+                    }
                 }
             }
+            return result;
         }
 
         /// <summary>

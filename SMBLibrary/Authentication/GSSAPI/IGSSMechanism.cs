@@ -18,12 +18,12 @@ namespace SMBLibrary.Authentication.GSSAPI
 
         /// <summary>
         /// Equivalent to GSS_Delete_sec_context
-        /// Obtains information about a given security context (even an incomplete one)
         /// </summary>
-        void DeleteSecurityContext(ref object context);
+        bool DeleteSecurityContext(ref object context);
 
         /// <summary>
         /// Equivalent to GSS_Inquire_context
+        /// Obtains information about a given security context (even an incomplete one)
         /// </summary>
         object GetContextAttribute(object context, GSSAttributeName attributeName);
 

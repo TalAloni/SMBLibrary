@@ -46,7 +46,7 @@ namespace SMBLibrary.Authentication.NTLM
 
         public abstract NTStatus Authenticate(object context, AuthenticateMessage authenticateMessage);
 
-        public abstract void DeleteSecurityContext(ref object context);
+        public abstract bool DeleteSecurityContext(ref object context);
 
         public abstract object GetContextAttribute(object context, GSSAttributeName attributeName);
 

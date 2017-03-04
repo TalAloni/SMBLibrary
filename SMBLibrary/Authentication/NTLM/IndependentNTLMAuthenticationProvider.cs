@@ -223,8 +223,10 @@ namespace SMBLibrary.Authentication.NTLM
             }
         }
 
-        public override void DeleteSecurityContext(ref object context)
+        public override bool DeleteSecurityContext(ref object context)
         {
+            context = null;
+            return true;
         }
 
         public override object GetContextAttribute(object context, GSSAttributeName attributeName)
