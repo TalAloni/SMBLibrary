@@ -32,7 +32,7 @@ namespace SMBLibrary.Server.SMB2
             }
             else if (smb2Dialects.Contains(SMB2002Dialect))
             {
-                state.ServerDialect = SMBDialect.SMB202;
+                state.Dialect = SMBDialect.SMB202;
                 response.DialectRevision = SMB2Dialect.SMB202;
             }
             else
@@ -55,12 +55,12 @@ namespace SMBLibrary.Server.SMB2
             NegotiateResponse response = new NegotiateResponse();
             if (request.Dialects.Contains(SMB2Dialect.SMB210))
             {
-                state.ServerDialect = SMBDialect.SMB210;
+                state.Dialect = SMBDialect.SMB210;
                 response.DialectRevision = SMB2Dialect.SMB210;
             }
             else if (request.Dialects.Contains(SMB2Dialect.SMB202))
             {
-                state.ServerDialect = SMBDialect.SMB202;
+                state.Dialect = SMBDialect.SMB202;
                 response.DialectRevision = SMB2Dialect.SMB202;
             }
             else

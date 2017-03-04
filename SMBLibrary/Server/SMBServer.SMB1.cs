@@ -67,7 +67,7 @@ namespace SMBLibrary.Server
         /// </summary>
         private List<SMB1Command> ProcessSMB1Command(SMB1Header header, SMB1Command command, ref ConnectionState state)
         {
-            if (state.ServerDialect == SMBDialect.NotSet)
+            if (state.Dialect == SMBDialect.NotSet)
             {
                 if (command is NegotiateRequest)
                 {
@@ -75,7 +75,7 @@ namespace SMBLibrary.Server
                     if (request.Dialects.Contains(SMBServer.NTLanManagerDialect))
                     {
                         state = new SMB1ConnectionState(state);
-                        state.ServerDialect = SMBDialect.NTLM012;
+                        state.Dialect = SMBDialect.NTLM012;
                         if (EnableExtendedSecurity && header.ExtendedSecurityFlag)
                         {
                             return NegotiateHelper.GetNegotiateResponseExtended(request, m_serverGuid);

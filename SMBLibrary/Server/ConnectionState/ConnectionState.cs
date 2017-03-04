@@ -21,14 +21,14 @@ namespace SMBLibrary.Server
         public IPEndPoint ClientEndPoint;
         public NBTConnectionReceiveBuffer ReceiveBuffer;
         protected LogDelegate LogToServerHandler;
-        public SMBDialect ServerDialect;
+        public SMBDialect Dialect;
         public object AuthenticationContext;
 
         public ConnectionState(LogDelegate logToServerHandler)
         {
             ReceiveBuffer = new NBTConnectionReceiveBuffer();
             LogToServerHandler = logToServerHandler;
-            ServerDialect = SMBDialect.NotSet;
+            Dialect = SMBDialect.NotSet;
         }
 
         public ConnectionState(ConnectionState state)
@@ -37,7 +37,7 @@ namespace SMBLibrary.Server
             ClientEndPoint = state.ClientEndPoint;
             ReceiveBuffer = state.ReceiveBuffer;
             LogToServerHandler = state.LogToServerHandler;
-            ServerDialect = state.ServerDialect;
+            Dialect = state.Dialect;
         }
 
         public void LogToServer(Severity severity, string message)

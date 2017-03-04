@@ -222,8 +222,8 @@ namespace SMBLibrary.Server
             {
                 // Note: To be compatible with SMB2 specifications, we must accept SMB_COM_NEGOTIATE.
                 // We will disconnect the connection if m_enableSMB1 == false and the client does not support SMB2.
-                bool acceptSMB1 = (state.ServerDialect == SMBDialect.NotSet || state.ServerDialect == SMBDialect.NTLM012);
-                bool acceptSMB2 = (m_enableSMB2 && (state.ServerDialect == SMBDialect.NotSet || state.ServerDialect == SMBDialect.SMB202 || state.ServerDialect == SMBDialect.SMB210));
+                bool acceptSMB1 = (state.Dialect == SMBDialect.NotSet || state.Dialect == SMBDialect.NTLM012);
+                bool acceptSMB2 = (m_enableSMB2 && (state.Dialect == SMBDialect.NotSet || state.Dialect == SMBDialect.SMB202 || state.Dialect == SMBDialect.SMB210));
 
                 if (SMB1Header.IsValidSMB1Header(packet.Trailer))
                 {
@@ -246,14 +246,14 @@ namespace SMBLibrary.Server
                         return;
                     }
                     state.LogToServer(Severity.Verbose, "SMB1 message received: {0} requests, First request: {1}, Packet length: {2}", message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
-                    if (state.ServerDialect == SMBDialect.NotSet && m_enableSMB2)
+                    if (state.Dialect == SMBDialect.NotSet && m_enableSMB2)
                     {
                         // Check if the client supports SMB 2
                         List<string> smb2Dialects = SMB2.NegotiateHelper.FindSMB2Dialects(message);
                         if (smb2Dialects.Count > 0)
                         {
                             SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, m_securityProvider, state, m_serverGuid, m_serverStartTime);
-                            if (state.ServerDialect != SMBDialect.NotSet)
+                            if (state.Dialect != SMBDialect.NotSet)
                             {
                                 state = new SMB2ConnectionState(state, AllocatePersistentFileID);
                             }

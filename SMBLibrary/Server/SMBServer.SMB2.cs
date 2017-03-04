@@ -69,13 +69,13 @@ namespace SMBLibrary.Server
         /// </summary>
         private SMB2Command ProcessSMB2Command(SMB2Command command, ref ConnectionState state)
         {
-            if (state.ServerDialect == SMBDialect.NotSet)
+            if (state.Dialect == SMBDialect.NotSet)
             {
                 if (command is NegotiateRequest)
                 {
                     NegotiateRequest request = (NegotiateRequest)command;
                     SMB2Command response = NegotiateHelper.GetNegotiateResponse(request, m_securityProvider, state, m_serverGuid, m_serverStartTime);
-                    if (state.ServerDialect != SMBDialect.NotSet)
+                    if (state.Dialect != SMBDialect.NotSet)
                     {
                         state = new SMB2ConnectionState(state, AllocatePersistentFileID);
                     }
