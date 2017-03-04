@@ -27,43 +27,43 @@ namespace SMBLibrary.Server
         private ShareCollection m_shares; // e.g. Shared folders
         private GSSProvider m_securityProvider;
         private NamedPipeShare m_services; // Named pipes
+        private Guid m_serverGuid;
+
         private IPAddress m_serverAddress;
         private SMBTransportType m_transport;
         private bool m_enableSMB1;
         private bool m_enableSMB2;
-
         private Socket m_listenerSocket;
         private bool m_listening;
-        private Guid m_serverGuid;
         private DateTime m_serverStartTime;
 
         public event EventHandler<LogEntry> OnLogEntry;
 
-        public SMBServer(ShareCollection shares, GSSProvider securityProvider, IPAddress serverAddress, SMBTransportType transport) : this(shares, securityProvider, serverAddress, transport, true, true)
-        {
-        }
-
-        public SMBServer(ShareCollection shares, GSSProvider securityProvider, IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
+        public SMBServer(ShareCollection shares, GSSProvider securityProvider)
         {
             m_shares = shares;
             m_securityProvider = securityProvider;
-            m_serverAddress = serverAddress;
-            m_serverGuid = Guid.NewGuid();
-            m_serverStartTime = DateTime.Now;
-            m_transport = transport;
-            m_enableSMB1 = enableSMB1;
-            m_enableSMB2 = enableSMB2;
-
             m_services = new NamedPipeShare(shares.ListShares());
+            m_serverGuid = Guid.NewGuid();
+        }
+
+        public void Start(IPAddress serverAddress, SMBTransportType transport)
+        {
+            Start(serverAddress, transport, true, true);
         }
 
         /// <exception cref="System.Net.Sockets.SocketException"></exception>
-        public void Start()
+        public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
         {
             if (!m_listening)
             {
                 Log(Severity.Information, "Starting server");
+                m_serverAddress = serverAddress;
+                m_transport = transport;
+                m_enableSMB1 = enableSMB1;
+                m_enableSMB2 = enableSMB2;
                 m_listening = true;
+                m_serverStartTime = DateTime.Now;
 
                 m_listenerSocket = new Socket(m_serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 int port = (m_transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);

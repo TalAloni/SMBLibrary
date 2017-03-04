@@ -84,7 +84,6 @@ namespace SMBServer
                 authenticationMechanism = new IndependentNTLMAuthenticationProvider(users.GetUserPassword);
             }
 
-
             ShareCollection shares;
             try
             {
@@ -97,12 +96,12 @@ namespace SMBServer
             }
 
             GSSProvider securityProvider = new GSSProvider(authenticationMechanism);
-            m_server = new SMBLibrary.Server.SMBServer(shares, securityProvider, serverAddress, transportType, chkSMB1.Checked, chkSMB2.Checked);
+            m_server = new SMBLibrary.Server.SMBServer(shares, securityProvider);
             m_server.OnLogEntry += new EventHandler<LogEntry>(Server_OnLogEntry);
 
             try
             {
-                m_server.Start();
+                m_server.Start(serverAddress, transportType, chkSMB1.Checked, chkSMB2.Checked);
                 if (transportType == SMBTransportType.NetBiosOverTCP)
                 {
                     if (serverAddress.AddressFamily == AddressFamily.InterNetwork && !IPAddress.Equals(serverAddress, IPAddress.Any))
