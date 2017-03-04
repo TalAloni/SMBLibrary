@@ -19,6 +19,7 @@ namespace SMBLibrary.Server
         private ushort m_userID;
         private byte[] m_sessionKey;
         private SecurityContext m_securityContext;
+        private DateTime m_creationDT;
 
         // Key is TID
         private Dictionary<ushort, ISMBShare> m_connectedTrees = new Dictionary<ushort, ISMBShare>();
@@ -36,6 +37,7 @@ namespace SMBLibrary.Server
             m_userID = userID;
             m_sessionKey = sessionKey;
             m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
+            m_creationDT = DateTime.Now;
         }
 
         public ushort? AddConnectedTree(ISMBShare share)
@@ -156,6 +158,22 @@ namespace SMBLibrary.Server
             get
             {
                 return m_securityContext.UserName;
+            }
+        }
+
+        public string MachineName
+        {
+            get
+            {
+                return m_securityContext.MachineName;
+            }
+        }
+
+        public DateTime CreationDT
+        {
+            get
+            {
+                return m_creationDT;
             }
         }
     }

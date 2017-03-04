@@ -18,6 +18,7 @@ namespace SMBLibrary.Server
         private ulong m_sessionID;
         private byte[] m_sessionKey;
         private SecurityContext m_securityContext;
+        private DateTime m_creationDT;
 
         // Key is TreeID
         private Dictionary<uint, ISMBShare> m_connectedTrees = new Dictionary<uint, ISMBShare>();
@@ -35,6 +36,7 @@ namespace SMBLibrary.Server
             m_sessionID = sessionID;
             m_sessionKey = sessionKey;
             m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
+            m_creationDT = DateTime.Now;
         }
 
         private uint? AllocateTreeID()
@@ -161,6 +163,22 @@ namespace SMBLibrary.Server
             get
             {
                 return m_securityContext.UserName;
+            }
+        }
+
+        public string MachineName
+        {
+            get
+            {
+                return m_securityContext.MachineName;
+            }
+        }
+
+        public DateTime CreationDT
+        {
+            get
+            {
+                return m_creationDT;
             }
         }
     }
