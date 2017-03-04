@@ -49,7 +49,7 @@ namespace SMBLibrary.Server
                             index--;
                         }
                     }
-                    TrySendMessage(state, reply);
+                    EnqueueMessage(state, reply);
                 }
             }
 
@@ -58,7 +58,7 @@ namespace SMBLibrary.Server
                 SMB1Message reply = new SMB1Message();
                 reply.Header = header;
                 reply.Commands.Add(response);
-                TrySendMessage(state, reply);
+                EnqueueMessage(state, reply);
             }
         }
 
@@ -302,12 +302,12 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName);
         }
 
-        private static void TrySendMessage(ConnectionState state, SMB1Message response)
+        private static void EnqueueMessage(ConnectionState state, SMB1Message response)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();
-            TrySendPacket(state, packet);
-            state.LogToServer(Severity.Verbose, "SMB1 message sent: {0} responses, First response: {1}, Packet length: {2}", response.Commands.Count, response.Commands[0].CommandName.ToString(), packet.Length);
+            state.SendQueue.Enqueue(packet);
+            state.LogToServer(Severity.Verbose, "SMB1 message queued: {0} responses, First response: {1}, Packet length: {2}", response.Commands.Count, response.Commands[0].CommandName.ToString(), packet.Length);
         }
 
         private static void PrepareResponseHeader(SMB1Header responseHeader, SMB1Header requestHeader)

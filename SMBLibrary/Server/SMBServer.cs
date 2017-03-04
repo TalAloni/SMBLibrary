@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.NetBios;
 using SMBLibrary.Services;
@@ -117,6 +118,13 @@ namespace SMBLibrary.Server
             state.ClientSocket = clientSocket;
             state.ClientEndPoint = clientSocket.RemoteEndPoint as IPEndPoint;
             state.LogToServer(Severity.Verbose, "New connection request");
+            Thread senderThread = new Thread(delegate()
+            {
+                ProcessSendQueue(state);
+            });
+            senderThread.IsBackground = true;
+            senderThread.Start();
+
             try
             {
                 // Direct TCP transport packet is actually an NBT Session Message Packet,
@@ -219,7 +227,7 @@ namespace SMBLibrary.Server
             if (packet is SessionRequestPacket && m_transport == SMBTransportType.NetBiosOverTCP)
             {
                 PositiveSessionResponsePacket response = new PositiveSessionResponsePacket();
-                TrySendPacket(state, response);
+                state.SendQueue.Enqueue(response);
             }
             else if (packet is SessionKeepAlivePacket && m_transport == SMBTransportType.NetBiosOverTCP)
             {
@@ -265,7 +273,7 @@ namespace SMBLibrary.Server
                                 state = new SMB2ConnectionState(state, AllocatePersistentFileID);
                                 m_connectionManager.AddConnection(state);
                             }
-                            TrySendResponse(state, response);
+                            EnqueueResponse(state, response);
                             return;
                         }
                     }
@@ -319,18 +327,34 @@ namespace SMBLibrary.Server
             }
         }
 
-        private static void TrySendPacket(ConnectionState state, SessionPacket response)
+        private void ProcessSendQueue(ConnectionState state)
         {
-            Socket clientSocket = state.ClientSocket;
-            try
+            while (true)
             {
-                clientSocket.Send(response.GetBytes());
-            }
-            catch (SocketException)
-            {
-            }
-            catch (ObjectDisposedException)
-            {
+                Log(Severity.Trace, "Entering ProcessSendQueue");
+                SessionPacket response;
+                bool stopped = !state.SendQueue.TryDequeue(out response);
+                if (stopped)
+                {
+                    return;
+                }
+                Socket clientSocket = state.ClientSocket;
+                try
+                {
+                    clientSocket.Send(response.GetBytes());
+                }
+                catch (SocketException ex)
+                {
+                    Log(Severity.Debug, "[{0}] Failed to send packet. SocketException: {1}", state.ConnectionIdentifier, ex.Message);
+                    Log(Severity.Trace, "Leaving ProcessSendQueue");
+                    return;
+                }
+                catch (ObjectDisposedException)
+                {
+                    Log(Severity.Debug, "[{0}] Failed to send packet. ObjectDisposedException.", state.ConnectionIdentifier);
+                    Log(Severity.Trace, "Leaving ProcessSendQueue");
+                    return;
+                }
             }
         }
 

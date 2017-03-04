@@ -60,7 +60,7 @@ namespace SMBLibrary.Server
             }
             if (responseChain.Count > 0)
             {
-                TrySendResponseChain(state, responseChain);
+                EnqueueResponseChain(state, responseChain);
             }
         }
 
@@ -223,15 +223,15 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
         }
 
-        private static void TrySendResponse(ConnectionState state, SMB2Command response)
+        private static void EnqueueResponse(ConnectionState state, SMB2Command response)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();
-            TrySendPacket(state, packet);
-            state.LogToServer(Severity.Verbose, "SMB2 response sent: {0}, Packet length: {1}", response.CommandName.ToString(), packet.Length);
+            state.SendQueue.Enqueue(packet);
+            state.LogToServer(Severity.Verbose, "SMB2 response queued: {0}, Packet length: {1}", response.CommandName.ToString(), packet.Length);
         }
 
-        private static void TrySendResponseChain(ConnectionState state, List<SMB2Command> responseChain)
+        private static void EnqueueResponseChain(ConnectionState state, List<SMB2Command> responseChain)
         {
             byte[] sessionKey = null;
             if (state is SMB2ConnectionState)
@@ -252,8 +252,8 @@ namespace SMBLibrary.Server
 
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = SMB2Command.GetCommandChainBytes(responseChain, sessionKey);
-            TrySendPacket(state, packet);
-            state.LogToServer(Severity.Verbose, "SMB2 response chain sent: Response count: {0}, First response: {1}, Packet length: {2}", responseChain.Count, responseChain[0].CommandName.ToString(), packet.Length);
+            state.SendQueue.Enqueue(packet);
+            state.LogToServer(Severity.Verbose, "SMB2 response chain queued: Response count: {0}, First response: {1}, Packet length: {2}", responseChain.Count, responseChain[0].CommandName.ToString(), packet.Length);
         }
 
         private static void UpdateSMB2Header(SMB2Command response, SMB2Command request)

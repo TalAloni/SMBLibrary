@@ -20,6 +20,7 @@ namespace SMBLibrary.Server
         public Socket ClientSocket;
         public IPEndPoint ClientEndPoint;
         public NBTConnectionReceiveBuffer ReceiveBuffer;
+        public BlockingQueue<SessionPacket> SendQueue;
         protected LogDelegate LogToServerHandler;
         public SMBDialect Dialect;
         public object AuthenticationContext;
@@ -27,6 +28,7 @@ namespace SMBLibrary.Server
         public ConnectionState(LogDelegate logToServerHandler)
         {
             ReceiveBuffer = new NBTConnectionReceiveBuffer();
+            SendQueue = new BlockingQueue<SessionPacket>();
             LogToServerHandler = logToServerHandler;
             Dialect = SMBDialect.NotSet;
         }
@@ -36,6 +38,7 @@ namespace SMBLibrary.Server
             ClientSocket = state.ClientSocket;
             ClientEndPoint = state.ClientEndPoint;
             ReceiveBuffer = state.ReceiveBuffer;
+            SendQueue = state.SendQueue;
             LogToServerHandler = state.LogToServerHandler;
             Dialect = state.Dialect;
         }

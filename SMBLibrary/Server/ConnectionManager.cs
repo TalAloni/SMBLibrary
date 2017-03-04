@@ -38,6 +38,7 @@ namespace SMBLibrary.Server
 
         public void ReleaseConnection(ConnectionState connection)
         {
+            connection.SendQueue.Stop();
             SocketUtils.ReleaseSocket(connection.ClientSocket);
             RemoveConnection(connection);
         }
