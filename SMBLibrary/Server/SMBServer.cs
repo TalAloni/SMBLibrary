@@ -99,7 +99,7 @@ namespace SMBLibrary.Server
                 // See http://stackoverflow.com/questions/7704417/socket-endaccept-error-10054
                 if (ex.ErrorCode == WSAECONNRESET)
                 {
-                    m_listenerSocket.BeginAccept(ConnectRequestCallback, m_listenerSocket);
+                    listenerSocket.BeginAccept(ConnectRequestCallback, listenerSocket);
                 }
                 Log(Severity.Debug, "Connection request error {0}", ex.ErrorCode);
                 return;
@@ -123,7 +123,7 @@ namespace SMBLibrary.Server
             catch (SocketException)
             {
             }
-            m_listenerSocket.BeginAccept(ConnectRequestCallback, m_listenerSocket);
+            listenerSocket.BeginAccept(ConnectRequestCallback, listenerSocket);
         }
 
         private void ReceiveCallback(IAsyncResult result)
