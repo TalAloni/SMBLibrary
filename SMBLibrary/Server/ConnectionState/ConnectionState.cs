@@ -13,9 +13,9 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public delegate void LogDelegate(Severity severity, string message);
+    internal delegate void LogDelegate(Severity severity, string message);
 
-    public class ConnectionState
+    internal class ConnectionState
     {
         public Socket ClientSocket;
         public IPEndPoint ClientEndPoint;

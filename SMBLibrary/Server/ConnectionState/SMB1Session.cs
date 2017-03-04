@@ -11,7 +11,7 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class SMB1Session
+    internal class SMB1Session
     {
         private const int MaxSearches = 2048; // Windows servers initialize Server.MaxSearches to 2048.
 

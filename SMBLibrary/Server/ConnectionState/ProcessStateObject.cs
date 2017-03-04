@@ -10,7 +10,7 @@ using System.Text;
 
 namespace SMBLibrary.Server
 {
-    public class ProcessStateObject
+    internal class ProcessStateObject
     {
         public ushort SubcommandID;
         public string Name; // The pathname of the [..] named pipe to which the transaction subcommand applies, or a client-supplied [..] name for the transaction.

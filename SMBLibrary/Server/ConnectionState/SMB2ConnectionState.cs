@@ -14,7 +14,7 @@ namespace SMBLibrary.Server
 {
     public delegate ulong? AllocatePersistentFileID();
 
-    public class SMB2ConnectionState : ConnectionState
+    internal class SMB2ConnectionState : ConnectionState
     {
         // Key is SessionID
         private Dictionary<ulong, SMB2Session> m_sessions = new Dictionary<ulong, SMB2Session>();

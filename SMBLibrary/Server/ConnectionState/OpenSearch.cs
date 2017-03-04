@@ -10,7 +10,7 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class OpenSearch
+    internal class OpenSearch
     {
         public List<QueryDirectoryFileInformation> Entries;
         public int EnumerationLocation;

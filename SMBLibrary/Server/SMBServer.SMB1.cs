@@ -15,7 +15,7 @@ namespace SMBLibrary.Server
 {
     public partial class SMBServer
     {
-        public void ProcessSMB1Message(SMB1Message message, ref ConnectionState state)
+        private void ProcessSMB1Message(SMB1Message message, ref ConnectionState state)
         {
             SMB1Header header = new SMB1Header();
             PrepareResponseHeader(header, message.Header);
@@ -65,7 +65,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// May return an empty list
         /// </summary>
-        public List<SMB1Command> ProcessSMB1Command(SMB1Header header, SMB1Command command, ref ConnectionState state)
+        private List<SMB1Command> ProcessSMB1Command(SMB1Header header, SMB1Command command, ref ConnectionState state)
         {
             if (state.ServerDialect == SMBDialect.NotSet)
             {
@@ -301,7 +301,7 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName);
         }
 
-        public static void TrySendMessage(ConnectionState state, SMB1Message response)
+        private static void TrySendMessage(ConnectionState state, SMB1Message response)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();

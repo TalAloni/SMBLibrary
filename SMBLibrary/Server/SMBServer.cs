@@ -181,7 +181,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessConnectionBuffer(ref ConnectionState state)
+        private void ProcessConnectionBuffer(ref ConnectionState state)
         {
             Socket clientSocket = state.ClientSocket;
 
@@ -207,7 +207,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ProcessPacket(SessionPacket packet, ref ConnectionState state)
+        private void ProcessPacket(SessionPacket packet, ref ConnectionState state)
         {
             if (packet is SessionRequestPacket && m_transport == SMBTransportType.NetBiosOverTCP)
             {
@@ -311,7 +311,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public static void TrySendPacket(ConnectionState state, SessionPacket response)
+        private static void TrySendPacket(ConnectionState state, SessionPacket response)
         {
             Socket clientSocket = state.ClientSocket;
             try
@@ -326,7 +326,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void Log(Severity severity, string message)
+        private void Log(Severity severity, string message)
         {
             // To be thread-safe we must capture the delegate reference first
             EventHandler<LogEntry> handler = OnLogEntry;
@@ -336,7 +336,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void Log(Severity severity, string message, params object[] args)
+        private void Log(Severity severity, string message, params object[] args)
         {
             Log(severity, String.Format(message, args));
         }

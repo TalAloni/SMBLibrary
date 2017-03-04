@@ -37,7 +37,7 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public void ProcessSMB2RequestChain(List<SMB2Command> requestChain, ref ConnectionState state)
+        private void ProcessSMB2RequestChain(List<SMB2Command> requestChain, ref ConnectionState state)
         {
             List<SMB2Command> responseChain = new List<SMB2Command>();
             FileID? fileID = null;
@@ -67,7 +67,7 @@ namespace SMBLibrary.Server
         /// <summary>
         /// May return null
         /// </summary>
-        public SMB2Command ProcessSMB2Command(SMB2Command command, ref ConnectionState state)
+        private SMB2Command ProcessSMB2Command(SMB2Command command, ref ConnectionState state)
         {
             if (state.ServerDialect == SMBDialect.NotSet)
             {
@@ -105,7 +105,7 @@ namespace SMBLibrary.Server
             }
         }
 
-        public SMB2Command ProcessSMB2Command(SMB2Command command, SMB2ConnectionState state)
+        private SMB2Command ProcessSMB2Command(SMB2Command command, SMB2ConnectionState state)
         {
             if (command is SessionSetupRequest)
             {
@@ -222,7 +222,7 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
         }
 
-        public static void TrySendResponse(ConnectionState state, SMB2Command response)
+        private static void TrySendResponse(ConnectionState state, SMB2Command response)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();
@@ -230,7 +230,7 @@ namespace SMBLibrary.Server
             state.LogToServer(Severity.Verbose, "SMB2 response sent: {0}, Packet length: {1}", response.CommandName.ToString(), packet.Length);
         }
 
-        public static void TrySendResponseChain(ConnectionState state, List<SMB2Command> responseChain)
+        private static void TrySendResponseChain(ConnectionState state, List<SMB2Command> responseChain)
         {
             byte[] sessionKey = null;
             if (state is SMB2ConnectionState)

@@ -11,7 +11,7 @@ using System.Text;
 
 namespace SMBLibrary.Server
 {
-    public class OpenFileObject
+    internal class OpenFileObject
     {
         public string Path;
         public object Handle;

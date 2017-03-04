@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class SMB2Session
+    internal class SMB2Session
     {
         private SMB2ConnectionState m_connection;
         private ulong m_sessionID;

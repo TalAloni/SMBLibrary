@@ -11,7 +11,7 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class SMB1ConnectionState : ConnectionState
+    internal class SMB1ConnectionState : ConnectionState
     {
         public int MaxBufferSize;
         public bool LargeRead;
