@@ -57,10 +57,12 @@ namespace SMBLibrary.Server
             m_services = new NamedPipeShare(shares.ListShares());
         }
 
+        /// <exception cref="System.Net.Sockets.SocketException"></exception>
         public void Start()
         {
             if (!m_listening)
             {
+                Log(Severity.Information, "Starting server");
                 m_listening = true;
 
                 m_listenerSocket = new Socket(m_serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -73,6 +75,7 @@ namespace SMBLibrary.Server
 
         public void Stop()
         {
+            Log(Severity.Information, "Stopping server");
             m_listening = false;
             SocketUtils.ReleaseSocket(m_listenerSocket);
         }
