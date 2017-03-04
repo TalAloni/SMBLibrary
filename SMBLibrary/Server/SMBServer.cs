@@ -360,6 +360,11 @@ namespace SMBLibrary.Server
             }
         }
 
+        public List<SessionInformation> GetSessionsInformation()
+        {
+            return m_connectionManager.GetSessionsInformation();
+        }
+
         private void Log(Severity severity, string message)
         {
             // To be thread-safe we must capture the delegate reference first

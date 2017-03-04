@@ -50,6 +50,11 @@ namespace SMBLibrary.Server
         {
         }
 
+        public virtual List<SessionInformation> GetSessionsInformation()
+        {
+            return new List<SessionInformation>();
+        }
+
         public void LogToServer(Severity severity, string message)
         {
             message = String.Format("[{0}] {1}", ConnectionIdentifier, message);

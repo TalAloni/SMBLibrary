@@ -63,14 +63,17 @@ namespace SMBLibrary.Server
             m_connectedTrees.TryGetValue(treeID, out share);
             if (share != null)
             {
-                List<ushort> fileIDList = new List<ushort>(m_openFiles.Keys);
-                foreach (ushort fileID in fileIDList)
+                lock (m_openFiles)
                 {
-                    OpenFileObject openFile = m_openFiles[fileID];
-                    if (openFile.TreeID == treeID)
+                    List<ushort> fileIDList = new List<ushort>(m_openFiles.Keys);
+                    foreach (ushort fileID in fileIDList)
                     {
-                        share.FileStore.CloseFile(openFile.Handle);
-                        m_openFiles.Remove(fileID);
+                        OpenFileObject openFile = m_openFiles[fileID];
+                        if (openFile.TreeID == treeID)
+                        {
+                            share.FileStore.CloseFile(openFile.Handle);
+                            m_openFiles.Remove(fileID);
+                        }
                     }
                 }
                 m_connectedTrees.Remove(treeID);
@@ -94,7 +97,10 @@ namespace SMBLibrary.Server
             ushort? fileID = m_connection.AllocateFileID();
             if (fileID.HasValue)
             {
-                m_openFiles.Add(fileID.Value, new OpenFileObject(treeID, relativePath, handle));
+                lock (m_openFiles)
+                {
+                    m_openFiles.Add(fileID.Value, new OpenFileObject(treeID, relativePath, handle));
+                }
             }
             return fileID;
         }
@@ -108,7 +114,23 @@ namespace SMBLibrary.Server
 
         public void RemoveOpenFile(ushort fileID)
         {
-            m_openFiles.Remove(fileID);
+            lock (m_openFiles)
+            {
+                m_openFiles.Remove(fileID);
+            }
+        }
+
+        public List<string> ListOpenFiles()
+        {
+            List<string> result = new List<string>();
+            lock (m_openFiles)
+            {
+                foreach (OpenFileObject openFile in m_openFiles.Values)
+                {
+                    result.Add(openFile.Path);
+                }
+            }
+            return result;
         }
 
         private ushort? AllocateSearchHandle()

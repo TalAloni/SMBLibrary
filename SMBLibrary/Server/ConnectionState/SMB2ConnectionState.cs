@@ -47,7 +47,10 @@ namespace SMBLibrary.Server
         public SMB2Session CreateSession(ulong sessionID, string userName, string machineName, byte[] sessionKey, object accessToken)
         {
             SMB2Session session = new SMB2Session(this, sessionID, userName, machineName, sessionKey, accessToken);
-            m_sessions.Add(sessionID, session);
+            lock (m_sessions)
+            {
+                m_sessions.Add(sessionID, session);
+            }
             return session;
         }
 
@@ -65,18 +68,37 @@ namespace SMBLibrary.Server
             if (session != null)
             {
                 session.Close();
-                m_sessions.Remove(sessionID);
+                lock (m_sessions)
+                {
+                    m_sessions.Remove(sessionID);
+                }
             }
         }
 
         public override void CloseSessions()
         {
-            foreach (SMB2Session session in m_sessions.Values)
+            lock (m_sessions)
             {
-                session.Close();
+                foreach (SMB2Session session in m_sessions.Values)
+                {
+                    session.Close();
+                }
             }
 
             m_sessions.Clear();
+        }
+
+        public override List<SessionInformation> GetSessionsInformation()
+        {
+            List<SessionInformation> result = new List<SessionInformation>();
+            lock (m_sessions)
+            {
+                foreach (SMB2Session session in m_sessions.Values)
+                {
+                    result.Add(new SessionInformation(this.ClientEndPoint, this.Dialect, session.UserName, session.MachineName, session.ListOpenFiles(), session.CreationDT));
+                }
+            }
+            return result;
         }
     }
 }

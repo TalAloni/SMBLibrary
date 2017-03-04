@@ -43,5 +43,19 @@ namespace SMBLibrary.Server
             connection.CloseSessions();
             RemoveConnection(connection);
         }
+
+        public List<SessionInformation> GetSessionsInformation()
+        {
+            List<SessionInformation> result = new List<SessionInformation>();
+            lock (m_activeConnections)
+            {
+                foreach (ConnectionState connection in m_activeConnections)
+                {
+                    List<SessionInformation> sessions = connection.GetSessionsInformation();
+                    result.AddRange(sessions);
+                }
+            }
+            return result;
+        }
     }
 }
