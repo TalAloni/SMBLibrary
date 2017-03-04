@@ -158,7 +158,7 @@ namespace SMBLibrary.Server
 
                     if (command is TreeDisconnectRequest)
                     {
-                        session.RemoveConnectedTree(command.Header.TreeID);
+                        session.DisconnectTree(command.Header.TreeID);
                         return new TreeDisconnectResponse();
                     }
                     else if (command is CreateRequest)

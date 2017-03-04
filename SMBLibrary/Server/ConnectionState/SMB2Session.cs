@@ -79,14 +79,24 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void RemoveConnectedTree(uint treeID)
+        public void DisconnectTree(uint treeID)
         {
-            m_connectedTrees.Remove(treeID);
-        }
-
-        public void RemoveConnectedTrees()
-        {
-            m_connectedTrees.Clear();
+            ISMBShare share;
+            m_connectedTrees.TryGetValue(treeID, out share);
+            if (share != null)
+            {
+                List<ulong> fileIDList = new List<ulong>(m_openFiles.Keys);
+                foreach (ushort fileID in fileIDList)
+                {
+                    OpenFileObject openFile = m_openFiles[fileID];
+                    if (openFile.TreeID == treeID)
+                    {
+                        share.FileStore.CloseFile(openFile.Handle);
+                        m_openFiles.Remove(fileID);
+                    }
+                }
+                m_connectedTrees.Remove(treeID);
+            }
         }
 
         public bool IsTreeConnected(uint treeID)

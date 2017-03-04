@@ -98,7 +98,7 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
-            session.RemoveConnectedTree(header.TID);
+            session.DisconnectTree(header.TID);
             return new TreeDisconnectResponse();
         }
     }
