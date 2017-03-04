@@ -40,7 +40,7 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, createStatus);
             }
 
-            ulong? persistentFileID = session.AddOpenFile(path, handle);
+            ulong? persistentFileID = session.AddOpenFile(request.Header.TreeID, path, handle);
             if (!persistentFileID.HasValue)
             {
                 share.FileStore.CloseFile(handle);

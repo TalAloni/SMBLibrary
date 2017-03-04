@@ -95,12 +95,12 @@ namespace SMBLibrary.Server
         }
 
         /// <returns>The persistent portion of the FileID</returns>
-        public ulong? AddOpenFile(string relativePath, object handle)
+        public ulong? AddOpenFile(uint treeID, string relativePath, object handle)
         {
             ulong? persistentID = m_connection.AllocatePersistentFileID();
             if (persistentID.HasValue)
             {
-                m_openFiles.Add(persistentID.Value, new OpenFileObject(relativePath, handle));
+                m_openFiles.Add(persistentID.Value, new OpenFileObject(treeID, relativePath, handle));
             }
             return persistentID;
         }

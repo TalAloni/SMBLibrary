@@ -40,7 +40,7 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
-            ushort? fileID = session.AddOpenFile(path, handle);
+            ushort? fileID = session.AddOpenFile(header.TID, path, handle);
             if (!fileID.HasValue)
             {
                 share.FileStore.CloseFile(handle);
