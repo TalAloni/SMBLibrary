@@ -78,6 +78,7 @@ namespace SMBLibrary.Server
                     if (state.Dialect != SMBDialect.NotSet)
                     {
                         state = new SMB2ConnectionState(state, AllocatePersistentFileID);
+                        m_connectionManager.AddConnection(state);
                     }
                     return response;
                 }

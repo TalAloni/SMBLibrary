@@ -76,6 +76,7 @@ namespace SMBLibrary.Server
                     {
                         state = new SMB1ConnectionState(state);
                         state.Dialect = SMBDialect.NTLM012;
+                        m_connectionManager.AddConnection(state);
                         if (EnableExtendedSecurity && header.ExtendedSecurityFlag)
                         {
                             return NegotiateHelper.GetNegotiateResponseExtended(request, m_serverGuid);

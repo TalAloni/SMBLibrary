@@ -182,6 +182,7 @@
     <Compile Include="RPC\Structures\ResultElement.cs" />
     <Compile Include="RPC\Structures\ResultList.cs" />
     <Compile Include="RPC\Structures\SyntaxID.cs" />
+    <Compile Include="Server\ConnectionManager.cs" />
     <Compile Include="Server\ConnectionState\ConnectionState.cs" />
     <Compile Include="Server\ConnectionState\OpenFileObject.cs" />
     <Compile Include="Server\ConnectionState\OpenSearch.cs" />

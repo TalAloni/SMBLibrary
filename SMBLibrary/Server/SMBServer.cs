@@ -29,6 +29,8 @@ namespace SMBLibrary.Server
         private NamedPipeShare m_services; // Named pipes
         private Guid m_serverGuid;
 
+        private ConnectionManager m_connectionManager;
+
         private IPAddress m_serverAddress;
         private SMBTransportType m_transport;
         private bool m_enableSMB1;
@@ -45,6 +47,7 @@ namespace SMBLibrary.Server
             m_securityProvider = securityProvider;
             m_services = new NamedPipeShare(shares.ListShares());
             m_serverGuid = Guid.NewGuid();
+            m_connectionManager = new ConnectionManager();
         }
 
         public void Start(IPAddress serverAddress, SMBTransportType transport)
@@ -147,10 +150,12 @@ namespace SMBLibrary.Server
             }
             catch (ObjectDisposedException)
             {
+                m_connectionManager.ReleaseConnection(state);
                 return;
             }
             catch (SocketException)
             {
+                m_connectionManager.ReleaseConnection(state);
                 return;
             }
 
@@ -158,7 +163,7 @@ namespace SMBLibrary.Server
             {
                 // The other side has closed the connection
                 state.LogToServer(Severity.Debug, "The other side closed the connection");
-                clientSocket.Close();
+                m_connectionManager.ReleaseConnection(state);
                 return;
             }
 
@@ -174,9 +179,11 @@ namespace SMBLibrary.Server
                 }
                 catch (ObjectDisposedException)
                 {
+                    m_connectionManager.ReleaseConnection(state);
                 }
                 catch (SocketException)
                 {
+                    m_connectionManager.ReleaseConnection(state);
                 }
             }
         }
@@ -256,6 +263,7 @@ namespace SMBLibrary.Server
                             if (state.Dialect != SMBDialect.NotSet)
                             {
                                 state = new SMB2ConnectionState(state, AllocatePersistentFileID);
+                                m_connectionManager.AddConnection(state);
                             }
                             TrySendResponse(state, response);
                             return;
