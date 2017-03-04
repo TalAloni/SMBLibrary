@@ -43,6 +43,13 @@ namespace SMBLibrary.Server
             Dialect = state.Dialect;
         }
 
+        /// <summary>
+        /// Free all resources used by the active sessions in this connection
+        /// </summary>
+        public virtual void CloseSessions()
+        {
+        }
+
         public void LogToServer(Severity severity, string message)
         {
             message = String.Format("[{0}] {1}", ConnectionIdentifier, message);

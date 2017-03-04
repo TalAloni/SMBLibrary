@@ -88,6 +88,16 @@ namespace SMBLibrary.Server
             }
         }
 
+        public override void CloseSessions()
+        {
+            foreach (SMB1Session session in m_sessions.Values)
+            {
+                session.Close();
+            }
+
+            m_sessions.Clear();
+        }
+
         /// <summary>
         /// An open TID MUST be unique within an SMB connection.
         /// The value 0xFFFF MUST NOT be used as a valid TID. All other possible values for TID, including zero (0x0000), are valid.

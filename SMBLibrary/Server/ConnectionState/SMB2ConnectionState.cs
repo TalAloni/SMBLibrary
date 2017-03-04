@@ -69,8 +69,13 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ClearSessions()
+        public override void CloseSessions()
         {
+            foreach (SMB2Session session in m_sessions.Values)
+            {
+                session.Close();
+            }
+
             m_sessions.Clear();
         }
     }
