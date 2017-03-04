@@ -25,10 +25,9 @@ namespace SMBLibrary.Win32.Security
             public string UserName;
             public bool IsGuest;
 
-            public AuthContext(SecHandle serverContext, string workStation)
+            public AuthContext(SecHandle serverContext)
             {
                 ServerContext = serverContext;
-                WorkStation = workStation;
             }
         }
 
@@ -49,7 +48,7 @@ namespace SMBLibrary.Win32.Security
                 return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
-            context = new AuthContext(serverContext, negotiateMessage.Workstation);
+            context = new AuthContext(serverContext);
             challengeMessage = new ChallengeMessage(challengeMessageBytes);
             return NTStatus.SEC_I_CONTINUE_NEEDED;
         }
@@ -73,6 +72,7 @@ namespace SMBLibrary.Win32.Security
             }
 
             authContext.UserName = message.UserName;
+            authContext.WorkStation = message.WorkStation;
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0 ||
                 !IsUserExists(message.UserName))
             {

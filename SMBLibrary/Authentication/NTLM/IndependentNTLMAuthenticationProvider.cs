@@ -24,9 +24,8 @@ namespace SMBLibrary.Authentication.NTLM
             public byte[] SessionKey;
             public bool IsGuest;
 
-            public AuthContext(string workStation, byte[] serverChallenge)
+            public AuthContext(byte[] serverChallenge)
             {
-                WorkStation = workStation;
                 ServerChallenge = serverChallenge;
             }
         }
@@ -44,7 +43,7 @@ namespace SMBLibrary.Authentication.NTLM
         public override NTStatus GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
         {
             byte[] serverChallenge = GenerateServerChallenge();
-            context = new AuthContext(negotiateMessage.Workstation, serverChallenge);
+            context = new AuthContext(serverChallenge);
 
             challengeMessage = new ChallengeMessage();
             // https://msdn.microsoft.com/en-us/library/cc236691.aspx
@@ -132,6 +131,7 @@ namespace SMBLibrary.Authentication.NTLM
             }
 
             authContext.UserName = message.UserName;
+            authContext.WorkStation = message.WorkStation;
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
             {
                 if (this.EnableGuestLogin)
