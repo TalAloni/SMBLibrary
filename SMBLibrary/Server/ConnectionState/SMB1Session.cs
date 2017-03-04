@@ -17,6 +17,7 @@ namespace SMBLibrary.Server
 
         private SMB1ConnectionState m_connection;
         private ushort m_userID;
+        private byte[] m_sessionKey;
         private SecurityContext m_securityContext;
 
         // Key is TID
@@ -29,10 +30,11 @@ namespace SMBLibrary.Server
         private Dictionary<ushort, OpenSearch> m_openSearches = new Dictionary<ushort, OpenSearch>();
         private ushort m_nextSearchHandle = 1;
 
-        public SMB1Session(SMB1ConnectionState connection, ushort userID, string userName, string machineName, object accessToken)
+        public SMB1Session(SMB1ConnectionState connection, ushort userID, string userName, string machineName, byte[] sessionKey, object accessToken)
         {
             m_connection = connection;
             m_userID = userID;
+            m_sessionKey = sessionKey;
             m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
         }
 
