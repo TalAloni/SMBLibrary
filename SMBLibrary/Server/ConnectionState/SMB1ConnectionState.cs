@@ -79,7 +79,13 @@ namespace SMBLibrary.Server
 
         public void RemoveSession(ushort userID)
         {
-            m_sessions.Remove(userID);
+            SMB1Session session;
+            m_sessions.TryGetValue(userID, out session);
+            if (session != null)
+            {
+                session.Close();
+                m_sessions.Remove(userID);
+            }
         }
 
         /// <summary>

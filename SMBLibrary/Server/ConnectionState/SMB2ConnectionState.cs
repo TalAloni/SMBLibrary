@@ -60,7 +60,13 @@ namespace SMBLibrary.Server
 
         public void RemoveSession(ulong sessionID)
         {
-            m_sessions.Remove(sessionID);
+            SMB2Session session;
+            m_sessions.TryGetValue(sessionID, out session);
+            if (session != null)
+            {
+                session.Close();
+                m_sessions.Remove(sessionID);
+            }
         }
 
         public void ClearSessions()

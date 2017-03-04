@@ -152,6 +152,18 @@ namespace SMBLibrary.Server
             m_openSearches.Remove(searchHandle);
         }
 
+        /// <summary>
+        /// Free all resources used by this session
+        /// </summary>
+        public void Close()
+        {
+            List<ushort> treeIDList = new List<ushort>(m_connectedTrees.Keys);
+            foreach (ushort treeID in treeIDList)
+            {
+                DisconnectTree(treeID);
+            }
+        }
+
         public ushort UserID
         {
             get

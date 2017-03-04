@@ -152,6 +152,18 @@ namespace SMBLibrary.Server
             m_openSearches.Remove(fileID);
         }
 
+        /// <summary>
+        /// Free all resources used by this session
+        /// </summary>
+        public void Close()
+        {
+            List<uint> treeIDList = new List<uint>(m_connectedTrees.Keys);
+            foreach (uint treeID in treeIDList)
+            {
+                DisconnectTree(treeID);
+            }
+        }
+
         public byte[] SessionKey
         {
             get
