@@ -110,3 +110,16 @@ Revision History:
         SMB2: Correctly report server start time in SMB_NEGOTIATE response.
         SMB2: Retrieve SessionKey from GSS mechanism and store it in SMB2Session.
         SMB2: Enable message signing if client request it.
+
+1.1.6 - SMBServer: Added server Start / Stop log entries.
+        SMBServer: Hid internal methods and classes.
+        SMBServer: Each connection now use a dedicaded thread for send operations.
+        SMBServer: TCP KeepAlive is now used to detect dead clients.
+        SMBServer: All matching opened files will now be closed during tree disconnect.
+        SMBServer: All matching opened files will now be closed during logoff.
+        SMBServer: All matching opened files will now be closed during connection termination.
+        SMBServer API: Moved socket parameters to the Start method.
+        SMBServer API: Added GetSessionsInformation method
+        SMB1: Retrieve SessionKey from GSS mechanism and store it in SMB1Session.
+        Bugfix: Independent / Integrated NTLMAuthenticationProvider: MachineName was not read from AuthenticationMessage.
+        GSS: Minor improvements.
