@@ -331,9 +331,9 @@ namespace SMBLibrary.Server
 
         private void ProcessSendQueue(ConnectionState state)
         {
+            Log(Severity.Trace, "[{0}] Entering ProcessSendQueue", state.ConnectionIdentifier);
             while (true)
             {
-                Log(Severity.Trace, "[{0}] Entering ProcessSendQueue", state.ConnectionIdentifier);
                 SessionPacket response;
                 bool stopped = !state.SendQueue.TryDequeue(out response);
                 if (stopped)
