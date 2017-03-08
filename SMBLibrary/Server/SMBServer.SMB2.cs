@@ -15,28 +15,6 @@ namespace SMBLibrary.Server
 {
     public partial class SMBServer
     {
-        // Key is the persistent portion of the FileID
-        private Dictionary<ulong, OpenFileObject> m_globalOpenFiles = new Dictionary<ulong, OpenFileObject>();
-        private static ulong m_nextPersistentFileID = 1; // A numeric value that uniquely identifies the open handle to a file or a pipe within the scope of all opens granted by the server
-
-        private ulong? AllocatePersistentFileID()
-        {
-            for (ulong offset = 0; offset < UInt64.MaxValue; offset++)
-            {
-                ulong persistentID = (ulong)(m_nextPersistentFileID + offset);
-                if (persistentID == 0 || persistentID == 0xFFFFFFFFFFFFFFFF)
-                {
-                    continue;
-                }
-                if (!m_globalOpenFiles.ContainsKey(persistentID))
-                {
-                    m_nextPersistentFileID = (ulong)(persistentID + 1);
-                    return persistentID;
-                }
-            }
-            return null;
-        }
-
         private void ProcessSMB2RequestChain(List<SMB2Command> requestChain, ref ConnectionState state)
         {
             List<SMB2Command> responseChain = new List<SMB2Command>();
@@ -77,7 +55,7 @@ namespace SMBLibrary.Server
                     SMB2Command response = NegotiateHelper.GetNegotiateResponse(request, m_securityProvider, state, m_serverGuid, m_serverStartTime);
                     if (state.Dialect != SMBDialect.NotSet)
                     {
-                        state = new SMB2ConnectionState(state, AllocatePersistentFileID);
+                        state = new SMB2ConnectionState(state);
                         m_connectionManager.AddConnection(state);
                     }
                     return response;
@@ -188,7 +166,7 @@ namespace SMBLibrary.Server
                     else if (command is FlushRequest)
                     {
                         FlushRequest request = (FlushRequest)command;
-                        OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+                        OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
                         if (openFile == null)
                         {
                             return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);

@@ -12,18 +12,14 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public delegate ulong? AllocatePersistentFileID();
-
     internal class SMB2ConnectionState : ConnectionState
     {
         // Key is SessionID
         private Dictionary<ulong, SMB2Session> m_sessions = new Dictionary<ulong, SMB2Session>();
         private ulong m_nextSessionID = 1;
-        public AllocatePersistentFileID AllocatePersistentFileID;
 
-        public SMB2ConnectionState(ConnectionState state, AllocatePersistentFileID allocatePersistentFileID) : base(state)
+        public SMB2ConnectionState(ConnectionState state) : base(state)
         {
-            AllocatePersistentFileID = allocatePersistentFileID;
         }
 
         public ulong? AllocateSessionID()

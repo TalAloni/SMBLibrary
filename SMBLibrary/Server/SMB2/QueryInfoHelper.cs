@@ -19,7 +19,7 @@ namespace SMBLibrary.Server.SMB2
             SMB2Session session = state.GetSession(request.Header.SessionID);
             if (request.InfoType == InfoType.File)
             {
-                OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+                OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
                 if (openFile == null)
                 {
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);

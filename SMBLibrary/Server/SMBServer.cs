@@ -272,7 +272,7 @@ namespace SMBLibrary.Server
                             SMB2Command response = SMB2.NegotiateHelper.GetNegotiateResponse(smb2Dialects, m_securityProvider, state, m_serverGuid, m_serverStartTime);
                             if (state.Dialect != SMBDialect.NotSet)
                             {
-                                state = new SMB2ConnectionState(state, AllocatePersistentFileID);
+                                state = new SMB2ConnectionState(state);
                                 m_connectionManager.AddConnection(state);
                             }
                             EnqueueResponse(state, response);

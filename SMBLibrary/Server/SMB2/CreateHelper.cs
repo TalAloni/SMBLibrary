@@ -40,8 +40,8 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, createStatus);
             }
 
-            ulong? persistentFileID = session.AddOpenFile(request.Header.TreeID, path, handle);
-            if (!persistentFileID.HasValue)
+            FileID? fileID = session.AddOpenFile(request.Header.TreeID, path, handle);
+            if (fileID == null)
             {
                 share.FileStore.CloseFile(handle);
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
@@ -49,12 +49,12 @@ namespace SMBLibrary.Server.SMB2
 
             if (share is NamedPipeShare)
             {
-                return CreateResponseForNamedPipe(persistentFileID.Value, FileStatus.FILE_OPENED);
+                return CreateResponseForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);
             }
             else
             {
                 FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, handle);
-                CreateResponse response = CreateResponseFromFileSystemEntry(fileInfo, persistentFileID.Value, fileStatus);
+                CreateResponse response = CreateResponseFromFileSystemEntry(fileInfo, fileID.Value, fileStatus);
                 if (request.RequestedOplockLevel == OplockLevel.Batch)
                 {
                     response.OplockLevel = OplockLevel.Batch;
@@ -63,16 +63,16 @@ namespace SMBLibrary.Server.SMB2
             }
         }
 
-        private static CreateResponse CreateResponseForNamedPipe(ulong persistentFileID, FileStatus fileStatus)
+        private static CreateResponse CreateResponseForNamedPipe(FileID fileID, FileStatus fileStatus)
         {
             CreateResponse response = new CreateResponse();
             response.CreateAction = (CreateAction)fileStatus;
             response.FileAttributes = FileAttributes.Normal;
-            response.FileId.Persistent = persistentFileID;
+            response.FileId = fileID;
             return response;
         }
 
-        private static CreateResponse CreateResponseFromFileSystemEntry(FileNetworkOpenInformation fileInfo, ulong persistentFileID, FileStatus fileStatus)
+        private static CreateResponse CreateResponseFromFileSystemEntry(FileNetworkOpenInformation fileInfo, FileID fileID, FileStatus fileStatus)
         {
             CreateResponse response = new CreateResponse();
             response.CreateAction = (CreateAction)fileStatus;
@@ -83,7 +83,7 @@ namespace SMBLibrary.Server.SMB2
             response.AllocationSize = fileInfo.AllocationSize;
             response.EndofFile = fileInfo.EndOfFile;
             response.FileAttributes = fileInfo.FileAttributes;
-            response.FileId.Persistent = persistentFileID;
+            response.FileId = fileID;
             return response;
         }
     }

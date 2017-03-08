@@ -24,7 +24,7 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FS_DRIVER_REQUIRED);
             }
 
-            OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             object handle;
             if (openFile == null)
             {

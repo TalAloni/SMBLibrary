@@ -17,13 +17,13 @@ namespace SMBLibrary.Server.SMB2
         internal static SMB2Command GetCloseResponse(CloseRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
-            OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
             share.FileStore.CloseFile(openFile.Handle);
-            session.RemoveOpenFile(request.FileId.Persistent);
+            session.RemoveOpenFile(request.FileId);
             CloseResponse response = new CloseResponse();
             if (request.PostQueryAttributes)
             {

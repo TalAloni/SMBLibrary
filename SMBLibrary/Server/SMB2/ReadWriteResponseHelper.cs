@@ -17,7 +17,7 @@ namespace SMBLibrary.Server.SMB2
         internal static SMB2Command GetReadResponse(ReadRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
-            OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
@@ -37,7 +37,7 @@ namespace SMBLibrary.Server.SMB2
         internal static SMB2Command GetWriteResponse(WriteRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
-            OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);

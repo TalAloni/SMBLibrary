@@ -24,10 +24,11 @@ namespace SMBLibrary.Server
         private Dictionary<uint, ISMBShare> m_connectedTrees = new Dictionary<uint, ISMBShare>();
         private uint m_nextTreeID = 1; // TreeID uniquely identifies a tree connect within the scope of the session
 
-        // Key is the persistent portion of the FileID
+        // Key is the volatile portion of the FileID
         private Dictionary<ulong, OpenFileObject> m_openFiles = new Dictionary<ulong, OpenFileObject>();
+        private ulong m_nextVolatileFileID = 1;
 
-        // Key is the persistent portion of the FileID
+        // Key is the volatile portion of the FileID
         private Dictionary<ulong, OpenSearch> m_openSearches = new Dictionary<ulong, OpenSearch>();
 
         public SMB2Session(SMB2ConnectionState connection, ulong sessionID, string userName, string machineName, byte[] sessionKey, object accessToken)
@@ -107,39 +108,58 @@ namespace SMBLibrary.Server
             return m_connectedTrees.ContainsKey(treeID);
         }
 
-        /// <returns>The persistent portion of the FileID</returns>
-        public ulong? AddOpenFile(uint treeID, string relativePath, object handle)
+        // VolatileFileID MUST be unique for all volatile handles within the scope of a session
+        private ulong? AllocateVolatileFileID()
         {
-            ulong? persistentID = m_connection.AllocatePersistentFileID();
-            if (persistentID.HasValue)
+            for (ulong offset = 0; offset < UInt64.MaxValue; offset++)
             {
-                lock (m_openFiles)
+                ulong volatileFileID = (ulong)(m_nextVolatileFileID + offset);
+                if (volatileFileID == 0 || volatileFileID == 0xFFFFFFFFFFFFFFFF)
                 {
-                    m_openFiles.Add(persistentID.Value, new OpenFileObject(treeID, relativePath, handle));
+                    continue;
+                }
+                if (!m_openFiles.ContainsKey(volatileFileID))
+                {
+                    m_nextVolatileFileID = (ulong)(volatileFileID + 1);
+                    return volatileFileID;
                 }
             }
-            return persistentID;
+            return null;
         }
 
-        public OpenFileObject GetOpenFileObject(ulong fileID)
+        public FileID? AddOpenFile(uint treeID, string relativePath, object handle)
         {
-            if (m_openFiles.ContainsKey(fileID))
+            ulong? volatileFileID = AllocateVolatileFileID();
+            if (volatileFileID.HasValue)
             {
-                return m_openFiles[fileID];
+                FileID fileID = new FileID();
+                fileID.Volatile = volatileFileID.Value;
+                // [MS-SMB2] FileId.Persistent MUST be set to Open.DurableFileId.
+                // Note: We don't support durable handles so we use volatileFileID.
+                fileID.Persistent = volatileFileID.Value;
+                lock (m_openFiles)
+                {
+                    m_openFiles.Add(volatileFileID.Value, new OpenFileObject(treeID, relativePath, handle));
+                }
+                return fileID;
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
-        public void RemoveOpenFile(ulong fileID)
+        public OpenFileObject GetOpenFileObject(FileID fileID)
+        {
+            OpenFileObject result;
+            m_openFiles.TryGetValue(fileID.Volatile, out result);
+            return result;
+        }
+
+        public void RemoveOpenFile(FileID fileID)
         {
             lock (m_openFiles)
             {
-                m_openFiles.Remove(fileID);
+                m_openFiles.Remove(fileID.Volatile);
             }
-            m_openSearches.Remove(fileID);
+            m_openSearches.Remove(fileID.Volatile);
         }
 
         public List<string> ListOpenFiles()
@@ -155,23 +175,23 @@ namespace SMBLibrary.Server
             return result;
         }
 
-        public OpenSearch AddOpenSearch(ulong fileID, List<QueryDirectoryFileInformation> entries, int enumerationLocation)
+        public OpenSearch AddOpenSearch(FileID fileID, List<QueryDirectoryFileInformation> entries, int enumerationLocation)
         {
             OpenSearch openSearch = new OpenSearch(entries, enumerationLocation);
-            m_openSearches.Add(fileID, openSearch);
+            m_openSearches.Add(fileID.Volatile, openSearch);
             return openSearch;
         }
 
-        public OpenSearch GetOpenSearch(ulong fileID)
+        public OpenSearch GetOpenSearch(FileID fileID)
         {
             OpenSearch openSearch;
-            m_openSearches.TryGetValue(fileID, out openSearch);
+            m_openSearches.TryGetValue(fileID.Volatile, out openSearch);
             return openSearch;
         }
 
-        public void RemoveOpenSearch(ulong fileID)
+        public void RemoveOpenSearch(FileID fileID)
         {
-            m_openSearches.Remove(fileID);
+            m_openSearches.Remove(fileID.Volatile);
         }
 
         /// <summary>

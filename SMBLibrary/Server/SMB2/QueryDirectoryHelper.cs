@@ -17,7 +17,7 @@ namespace SMBLibrary.Server.SMB2
         internal static SMB2Command GetQueryDirectoryResponse(QueryDirectoryRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
-            OpenFileObject openFile = session.GetOpenFileObject(request.FileId.Persistent);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
@@ -30,7 +30,7 @@ namespace SMBLibrary.Server.SMB2
 
             FileSystemShare fileSystemShare = (FileSystemShare)share;
 
-            ulong fileID = request.FileId.Persistent;
+            FileID fileID = request.FileId;
             OpenSearch openSearch = session.GetOpenSearch(fileID);
             if (openSearch == null || request.Reopen)
             {
