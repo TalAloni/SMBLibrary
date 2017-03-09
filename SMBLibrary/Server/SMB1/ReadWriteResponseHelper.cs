@@ -15,7 +15,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class ReadWriteResponseHelper
+    internal class ReadWriteResponseHelper
     {
         internal static SMB1Command GetReadResponse(SMB1Header header, ReadRequest request, ISMBShare share, SMB1ConnectionState state)
         {

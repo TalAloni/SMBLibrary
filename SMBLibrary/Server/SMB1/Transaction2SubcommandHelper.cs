@@ -13,7 +13,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class Transaction2SubcommandHelper
+    internal class Transaction2SubcommandHelper
     {
         internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, ISMBShare share, SMB1ConnectionState state)
         {

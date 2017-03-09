@@ -13,7 +13,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class FileStoreResponseHelper
+    internal class FileStoreResponseHelper
     {
         internal static SMB1Command GetCreateDirectoryResponse(SMB1Header header, CreateDirectoryRequest request, ISMBShare share, SMB1ConnectionState state)
         {

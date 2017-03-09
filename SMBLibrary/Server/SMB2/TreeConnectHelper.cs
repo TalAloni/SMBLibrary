@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB2
 {
-    public class TreeConnectHelper
+    internal class TreeConnectHelper
     {
         internal static SMB2Command GetTreeConnectResponse(TreeConnectRequest request, SMB2ConnectionState state, NamedPipeShare services, ShareCollection shares)
         {

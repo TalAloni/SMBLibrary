@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public partial class SMB1FileStoreHelper
+    internal partial class SMB1FileStoreHelper
     {
         public static NTStatus GetFileInformation(out QueryInformation result, INTFileStore fileStore, string path, QueryInformationLevel informationLevel, SecurityContext securityContext)
         {

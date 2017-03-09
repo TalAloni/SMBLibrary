@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB2
 {
-    public class ReadWriteResponseHelper
+    internal class ReadWriteResponseHelper
     {
         internal static SMB2Command GetReadResponse(ReadRequest request, ISMBShare share, SMB2ConnectionState state)
         {

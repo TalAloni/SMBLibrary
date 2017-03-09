@@ -14,7 +14,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class TransactionSubcommandHelper
+    internal class TransactionSubcommandHelper
     {
         internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {

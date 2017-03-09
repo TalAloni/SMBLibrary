@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB2
 {
-    public class CloseHelper
+    internal class CloseHelper
     {
         internal static SMB2Command GetCloseResponse(CloseRequest request, ISMBShare share, SMB2ConnectionState state)
         {

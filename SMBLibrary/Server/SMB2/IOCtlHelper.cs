@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB2
 {
-    public class IOCtlHelper
+    internal class IOCtlHelper
     {
         internal static SMB2Command GetIOCtlResponse(IOCtlRequest request, ISMBShare share, SMB2ConnectionState state)
         {

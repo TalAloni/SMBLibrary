@@ -13,7 +13,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public partial class SMB1FileStoreHelper
+    internal partial class SMB1FileStoreHelper
     {
         public static NTStatus SetFileInformation(INTFileStore fileStore, object handle, SetInformation information)
         {

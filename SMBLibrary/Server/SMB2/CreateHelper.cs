@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB2
 {
-    public class CreateHelper
+    internal class CreateHelper
     {
         internal static SMB2Command GetCreateResponse(CreateRequest request, ISMBShare share, SMB2ConnectionState state)
         {

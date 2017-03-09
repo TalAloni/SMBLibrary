@@ -13,7 +13,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public partial class ServerResponseHelper
+    internal partial class ServerResponseHelper
     {
         internal static SMB1Command GetCloseResponse(SMB1Header header, CloseRequest request, ISMBShare share, SMB1ConnectionState state)
         {

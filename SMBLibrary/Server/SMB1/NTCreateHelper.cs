@@ -14,7 +14,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class NTCreateHelper
+    internal class NTCreateHelper
     {
         internal static SMB1Command GetNTCreateResponse(SMB1Header header, NTCreateAndXRequest request, ISMBShare share, SMB1ConnectionState state)
         {

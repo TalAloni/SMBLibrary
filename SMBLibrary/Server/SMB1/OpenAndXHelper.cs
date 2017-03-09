@@ -14,7 +14,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class OpenAndXHelper
+    internal class OpenAndXHelper
     {
         internal static SMB1Command GetOpenAndXResponse(SMB1Header header, OpenAndXRequest request, ISMBShare share, SMB1ConnectionState state)
         {

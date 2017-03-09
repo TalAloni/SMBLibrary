@@ -14,7 +14,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class TransactionHelper
+    internal class TransactionHelper
     {
         /// <summary>
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.

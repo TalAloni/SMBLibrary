@@ -12,7 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    public class NTTransactHelper
+    internal class NTTransactHelper
     {
         /// <summary>
         /// The client MUST send as many secondary requests as are needed to complete the transfer of the transaction request.

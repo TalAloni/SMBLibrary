@@ -17,7 +17,7 @@ namespace SMBLibrary.Server.SMB1
     /// <summary>
     /// Session Setup helper
     /// </summary>
-    public class SessionSetupHelper
+    internal class SessionSetupHelper
     {
         internal static SMB1Command GetSessionSetupResponse(SMB1Header header, SessionSetupAndXRequest request, GSSProvider securityProvider, SMB1ConnectionState state)
         {

@@ -17,7 +17,7 @@ namespace SMBLibrary.Server.SMB1
     /// <summary>
     /// Negotiate helper
     /// </summary>
-    public class NegotiateHelper
+    internal class NegotiateHelper
     {
         internal static NegotiateResponse GetNegotiateResponse(SMB1Header header, NegotiateRequest request, GSSProvider securityProvider, ConnectionState state)
         {

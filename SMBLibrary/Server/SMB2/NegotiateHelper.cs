@@ -15,7 +15,7 @@ namespace SMBLibrary.Server.SMB2
     /// <summary>
     /// Negotiate helper
     /// </summary>
-    public class NegotiateHelper
+    internal class NegotiateHelper
     {
         public const string SMB2002Dialect = "SMB 2.002";
         public const string SMB2xxxDialect = "SMB 2.???";

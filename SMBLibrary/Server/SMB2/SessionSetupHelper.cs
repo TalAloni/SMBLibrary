@@ -16,7 +16,7 @@ namespace SMBLibrary.Server.SMB2
     /// <summary>
     /// Session Setup helper
     /// </summary>
-    public class SessionSetupHelper
+    internal class SessionSetupHelper
     {
         internal static SMB2Command GetSessionSetupResponse(SessionSetupRequest request, GSSProvider securityProvider, SMB2ConnectionState state)
         {
