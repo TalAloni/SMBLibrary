@@ -84,7 +84,7 @@ namespace SMBServer
                 authenticationMechanism = new IndependentNTLMAuthenticationProvider(users.GetUserPassword);
             }
 
-            ShareCollection shares;
+            SMBShareCollection shares;
             try
             {
                 shares = ReadShareSettings();
@@ -150,9 +150,9 @@ namespace SMBServer
             return users;
         }
 
-        private ShareCollection ReadShareSettings()
+        private SMBShareCollection ReadShareSettings()
         {
-            ShareCollection shares = new ShareCollection();
+            SMBShareCollection shares = new SMBShareCollection();
             XmlDocument document = GetSettingsXML();
             XmlNode sharesNode = document.SelectSingleNode("Settings/Shares");
 

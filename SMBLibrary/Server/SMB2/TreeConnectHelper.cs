@@ -14,7 +14,7 @@ namespace SMBLibrary.Server.SMB2
 {
     internal class TreeConnectHelper
     {
-        internal static SMB2Command GetTreeConnectResponse(TreeConnectRequest request, SMB2ConnectionState state, NamedPipeShare services, ShareCollection shares)
+        internal static SMB2Command GetTreeConnectResponse(TreeConnectRequest request, SMB2ConnectionState state, NamedPipeShare services, SMBShareCollection shares)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
             TreeConnectResponse response = new TreeConnectResponse();

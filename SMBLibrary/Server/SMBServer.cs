@@ -25,7 +25,7 @@ namespace SMBLibrary.Server
         public const string NTLanManagerDialect = "NT LM 0.12";
         public const bool EnableExtendedSecurity = true;
 
-        private ShareCollection m_shares; // e.g. Shared folders
+        private SMBShareCollection m_shares; // e.g. Shared folders
         private GSSProvider m_securityProvider;
         private NamedPipeShare m_services; // Named pipes
         private Guid m_serverGuid;
@@ -42,7 +42,7 @@ namespace SMBLibrary.Server
 
         public event EventHandler<LogEntry> OnLogEntry;
 
-        public SMBServer(ShareCollection shares, GSSProvider securityProvider)
+        public SMBServer(SMBShareCollection shares, GSSProvider securityProvider)
         {
             m_shares = shares;
             m_securityProvider = securityProvider;

@@ -11,7 +11,7 @@ using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class ShareCollection : List<FileSystemShare>
+    public class SMBShareCollection : List<FileSystemShare>
     {
         public void Add(string shareName, IFileSystem fileSystem)
         {

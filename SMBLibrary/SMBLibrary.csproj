@@ -199,7 +199,7 @@
     <Compile Include="Server\Shares\FileSystemShare.cs" />
     <Compile Include="Server\Shares\ISMBShare.cs" />
     <Compile Include="Server\Shares\NamedPipeShare.cs" />
-    <Compile Include="Server\Shares\ShareCollection.cs" />
+    <Compile Include="Server\Shares\SMBShareCollection.cs" />
     <Compile Include="Server\SMB1\FileStoreResponseHelper.cs" />
     <Compile Include="Server\SMB1\NegotiateHelper.cs" />
     <Compile Include="Server\SMB1\NTCreateHelper.cs" />

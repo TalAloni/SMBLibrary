@@ -14,7 +14,7 @@ namespace SMBLibrary.Server.SMB1
 {
     internal class TreeConnectHelper
     {
-        internal static SMB1Command GetTreeConnectResponse(SMB1Header header, TreeConnectAndXRequest request, SMB1ConnectionState state, NamedPipeShare services, ShareCollection shares)
+        internal static SMB1Command GetTreeConnectResponse(SMB1Header header, TreeConnectAndXRequest request, SMB1ConnectionState state, NamedPipeShare services, SMBShareCollection shares)
         {
             SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & TreeConnectFlags.ExtendedResponse) > 0;
