@@ -27,7 +27,8 @@ namespace SMBLibrary.Server.SMB2
             if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.SEC_I_CONTINUE_NEEDED)
             {
                 string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
-                state.LogToServer(Severity.Information, "User '{0}' failed authentication, NTStatus: {1}", userName, status);
+                string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
+                state.LogToServer(Severity.Information, "User '{0}\\{1}' failed authentication, NTStatus: {2}", machineName, userName, status);
                 return new ErrorResponse(request.CommandName, status);
             }
 
@@ -60,12 +61,12 @@ namespace SMBLibrary.Server.SMB2
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully.", userName);
+                    state.LogToServer(Severity.Information, "User '{0}\\{1}' authenticated successfully.", machineName, userName);
                     state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken);
                 }
                 else
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication, logged in as guest.", userName);
+                    state.LogToServer(Severity.Information, "User '{0}\\{1}' failed authentication, logged in as guest.", machineName, userName);
                     state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken);
                     response.SessionFlags = SessionFlags.IsGuest;
                 }
