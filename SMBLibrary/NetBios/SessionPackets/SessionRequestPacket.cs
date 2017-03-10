@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.NetBios
@@ -38,6 +37,16 @@ namespace SMBLibrary.NetBios
             ByteWriter.WriteBytes(this.Trailer, 0, part1);
             ByteWriter.WriteBytes(this.Trailer, part1.Length, part2);
             return base.GetBytes();
+        }
+
+        public override int Length
+        {
+            get
+            {
+                byte[] part1 = NetBiosUtils.EncodeName(CalledName, String.Empty);
+                byte[] part2 = NetBiosUtils.EncodeName(CallingName, String.Empty);
+                return HeaderLength + part1.Length + part2.Length;
+            }
         }
     }
 }

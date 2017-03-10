@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.NetBios
@@ -29,6 +28,14 @@ namespace SMBLibrary.NetBios
         {
             this.Trailer = new byte[0];
             return base.GetBytes();
+        }
+
+        public override int Length
+        {
+            get
+            {
+                return HeaderLength;
+            }
         }
     }
 }

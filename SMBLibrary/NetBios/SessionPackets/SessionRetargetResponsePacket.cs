@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.NetBios
@@ -36,6 +35,14 @@ namespace SMBLibrary.NetBios
             BigEndianWriter.WriteUInt32(this.Trailer, 0, IPAddress);
             BigEndianWriter.WriteUInt16(this.Trailer, 4, Port);
             return base.GetBytes();
+        }
+
+        public override int Length
+        {
+            get
+            {
+                return HeaderLength + 6;
+            }
         }
     }
 }

@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.NetBios
@@ -34,6 +33,14 @@ namespace SMBLibrary.NetBios
             this.Trailer[0] = ErrorCode;
 
             return base.GetBytes();
+        }
+
+        public override int Length
+        {
+            get
+            {
+                return HeaderLength + 1;
+            }
         }
     }
 }

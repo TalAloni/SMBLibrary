@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.NetBios
@@ -16,11 +15,12 @@ namespace SMBLibrary.NetBios
     /// </summary>
     public abstract class SessionPacket
     {
+        public const int HeaderLength = 4;
         public const int MaxSessionPacketLength = 131075;
 
         public SessionPacketTypeName Type;
         public byte Flags;
-        public int Length; // 2 bytes + length extension bit
+        private int TrailerLength; // 2 bytes + length extension bit
         public byte[] Trailer;
 
         public SessionPacket()
@@ -31,28 +31,35 @@ namespace SMBLibrary.NetBios
         {
             Type = (SessionPacketTypeName)ByteReader.ReadByte(buffer, offset + 0);
             Flags = ByteReader.ReadByte(buffer, offset + 1);
-            Length = (Flags & 0x01) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
-
-            this.Trailer = ByteReader.ReadBytes(buffer, offset + 4, Length);
+            TrailerLength = (Flags & 0x01) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
+            Trailer = ByteReader.ReadBytes(buffer, offset + 4, TrailerLength);
         }
 
         public virtual byte[] GetBytes()
         {
-            Length = this.Trailer.Length;
-            if (Length > 0x1FFFF)
+            TrailerLength = this.Trailer.Length;
+            if (TrailerLength > 0x1FFFF)
             {
                 throw new ArgumentException("Invalid NBT packet length");
             }
 
-            Flags = Convert.ToByte(Length > 0xFFFF);
+            Flags = Convert.ToByte(TrailerLength > 0xFFFF);
 
-            byte[] buffer = new byte[4 + Trailer.Length];
-            ByteWriter.WriteByte(buffer, 0, (byte)this.Type);
+            byte[] buffer = new byte[HeaderLength + Trailer.Length];
+            ByteWriter.WriteByte(buffer, 0, (byte)Type);
             ByteWriter.WriteByte(buffer, 1, Flags);
-            BigEndianWriter.WriteUInt16(buffer, 2, (ushort)(Length & 0xFFFF));
-            ByteWriter.WriteBytes(buffer, 4, this.Trailer);
+            BigEndianWriter.WriteUInt16(buffer, 2, (ushort)(TrailerLength & 0xFFFF));
+            ByteWriter.WriteBytes(buffer, 4, Trailer);
 
             return buffer;
+        }
+
+        public virtual int Length
+        {
+            get
+            {
+                return HeaderLength + Trailer.Length;
+            }
         }
 
         public static SessionPacket GetSessionPacket(byte[] buffer, int offset)
