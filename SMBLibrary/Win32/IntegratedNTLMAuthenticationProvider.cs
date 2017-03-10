@@ -21,8 +21,9 @@ namespace SMBLibrary.Win32.Security
         public class AuthContext
         {
             public SecHandle ServerContext;
-            public string WorkStation;
+            public string DomainName;
             public string UserName;
+            public string WorkStation;
             public bool IsGuest;
 
             public AuthContext(SecHandle serverContext)
@@ -71,6 +72,7 @@ namespace SMBLibrary.Win32.Security
                 return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
+            authContext.DomainName = message.DomainName;
             authContext.UserName = message.UserName;
             authContext.WorkStation = message.WorkStation;
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0 ||
@@ -152,6 +154,8 @@ namespace SMBLibrary.Win32.Security
                 {
                     case GSSAttributeName.AccessToken:
                         return SSPIHelper.GetAccessToken(authContext.ServerContext);
+                    case GSSAttributeName.DomainName:
+                        return authContext.DomainName;
                     case GSSAttributeName.IsGuest:
                         return authContext.IsGuest;
                     case GSSAttributeName.MachineName:

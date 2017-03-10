@@ -18,9 +18,10 @@ namespace SMBLibrary.Authentication.NTLM
     {
         public class AuthContext
         {
-            public string WorkStation;
             public byte[] ServerChallenge;
+            public string DomainName;
             public string UserName;
+            public string WorkStation;
             public byte[] SessionKey;
             public bool IsGuest;
 
@@ -130,6 +131,7 @@ namespace SMBLibrary.Authentication.NTLM
                 return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
+            authContext.DomainName = message.DomainName;
             authContext.UserName = message.UserName;
             authContext.WorkStation = message.WorkStation;
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
@@ -236,6 +238,8 @@ namespace SMBLibrary.Authentication.NTLM
             {
                 switch (attributeName)
                 {
+                    case GSSAttributeName.DomainName:
+                        return authContext.DomainName;
                     case GSSAttributeName.IsGuest:
                         return authContext.IsGuest;
                     case GSSAttributeName.MachineName:

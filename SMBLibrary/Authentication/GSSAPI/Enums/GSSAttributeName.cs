@@ -5,6 +5,7 @@ namespace SMBLibrary.Authentication.GSSAPI
     public enum GSSAttributeName
     {
         AccessToken,
+        DomainName,
         IsAnonymous,
         
         /// <summary>
