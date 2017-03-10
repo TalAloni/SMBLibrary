@@ -39,6 +39,7 @@
     <Compile Include="DirectoryFileSystem\DirectoryFileSystem.cs" />
     <Compile Include="DirectoryFileSystem\StreamWatcher.cs" />
     <Compile Include="DirectoryFileSystem\Win32Native.cs" />
+    <Compile Include="LogWriter.cs" />
     <Compile Include="NetworkInterfaceHelper.cs" />
     <Compile Include="ServerUI.cs">
       <SubType>Form</SubType>

@@ -30,6 +30,7 @@ namespace SMBServer
         public const string SettingsFileName = "Settings.xml";
         private SMBLibrary.Server.SMBServer m_server;
         private SMBLibrary.Server.NameServer m_nameServer;
+        private LogWriter m_logWriter;
 
         public ServerUI()
         {
@@ -97,7 +98,8 @@ namespace SMBServer
 
             GSSProvider securityProvider = new GSSProvider(authenticationMechanism);
             m_server = new SMBLibrary.Server.SMBServer(shares, securityProvider);
-            m_server.OnLogEntry += new EventHandler<LogEntry>(Server_OnLogEntry);
+            m_logWriter = new LogWriter();
+            m_server.OnLogEntry += new EventHandler<LogEntry>(m_logWriter.OnLogEntry);
 
             try
             {
@@ -210,6 +212,7 @@ namespace SMBServer
         private void btnStop_Click(object sender, EventArgs e)
         {
             m_server.Stop();
+            m_logWriter.CloseLogFile();
             btnStart.Enabled = true;
             btnStop.Enabled = false;
             comboIPAddress.Enabled = true;
@@ -223,13 +226,6 @@ namespace SMBServer
             {
                 m_nameServer.Stop();
             }
-        }
-
-        private void Server_OnLogEntry(object sender, LogEntry entry)
-        {
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ");
-            string message = String.Format("{0} {1} {2}", entry.Severity.ToString().PadRight(12), timestamp, entry.Message);
-            System.Diagnostics.Debug.Print(message);
         }
 
         private void chkSMB1_CheckedChanged(object sender, EventArgs e)
