@@ -292,11 +292,12 @@ namespace SMBLibrary
             {
                 try
                 {
-                    Log(Severity.Verbose, "CloseFile: Deleting '{0}'.", fileHandle.Path);
                     m_fileSystem.Delete(fileHandle.Path);
+                    Log(Severity.Verbose, "CloseFile: Deleted '{0}'.", fileHandle.Path);
                 }
                 catch
                 {
+                    Log(Severity.Verbose, "CloseFile: Error deleting '{0}'.", fileHandle.Path);
                 }
             }
             return NTStatus.STATUS_SUCCESS;

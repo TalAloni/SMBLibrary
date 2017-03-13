@@ -89,8 +89,8 @@ namespace SMBLibrary
 
                     try
                     {
-                        Log(Severity.Information, "SetFileInformation: Deleting file '{0}'", fileHandle.Path);
                         m_fileSystem.Delete(fileHandle.Path);
+                        Log(Severity.Information, "SetFileInformation: Deleted '{0}'", fileHandle.Path);
                     }
                     catch (Exception ex)
                     {
