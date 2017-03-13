@@ -22,7 +22,13 @@ namespace SMBLibrary.Server.SMB2
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
-            share.FileStore.CloseFile(openFile.Handle);
+
+            NTStatus closeStatus = share.FileStore.CloseFile(openFile.Handle);
+            if (closeStatus != NTStatus.STATUS_SUCCESS)
+            {
+                return new ErrorResponse(request.CommandName, closeStatus);
+            }
+
             session.RemoveOpenFile(request.FileId);
             CloseResponse response = new CloseResponse();
             if (request.PostQueryAttributes)
