@@ -123,3 +123,17 @@ Revision History:
         SMB1: Retrieve SessionKey from GSS mechanism and store it in SMB1Session.
         Bugfix: Independent / Integrated NTLMAuthenticationProvider: MachineName was not read from AuthenticationMessage.
         GSS: Minor improvements.
+
+1.1.7 - Fixed FormatException.
+        SocketUtils.ReleaseSocket: Improved exception handling.
+        SMB2: Check share permissions before Read / Write.
+        SMB2: FileID related improvements.
+        SMBServer: Hid internal classes
+        SMB2: CloseHelper: An error response will be returned if the underlying file store was not able to close the handle.
+        Renamed ShareCollection to SMBShareCollection.
+        NetBIOS session packet length is now calculated correctly. 
+        Added LogWriter implementation to handle log events
+        Workstation and Domain information are now logged during session setup.
+        Write to log when share access was denied.
+        Add share information to log message where applicable.
+        Various Logging related improvements.
