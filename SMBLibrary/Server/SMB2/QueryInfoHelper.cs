@@ -38,7 +38,7 @@ namespace SMBLibrary.Server.SMB2
                 NTStatus queryStatus = share.FileStore.GetFileInformation(out fileInformation, openFile.Handle, request.FileInformationClass);
                 if (queryStatus != NTStatus.STATUS_SUCCESS)
                 {
-                    state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information class: {1}, NTStatus: {2}", openFile.Path, request.FileInformationClass, queryStatus);
+                    state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: {3}", share.Name, openFile.Path, request.FileInformationClass, queryStatus);
                     return new ErrorResponse(request.CommandName, queryStatus);
                 }
 
@@ -60,7 +60,7 @@ namespace SMBLibrary.Server.SMB2
                     NTStatus queryStatus = share.FileStore.GetFileSystemInformation(out fileSystemInformation, request.FileSystemInformationClass);
                     if (queryStatus != NTStatus.STATUS_SUCCESS)
                     {
-                        state.LogToServer(Severity.Verbose, "GetFileSystemInformation failed. Information class: {0}, NTStatus: {1}", request.FileSystemInformationClass, queryStatus);
+                        state.LogToServer(Severity.Verbose, "GetFileSystemInformation on '{0}' failed. Information class: {1}, NTStatus: {2}", share.Name, request.FileSystemInformationClass, queryStatus);
                         return new ErrorResponse(request.CommandName, queryStatus);
                     }
                     QueryInfoResponse response = new QueryInfoResponse();

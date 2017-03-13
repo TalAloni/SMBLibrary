@@ -35,12 +35,12 @@ namespace SMBLibrary.Server.SMB1
             NTStatus searchStatus = SMB1FileStoreHelper.QueryDirectory(out entries, share.FileStore, fileNamePattern, informationClass, session.SecurityContext);
             if (searchStatus != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', NTStatus: {1}", fileNamePattern, searchStatus.ToString());
+                state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}{1}', NTStatus: {2}", share.Name, fileNamePattern, searchStatus.ToString());
                 header.Status = searchStatus;
                 return null;
             }
             // We ignore SearchAttributes
-            state.LogToServer(Severity.Verbose, "FindFirst2: Searched for '{0}', found {1} matching entries", fileNamePattern, entries.Count);
+            state.LogToServer(Severity.Information, "FindFirst2: Searched for '{0}{1}', found {2} matching entries", share.Name, fileNamePattern, entries.Count);
 
             // [MS-CIFS] If no matching entries are found, the server SHOULD fail the request with STATUS_NO_SUCH_FILE.
             if (entries.Count == 0)
@@ -133,7 +133,7 @@ namespace SMBLibrary.Server.SMB1
             NTStatus queryStatus = SMB1FileStoreHelper.GetFileSystemInformation(out queryFSInformation, share.FileStore, subcommand.InformationLevel);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "GetFileSystemInformation failed. Information level: {0}, NTStatus: {1}", subcommand.InformationLevel, queryStatus);
+                state.LogToServer(Severity.Verbose, "GetFileSystemInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", share.Name, subcommand.InformationLevel, queryStatus);
                 header.Status = queryStatus;
                 return null;
             }
@@ -160,7 +160,7 @@ namespace SMBLibrary.Server.SMB1
             NTStatus queryStatus = SMB1FileStoreHelper.GetFileInformation(out queryInformation, share.FileStore, path, subcommand.InformationLevel, session.SecurityContext);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", path, subcommand.InformationLevel, queryStatus);
+                state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}{1}' failed. Information level: {2}, NTStatus: {3}", share.Name, path, subcommand.InformationLevel, queryStatus);
                 header.Status = queryStatus;
                 return null;
             }
@@ -193,7 +193,7 @@ namespace SMBLibrary.Server.SMB1
             NTStatus queryStatus = SMB1FileStoreHelper.GetFileInformation(out queryInformation, share.FileStore, openFile.Handle, subcommand.InformationLevel);
             if (queryStatus != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", openFile.Path, subcommand.InformationLevel, queryStatus);
+                state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}{1}' failed. Information level: {2}, NTStatus: {3}", share.Name, openFile.Path, subcommand.InformationLevel, queryStatus);
                 header.Status = queryStatus;
                 return null;
             }
@@ -240,7 +240,7 @@ namespace SMBLibrary.Server.SMB1
             NTStatus status = SMB1FileStoreHelper.SetFileInformation(share.FileStore, openFile.Handle, information);
             if (status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}' failed. Information level: {1}, NTStatus: {2}", openFile.Path, information.InformationLevel, status);
+                state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information level: {2}, NTStatus: {3}", share.Name, openFile.Path, information.InformationLevel, status);
                 header.Status = status;
                 return null;
             }

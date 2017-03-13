@@ -25,7 +25,7 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
-            state.LogToServer(Severity.Verbose, "Close: Closing file '{0}'", openFile.Path);
+            state.LogToServer(Severity.Information, "Close: Closing '{0}{1}'", share.Name, openFile.Path);
             header.Status = share.FileStore.CloseFile(openFile.Handle);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {

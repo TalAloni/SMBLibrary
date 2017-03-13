@@ -55,7 +55,7 @@ namespace SMBLibrary.Server.SMB2
                 NTStatus status = share.FileStore.SetFileInformation(openFile.Handle, information);
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
-                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}' failed. Information class: {1}, NTStatus: {2}", openFile.Path, information.FileInformationClass, status);
+                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: {3}", share.Name, openFile.Path, information.FileInformationClass, status);
                     return new ErrorResponse(request.CommandName, status);
                 }
                 return new SetInfoResponse();

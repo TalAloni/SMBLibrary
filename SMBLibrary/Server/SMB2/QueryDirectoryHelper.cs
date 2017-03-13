@@ -43,10 +43,10 @@ namespace SMBLibrary.Server.SMB2
                 NTStatus searchStatus = share.FileStore.QueryDirectory(out entries, openFile.Handle, request.FileName, request.FileInformationClass);
                 if (searchStatus != NTStatus.STATUS_SUCCESS)
                 {
-                    state.LogToServer(Severity.Verbose, "Query Directory: Path: '{0}', Searched for '{1}', NTStatus: {2}", openFile.Path, request.FileName, searchStatus.ToString());
+                    state.LogToServer(Severity.Verbose, "Query Directory on '{0}{1}', Searched for '{2}', NTStatus: {3}", share.Name, openFile.Path, request.FileName, searchStatus.ToString());
                     return new ErrorResponse(request.CommandName, searchStatus);
                 }
-                state.LogToServer(Severity.Verbose, "Query Directory: Path: '{0}', Searched for '{1}', found {2} matching entries", openFile.Path, request.FileName, entries.Count);
+                state.LogToServer(Severity.Information, "Query Directory on '{0}{1}', Searched for '{2}', found {3} matching entries", share.Name, openFile.Path, request.FileName, entries.Count);
                 openSearch = session.AddOpenSearch(fileID, entries, 0);
             }
 
