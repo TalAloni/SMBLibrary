@@ -25,7 +25,7 @@ namespace SMBLibrary
             catch (Exception ex)
             {
                 NTStatus status = ToNTStatus(ex);
-                Log(Severity.Debug, "GetFileInformation on '{0}' failed. {1}", path, status);
+                Log(Severity.Verbose, "GetFileInformation on '{0}' failed. {1}", path, status);
                 result = null;
                 return status;
             }

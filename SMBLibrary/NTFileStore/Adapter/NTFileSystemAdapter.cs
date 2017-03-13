@@ -58,7 +58,7 @@ namespace SMBLibrary
             catch (Exception ex)
             {
                 NTStatus status = ToNTStatus(ex);
-                Log(Severity.Debug, "CreateFile: Error retrieving '{0}'. {1}.", path, status);
+                Log(Severity.Verbose, "CreateFile: Error retrieving '{0}'. {1}.", path, status);
                 return status;
             }
 
@@ -85,7 +85,7 @@ namespace SMBLibrary
                 if (entry != null)
                 {
                     // File already exists, fail the request
-                    Log(Severity.Debug, "CreateFile: File '{0}' already exist", path);
+                    Log(Severity.Verbose, "CreateFile: File '{0}' already exist", path);
                     fileStatus = FileStatus.FILE_EXISTS;
                     return NTStatus.STATUS_OBJECT_NAME_COLLISION;
                 }
@@ -111,7 +111,7 @@ namespace SMBLibrary
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                    Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
                     return status;
                 }
                 fileStatus = FileStatus.FILE_CREATED;
@@ -149,7 +149,7 @@ namespace SMBLibrary
                     catch (Exception ex)
                     {
                         NTStatus status = ToNTStatus(ex);
-                        Log(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                        Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
                         return status;
                     }
                     fileStatus = FileStatus.FILE_CREATED;
@@ -174,7 +174,7 @@ namespace SMBLibrary
                         catch (Exception ex)
                         {
                             NTStatus status = ToNTStatus(ex);
-                            Log(Severity.Debug, "CreateFile: Error truncating '{0}'. {1}.", path, status);
+                            Log(Severity.Verbose, "CreateFile: Error truncating '{0}'. {1}.", path, status);
                             return status;
                         }
                         fileStatus = FileStatus.FILE_OVERWRITTEN;
@@ -189,7 +189,7 @@ namespace SMBLibrary
                         catch(Exception ex)
                         {
                             NTStatus status = ToNTStatus(ex);
-                            Log(Severity.Debug, "CreateFile: Error deleting '{0}'. {1}.", path, status);
+                            Log(Severity.Verbose, "CreateFile: Error deleting '{0}'. {1}.", path, status);
                             return status;
                         }
 
@@ -209,7 +209,7 @@ namespace SMBLibrary
                         catch (Exception ex)
                         {
                             NTStatus status = ToNTStatus(ex);
-                            Log(Severity.Debug, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                            Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
                             return status;
                         }
                         fileStatus = FileStatus.FILE_SUPERSEDED;
@@ -258,7 +258,7 @@ namespace SMBLibrary
             bool disableBuffering = (openOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
             bool buffered = (openOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
             FileShare fileShare = NTFileStoreHelper.ToFileShare(shareAccess);
-            Log(Severity.Verbose, "OpenFileStream: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
+            Log(Severity.Information, "OpenFileStream: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
             try
             {
                 stream = m_fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
@@ -266,7 +266,7 @@ namespace SMBLibrary
             catch (Exception ex)
             {
                 NTStatus status = ToNTStatus(ex);
-                Log(Severity.Debug, "OpenFile: Cannot open '{0}'. {1}.", path, status);
+                Log(Severity.Verbose, "OpenFile: Cannot open '{0}'. {1}.", path, status);
                 return status;
             }
 
@@ -283,7 +283,7 @@ namespace SMBLibrary
             FileHandle fileHandle = (FileHandle)handle;
             if (fileHandle.Stream != null)
             {
-                Log(Severity.Debug, "CloseFile: Closing '{0}'.", fileHandle.Path);
+                Log(Severity.Verbose, "CloseFile: Closing '{0}'.", fileHandle.Path);
                 fileHandle.Stream.Close();
             }
 
@@ -291,7 +291,7 @@ namespace SMBLibrary
             {
                 try
                 {
-                    Log(Severity.Debug, "CloseFile: Deleting '{0}'.", fileHandle.Path);
+                    Log(Severity.Verbose, "CloseFile: Deleting '{0}'.", fileHandle.Path);
                     m_fileSystem.Delete(fileHandle.Path);
                 }
                 catch
@@ -309,7 +309,7 @@ namespace SMBLibrary
             Stream stream = fileHandle.Stream;
             if (stream == null || !stream.CanRead)
             {
-                Log(Severity.Debug, "ReadFile: Cannot read '{0}', Invalid Operation.", path);
+                Log(Severity.Verbose, "ReadFile: Cannot read '{0}', Invalid Operation.", path);
                 return NTStatus.STATUS_ACCESS_DENIED;
             }
 
@@ -323,7 +323,7 @@ namespace SMBLibrary
             catch (Exception ex)
             {
                 NTStatus status = ToNTStatus(ex);
-                Log(Severity.Debug, "ReadFile: Cannot read '{0}'. {1}.", path, status);
+                Log(Severity.Verbose, "ReadFile: Cannot read '{0}'. {1}.", path, status);
                 return status;
             }
 
@@ -343,7 +343,7 @@ namespace SMBLibrary
             Stream stream = fileHandle.Stream;
             if (stream == null || !stream.CanWrite)
             {
-                Log(Severity.Debug, "WriteFile: Cannot write '{0}'. Invalid Operation.", path);
+                Log(Severity.Verbose, "WriteFile: Cannot write '{0}'. Invalid Operation.", path);
                 return NTStatus.STATUS_ACCESS_DENIED;
             }
 
@@ -355,7 +355,7 @@ namespace SMBLibrary
             catch (Exception ex)
             {
                 NTStatus status = ToNTStatus(ex);
-                Log(Severity.Debug, "WriteFile: Cannot write '{0}'. {1}.", path, status);
+                Log(Severity.Verbose, "WriteFile: Cannot write '{0}'. {1}.", path, status);
                 return status;
             }
             numberOfBytesWritten = data.Length;

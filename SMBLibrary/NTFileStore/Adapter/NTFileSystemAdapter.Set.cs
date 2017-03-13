@@ -29,7 +29,7 @@ namespace SMBLibrary
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Debug, "SetFileInformation: Failed to set file attributes on '{0}'. {1}.", fileHandle.Path, status);
+                    Log(Severity.Verbose, "SetFileInformation: Failed to set file attributes on '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
 
@@ -40,7 +40,7 @@ namespace SMBLibrary
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Debug, "SetFileInformation: Failed to set file dates on '{0}'. {1}.", fileHandle.Path, status);
+                    Log(Severity.Verbose, "SetFileInformation: Failed to set file dates on '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
@@ -71,7 +71,7 @@ namespace SMBLibrary
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Debug, "SetFileInformation: Cannot rename '{0}'. {1}.", fileHandle.Path, status);
+                    Log(Severity.Verbose, "SetFileInformation: Cannot rename '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
                 fileHandle.Path = destination;
@@ -111,7 +111,7 @@ namespace SMBLibrary
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Debug, "SetFileInformation: Cannot set allocation for '{0}'. {1}.", fileHandle.Path, status);
+                    Log(Severity.Verbose, "SetFileInformation: Cannot set allocation for '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
@@ -126,7 +126,7 @@ namespace SMBLibrary
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Debug, "SetFileInformation: Cannot set end of file for '{0}'. {1}.", fileHandle.Path, status);
+                    Log(Severity.Verbose, "SetFileInformation: Cannot set end of file for '{0}'. {1}.", fileHandle.Path, status);
                     return status;
                 }
                 return NTStatus.STATUS_SUCCESS;
