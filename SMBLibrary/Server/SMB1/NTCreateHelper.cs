@@ -37,6 +37,7 @@ namespace SMBLibrary.Server.SMB1
             NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions, session.SecurityContext);
             if (createStatus != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Create: Opening '{0}{1}' failed. NTStatus: '{2}'.", share.Name, path, createStatus);
                 header.Status = createStatus;
                 return new ErrorResponse(request.CommandName);
             }
