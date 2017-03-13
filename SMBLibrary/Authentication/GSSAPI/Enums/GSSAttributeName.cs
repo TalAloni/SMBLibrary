@@ -13,6 +13,7 @@ namespace SMBLibrary.Authentication.GSSAPI
         /// </summary>
         IsGuest,
         MachineName,
+        OSVersion,
         SessionKey,
         UserName,
     }

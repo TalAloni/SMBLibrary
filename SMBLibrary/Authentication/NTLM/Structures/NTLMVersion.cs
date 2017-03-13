@@ -48,6 +48,11 @@ namespace SMBLibrary.Authentication.NTLM
             ByteWriter.WriteByte(buffer, offset + 7, NTLMRevisionCurrent);
         }
 
+        public override string ToString()
+        {
+            return String.Format("{0}.{1}.{2}", ProductMajorVersion, ProductMinorVersion, ProductBuild);
+        }
+
         public static NTLMVersion WindowsXP
         {
             get

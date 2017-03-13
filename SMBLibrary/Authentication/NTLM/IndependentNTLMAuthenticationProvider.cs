@@ -22,6 +22,7 @@ namespace SMBLibrary.Authentication.NTLM
             public string DomainName;
             public string UserName;
             public string WorkStation;
+            public string OSVersion;
             public byte[] SessionKey;
             public bool IsGuest;
 
@@ -134,6 +135,11 @@ namespace SMBLibrary.Authentication.NTLM
             authContext.DomainName = message.DomainName;
             authContext.UserName = message.UserName;
             authContext.WorkStation = message.WorkStation;
+            if (message.Version != null)
+            {
+                authContext.OSVersion = message.Version.ToString();
+            }
+
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0)
             {
                 if (this.EnableGuestLogin)
@@ -244,6 +250,8 @@ namespace SMBLibrary.Authentication.NTLM
                         return authContext.IsGuest;
                     case GSSAttributeName.MachineName:
                         return authContext.WorkStation;
+                    case GSSAttributeName.OSVersion:
+                        return authContext.OSVersion;
                     case GSSAttributeName.SessionKey:
                         return authContext.SessionKey;
                     case GSSAttributeName.UserName:

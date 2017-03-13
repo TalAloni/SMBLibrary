@@ -24,6 +24,7 @@ namespace SMBLibrary.Win32.Security
             public string DomainName;
             public string UserName;
             public string WorkStation;
+            public string OSVersion;
             public bool IsGuest;
 
             public AuthContext(SecHandle serverContext)
@@ -75,6 +76,11 @@ namespace SMBLibrary.Win32.Security
             authContext.DomainName = message.DomainName;
             authContext.UserName = message.UserName;
             authContext.WorkStation = message.WorkStation;
+            if (message.Version != null)
+            {
+                authContext.OSVersion = message.Version.ToString();
+            }
+
             if ((message.NegotiateFlags & NegotiateFlags.Anonymous) > 0 ||
                 !IsUserExists(message.UserName))
             {
@@ -160,6 +166,8 @@ namespace SMBLibrary.Win32.Security
                         return authContext.IsGuest;
                     case GSSAttributeName.MachineName:
                         return authContext.WorkStation;
+                    case GSSAttributeName.OSVersion:
+                        return authContext.OSVersion;
                     case GSSAttributeName.SessionKey:
                         return SSPIHelper.GetSessionKey(authContext.ServerContext);
                     case GSSAttributeName.UserName:
