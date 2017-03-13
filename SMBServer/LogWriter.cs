@@ -21,16 +21,7 @@ namespace SMBServer
 
         public LogWriter()
         {
-            Assembly assembly = Assembly.GetEntryAssembly();
-            if (assembly == null)
-            {
-                assembly = Assembly.GetExecutingAssembly();
-            }
-            string assemblyDirectory = Path.GetDirectoryName(assembly.Location);
-            if (!assemblyDirectory.EndsWith(@"\"))
-            {
-                assemblyDirectory += @"\";
-            }
+            string assemblyDirectory = GetAssemblyDirectory();
             m_logsDirectoryPath = assemblyDirectory + @"Logs\";
         }
 
@@ -103,9 +94,24 @@ namespace SMBServer
         {
             if (entry.Severity != Severity.Trace)
             {
-                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss ");
+                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 WriteLine("{0} {1} [{2}] {3}", entry.Severity.ToString().PadRight(12), timestamp, entry.Source, entry.Message);
             }
+        }
+
+        public static string GetAssemblyDirectory()
+        {
+            Assembly assembly = Assembly.GetEntryAssembly();
+            if (assembly == null)
+            {
+                assembly = Assembly.GetExecutingAssembly();
+            }
+            string assemblyDirectory = Path.GetDirectoryName(assembly.Location);
+            if (!assemblyDirectory.EndsWith(@"\"))
+            {
+                assemblyDirectory += @"\";
+            }
+            return assemblyDirectory;
         }
     }
 }
