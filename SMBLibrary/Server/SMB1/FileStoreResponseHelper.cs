@@ -22,6 +22,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.DirectoryName))
                 {
+                    state.LogToServer(Severity.Verbose, "Create Directory '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.DirectoryName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -43,6 +44,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.DirectoryName))
                 {
+                    state.LogToServer(Severity.Verbose, "Delete Directory '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.DirectoryName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -63,6 +65,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.FileName))
                 {
+                    state.LogToServer(Severity.Verbose, "Delete '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.FileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -84,11 +87,13 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.OldFileName))
                 {
+                    state.LogToServer(Severity.Verbose, "Rename '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.OldFileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.NewFileName))
                 {
+                    state.LogToServer(Severity.Verbose, "Rename '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.OldFileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -109,6 +114,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, request.DirectoryName))
                 {
+                    state.LogToServer(Severity.Verbose, "Check Directory '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.DirectoryName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -130,6 +136,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, request.FileName))
                 {
+                    state.LogToServer(Severity.Verbose, "Query Information on '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.FileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -156,6 +163,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.FileName))
                 {
+                    state.LogToServer(Severity.Verbose, "Set Information on '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.FileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -184,6 +192,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, openFile.Path))
                 {
+                    state.LogToServer(Severity.Verbose, "Set Information 2 on '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }

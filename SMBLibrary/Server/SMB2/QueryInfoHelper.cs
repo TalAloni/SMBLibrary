@@ -29,6 +29,7 @@ namespace SMBLibrary.Server.SMB2
                 {
                     if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, openFile.Path))
                     {
+                        state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
                 }
@@ -51,6 +52,7 @@ namespace SMBLibrary.Server.SMB2
                 {
                     if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, @"\"))
                     {
+                        state.LogToServer(Severity.Verbose, "GetFileSystemInformation on '{0}' failed. User '{1}' was denied access.", share.Name, session.UserName);
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
 

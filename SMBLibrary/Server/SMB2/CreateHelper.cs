@@ -28,6 +28,7 @@ namespace SMBLibrary.Server.SMB2
             {
                 if (!((FileSystemShare)share).HasAccess(session.SecurityContext, path, createAccess))
                 {
+                    state.LogToServer(Severity.Verbose, "Create: Opening '{0}{1}' failed. User '{2}' was denied access.", share.Name, path, session.UserName);
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                 }
             }

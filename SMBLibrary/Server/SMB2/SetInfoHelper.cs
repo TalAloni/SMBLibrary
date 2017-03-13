@@ -29,6 +29,7 @@ namespace SMBLibrary.Server.SMB2
                 {
                     if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, openFile.Path))
                     {
+                        state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
                 }
