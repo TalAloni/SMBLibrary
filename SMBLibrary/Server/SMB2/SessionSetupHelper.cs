@@ -29,7 +29,7 @@ namespace SMBLibrary.Server.SMB2
                 string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
                 string domainName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.DomainName) as string;
                 string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
-                state.LogToServer(Severity.Information, "User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), NTStatus: {3}", userName, domainName, machineName, status);
+                state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), NTStatus: {3}", userName, domainName, machineName, status);
                 return new ErrorResponse(request.CommandName, status);
             }
 
@@ -63,12 +63,12 @@ namespace SMBLibrary.Server.SMB2
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}').", userName, domainName, machineName);
+                    state.LogToServer(Severity.Information, "Session Setup: User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}').", userName, domainName, machineName);
                     state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken);
                 }
                 else
                 {
-                    state.LogToServer(Severity.Information, "User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), logged in as guest.", userName, domainName, machineName);
+                    state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), logged in as guest.", userName, domainName, machineName);
                     state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken);
                     response.SessionFlags = SessionFlags.IsGuest;
                 }
