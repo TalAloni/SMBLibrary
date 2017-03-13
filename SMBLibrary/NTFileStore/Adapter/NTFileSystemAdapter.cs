@@ -66,7 +66,7 @@ namespace SMBLibrary
             {
                 if (entry == null)
                 {
-                    return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
+                    return NTStatus.STATUS_NO_SUCH_FILE;
                 }
 
                 fileStatus = FileStatus.FILE_EXISTS;
