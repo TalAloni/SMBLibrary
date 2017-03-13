@@ -95,7 +95,7 @@ namespace SMBLibrary
                     catch (Exception ex)
                     {
                         NTStatus status = ToNTStatus(ex);
-                        Log(Severity.Information, "SetFileInformation: Error deleting '{0}'. {1}.", status);
+                        Log(Severity.Information, "SetFileInformation: Error deleting '{0}'. {1}.", fileHandle.Path, status);
                         return status;
                     }
                 }
