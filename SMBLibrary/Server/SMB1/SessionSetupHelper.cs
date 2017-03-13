@@ -29,22 +29,23 @@ namespace SMBLibrary.Server.SMB1
             header.Status = securityProvider.NTLMAuthenticate(state.AuthenticationContext, message);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), NTStatus: {3}", message.UserName, message.DomainName, message.WorkStation, header.Status);
+                state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', OS: '{2}'), NTStatus: {3}", request.AccountName, request.PrimaryDomain, request.NativeOS, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
 
+            string osVersion = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.OSVersion) as string;
             byte[] sessionKey = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.SessionKey) as byte[];
             object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
             bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
             SMB1Session session;
             if (!isGuest.HasValue || !isGuest.Value)
             {
-                state.LogToServer(Severity.Information, "Session Setup: User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}').", message.UserName, message.DomainName, message.WorkStation);
+                state.LogToServer(Severity.Information, "Session Setup: User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}', OS version: '{3}').", message.UserName, message.DomainName, message.WorkStation, osVersion);
                 session = state.CreateSession(message.UserName, message.WorkStation, sessionKey, accessToken);
             }
             else
             {
-                state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), logged in as guest.", message.UserName, message.DomainName, message.WorkStation);
+                state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}', OS version: '{3}'), logged in as guest.", message.UserName, message.DomainName, message.WorkStation, osVersion);
                 session = state.CreateSession("Guest", message.WorkStation, sessionKey, accessToken);
                 response.Action = SessionSetupAction.SetupGuest;
             }
@@ -83,7 +84,8 @@ namespace SMBLibrary.Server.SMB1
                 string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
                 string domainName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.DomainName) as string;
                 string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
-                state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), NTStatus: {3}", userName, domainName, machineName, status);
+                string osVersion = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.OSVersion) as string;
+                state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}', OS version: '{3}'), NTStatus: {4}", userName, domainName, machineName, osVersion, status);
                 header.Status = status;
                 return new ErrorResponse(request.CommandName);
             }
@@ -114,17 +116,18 @@ namespace SMBLibrary.Server.SMB1
                 string userName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.UserName) as string;
                 string domainName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.DomainName) as string;
                 string machineName = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.MachineName) as string;
+                string osVersion = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.OSVersion) as string;
                 byte[] sessionKey = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.SessionKey) as byte[];
                 object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
-                    state.LogToServer(Severity.Information, "Session Setup: User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}').", userName, domainName, machineName);
+                    state.LogToServer(Severity.Information, "Session Setup: User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}', OS version: '{3}').", userName, domainName, machineName, osVersion);
                     state.CreateSession(header.UID, userName, machineName, sessionKey, accessToken);
                 }
                 else
                 {
-                    state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}'), logged in as guest.", userName, domainName, machineName);
+                    state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}', OS version: '{3}'), logged in as guest.", userName, domainName, machineName, osVersion);
                     state.CreateSession(header.UID, "Guest", machineName, sessionKey, accessToken);
                     response.Action = SessionSetupAction.SetupGuest;
                 }
