@@ -58,6 +58,7 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
+            state.LogToServer(Severity.Verbose, "OpenAndX: Opened '{0}{1}'.", share.Name, path);
             ushort? fileID = session.AddOpenFile(header.TID, path, handle);
             if (!fileID.HasValue)
             {

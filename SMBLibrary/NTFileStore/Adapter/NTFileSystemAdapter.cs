@@ -258,7 +258,7 @@ namespace SMBLibrary
             bool disableBuffering = (openOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
             bool buffered = (openOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
             FileShare fileShare = NTFileStoreHelper.ToFileShare(shareAccess);
-            Log(Severity.Information, "OpenFileStream: Opening '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShare, buffered);
+            string fileShareString = fileShare.ToString().Replace(", ", "|");
             try
             {
                 stream = m_fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
@@ -266,10 +266,11 @@ namespace SMBLibrary
             catch (Exception ex)
             {
                 NTStatus status = ToNTStatus(ex);
-                Log(Severity.Verbose, "OpenFile: Cannot open '{0}'. {1}.", path, status);
+                Log(Severity.Verbose, "OpenFile: Cannot open '{0}', Access={1}, Share={2}. NTStatus: {3}.", path, fileAccess, fileShareString, status);
                 return status;
             }
 
+            Log(Severity.Information, "OpenFileStream: Opened '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShareString, buffered);
             if (buffered)
             {
                 stream = new PrefetchedStream(stream);
