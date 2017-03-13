@@ -41,6 +41,7 @@ namespace SMBLibrary.Server.SMB1
 
                 if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, @"\"))
                 {
+                    state.LogToServer(Severity.Verbose, "Tree Connect to '{0}' failed. User '{1}' was denied access.", share.Name, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -51,6 +52,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
                 return new ErrorResponse(request.CommandName);
             }
+            state.LogToServer(Severity.Information, "Tree Connect: User '{0}' connected to '{1}'", session.UserName, share.Name);
             header.TID = treeID.Value;
             if (isExtended)
             {
@@ -89,16 +91,11 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static SMB1Command GetTreeDisconnectResponse(SMB1Header header, TreeDisconnectRequest request, SMB1ConnectionState state)
+        internal static SMB1Command GetTreeDisconnectResponse(SMB1Header header, TreeDisconnectRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            if (!session.IsTreeConnected(header.TID))
-            {
-                header.Status = NTStatus.STATUS_SMB_BAD_TID;
-                return new ErrorResponse(request.CommandName);
-            }
-
             session.DisconnectTree(header.TID);
+            state.LogToServer(Severity.Information, "Tree Disconnect: User '{0}' disconnected from '{1}'", session.UserName, share.Name);
             return new TreeDisconnectResponse();
         }
     }

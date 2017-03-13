@@ -252,7 +252,7 @@ namespace SMBLibrary.Server
                     else if (command is TreeDisconnectRequest)
                     {
                         TreeDisconnectRequest request = (TreeDisconnectRequest)command;
-                        return TreeConnectHelper.GetTreeDisconnectResponse(header, request, state);
+                        return TreeConnectHelper.GetTreeDisconnectResponse(header, request, share, state);
                     }
                     else if (command is TransactionRequest) // Both TransactionRequest and Transaction2Request
                     {

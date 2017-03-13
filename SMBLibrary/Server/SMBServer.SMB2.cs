@@ -136,8 +136,7 @@ namespace SMBLibrary.Server
 
                     if (command is TreeDisconnectRequest)
                     {
-                        session.DisconnectTree(command.Header.TreeID);
-                        return new TreeDisconnectResponse();
+                        return TreeConnectHelper.GetTreeDisconnectResponse((TreeDisconnectRequest)command, share, state);
                     }
                     else if (command is CreateRequest)
                     {
