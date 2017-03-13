@@ -230,7 +230,6 @@ namespace SMBLibrary
             }
             else
             {
-                deleteOnClose = (createOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
                 NTStatus openStatus = OpenFileStream(out stream, path, fileAccess, shareAccess, createOptions);
                 if (openStatus != NTStatus.STATUS_SUCCESS)
                 {
@@ -238,6 +237,7 @@ namespace SMBLibrary
                 }
             }
 
+            deleteOnClose = (createOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
             handle = new FileHandle(path, entry.IsDirectory, stream, deleteOnClose);
             if (fileStatus != FileStatus.FILE_CREATED &&
                 fileStatus != FileStatus.FILE_OVERWRITTEN &&
