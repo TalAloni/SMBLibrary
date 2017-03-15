@@ -213,7 +213,7 @@ namespace SMBLibrary.Server
                 catch (Exception ex)
                 {
                     state.ClientSocket.Close();
-                    Log(Severity.Warning, "[{0}] Rejected Invalid NetBIOS session packet: {1}", state.ConnectionIdentifier, ex.Message);
+                    state.LogToServer(Severity.Warning, "Rejected Invalid NetBIOS session packet: {0}", ex.Message);
                     break;
                 }
 
@@ -331,7 +331,7 @@ namespace SMBLibrary.Server
 
         private void ProcessSendQueue(ConnectionState state)
         {
-            Log(Severity.Trace, "[{0}] Entering ProcessSendQueue", state.ConnectionIdentifier);
+            state.LogToServer(Severity.Trace, "Entering ProcessSendQueue");
             while (true)
             {
                 SessionPacket response;
@@ -347,12 +347,12 @@ namespace SMBLibrary.Server
                 }
                 catch (SocketException ex)
                 {
-                    Log(Severity.Debug, "[{0}] Failed to send packet. SocketException: {1}", state.ConnectionIdentifier, ex.Message);
+                    state.LogToServer(Severity.Debug, "Failed to send packet. SocketException: {0}", ex.Message);
                     return;
                 }
                 catch (ObjectDisposedException)
                 {
-                    Log(Severity.Debug, "[{0}] Failed to send packet. ObjectDisposedException.", state.ConnectionIdentifier);
+                    state.LogToServer(Severity.Debug, "Failed to send packet. ObjectDisposedException.");
                     return;
                 }
             }
