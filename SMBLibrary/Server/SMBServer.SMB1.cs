@@ -257,28 +257,12 @@ namespace SMBLibrary.Server
                     else if (command is TransactionRequest) // Both TransactionRequest and Transaction2Request
                     {
                         TransactionRequest request = (TransactionRequest)command;
-                        try
-                        {
-                            return TransactionHelper.GetTransactionResponse(header, request, share, state);
-                        }
-                        catch (UnsupportedInformationLevelException)
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
+                        return TransactionHelper.GetTransactionResponse(header, request, share, state);
                     }
                     else if (command is TransactionSecondaryRequest) // Both TransactionSecondaryRequest and Transaction2SecondaryRequest
                     {
                         TransactionSecondaryRequest request = (TransactionSecondaryRequest)command;
-                        try
-                        {
-                            return TransactionHelper.GetTransactionResponse(header, request, share, state);
-                        }
-                        catch (UnsupportedInformationLevelException)
-                        {
-                            header.Status = NTStatus.STATUS_INVALID_PARAMETER;
-                            return new ErrorResponse(command.CommandName);
-                        }
+                        return TransactionHelper.GetTransactionResponse(header, request, share, state);
                     }
                     else if (command is NTTransactRequest)
                     {

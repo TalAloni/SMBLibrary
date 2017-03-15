@@ -53,7 +53,16 @@ namespace SMBLibrary.Server.SMB1
             int entriesToReturn = Math.Min(subcommand.SearchCount, entries.Count);
             List<QueryDirectoryFileInformation> segment = entries.GetRange(0, entriesToReturn);
             int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
-            FindInformationList findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+            FindInformationList findInformationList;
+            try
+            {
+                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+            }
+            catch (UnsupportedInformationLevelException)
+            {
+                header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
+                return null;
+            }
             int returnCount = findInformationList.Count;
             Transaction2FindFirst2Response response = new Transaction2FindFirst2Response();
             response.SetFindInformationList(findInformationList, header.UnicodeFlag);
