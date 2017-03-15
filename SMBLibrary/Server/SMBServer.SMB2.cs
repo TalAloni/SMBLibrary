@@ -108,6 +108,7 @@ namespace SMBLibrary.Server
                 }
                 else if (command is LogoffRequest)
                 {
+                    state.LogToServer(Severity.Information, "Logoff: User '{0}' logged off.", session.UserName);
                     m_securityProvider.DeleteSecurityContext(ref session.SecurityContext.AuthenticationContext);
                     state.RemoveSession(command.Header.SessionID);
                     return new LogoffResponse();
