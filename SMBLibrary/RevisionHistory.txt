@@ -137,3 +137,7 @@ Revision History:
         Write to log when share access was denied.
         Add share information to log message where applicable.
         Various Logging related improvements.
+
+1.1.8 - CreateFile: Return STATUS_NO_SUCH_FILE when file not found instead of STATUS_OBJECT_PATH_NOT_FOUND.
+        NTFileSystemAdapter: Bugfix: FILE_DELETE_ON_CLOSE was ignored in some cases.
+        Various Logging related improvements.
