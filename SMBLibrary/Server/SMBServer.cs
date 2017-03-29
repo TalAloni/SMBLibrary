@@ -160,19 +160,28 @@ namespace SMBLibrary.Server
             }
             catch (ObjectDisposedException)
             {
+                state.LogToServer(Severity.Debug, "The connection was terminated");
                 m_connectionManager.ReleaseConnection(state);
                 return;
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
+                const int WSAECONNRESET = 10054;
+                if (ex.ErrorCode == WSAECONNRESET)
+                {
+                    state.LogToServer(Severity.Debug, "The connection was forcibly closed by the remote host");
+                }
+                else
+                {
+                    state.LogToServer(Severity.Debug, "The connection was terminated, Socket error code: {0}", ex.ErrorCode);
+                }
                 m_connectionManager.ReleaseConnection(state);
                 return;
             }
 
             if (numberOfBytesReceived == 0)
             {
-                // The other side has closed the connection
-                state.LogToServer(Severity.Debug, "The other side closed the connection");
+                state.LogToServer(Severity.Debug, "The client closed the connection");
                 m_connectionManager.ReleaseConnection(state);
                 return;
             }
