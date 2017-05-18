@@ -19,6 +19,10 @@ namespace SMBLibrary.Server.SMB1
         {
             SMB1Session session = state.GetSession(header.UID);
             string fileNamePattern = subcommand.FileName;
+            if (!fileNamePattern.StartsWith(@"\"))
+            {
+                fileNamePattern = @"\" + fileNamePattern;
+            }
 
             List<QueryDirectoryFileInformation> entries;
             FileInformationClass informationClass;
@@ -155,6 +159,11 @@ namespace SMBLibrary.Server.SMB1
         {
             SMB1Session session = state.GetSession(header.UID);
             string path = subcommand.FileName;
+            if (!path.StartsWith(@"\"))
+            {
+                path = @"\" + path;
+            }
+
             if (share is FileSystemShare)
             {
                 if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, path))

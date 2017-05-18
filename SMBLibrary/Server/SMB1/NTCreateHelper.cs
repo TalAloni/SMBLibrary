@@ -21,6 +21,11 @@ namespace SMBLibrary.Server.SMB1
             SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & NTCreateFlags.NT_CREATE_REQUEST_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;
+            if (!path.StartsWith(@"\"))
+            {
+                path = @"\" + path;
+            }
+
             FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(request.DesiredAccess, request.CreateDisposition);
             if (share is FileSystemShare)
             {

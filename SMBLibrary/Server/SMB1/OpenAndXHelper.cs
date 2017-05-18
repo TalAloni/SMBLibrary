@@ -21,6 +21,11 @@ namespace SMBLibrary.Server.SMB1
             SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & OpenFlags.SMB_OPEN_EXTENDED_RESPONSE) > 0;
             string path = request.FileName;
+            if (!path.StartsWith(@"\"))
+            {
+                path = @"\" + path;
+            }
+
             AccessMask desiredAccess;
             ShareAccess shareAccess;
             CreateDisposition createDisposition;

@@ -110,17 +110,23 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetCheckDirectoryResponse(SMB1Header header, CheckDirectoryRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
+            string path = request.DirectoryName;
+            if (!path.StartsWith(@"\"))
+            {
+                path = @"\" + path;
+            }
+
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, request.DirectoryName))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, path))
                 {
-                    state.LogToServer(Severity.Verbose, "Check Directory '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.DirectoryName, session.UserName);
+                    state.LogToServer(Severity.Verbose, "Check Directory '{0}{1}' failed. User '{2}' was denied access.", share.Name, path, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
             }
 
-            header.Status = SMB1FileStoreHelper.CheckDirectory(share.FileStore, request.DirectoryName, session.SecurityContext);
+            header.Status = SMB1FileStoreHelper.CheckDirectory(share.FileStore, path, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
@@ -132,18 +138,24 @@ namespace SMBLibrary.Server.SMB1
         internal static SMB1Command GetQueryInformationResponse(SMB1Header header, QueryInformationRequest request, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
+            string path = request.FileName;
+            if (!path.StartsWith(@"\"))
+            {
+                path = @"\" + path;
+            }
+
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, request.FileName))
+                if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, path))
                 {
-                    state.LogToServer(Severity.Verbose, "Query Information on '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.FileName, session.UserName);
+                    state.LogToServer(Severity.Verbose, "Query Information on '{0}{1}' failed. User '{2}' was denied access.", share.Name, path, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
             }
 
             FileNetworkOpenInformation fileInfo;
-            header.Status = SMB1FileStoreHelper.QueryInformation(out fileInfo, share.FileStore, request.FileName, session.SecurityContext);
+            header.Status = SMB1FileStoreHelper.QueryInformation(out fileInfo, share.FileStore, path, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 return new ErrorResponse(request.CommandName);
