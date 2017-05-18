@@ -157,62 +157,77 @@ namespace SMBLibrary
                 else
                 {
                     fileStatus = FileStatus.FILE_EXISTS;
-                    if (!requestedWriteAccess)
+                    if (createDisposition == CreateDisposition.FILE_OPEN_IF)
                     {
-                        return NTStatus.STATUS_ACCESS_DENIED;
-                    }
-
-                    if (createDisposition == CreateDisposition.FILE_OVERWRITE ||
-                        createDisposition == CreateDisposition.FILE_OVERWRITE_IF)
-                    {
-                        // Truncate the file
-                        try
+                        if (entry.IsDirectory && forceFile)
                         {
-                            Stream temp = m_fileSystem.OpenFile(path, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite);
-                            temp.Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            NTStatus status = ToNTStatus(ex);
-                            Log(Severity.Verbose, "CreateFile: Error truncating '{0}'. {1}.", path, status);
-                            return status;
-                        }
-                        fileStatus = FileStatus.FILE_OVERWRITTEN;
-                    }
-                    else if (createDisposition == CreateDisposition.FILE_SUPERSEDE)
-                    {
-                        // Delete the old file
-                        try
-                        {
-                            m_fileSystem.Delete(path);
-                        }
-                        catch(Exception ex)
-                        {
-                            NTStatus status = ToNTStatus(ex);
-                            Log(Severity.Verbose, "CreateFile: Error deleting '{0}'. {1}.", path, status);
-                            return status;
+                            return NTStatus.STATUS_FILE_IS_A_DIRECTORY;
                         }
 
-                        try
+                        if (!entry.IsDirectory && forceDirectory)
                         {
-                            if (forceDirectory)
-                            {
-                                Log(Severity.Information, "CreateFile: Creating directory '{0}'", path);
-                                entry = m_fileSystem.CreateDirectory(path);
-                            }
-                            else
-                            {
-                                Log(Severity.Information, "CreateFile: Creating file '{0}'", path);
-                                entry = m_fileSystem.CreateFile(path);
-                            }
+                            return NTStatus.STATUS_OBJECT_PATH_INVALID;
                         }
-                        catch (Exception ex)
+                    }
+                    else
+                    {
+                        if (!requestedWriteAccess)
                         {
-                            NTStatus status = ToNTStatus(ex);
-                            Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
-                            return status;
+                            return NTStatus.STATUS_ACCESS_DENIED;
                         }
-                        fileStatus = FileStatus.FILE_SUPERSEDED;
+
+                        if (createDisposition == CreateDisposition.FILE_OVERWRITE ||
+                            createDisposition == CreateDisposition.FILE_OVERWRITE_IF)
+                        {
+                            // Truncate the file
+                            try
+                            {
+                                Stream temp = m_fileSystem.OpenFile(path, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                                temp.Close();
+                            }
+                            catch (Exception ex)
+                            {
+                                NTStatus status = ToNTStatus(ex);
+                                Log(Severity.Verbose, "CreateFile: Error truncating '{0}'. {1}.", path, status);
+                                return status;
+                            }
+                            fileStatus = FileStatus.FILE_OVERWRITTEN;
+                        }
+                        else if (createDisposition == CreateDisposition.FILE_SUPERSEDE)
+                        {
+                            // Delete the old file
+                            try
+                            {
+                                m_fileSystem.Delete(path);
+                            }
+                            catch (Exception ex)
+                            {
+                                NTStatus status = ToNTStatus(ex);
+                                Log(Severity.Verbose, "CreateFile: Error deleting '{0}'. {1}.", path, status);
+                                return status;
+                            }
+
+                            try
+                            {
+                                if (forceDirectory)
+                                {
+                                    Log(Severity.Information, "CreateFile: Creating directory '{0}'", path);
+                                    entry = m_fileSystem.CreateDirectory(path);
+                                }
+                                else
+                                {
+                                    Log(Severity.Information, "CreateFile: Creating file '{0}'", path);
+                                    entry = m_fileSystem.CreateFile(path);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                NTStatus status = ToNTStatus(ex);
+                                Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                                return status;
+                            }
+                            fileStatus = FileStatus.FILE_SUPERSEDED;
+                        }
                     }
                 }
             }
