@@ -256,7 +256,7 @@ namespace SMBLibrary
             // of a file copy operation (where the caller will attempt to simply copy the reparse point).
             bool openReparsePoint = (openOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
             bool disableBuffering = (openOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
-            bool buffered = (openOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0 && !disableBuffering && !openReparsePoint;
+            bool buffered = (openOptions & CreateOptions.FILE_RANDOM_ACCESS) == 0 && !disableBuffering && !openReparsePoint;
             FileShare fileShare = NTFileStoreHelper.ToFileShare(shareAccess);
             string fileShareString = fileShare.ToString().Replace(", ", "|");
             try
