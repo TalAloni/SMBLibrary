@@ -182,7 +182,7 @@ namespace SMBLibrary
                             // Truncate the file
                             try
                             {
-                                Stream temp = m_fileSystem.OpenFile(path, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                                Stream temp = m_fileSystem.OpenFile(path, FileMode.Truncate, FileAccess.ReadWrite, FileShare.ReadWrite, FileOptions.None);
                                 temp.Close();
                             }
                             catch (Exception ex)
@@ -266,17 +266,13 @@ namespace SMBLibrary
         private NTStatus OpenFileStream(out Stream stream, string path, FileAccess fileAccess, ShareAccess shareAccess, CreateOptions openOptions)
         {
             stream = null;
-            // When FILE_OPEN_REPARSE_POINT is specified, the operation should continue normally if the file is not a reparse point.
-            // FILE_OPEN_REPARSE_POINT is a hint that the caller does not intend to actually read the file, with the exception
-            // of a file copy operation (where the caller will attempt to simply copy the reparse point).
-            bool openReparsePoint = (openOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0;
-            bool disableBuffering = (openOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0;
-            bool buffered = (openOptions & CreateOptions.FILE_RANDOM_ACCESS) == 0 && !disableBuffering && !openReparsePoint;
             FileShare fileShare = NTFileStoreHelper.ToFileShare(shareAccess);
+            FileOptions fileOptions = ToFileOptions(openOptions);
             string fileShareString = fileShare.ToString().Replace(", ", "|");
+            string fileOptionsString = ToFileOptionsString(fileOptions);
             try
             {
-                stream = m_fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare);
+                stream = m_fileSystem.OpenFile(path, FileMode.Open, fileAccess, fileShare, fileOptions);
             }
             catch (Exception ex)
             {
@@ -285,12 +281,7 @@ namespace SMBLibrary
                 return status;
             }
 
-            Log(Severity.Information, "OpenFileStream: Opened '{0}', Access={1}, Share={2}, Buffered={3}", path, fileAccess, fileShareString, buffered);
-            if (buffered)
-            {
-                stream = new PrefetchedStream(stream);
-            }
-
+            Log(Severity.Information, "OpenFileStream: Opened '{0}', Access={1}, Share={2}, FileOptions={3}", path, fileAccess, fileShareString, fileOptionsString);
             return NTStatus.STATUS_SUCCESS;
         }
 
@@ -303,18 +294,6 @@ namespace SMBLibrary
                 fileHandle.Stream.Close();
             }
 
-            if (fileHandle.DeleteOnClose)
-            {
-                try
-                {
-                    m_fileSystem.Delete(fileHandle.Path);
-                    Log(Severity.Verbose, "CloseFile: Deleted '{0}'.", fileHandle.Path);
-                }
-                catch
-                {
-                    Log(Severity.Verbose, "CloseFile: Error deleting '{0}'.", fileHandle.Path);
-                }
-            }
             return NTStatus.STATUS_SUCCESS;
         }
 
@@ -460,6 +439,63 @@ namespace SMBLibrary
             {
                 return NTStatus.STATUS_DATA_ERROR;
             }
+        }
+
+        private static FileOptions ToFileOptions(CreateOptions createOptions)
+        {
+            const FileOptions FILE_FLAG_OPEN_REPARSE_POINT = (FileOptions)0x00200000;
+            const FileOptions FILE_FLAG_NO_BUFFERING = (FileOptions)0x20000000;
+            FileOptions result = FileOptions.None;
+            if ((createOptions & CreateOptions.FILE_OPEN_REPARSE_POINT) > 0)
+            {
+                result |= FILE_FLAG_OPEN_REPARSE_POINT;
+            }
+            if ((createOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0)
+            {
+                result |= FILE_FLAG_NO_BUFFERING;
+            }
+            if ((createOptions & CreateOptions.FILE_RANDOM_ACCESS) > 0)
+            {
+                result |= FileOptions.RandomAccess;
+            }
+            if ((createOptions & CreateOptions.FILE_SEQUENTIAL_ONLY) > 0)
+            {
+                result |= FileOptions.SequentialScan;
+            }
+            if ((createOptions & CreateOptions.FILE_WRITE_THROUGH) > 0)
+            {
+                result |= FileOptions.WriteThrough;
+            }
+            if ((createOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0)
+            {
+                result |= FileOptions.DeleteOnClose;
+            }
+
+            return result;
+        }
+
+        private static string ToFileOptionsString(FileOptions options)
+        {
+            string result = String.Empty;
+            const FileOptions FILE_FLAG_OPEN_REPARSE_POINT = (FileOptions)0x00200000;
+            const FileOptions FILE_FLAG_NO_BUFFERING = (FileOptions)0x20000000;
+            if ((options & FILE_FLAG_OPEN_REPARSE_POINT) > 0)
+            {
+                result += "ReparsePoint|";
+                options &= ~FILE_FLAG_OPEN_REPARSE_POINT;
+            }
+            if ((options & FILE_FLAG_NO_BUFFERING) > 0)
+            {
+                result += "NoBuffering|";
+                options &= ~FILE_FLAG_NO_BUFFERING;
+            }
+
+            if (result == String.Empty || options != FileOptions.None)
+            {
+                result += options.ToString().Replace(", ", "|");
+            }
+            result = result.TrimEnd(new char[] { '|' });
+            return result;
         }
 
         /// <summary>

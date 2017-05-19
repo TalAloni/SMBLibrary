@@ -13,13 +13,18 @@ namespace Utilities
         public abstract void Move(string source, string destination);
         public abstract void Delete(string path);
         public abstract List<FileSystemEntry> ListEntriesInDirectory(string path);
-        public abstract Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share);
+        public abstract Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share, FileOptions options);
         public abstract void SetAttributes(string path, bool? isHidden, bool? isReadonly, bool? isArchived);
         public abstract void SetDates(string path, DateTime? creationDT, DateTime? lastWriteDT, DateTime? lastAccessDT);
 
         public List<FileSystemEntry> ListEntriesInRootDirectory()
         {
             return ListEntriesInDirectory(@"\");
+        }
+
+        public Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
+        {
+            return OpenFile(path, mode, access, share, FileOptions.None);
         }
 
         public void CopyFile(string sourcePath, string destinationPath)
@@ -41,8 +46,8 @@ namespace Utilities
             {
                 destinationFile = CreateFile(destinationPath);
             }
-            Stream sourceStream = OpenFile(sourcePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            Stream destinationStream = OpenFile(destinationPath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            Stream sourceStream = OpenFile(sourcePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, FileOptions.SequentialScan);
+            Stream destinationStream = OpenFile(destinationPath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite, FileOptions.None);
             while (sourceStream.Position < sourceStream.Length)
             {
                 int readSize = (int)Math.Max(bufferLength, sourceStream.Length - sourceStream.Position);

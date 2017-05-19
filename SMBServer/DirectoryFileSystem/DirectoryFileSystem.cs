@@ -137,11 +137,12 @@ namespace SMBServer
             return result;
         }
 
-        public override Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
+        public override Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share, FileOptions options)
         {
             ValidatePath(path);
             string fullPath = m_directory.FullName + path;
-            FileStream fileStream = File.Open(fullPath, mode, access, share);
+            const int DefaultBufferSize = 4096;
+            FileStream fileStream = new FileStream(fullPath, mode, access, share, DefaultBufferSize, options);
             if (!m_openHandles.ContainsKey(fullPath.ToLower()))
             {
                 m_openHandles.Add(fullPath.ToLower(), fileStream.SafeFileHandle);
