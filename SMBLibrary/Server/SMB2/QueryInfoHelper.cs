@@ -65,7 +65,7 @@ namespace SMBLibrary.Server.SMB2
                         return new ErrorResponse(request.CommandName, queryStatus);
                     }
 
-                    state.LogToServer(Severity.Information, "GetFileSystemInformation on '{0} succeeded. Information class: {1}", share.Name, request.FileSystemInformationClass);
+                    state.LogToServer(Severity.Information, "GetFileSystemInformation on '{0}' succeeded. Information class: {1}", share.Name, request.FileSystemInformationClass);
                     QueryInfoResponse response = new QueryInfoResponse();
                     response.SetFileSystemInformation(fileSystemInformation);
                     return response;
