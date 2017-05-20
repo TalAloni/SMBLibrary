@@ -301,11 +301,15 @@ namespace SMBLibrary.Authentication.NTLM
         /// </summary>
         private bool AuthenticateV2(string domainName, string accountName, string password, byte[] serverChallenge, byte[] lmResponse, byte[] ntResponse)
         {
-            byte[] _LMv2ClientChallenge = ByteReader.ReadBytes(lmResponse, 16, 8);
-            byte[] expectedLMv2Response = NTLMCryptography.ComputeLMv2Response(serverChallenge, _LMv2ClientChallenge, password, accountName, domainName);
-            if (ByteUtils.AreByteArraysEqual(expectedLMv2Response, lmResponse))
+            // Note: Linux CIFS VFS 3.10 will send LmChallengeResponse with length of 0 bytes
+            if (lmResponse.Length == 24)
             {
-                return true;
+                byte[] _LMv2ClientChallenge = ByteReader.ReadBytes(lmResponse, 16, 8);
+                byte[] expectedLMv2Response = NTLMCryptography.ComputeLMv2Response(serverChallenge, _LMv2ClientChallenge, password, accountName, domainName);
+                if (ByteUtils.AreByteArraysEqual(expectedLMv2Response, lmResponse))
+                {
+                    return true;
+                }
             }
 
             if (AuthenticationMessageUtils.IsNTLMv2NTResponse(ntResponse))
