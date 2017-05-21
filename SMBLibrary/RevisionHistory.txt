@@ -141,3 +141,9 @@ Revision History:
 1.1.8 - CreateFile: Return STATUS_NO_SUCH_FILE when file not found instead of STATUS_OBJECT_PATH_NOT_FOUND.
         NTFileSystemAdapter: Bugfix: FILE_DELETE_ON_CLOSE was ignored in some cases.
         Various Logging related improvements.
+
+1.1.9 - IFileSystem: Added FileOptions parameter to OpenFile.
+        SMB1: Added support for paths without a leading backslash.
+        NTFileSystemAdapter: Bugfix: FILE_OPEN_IF was not handled properly if the file exists.
+        IndependentNTLMAuthenticationProvider: Workaround for NTLMv2 with LmChallengeResponse length of 0 bytes.
+        Minor logging improvements.
