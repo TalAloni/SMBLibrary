@@ -78,10 +78,12 @@ namespace SMBLibrary.Server.SMB2
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
                 }
 
-                if (pageLength + fileInformation.Length <= request.OutputBufferLength)
+                int entryLength = fileInformation.Length;
+                if (pageLength + entryLength <= request.OutputBufferLength)
                 {
                     page.Add(fileInformation);
-                    pageLength += fileInformation.Length;
+                    int paddedLength = (int)Math.Ceiling((double)entryLength / 8) * 8;
+                    pageLength += paddedLength;
                     openSearch.EnumerationLocation = index + 1;
                 }
                 else
