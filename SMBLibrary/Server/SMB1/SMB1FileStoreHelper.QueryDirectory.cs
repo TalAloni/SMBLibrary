@@ -50,13 +50,18 @@ namespace SMBLibrary.Server.SMB1
         public static FindInformationList GetFindInformationList(List<QueryDirectoryFileInformation> entries, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys, int maxLength)
         {
             FindInformationList result = new FindInformationList();
+            int pageLength = 0;
             for (int index = 0; index < entries.Count; index++)
             {
                 FindInformation infoEntry = GetFindInformation(entries[index], informationLevel, isUnicode, returnResumeKeys);
-                result.Add(infoEntry);
-                if (result.GetLength(isUnicode) > maxLength)
+                int entryLength = infoEntry.GetLength(isUnicode);
+                if (pageLength + entryLength <= maxLength)
                 {
-                    result.RemoveAt(result.Count - 1);
+                    result.Add(infoEntry);
+                    pageLength += entryLength;
+                }
+                else
+                {
                     break;
                 }
             }
