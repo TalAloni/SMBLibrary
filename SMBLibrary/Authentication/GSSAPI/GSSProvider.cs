@@ -49,12 +49,35 @@ namespace SMBLibrary.Authentication.GSSAPI
                 if (spnegoToken is SimpleProtectedNegotiationTokenInit)
                 {
                     SimpleProtectedNegotiationTokenInit tokenInit = (SimpleProtectedNegotiationTokenInit)spnegoToken;
-                    IGSSMechanism mechanism = FindMechanism(tokenInit.MechanismTypeList);
+                    if (tokenInit.MechanismTypeList.Count == 0)
+                    {
+                        return NTStatus.SEC_E_INVALID_TOKEN;
+                    }
+
+                    // RFC 4178: Note that in order to avoid an extra round trip, the first context establishment token
+                    // of the initiator's preferred mechanism SHOULD be embedded in the initial negotiation message.
+                    byte[] preferredMechanism = tokenInit.MechanismTypeList[0];
+                    IGSSMechanism mechanism = FindMechanism(preferredMechanism);
+                    bool isPreferredMechanism = (mechanism != null);
+                    if (!isPreferredMechanism)
+                    {
+                        mechanism = FindMechanism(tokenInit.MechanismTypeList);
+                    }
+
                     if (mechanism != null)
                     {
-                        byte[] mechanismOutput;
-                        NTStatus status = mechanism.AcceptSecurityContext(ref context, tokenInit.MechanismToken, out mechanismOutput);
-                        outputToken = GetSPNEGOTokenResponseBytes(mechanismOutput, status, mechanism.Identifier);
+                        NTStatus status;
+                        if (isPreferredMechanism)
+                        {
+                            byte[] mechanismOutput;
+                            status = mechanism.AcceptSecurityContext(ref context, tokenInit.MechanismToken, out mechanismOutput);
+                            outputToken = GetSPNEGOTokenResponseBytes(mechanismOutput, status, mechanism.Identifier);
+                        }
+                        else
+                        {
+                            status = NTStatus.SEC_I_CONTINUE_NEEDED;
+                            outputToken = GetSPNEGOTokenResponseBytes(null, status, mechanism.Identifier);
+                        }
                         m_contextToMechanism[context] = mechanism;
                         return status;
                     }
