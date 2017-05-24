@@ -46,7 +46,7 @@ namespace SMBLibrary.Authentication.GSSAPI
                 {
                     byte value = (byte)(length % 256);
                     values.Add(value);
-                    length = value / 256;
+                    length = length / 256;
                 }
                 while (length > 0);
                 values.Reverse();
