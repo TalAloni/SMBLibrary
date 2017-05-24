@@ -22,6 +22,9 @@ namespace SMBLibrary.Authentication.GSSAPI
         public const byte MechanismTokenTag = 0xA2;
         public const byte MechanismListMICTag = 0xA3;
 
+        /// <summary>
+        /// Contains one or more security mechanisms available for the initiator, in decreasing preference order.
+        /// </summary>
         public List<byte[]> MechanismTypeList; // Optional
         // reqFlags - Optional, RECOMMENDED to be left out
         public byte[] MechanismToken; // Optional
