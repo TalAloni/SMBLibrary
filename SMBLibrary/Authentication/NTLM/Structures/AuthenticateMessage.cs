@@ -63,7 +63,7 @@ namespace SMBLibrary.Authentication.NTLM
 
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
-                fixedLength += 8;
+                fixedLength += NTLMVersion.Length;
             }
 
             int payloadLength = LmChallengeResponse.Length + NtChallengeResponse.Length + DomainName.Length * 2 + UserName.Length * 2 + WorkStation.Length * 2 + EncryptedRandomSessionKey.Length;

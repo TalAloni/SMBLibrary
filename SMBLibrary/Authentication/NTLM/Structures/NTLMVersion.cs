@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,6 +16,7 @@ namespace SMBLibrary.Authentication.NTLM
     /// </summary>
     public class NTLMVersion
     {
+        public const int Length = 8;
         public const byte NTLMSSP_REVISION_W2K3 = 0x0F;
 
         public byte ProductMajorVersion;

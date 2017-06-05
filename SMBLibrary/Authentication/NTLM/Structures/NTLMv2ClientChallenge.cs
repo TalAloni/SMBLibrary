@@ -16,6 +16,7 @@ namespace SMBLibrary.Authentication.NTLM
     /// </summary>
     public class NTLMv2ClientChallenge
     {
+        public const int MinimumLength = 32;
         public const byte StructureVersion = 0x01;
         public static readonly DateTime EpochTime = DateTime.FromFileTimeUtc(0);
 

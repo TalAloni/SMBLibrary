@@ -83,7 +83,7 @@ namespace SMBLibrary.Authentication.NTLM
         /// </remarks>
         public static bool IsNTLMv2NTResponse(byte[] ntResponse)
         {
-            return (ntResponse.Length >= 48 &&
+            return (ntResponse.Length >= 16 + NTLMv2ClientChallenge.MinimumLength &&
                     ntResponse[16] == NTLMv2ClientChallenge.StructureVersion &&
                     ntResponse[17] == NTLMv2ClientChallenge.StructureVersion);
         }
