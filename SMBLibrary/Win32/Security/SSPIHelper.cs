@@ -321,7 +321,7 @@ namespace SMBLibrary.Win32.Security
                 }
                 else if (result == SEC_E_INVALID_TOKEN)
                 {
-                    throw new Exception("InitializeSecurityContext failed, Invalid token");
+                    throw new Exception("AcceptSecurityContext failed, Invalid token");
                 }
                 else if (result == SEC_E_BUFFER_TOO_SMALL)
                 {
