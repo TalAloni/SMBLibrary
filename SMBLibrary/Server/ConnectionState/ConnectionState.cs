@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.NetBios;
 using Utilities;
 
@@ -23,7 +24,7 @@ namespace SMBLibrary.Server
         public BlockingQueue<SessionPacket> SendQueue;
         protected LogDelegate LogToServerHandler;
         public SMBDialect Dialect;
-        public object AuthenticationContext;
+        public GSSContext AuthenticationContext;
 
         public ConnectionState(LogDelegate logToServerHandler)
         {
