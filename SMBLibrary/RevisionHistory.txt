@@ -128,7 +128,7 @@ Revision History:
         SocketUtils.ReleaseSocket: Improved exception handling.
         SMB2: Check share permissions before Read / Write.
         SMB2: FileID related improvements.
-        SMBServer: Hid internal classes
+        SMBServer: Hid internal classes.
         SMB2: CloseHelper: An error response will be returned if the underlying file store was not able to close the handle.
         Renamed ShareCollection to SMBShareCollection.
         NetBIOS session packet length is now calculated correctly. 
@@ -147,3 +147,9 @@ Revision History:
         NTFileSystemAdapter: Bugfix: FILE_OPEN_IF was not handled properly if the file exists.
         IndependentNTLMAuthenticationProvider: Workaround for NTLMv2 with LmChallengeResponse length of 0 bytes.
         Minor logging improvements.
+
+1.2.0 - SMB1: Minor optimization of GetFindInformationList.
+        SMB2: Bugfix: QUERY_DIRECTORY response buffer length sometimes exceeded the request's OutputBufferLength.
+        Bugfix: DerEncodingHelper.WriteLength was writing incorrect length.
+        Improved GSS implementation.
+        Corrected exception message.
