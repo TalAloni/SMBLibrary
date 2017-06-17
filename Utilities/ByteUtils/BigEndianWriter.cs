@@ -30,6 +30,18 @@ namespace Utilities
             offset += 2;
         }
 
+        public static void WriteUInt24(byte[] buffer, int offset, uint value)
+        {
+            byte[] bytes = BigEndianConverter.GetBytes(value);
+            Array.Copy(bytes, 1, buffer, offset, 3);
+        }
+
+        public static void WriteUInt24(byte[] buffer, ref int offset, uint value)
+        {
+            WriteUInt24(buffer, offset, value);
+            offset += 3;
+        }
+
         public static void WriteInt32(byte[] buffer, int offset, int value)
         {
             byte[] bytes = BigEndianConverter.GetBytes(value);
@@ -100,6 +112,12 @@ namespace Utilities
         {
             byte[] bytes = BigEndianConverter.GetBytes(value);
             stream.Write(bytes, 0, bytes.Length);
+        }
+
+        public static void WriteUInt24(Stream stream, uint value)
+        {
+            byte[] bytes = BigEndianConverter.GetBytes(value);
+            stream.Write(bytes, 1, 3);
         }
 
         public static void WriteInt32(Stream stream, int value)

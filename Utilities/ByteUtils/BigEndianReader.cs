@@ -18,6 +18,17 @@ namespace Utilities
             return BigEndianConverter.ToUInt16(buffer, offset - 2);
         }
 
+        public static uint ReadUInt24(byte[] buffer, int offset)
+        {
+            return (uint)((buffer[offset + 0] << 16) | (buffer[offset + 1] << 8) | (buffer[offset + 2] << 0));
+        }
+
+        public static uint ReadUInt24(byte[] buffer, ref int offset)
+        {
+            offset += 3;
+            return ReadUInt24(buffer, offset - 3);
+        }
+
         public static int ReadInt32(byte[] buffer, ref int offset)
         {
             offset += 4;
@@ -60,6 +71,13 @@ namespace Utilities
             byte[] buffer = new byte[2];
             stream.Read(buffer, 0, 2);
             return BigEndianConverter.ToUInt16(buffer, 0);
+        }
+
+        public static uint ReadUInt24(Stream stream)
+        {
+            byte[] buffer = new byte[4];
+            stream.Read(buffer, 1, 3);
+            return BigEndianConverter.ToUInt32(buffer, 0);
         }
 
         public static int ReadInt32(Stream stream)
