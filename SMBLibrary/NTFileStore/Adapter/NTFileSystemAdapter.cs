@@ -18,7 +18,7 @@ namespace SMBLibrary
 
         private IFileSystem m_fileSystem;
 
-        public event EventHandler<LogEntry> OnLogEntry;
+        public event EventHandler<LogEntry> LogEntryAdded;
 
         public NTFileSystemAdapter(IFileSystem fileSystem)
         {
@@ -377,7 +377,7 @@ namespace SMBLibrary
         public void Log(Severity severity, string message)
         {
             // To be thread-safe we must capture the delegate reference first
-            EventHandler<LogEntry> handler = OnLogEntry;
+            EventHandler<LogEntry> handler = LogEntryAdded;
             if (handler != null)
             {
                 handler(this, new LogEntry(DateTime.Now, severity, "NT FileSystem Adapter", message));

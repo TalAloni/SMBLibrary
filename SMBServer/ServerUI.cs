@@ -99,7 +99,7 @@ namespace SMBServer
             GSSProvider securityProvider = new GSSProvider(authenticationMechanism);
             m_server = new SMBLibrary.Server.SMBServer(shares, securityProvider);
             m_logWriter = new LogWriter();
-            m_server.OnLogEntry += new EventHandler<LogEntry>(m_logWriter.OnLogEntry);
+            m_server.LogEntryAdded += new EventHandler<LogEntry>(m_logWriter.OnLogEntryAdded);
 
             try
             {

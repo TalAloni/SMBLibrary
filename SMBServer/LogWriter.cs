@@ -90,7 +90,7 @@ namespace SMBServer
             }
         }
 
-        public void OnLogEntry(object sender, LogEntry entry)
+        public void OnLogEntryAdded(object sender, LogEntry entry)
         {
             if (entry.Severity != Severity.Trace)
             {

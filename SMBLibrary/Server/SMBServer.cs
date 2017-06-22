@@ -40,7 +40,7 @@ namespace SMBLibrary.Server
         private bool m_listening;
         private DateTime m_serverStartTime;
 
-        public event EventHandler<LogEntry> OnLogEntry;
+        public event EventHandler<LogEntry> LogEntryAdded;
 
         public SMBServer(SMBShareCollection shares, GSSProvider securityProvider)
         {
@@ -375,7 +375,7 @@ namespace SMBLibrary.Server
         private void Log(Severity severity, string message)
         {
             // To be thread-safe we must capture the delegate reference first
-            EventHandler<LogEntry> handler = OnLogEntry;
+            EventHandler<LogEntry> handler = LogEntryAdded;
             if (handler != null)
             {
                 handler(this, new LogEntry(DateTime.Now, severity, "SMB Server", message));
