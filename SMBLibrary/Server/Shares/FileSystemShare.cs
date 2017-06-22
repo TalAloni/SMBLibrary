@@ -37,7 +37,7 @@ namespace SMBLibrary.Server
         private string m_name;
         private INTFileStore m_fileSystem;
 
-        public event EventHandler<AccessRequestArgs> OnAccessRequest;
+        public event EventHandler<AccessRequestArgs> AccessRequested;
 
         public FileSystemShare(string shareName, INTFileStore fileSystem)
         {
@@ -64,7 +64,7 @@ namespace SMBLibrary.Server
         public bool HasAccess(SecurityContext securityContext, string path, FileAccess requestedAccess)
         {
             // To be thread-safe we must capture the delegate reference first
-            EventHandler<AccessRequestArgs> handler = OnAccessRequest;
+            EventHandler<AccessRequestArgs> handler = AccessRequested;
             if (handler != null)
             {
                 AccessRequestArgs args = new AccessRequestArgs(securityContext.UserName, path, requestedAccess, securityContext.MachineName, securityContext.ClientEndPoint);

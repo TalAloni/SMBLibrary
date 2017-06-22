@@ -168,7 +168,7 @@ namespace SMBServer
                 XmlNode writeAccessNode = shareNode.SelectSingleNode("WriteAccess");
                 List<string> writeAccess = ReadAccessList(writeAccessNode);
                 FileSystemShare share = new FileSystemShare(shareName, new DirectoryFileSystem(sharePath));
-                share.OnAccessRequest += delegate(object sender, AccessRequestArgs args)
+                share.AccessRequested += delegate(object sender, AccessRequestArgs args)
                 {
                     bool hasReadAccess = Contains(readAccess, "Users") || Contains(readAccess, args.UserName);
                     bool hasWriteAccess = Contains(writeAccess, "Users") || Contains(writeAccess, args.UserName);
