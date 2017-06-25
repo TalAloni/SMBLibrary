@@ -51,7 +51,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             return SimpleProtectedNegotiationToken.GetTokenBytes(token);
         }
 
-        public NTStatus AcceptSecurityContext(ref GSSContext context, byte[] inputToken, out byte[] outputToken)
+        public virtual NTStatus AcceptSecurityContext(ref GSSContext context, byte[] inputToken, out byte[] outputToken)
         {
             outputToken = null;
             SimpleProtectedNegotiationToken spnegoToken = SimpleProtectedNegotiationToken.ReadToken(inputToken, 0);
@@ -140,7 +140,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             return NTStatus.SEC_E_INVALID_TOKEN;
         }
 
-        public object GetContextAttribute(GSSContext context, GSSAttributeName attributeName)
+        public virtual object GetContextAttribute(GSSContext context, GSSAttributeName attributeName)
         {
             if (context == null)
             {
@@ -150,7 +150,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             return mechanism.GetContextAttribute(context.MechanismContext, attributeName);
         }
 
-        public bool DeleteSecurityContext(ref GSSContext context)
+        public virtual bool DeleteSecurityContext(ref GSSContext context)
         {
             if (context != null)
             {
@@ -163,7 +163,7 @@ namespace SMBLibrary.Authentication.GSSAPI
         /// <summary>
         /// Helper method for legacy implementation.
         /// </summary>
-        public NTStatus GetNTLMChallengeMessage(out GSSContext context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
+        public virtual NTStatus GetNTLMChallengeMessage(out GSSContext context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
         {
             IGSSMechanism ntlmAuthenticationProvider = FindMechanism(NTLMSSPIdentifier);
             if (ntlmAuthenticationProvider != null)
@@ -185,7 +185,7 @@ namespace SMBLibrary.Authentication.GSSAPI
         /// <summary>
         /// Helper method for legacy implementation.
         /// </summary>
-        public NTStatus NTLMAuthenticate(GSSContext context, AuthenticateMessage authenticateMessage)
+        public virtual NTStatus NTLMAuthenticate(GSSContext context, AuthenticateMessage authenticateMessage)
         {
             if (context != null && ByteUtils.AreByteArraysEqual(context.Mechanism.Identifier, NTLMSSPIdentifier))
             {
