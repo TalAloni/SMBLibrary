@@ -29,7 +29,7 @@ namespace SMBLibrary.Server.SMB1
             int maxOutputLength = (int)maxDataCount;
             byte[] output;
             header.Status = share.FileStore.DeviceIOControl(openFile.Handle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, subcommand.WriteData, out output, maxOutputLength);
-            if (header.Status != NTStatus.STATUS_SUCCESS)
+            if (header.Status != NTStatus.STATUS_SUCCESS && header.Status != NTStatus.STATUS_BUFFER_OVERFLOW)
             {
                 return null;
             }

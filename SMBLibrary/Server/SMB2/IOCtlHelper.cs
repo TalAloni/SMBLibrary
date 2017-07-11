@@ -49,12 +49,13 @@ namespace SMBLibrary.Server.SMB2
             int maxOutputLength = (int)request.MaxOutputResponse;
             byte[] output;
             NTStatus status = share.FileStore.DeviceIOControl(handle, request.CtlCode, request.Input, out output, maxOutputLength);
-            if (status != NTStatus.STATUS_SUCCESS)
+            if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_BUFFER_OVERFLOW)
             {
                 return new ErrorResponse(request.CommandName, status);
             }
 
             IOCtlResponse response = new IOCtlResponse();
+            response.Header.Status = status;
             response.CtlCode = request.CtlCode;
             response.FileId = request.FileId;
             response.Output = output;

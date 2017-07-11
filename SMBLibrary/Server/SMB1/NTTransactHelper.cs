@@ -103,7 +103,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
             }
 
-            if (header.Status != NTStatus.STATUS_SUCCESS)
+            if (subcommandResponse == null)
             {
                 return new ErrorResponse(CommandName.SMB_COM_NT_TRANSACT);
             }
@@ -129,7 +129,7 @@ namespace SMBLibrary.Server.SMB1
                 int maxOutputLength = (int)maxDataCount;
                 byte[] output;
                 header.Status = share.FileStore.DeviceIOControl(openFile.Handle, subcommand.FunctionCode, subcommand.Data, out output, maxOutputLength);
-                if (header.Status != NTStatus.STATUS_SUCCESS)
+                if (header.Status != NTStatus.STATUS_SUCCESS && header.Status != NTStatus.STATUS_BUFFER_OVERFLOW)
                 {
                     return null;
                 }
