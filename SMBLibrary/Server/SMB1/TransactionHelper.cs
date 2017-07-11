@@ -22,13 +22,12 @@ namespace SMBLibrary.Server.SMB1
         /// </summary>
         internal static List<SMB1Command> GetTransactionResponse(SMB1Header header, TransactionRequest request, ISMBShare share, SMB1ConnectionState state)
         {
-            ProcessStateObject processState = state.ObtainProcessState(header.PID);
-            processState.MaxDataCount = request.MaxDataCount;
-
             if (request.TransParameters.Length < request.TotalParameterCount ||
                 request.TransData.Length < request.TotalDataCount)
             {
                 // A secondary transaction request is pending
+                ProcessStateObject processState = state.CreateProcessState(header.PID);
+                processState.MaxDataCount = request.MaxDataCount;
                 processState.Name = request.Name;
                 processState.TransactionSetup = request.Setup;
                 processState.TransactionParameters = new byte[request.TotalParameterCount];
@@ -51,11 +50,11 @@ namespace SMBLibrary.Server.SMB1
                 // We have a complete command
                 if (request is Transaction2Request)
                 {
-                    return GetCompleteTransaction2Response(header, request.Setup, request.TransParameters, request.TransData, share, state);
+                    return GetCompleteTransaction2Response(header, request.MaxDataCount, request.Setup, request.TransParameters, request.TransData, share, state);
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, request.Name, request.Setup, request.TransParameters, request.TransData, share, state);
+                    return GetCompleteTransactionResponse(header, request.MaxDataCount, request.Name, request.Setup, request.TransParameters, request.TransData, share, state);
                 }
             }
         }
@@ -85,18 +84,19 @@ namespace SMBLibrary.Server.SMB1
             else
             {
                 // We have a complete command
+                state.RemoveProcessState(header.PID);
                 if (request is Transaction2SecondaryRequest)
                 {
-                    return GetCompleteTransaction2Response(header, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
+                    return GetCompleteTransaction2Response(header, processState.MaxDataCount, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, processState.Name, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
+                    return GetCompleteTransactionResponse(header, processState.MaxDataCount, processState.Name, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
                 }
             }
         }
 
-        internal static List<SMB1Command> GetCompleteTransactionResponse(SMB1Header header, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
+        internal static List<SMB1Command> GetCompleteTransactionResponse(SMB1Header header, uint maxDataCount, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             if (String.Equals(name, @"\pipe\lanman", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -140,7 +140,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is TransactionTransactNamedPipeRequest)
             {
-                subcommandResponse = TransactionSubcommandHelper.GetSubcommandResponse(header, (TransactionTransactNamedPipeRequest)subcommand, share, state);
+                subcommandResponse = TransactionSubcommandHelper.GetSubcommandResponse(header, maxDataCount, (TransactionTransactNamedPipeRequest)subcommand, share, state);
             }
             else if (subcommand is TransactionRawWriteNamedPipeRequest)
             {
@@ -178,7 +178,7 @@ namespace SMBLibrary.Server.SMB1
             return GetTransactionResponse(false, responseSetup, responseParameters, responseData, state.MaxBufferSize);
         }
 
-        internal static List<SMB1Command> GetCompleteTransaction2Response(SMB1Header header, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
+        internal static List<SMB1Command> GetCompleteTransaction2Response(SMB1Header header, uint maxDataCount, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             Transaction2Subcommand subcommand;
             try
@@ -194,11 +194,11 @@ namespace SMBLibrary.Server.SMB1
 
             if (subcommand is Transaction2FindFirst2Request)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2FindFirst2Request)subcommand, share, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, maxDataCount, (Transaction2FindFirst2Request)subcommand, share, state);
             }
             else if (subcommand is Transaction2FindNext2Request)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2FindNext2Request)subcommand, share, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, maxDataCount, (Transaction2FindNext2Request)subcommand, share, state);
             }
             else if (subcommand is Transaction2QueryFSInformationRequest)
             {

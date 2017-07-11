@@ -13,12 +13,12 @@ namespace SMBLibrary.Server
     internal class ProcessStateObject
     {
         public ushort SubcommandID;
+        public uint MaxDataCount; // The maximum number of TransactionData bytes that the client accepts in the transaction response
         public string Name; // The pathname of the [..] named pipe to which the transaction subcommand applies, or a client-supplied [..] name for the transaction.
         public byte[] TransactionSetup;
         public byte[] TransactionParameters;
         public byte[] TransactionData;
         public int TransactionParametersReceived; // length in bytes
         public int TransactionDataReceived; // length in bytes
-        public uint MaxDataCount;
     }
 }

@@ -22,9 +22,10 @@ namespace SMBLibrary.Server.SMB1
             if (request.TransParameters.Length < request.TotalParameterCount ||
                 request.TransData.Length < request.TotalDataCount)
             {
-                ProcessStateObject processState = state.ObtainProcessState(header.PID);
                 // A secondary transaction request is pending
+                ProcessStateObject processState = state.CreateProcessState(header.PID);
                 processState.SubcommandID = (ushort)request.Function;
+                processState.MaxDataCount = request.MaxDataCount;
                 processState.TransactionSetup = request.Setup;
                 processState.TransactionParameters = new byte[request.TotalParameterCount];
                 processState.TransactionData = new byte[request.TotalDataCount];
@@ -37,7 +38,7 @@ namespace SMBLibrary.Server.SMB1
             else
             {
                 // We have a complete command
-                return GetCompleteNTTransactResponse(header, request.Function, request.Setup, request.TransParameters, request.TransData, share, state);
+                return GetCompleteNTTransactResponse(header, request.MaxDataCount, request.Function, request.Setup, request.TransParameters, request.TransData, share, state);
             }
         }
 
@@ -65,11 +66,12 @@ namespace SMBLibrary.Server.SMB1
             else
             {
                 // We have a complete command
-                return GetCompleteNTTransactResponse(header, (NTTransactSubcommandName)processState.SubcommandID, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
+                state.RemoveProcessState(header.PID);
+                return GetCompleteNTTransactResponse(header, processState.MaxDataCount, (NTTransactSubcommandName)processState.SubcommandID, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
             }
         }
 
-        internal static List<SMB1Command> GetCompleteNTTransactResponse(SMB1Header header, NTTransactSubcommandName subcommandName, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
+        internal static List<SMB1Command> GetCompleteNTTransactResponse(SMB1Header header, uint maxDataCount, NTTransactSubcommandName subcommandName, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             NTTransactSubcommand subcommand = NTTransactSubcommand.GetSubcommandRequest(subcommandName, requestSetup, requestParameters, requestData, header.UnicodeFlag);
             NTTransactSubcommand subcommandResponse = null;
@@ -80,7 +82,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is NTTransactIOCTLRequest)
             {
-                subcommandResponse = GetSubcommandResponse(header, (NTTransactIOCTLRequest)subcommand, share, state);
+                subcommandResponse = GetSubcommandResponse(header, maxDataCount, (NTTransactIOCTLRequest)subcommand, share, state);
             }
             else if (subcommand is NTTransactSetSecurityDescriptor)
             {
@@ -112,7 +114,7 @@ namespace SMBLibrary.Server.SMB1
             return GetNTTransactResponse(responseSetup, responseParameters, responseData, state.MaxBufferSize);
         }
 
-        private static NTTransactIOCTLResponse GetSubcommandResponse(SMB1Header header, NTTransactIOCTLRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        private static NTTransactIOCTLResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, NTTransactIOCTLRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             NTTransactIOCTLResponse response = new NTTransactIOCTLResponse();
@@ -124,7 +126,7 @@ namespace SMBLibrary.Server.SMB1
                     header.Status = NTStatus.STATUS_INVALID_HANDLE;
                     return null;
                 }
-                int maxOutputLength = UInt16.MaxValue;
+                int maxOutputLength = (int)maxDataCount;
                 byte[] output;
                 header.Status = share.FileStore.DeviceIOControl(openFile.Handle, subcommand.FunctionCode, subcommand.Data, out output, maxOutputLength);
                 if (header.Status != NTStatus.STATUS_SUCCESS)

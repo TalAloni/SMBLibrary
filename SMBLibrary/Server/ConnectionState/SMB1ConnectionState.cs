@@ -189,6 +189,13 @@ namespace SMBLibrary.Server
             return false;
         }
 
+        public ProcessStateObject CreateProcessState(uint processID)
+        {
+            ProcessStateObject processState = new ProcessStateObject();
+            m_processStateList[processID] = processState;
+            return processState;
+        }
+
         public ProcessStateObject GetProcessState(uint processID)
         {
             if (m_processStateList.ContainsKey(processID))
@@ -201,34 +208,9 @@ namespace SMBLibrary.Server
             }
         }
 
-        /// <summary>
-        /// Get or Create process state
-        /// </summary>
-        public ProcessStateObject ObtainProcessState(uint processID)
+        public void RemoveProcessState(uint processID)
         {
-            if (m_processStateList.ContainsKey(processID))
-            {
-                return m_processStateList[processID];
-            }
-            else
-            {
-                ProcessStateObject processState = new ProcessStateObject();
-                m_processStateList[processID] = processState;
-                return processState;
-            }
-        }
-
-        public uint? GetMaxDataCount(uint processID)
-        {
-            ProcessStateObject processState = GetProcessState(processID);
-            if (processState != null)
-            {
-                return processState.MaxDataCount;
-            }
-            else
-            {
-                return null;
-            }
+            m_processStateList.Remove(processID);
         }
     }
 }

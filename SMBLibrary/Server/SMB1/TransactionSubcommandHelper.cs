@@ -16,7 +16,7 @@ namespace SMBLibrary.Server.SMB1
 {
     internal class TransactionSubcommandHelper
     {
-        internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, TransactionTransactNamedPipeRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        internal static TransactionTransactNamedPipeResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, TransactionTransactNamedPipeRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
@@ -26,7 +26,7 @@ namespace SMBLibrary.Server.SMB1
                 return null;
             }
 
-            int maxOutputLength = UInt16.MaxValue;
+            int maxOutputLength = (int)maxDataCount;
             byte[] output;
             header.Status = share.FileStore.DeviceIOControl(openFile.Handle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, subcommand.WriteData, out output, maxOutputLength);
             if (header.Status != NTStatus.STATUS_SUCCESS)

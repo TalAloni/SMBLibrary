@@ -15,7 +15,7 @@ namespace SMBLibrary.Server.SMB1
 {
     internal class Transaction2SubcommandHelper
     {
-        internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, Transaction2FindFirst2Request subcommand, ISMBShare share, SMB1ConnectionState state)
+        internal static Transaction2FindFirst2Response GetSubcommandResponse(SMB1Header header, uint maxDataCount, Transaction2FindFirst2Request subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             string fileNamePattern = subcommand.FileName;
@@ -56,7 +56,7 @@ namespace SMBLibrary.Server.SMB1
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
             int entriesToReturn = Math.Min(subcommand.SearchCount, entries.Count);
             List<QueryDirectoryFileInformation> segment = entries.GetRange(0, entriesToReturn);
-            int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
+            int maxLength = (int)maxDataCount;
             FindInformationList findInformationList;
             try
             {
@@ -92,7 +92,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, Transaction2FindNext2Request subcommand, ISMBShare share, SMB1ConnectionState state)
+        internal static Transaction2FindNext2Response GetSubcommandResponse(SMB1Header header, uint maxDataCount, Transaction2FindNext2Request subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             OpenSearch openSearch = session.GetOpenSearch(subcommand.SID);
@@ -103,7 +103,7 @@ namespace SMBLibrary.Server.SMB1
             }
 
             bool returnResumeKeys = (subcommand.Flags & FindFlags.SMB_FIND_RETURN_RESUME_KEYS) > 0;
-            int maxLength = (int)state.GetMaxDataCount(header.PID).Value;
+            int maxLength = (int)maxDataCount;
             int maxCount = Math.Min(openSearch.Entries.Count - openSearch.EnumerationLocation, subcommand.SearchCount);
             List<QueryDirectoryFileInformation> segment = openSearch.Entries.GetRange(openSearch.EnumerationLocation, maxCount);
             FindInformationList findInformationList;
