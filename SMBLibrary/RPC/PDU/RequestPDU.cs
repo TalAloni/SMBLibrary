@@ -16,6 +16,8 @@ namespace SMBLibrary.RPC
     /// </summary>
     public class RequestPDU : RPCPDU
     {
+        public const int RequestFieldsFixedLength = 8;
+
         public uint AllocationHint; // alloc_hint
         public ushort ContextID;
         public ushort OpNum;
@@ -31,7 +33,7 @@ namespace SMBLibrary.RPC
 
         public RequestPDU(byte[] buffer, int offset) : base(buffer, offset)
         {
-            offset += RPCPDU.CommonFieldsLength;
+            offset += CommonFieldsLength;
             AllocationHint = LittleEndianReader.ReadUInt32(buffer, ref offset);
             ContextID = LittleEndianReader.ReadUInt16(buffer, ref offset);
             OpNum = LittleEndianReader.ReadUInt16(buffer, ref offset);
@@ -47,14 +49,14 @@ namespace SMBLibrary.RPC
         public override byte[] GetBytes()
         {
             AuthLength = (ushort)AuthVerifier.Length;
-            FragmentLength = (ushort)(RPCPDU.CommonFieldsLength + 8 + Data.Length + AuthVerifier.Length);
+            FragmentLength = (ushort)(CommonFieldsLength + RequestFieldsFixedLength + Data.Length + AuthVerifier.Length);
             if ((Flags & PacketFlags.ObjectUUID) > 0)
             {
                 FragmentLength += 16;
             }
             byte[] buffer = new byte[FragmentLength];
             WriteCommonFieldsBytes(buffer);
-            int offset = RPCPDU.CommonFieldsLength;
+            int offset = CommonFieldsLength;
             LittleEndianWriter.WriteUInt32(buffer, ref offset, AllocationHint);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, ContextID);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, OpNum);

@@ -16,6 +16,8 @@ namespace SMBLibrary.RPC
     /// </summary>
     public class FaultPDU : RPCPDU
     {
+        public const int FaultFieldsLength = 16;
+
         public uint AllocationHint;
         public ushort ContextID;
         public byte CancelCount;
@@ -33,7 +35,7 @@ namespace SMBLibrary.RPC
 
         public FaultPDU(byte[] buffer, int offset) : base(buffer, offset)
         {
-            offset += RPCPDU.CommonFieldsLength;
+            offset += CommonFieldsLength;
             AllocationHint = LittleEndianReader.ReadUInt32(buffer, ref offset);
             ContextID = LittleEndianReader.ReadUInt16(buffer, ref offset);
             CancelCount = ByteReader.ReadByte(buffer, ref offset);
@@ -48,10 +50,10 @@ namespace SMBLibrary.RPC
         public override byte[] GetBytes()
         {
             AuthLength = (ushort)AuthVerifier.Length;
-            FragmentLength = (ushort)(RPCPDU.CommonFieldsLength + 16 + Data.Length + AuthVerifier.Length);
+            FragmentLength = (ushort)(CommonFieldsLength + FaultFieldsLength + Data.Length + AuthVerifier.Length);
             byte[] buffer = new byte[FragmentLength];
             WriteCommonFieldsBytes(buffer);
-            int offset = RPCPDU.CommonFieldsLength;
+            int offset = CommonFieldsLength;
             LittleEndianWriter.WriteUInt32(buffer, ref offset, AllocationHint);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, ContextID);
             ByteWriter.WriteByte(buffer, ref offset, CancelCount);

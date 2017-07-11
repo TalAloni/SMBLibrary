@@ -16,6 +16,8 @@ namespace SMBLibrary.RPC
     /// </summary>
     public class BindPDU : RPCPDU
     {
+        public const int BindFieldsFixedLength = 8;
+
         public ushort MaxTransmitFragmentSize; // max_xmit_frag
         public ushort MaxReceiveFragmentSize; // max_recv_frag
         public uint AssociationGroupID; // assoc_group_id
@@ -31,7 +33,7 @@ namespace SMBLibrary.RPC
 
         public BindPDU(byte[] buffer, int offset) : base(buffer, offset)
         {
-            offset += RPCPDU.CommonFieldsLength;
+            offset += CommonFieldsLength;
             MaxTransmitFragmentSize = LittleEndianReader.ReadUInt16(buffer, ref offset);
             MaxReceiveFragmentSize = LittleEndianReader.ReadUInt16(buffer, ref offset);
             AssociationGroupID = LittleEndianReader.ReadUInt32(buffer, ref offset);
@@ -43,10 +45,10 @@ namespace SMBLibrary.RPC
         public override byte[] GetBytes()
         {
             AuthLength =(ushort)AuthVerifier.Length;
-            FragmentLength = (ushort)(RPCPDU.CommonFieldsLength + 8 + ContextList.Length + AuthLength);
+            FragmentLength = (ushort)(CommonFieldsLength + BindFieldsFixedLength + ContextList.Length + AuthLength);
             byte[] buffer = new byte[FragmentLength];
             WriteCommonFieldsBytes(buffer);
-            int offset = RPCPDU.CommonFieldsLength;
+            int offset = CommonFieldsLength;
             LittleEndianWriter.WriteUInt16(buffer, ref offset, MaxTransmitFragmentSize);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, MaxReceiveFragmentSize);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, AssociationGroupID);

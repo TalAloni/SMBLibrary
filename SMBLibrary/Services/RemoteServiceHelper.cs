@@ -122,6 +122,7 @@ namespace SMBLibrary.Services
             ResponsePDU responsePDU = new ResponsePDU();
             PrepareReply(responsePDU, requestPDU);
             responsePDU.Data = service.GetResponseBytes(requestPDU.OpNum, requestPDU.Data);
+            responsePDU.AllocationHint = (uint)responsePDU.Data.Length;
             return responsePDU;
         }
 
