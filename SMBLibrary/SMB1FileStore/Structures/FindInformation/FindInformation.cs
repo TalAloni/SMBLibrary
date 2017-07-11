@@ -49,7 +49,7 @@ namespace SMBLibrary.SMB1
                 case FindInformationLevel.SMB_FIND_FILE_BOTH_DIRECTORY_INFO:
                     return new FindFileBothDirectoryInfo(buffer, ref offset, isUnicode);
                 default:
-                    throw new UnsupportedInformationLevelException();;
+                    throw new UnsupportedInformationLevelException();
             }
         }
     }

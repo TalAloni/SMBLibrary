@@ -254,7 +254,7 @@ namespace SMBLibrary.SMB1
                         }
                         else
                         {
-                            throw new InvalidRequestException();;
+                            throw new InvalidRequestException();
                         }
                     }
                 case CommandName.SMB_COM_SESSION_SETUP_ANDX:

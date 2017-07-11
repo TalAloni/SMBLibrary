@@ -99,7 +99,7 @@ namespace SMBLibrary.SMB1
         {
             if (!SMB1Header.IsValidSMB1Header(buffer))
             {
-                throw new InvalidRequestException("Invalid SMB header signature");;
+                throw new InvalidRequestException("Invalid SMB header signature");
             }
             return new SMB1Message(buffer);
         }
