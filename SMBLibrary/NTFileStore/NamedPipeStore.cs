@@ -110,12 +110,21 @@ namespace SMBLibrary
                 {
                     return writeStatus;
                 }
+                int messageLength = ((RPCPipeStream)((FileHandle)handle).Stream).MessageLength;
                 NTStatus readStatus = ReadFile(out output, handle, 0, maxOutputLength);
                 if (readStatus != NTStatus.STATUS_SUCCESS)
                 {
                     return readStatus;
                 }
-                return NTStatus.STATUS_SUCCESS;
+
+                if (output.Length < messageLength)
+                {
+                    return NTStatus.STATUS_BUFFER_OVERFLOW;
+                }
+                else
+                {
+                    return NTStatus.STATUS_SUCCESS;
+                }
             }
 
             return NTStatus.STATUS_NOT_SUPPORTED;

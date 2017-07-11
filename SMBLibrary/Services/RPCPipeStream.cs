@@ -14,17 +14,30 @@ namespace SMBLibrary.Services
     public class RPCPipeStream : Stream
     {
         private RemoteService m_service;
-        private MemoryStream m_outputStream;
+        private List<MemoryStream> m_outputStreams; // A stream for each message in order to support message mode named pipe
+        private int? m_maxTransmitFragmentSize;
 
         public RPCPipeStream(RemoteService service)
         {
             m_service = service;
-            m_outputStream = new MemoryStream();
+            m_outputStreams = new List<MemoryStream>();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return m_outputStream.Read(buffer, offset, count);
+            if (m_outputStreams.Count > 0)
+            {
+                int result = m_outputStreams[0].Read(buffer, offset, count);
+                if (m_outputStreams[0].Position == m_outputStreams[0].Length)
+                {
+                    m_outputStreams.RemoveAt(0);
+                }
+                return result;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -33,20 +46,42 @@ namespace SMBLibrary.Services
             do
             {
                 RPCPDU rpcRequest = RPCPDU.GetPDU(buffer, offset);
+                ProcessRPCRequest(rpcRequest);
                 lengthOfPDUs += rpcRequest.FragmentLength;
-                RPCPDU rpcReply = RemoteServiceHelper.GetRPCReply(rpcRequest, m_service);
-                byte[] replyData = rpcReply.GetBytes();
-                Append(replyData);
             }
             while (lengthOfPDUs < count);
         }
 
+        private void ProcessRPCRequest(RPCPDU rpcRequest)
+        {
+            if (rpcRequest is BindPDU)
+            {
+                BindAckPDU bindAckPDU = RemoteServiceHelper.GetRPCBindResponse((BindPDU)rpcRequest, m_service);
+                m_maxTransmitFragmentSize = bindAckPDU.MaxTransmitFragmentSize;
+                Append(bindAckPDU.GetBytes());
+            }
+            else if (rpcRequest is RequestPDU)
+            {
+                // if BindPDU was not received, we ignore any subsequent RPC packets
+                if (m_maxTransmitFragmentSize.HasValue)
+                {
+                    List<ResponsePDU> responsePDUs = RemoteServiceHelper.GetRPCResponse((RequestPDU)rpcRequest, m_service, m_maxTransmitFragmentSize.Value);
+                    foreach (ResponsePDU responsePDU in responsePDUs)
+                    {
+                        Append(responsePDU.GetBytes());
+                    }
+                }
+            }
+            else
+            {
+                throw new NotImplementedException("Unsupported RPC Packet Type");
+            }
+        }
+
         private void Append(byte[] buffer)
         {
-            long position = m_outputStream.Position;
-            m_outputStream.Position = m_outputStream.Length;
-            m_outputStream.Write(buffer, 0, buffer.Length);
-            m_outputStream.Seek(position, SeekOrigin.Begin);
+            MemoryStream stream = new MemoryStream(buffer);
+            m_outputStreams.Add(stream);
         }
 
         public override void Flush()
@@ -55,7 +90,6 @@ namespace SMBLibrary.Services
 
         public override void Close()
         {
-            m_outputStream.Close();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -80,7 +114,7 @@ namespace SMBLibrary.Services
         {
             get
             {
-                return m_outputStream.CanRead;
+                return true;
             }
         }
 
@@ -88,7 +122,7 @@ namespace SMBLibrary.Services
         {
             get
             {
-                return m_outputStream.CanWrite;
+                return true;
             }
         }
 
@@ -110,6 +144,24 @@ namespace SMBLibrary.Services
             set
             {
                 throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// The length of the first message available in the pipe
+        /// </summary>
+        public int MessageLength
+        {
+            get
+            {
+                if (m_outputStreams.Count > 0)
+                {
+                    return (int)m_outputStreams[0].Length;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
     }

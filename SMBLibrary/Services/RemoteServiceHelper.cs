@@ -24,26 +24,12 @@ namespace SMBLibrary.Services
         private static readonly Guid BindTimeFeatureIdentifier3 = new Guid("6CB71C2C-9812-4540-0300-000000000000");
         private static uint m_associationGroupID = 1;
 
-        public static RPCPDU GetRPCReply(RPCPDU pdu, RemoteService service)
-        {
-            if (pdu is BindPDU)
-            {
-                return GetRPCBindResponse((BindPDU)pdu, service);
-            }
-            else if (pdu is RequestPDU)
-            {
-                return GetRPCResponse((RequestPDU)pdu, service);
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private static BindAckPDU GetRPCBindResponse(BindPDU bindPDU, RemoteService service)
+        public static BindAckPDU GetRPCBindResponse(BindPDU bindPDU, RemoteService service)
         {
             BindAckPDU bindAckPDU = new BindAckPDU();
-            PrepareReply(bindAckPDU, bindPDU);
+            bindAckPDU.Flags = PacketFlags.FirstFragment | PacketFlags.LastFragment;
+            bindAckPDU.DataRepresentation = bindPDU.DataRepresentation;
+            bindAckPDU.CallID = bindPDU.CallID;
             // See DCE 1.1: Remote Procedure Call - 12.6.3.6
             // The client should set the assoc_group_id field either to 0 (zero), to indicate a new association group,
             // or to the known value. When the server receives a value of 0, this indicates that the client
@@ -62,8 +48,8 @@ namespace SMBLibrary.Services
                 bindAckPDU.AssociationGroupID = bindPDU.AssociationGroupID;
             }
             bindAckPDU.SecondaryAddress = @"\PIPE\" + service.PipeName;
-            bindAckPDU.MaxReceiveFragmentSize = bindPDU.MaxReceiveFragmentSize;
-            bindAckPDU.MaxTransmitFragmentSize = bindPDU.MaxTransmitFragmentSize;
+            bindAckPDU.MaxTransmitFragmentSize = bindPDU.MaxReceiveFragmentSize;
+            bindAckPDU.MaxReceiveFragmentSize = bindPDU.MaxTransmitFragmentSize;
             foreach (ContextElement element in bindPDU.ContextList)
             {
                 ResultElement resultElement = new ResultElement();
@@ -117,20 +103,34 @@ namespace SMBLibrary.Services
             return -1;
         }
 
-        private static ResponsePDU GetRPCResponse(RequestPDU requestPDU, RemoteService service)
+        public static List<ResponsePDU> GetRPCResponse(RequestPDU requestPDU, RemoteService service, int maxTransmitFragmentSize)
         {
-            ResponsePDU responsePDU = new ResponsePDU();
-            PrepareReply(responsePDU, requestPDU);
-            responsePDU.Data = service.GetResponseBytes(requestPDU.OpNum, requestPDU.Data);
-            responsePDU.AllocationHint = (uint)responsePDU.Data.Length;
-            return responsePDU;
-        }
-
-        private static void PrepareReply(RPCPDU reply, RPCPDU request)
-        {
-            reply.DataRepresentation = request.DataRepresentation;
-            reply.CallID = request.CallID;
-            reply.Flags = PacketFlags.FirstFragment | PacketFlags.LastFragment;
+            byte[] responseBytes = service.GetResponseBytes(requestPDU.OpNum, requestPDU.Data);
+            int offset = 0;
+            List<ResponsePDU> result = new List<ResponsePDU>();
+            int maxPDUDataLength = maxTransmitFragmentSize - RPCPDU.CommonFieldsLength - ResponsePDU.ResponseFieldsLength;
+            do
+            {
+                ResponsePDU responsePDU = new ResponsePDU();
+                int pduDataLength = Math.Min(responseBytes.Length - offset, maxPDUDataLength);
+                responsePDU.DataRepresentation = requestPDU.DataRepresentation;
+                responsePDU.CallID = requestPDU.CallID;
+                responsePDU.AllocationHint = (uint)(responseBytes.Length - offset);
+                responsePDU.Data = ByteReader.ReadBytes(responseBytes, offset, pduDataLength);
+                if (offset == 0)
+                {
+                    responsePDU.Flags |= PacketFlags.FirstFragment;
+                }
+                if (offset + pduDataLength == responseBytes.Length)
+                {
+                    responsePDU.Flags |= PacketFlags.LastFragment;
+                }
+                result.Add(responsePDU);
+                offset += pduDataLength;
+            }
+            while (offset < responseBytes.Length);
+            
+            return result;
         }
     }
 }
