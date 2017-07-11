@@ -100,7 +100,7 @@ namespace SMBLibrary.Server.SMB1
             response.ResourceType = ResourceType.FileTypeMessageModePipe;
             response.NMPipeStatus.ICount = 255;
             response.NMPipeStatus.ReadMode = ReadMode.MessageMode;
-            response.NMPipeStatus.NamedPipeType = NamedPipeType.MessageNodePipe;
+            response.NMPipeStatus.NamedPipeType = NamedPipeType.MessageModePipe;
             return response;
         }
 
@@ -114,7 +114,7 @@ namespace SMBLibrary.Server.SMB1
             NamedPipeStatus status = new NamedPipeStatus();
             status.ICount = 255;
             status.ReadMode = ReadMode.MessageMode;
-            status.NamedPipeType = NamedPipeType.MessageNodePipe;
+            status.NamedPipeType = NamedPipeType.MessageModePipe;
             response.NMPipeStatus = status;
             response.MaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
                                                 FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |

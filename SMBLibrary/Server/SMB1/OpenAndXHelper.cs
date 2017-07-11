@@ -259,7 +259,7 @@ namespace SMBLibrary.Server.SMB1
             response.ResourceType = ResourceType.FileTypeMessageModePipe;
             response.NMPipeStatus.ICount = 255;
             response.NMPipeStatus.ReadMode = ReadMode.MessageMode;
-            response.NMPipeStatus.NamedPipeType = NamedPipeType.MessageNodePipe;
+            response.NMPipeStatus.NamedPipeType = NamedPipeType.MessageModePipe;
             response.OpenResults.OpenResult = openResult;
             return response;
         }
@@ -272,7 +272,7 @@ namespace SMBLibrary.Server.SMB1
             response.ResourceType = ResourceType.FileTypeMessageModePipe;
             response.NMPipeStatus.ICount = 255;
             response.NMPipeStatus.ReadMode = ReadMode.MessageMode;
-            response.NMPipeStatus.NamedPipeType = NamedPipeType.MessageNodePipe;
+            response.NMPipeStatus.NamedPipeType = NamedPipeType.MessageModePipe;
             response.OpenResults.OpenResult = openResult;
             return response;
         }

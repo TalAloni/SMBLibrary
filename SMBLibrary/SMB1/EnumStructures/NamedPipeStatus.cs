@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,8 +16,8 @@ namespace SMBLibrary.SMB1
 
     public enum NamedPipeType : byte
     {
-        ByteNamedPipe = 0x00,
-        MessageNodePipe = 0x01,
+        ByteModePipe = 0x00,
+        MessageModePipe = 0x01,
     }
 
     public enum Endpoint : byte
