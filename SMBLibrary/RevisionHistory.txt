@@ -153,3 +153,10 @@ Revision History:
         Bugfix: DerEncodingHelper.WriteLength was writing incorrect length.
         Improved GSS implementation.
         Corrected exception message.
+
+1.2.1 - GSSProvider: Marked core methods as virtual to improve extensibility.
+        SMB1: Bugfix: The server was returning more bytes than the specified maximum for SMB_COM_NT_TRANSACT and SMB_COM_NT_TRANSACT commands.
+        SMBServer: Correct handling of STATUS_BUFFER_OVERFLOW returned by the NTFileStore.
+        Improved implementation of RPC PDUs.
+        SMBServer: Improved Named Pipe implementation.
+        Several enums and events were renamed.
