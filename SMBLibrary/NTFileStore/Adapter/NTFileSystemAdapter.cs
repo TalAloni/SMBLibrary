@@ -85,7 +85,7 @@ namespace SMBLibrary
                 if (entry != null)
                 {
                     // File already exists, fail the request
-                    Log(Severity.Verbose, "CreateFile: File '{0}' already exist", path);
+                    Log(Severity.Verbose, "CreateFile: File '{0}' already exists.", path);
                     fileStatus = FileStatus.FILE_EXISTS;
                     return NTStatus.STATUS_OBJECT_NAME_COLLISION;
                 }

@@ -67,6 +67,7 @@ namespace SMBLibrary
                         m_fileSystem.Delete(destination);
                     }
                     m_fileSystem.Move(fileHandle.Path, destination);
+                    Log(Severity.Information, "SetFileInformation: Renamed '{0}' to '{1}'", fileHandle.Path, destination);
                 }
                 catch (Exception ex)
                 {
