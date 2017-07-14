@@ -238,13 +238,13 @@ namespace SMBLibrary
 
             FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(desiredAccess.File);
             Stream stream;
-            bool deleteOnClose = false;
             if (fileAccess == (FileAccess)0 || entry.IsDirectory)
             {
                 stream = null;
             }
             else
             {
+                // Note that SetFileInformationByHandle/FILE_DISPOSITION_INFO has no effect if the handle was opened with FILE_FLAG_DELETE_ON_CLOSE.
                 NTStatus openStatus = OpenFileStream(out stream, path, fileAccess, shareAccess, createOptions);
                 if (openStatus != NTStatus.STATUS_SUCCESS)
                 {
@@ -252,7 +252,7 @@ namespace SMBLibrary
                 }
             }
 
-            deleteOnClose = (createOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
+            bool deleteOnClose = (createOptions & CreateOptions.FILE_DELETE_ON_CLOSE) > 0;
             handle = new FileHandle(path, entry.IsDirectory, stream, deleteOnClose);
             if (fileStatus != FileStatus.FILE_CREATED &&
                 fileStatus != FileStatus.FILE_OVERWRITTEN &&
@@ -292,6 +292,20 @@ namespace SMBLibrary
             {
                 Log(Severity.Verbose, "CloseFile: Closing '{0}'.", fileHandle.Path);
                 fileHandle.Stream.Close();
+            }
+
+            // If the file / directory was created with FILE_DELETE_ON_CLOSE but was not opened (with FileOptions.DeleteOnClose), we should delete it now.
+            if (fileHandle.Stream == null && fileHandle.DeleteOnClose)
+            {
+                try
+                {
+                    m_fileSystem.Delete(fileHandle.Path);
+                    Log(Severity.Verbose, "CloseFile: Deleted '{0}'.", fileHandle.Path);
+                }
+                catch
+                {
+                    Log(Severity.Verbose, "CloseFile: Error deleting '{0}'.", fileHandle.Path);
+                }
             }
 
             return NTStatus.STATUS_SUCCESS;
