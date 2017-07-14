@@ -101,6 +101,14 @@ namespace SMBServer
             m_logWriter = new LogWriter();
             m_server.LogEntryAdded += new EventHandler<LogEntry>(m_logWriter.OnLogEntryAdded);
 
+            foreach (FileSystemShare share in shares)
+            {
+                if (share.FileStore is NTFileSystemAdapter)
+                {
+                    ((NTFileSystemAdapter)share.FileStore).LogEntryAdded += new EventHandler<LogEntry>(m_logWriter.OnLogEntryAdded);
+                }
+            }
+
             try
             {
                 m_server.Start(serverAddress, transportType, chkSMB1.Checked, chkSMB2.Checked);
