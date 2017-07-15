@@ -30,5 +30,30 @@ namespace SMBLibrary
         {
             get;
         }
+
+        public static FileSystemInformation GetFileSystemInformation(byte[] buffer, int offset, FileSystemInformationClass informationClass)
+        {
+            switch (informationClass)
+            {
+                case FileSystemInformationClass.FileFsVolumeInformation:
+                    return new FileFsVolumeInformation(buffer, offset);
+                case FileSystemInformationClass.FileFsSizeInformation:
+                    return new FileFsSizeInformation(buffer, offset);
+                case FileSystemInformationClass.FileFsDeviceInformation:
+                    return new FileFsDeviceInformation(buffer, offset);
+                case FileSystemInformationClass.FileFsAttributeInformation:
+                    return new FileFsAttributeInformation(buffer, offset);
+                case FileSystemInformationClass.FileFsControlInformation:
+                    return new FileFsControlInformation(buffer, offset);
+                case FileSystemInformationClass.FileFsFullSizeInformation:
+                    return new FileFsFullSizeInformation(buffer, offset);
+                case FileSystemInformationClass.FileFsObjectIdInformation:
+                    return new FileFsObjectIdInformation(buffer, offset);
+                case FileSystemInformationClass.FileFsSectorSizeInformation:
+                    return new FileFsSectorSizeInformation(buffer, offset);
+                default:
+                    throw new UnsupportedInformationLevelException();
+            }
+        }
     }
 }
