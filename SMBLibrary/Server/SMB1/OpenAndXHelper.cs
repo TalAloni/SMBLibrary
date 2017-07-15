@@ -56,7 +56,7 @@ namespace SMBLibrary.Server.SMB1
 
             object handle;
             FileStatus fileStatus;
-            header.Status = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, shareAccess, createDisposition, createOptions, session.SecurityContext);
+            header.Status = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, 0, shareAccess, createDisposition, createOptions, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "OpenAndX: Opening '{0}{1}' failed. NTStatus: {2}.", share.Name, path, header.Status);

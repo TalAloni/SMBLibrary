@@ -39,7 +39,8 @@ namespace SMBLibrary.Server.SMB1
 
             object handle;
             FileStatus fileStatus;
-            NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, request.DesiredAccess, request.ShareAccess, request.CreateDisposition, request.CreateOptions, session.SecurityContext);
+            FileAttributes fileAttributes = ToFileAttributes(request.ExtFileAttributes);
+            NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, request.DesiredAccess, fileAttributes, request.ShareAccess, request.CreateDisposition, request.CreateOptions, session.SecurityContext);
             if (createStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "Create: Opening '{0}{1}' failed. NTStatus: {2}.", share.Name, path, createStatus);
@@ -190,6 +191,20 @@ namespace SMBLibrary.Server.SMB1
             {
                 return CreateDisposition.FILE_OPEN;
             }
+        }
+
+        private static FileAttributes ToFileAttributes(ExtendedFileAttributes extendedFileAttributes)
+        {
+            // We only return flags that can be used with NtCreateFile
+            FileAttributes fileAttributes = FileAttributes.ReadOnly |
+                                              FileAttributes.Hidden |
+                                              FileAttributes.System |
+                                              FileAttributes.Archive |
+                                              FileAttributes.Normal |
+                                              FileAttributes.Temporary |
+                                              FileAttributes.Offline |
+                                              FileAttributes.Encrypted;
+            return (fileAttributes & (FileAttributes)extendedFileAttributes);
         }
     }
 }
