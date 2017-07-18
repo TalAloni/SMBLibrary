@@ -31,13 +31,15 @@ namespace SMBLibrary.Server.SMB1
                 string fileName = fileNamePattern.Substring(separatorIndex + 1);
                 object handle;
                 FileStatus fileStatus;
-                NTStatus createStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.FILE_LIST_DIRECTORY | DirectoryAccessMask.FILE_TRAVERSE, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
-                if (createStatus != NTStatus.STATUS_SUCCESS)
+                NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.FILE_LIST_DIRECTORY | DirectoryAccessMask.FILE_TRAVERSE, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
+                if (status != NTStatus.STATUS_SUCCESS)
                 {
                     result = null;
-                    return createStatus;
+                    return status;
                 }
-                return fileStore.QueryDirectory(out result, handle, fileName, fileInformation);
+                status = fileStore.QueryDirectory(out result, handle, fileName, fileInformation);
+                fileStore.CloseFile(handle);
+                return status;
             }
             else
             {

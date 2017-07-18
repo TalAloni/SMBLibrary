@@ -111,6 +111,7 @@ namespace SMBLibrary.Server.SMB1
             }
 
             fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(fileStore, handle);
+            fileStore.CloseFile(handle);
             return NTStatus.STATUS_SUCCESS;
         }
 
@@ -118,10 +119,10 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_WRITE_ATTRIBUTES, (FileAttributes)0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
-            if (openStatus != NTStatus.STATUS_SUCCESS)
+            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_WRITE_ATTRIBUTES, (FileAttributes)0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
+            if (status != NTStatus.STATUS_SUCCESS)
             {
-                return openStatus;
+                return status;
             }
 
             FileBasicInformation basicInfo = new FileBasicInformation();
@@ -142,7 +143,9 @@ namespace SMBLibrary.Server.SMB1
                 basicInfo.FileAttributes |= FileAttributes.Archive;
             }
 
-            return fileStore.SetFileInformation(handle, basicInfo);
+            status = fileStore.SetFileInformation(handle, basicInfo);
+            fileStore.CloseFile(handle);
+            return status;
         }
 
         public static NTStatus SetInformation2(INTFileStore fileStore, object handle, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime)
