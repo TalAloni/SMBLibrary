@@ -41,20 +41,20 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.DELETE, 0, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
-            if (openStatus != NTStatus.STATUS_SUCCESS)
+            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.DELETE, 0, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
+            if (status != NTStatus.STATUS_SUCCESS)
             {
-                return openStatus;
+                return status;
             }
             FileDispositionInformation fileDispositionInfo = new FileDispositionInformation();
             fileDispositionInfo.DeletePending = true;
-            NTStatus setStatus = fileStore.SetFileInformation(handle, fileDispositionInfo);
-            if (setStatus != NTStatus.STATUS_SUCCESS)
+            status = fileStore.SetFileInformation(handle, fileDispositionInfo);
+            if (status != NTStatus.STATUS_SUCCESS)
             {
-                return setStatus;
+                return status;
             }
-            NTStatus closeStatus = fileStore.CloseFile(handle);
-            return closeStatus;
+            fileStore.CloseFile(handle);
+            return status;
         }
 
         public static NTStatus Rename(INTFileStore fileStore, string oldName, string newName, SMBFileAttributes searchAttributes, SecurityContext securityContext)
@@ -68,21 +68,21 @@ namespace SMBLibrary.Server.SMB1
             {
                 createOptions = CreateOptions.FILE_NON_DIRECTORY_FILE;
             }
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, oldName, DirectoryAccessMask.DELETE, 0, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
-            if (openStatus != NTStatus.STATUS_SUCCESS)
+            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, oldName, DirectoryAccessMask.DELETE, 0, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
+            if (status != NTStatus.STATUS_SUCCESS)
             {
-                return openStatus;
+                return status;
             }
             FileRenameInformationType2 renameInfo = new FileRenameInformationType2();
             renameInfo.ReplaceIfExists = false;
             renameInfo.FileName = newName;
-            NTStatus setStatus = fileStore.SetFileInformation(handle, renameInfo);
-            if (setStatus != NTStatus.STATUS_SUCCESS)
+            status = fileStore.SetFileInformation(handle, renameInfo);
+            if (status != NTStatus.STATUS_SUCCESS)
             {
-                return setStatus;
+                return status;
             }
-            NTStatus closeStatus = fileStore.CloseFile(handle);
-            return closeStatus;
+            fileStore.CloseFile(handle);
+            return status;
         }
 
         public static NTStatus CheckDirectory(INTFileStore fileStore, string path, SecurityContext securityContext)
