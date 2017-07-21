@@ -40,7 +40,9 @@ namespace SMBLibrary.Server.SMB1
             object handle;
             FileStatus fileStatus;
             FileAttributes fileAttributes = ToFileAttributes(request.ExtFileAttributes);
-            NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, request.DesiredAccess, fileAttributes, request.ShareAccess, request.CreateDisposition, request.CreateOptions, session.SecurityContext);
+            // GetFileInformation/FileNetworkOpenInformation requires FILE_READ_ATTRIBUTES
+            FileAccessMask desiredAccess = request.DesiredAccess | FileAccessMask.FILE_READ_ATTRIBUTES;
+            NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, fileAttributes, request.ShareAccess, request.CreateDisposition, request.CreateOptions, session.SecurityContext);
             if (createStatus != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "Create: Opening '{0}{1}' failed. NTStatus: {2}.", share.Name, path, createStatus);
