@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB2
         public const int FixedLength = 56;
         public const int DeclaredSize = 57;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         public byte SecurityFlags; // Reserved
         public OplockLevel RequestedOplockLevel;
         public ImpersonationLevel ImpersonationLevel;

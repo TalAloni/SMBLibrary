@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB2
     {
         public const int DeclaredSize = 24;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         public CloseFlags Flags;
         public uint Reserved;
         public FileID FileId;

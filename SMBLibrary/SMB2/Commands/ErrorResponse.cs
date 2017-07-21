@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB2
         public const int FixedSize = 8;
         public const int DeclaredSize = 9;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         public byte ErrorContextCount;
         public byte Reserved;
         private uint ByteCount;

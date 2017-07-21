@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB2
     {
         public const int DeclaredSize = 36;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         private ushort DialectCount;
         public SecurityMode SecurityMode;
         public ushort Reserved;

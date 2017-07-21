@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB2
     {
         public const int DeclaredSize = 89;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         public OplockLevel OplockLevel;
         public CreateResponseFlags Flags;
         public CreateAction CreateAction;

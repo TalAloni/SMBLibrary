@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB2
         public const int FixedSize = 48;
         public const int DeclaredSize = 49;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         private ushort DataOffset;
         private uint DataLength;
         public ulong Offset;

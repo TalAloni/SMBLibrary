@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB2
     {
         public const int DeclaredSize = 48;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         public ushort LockCount;
         public byte LSN; // 4 bits
         public uint LockSequenceIndex; // 28 bits

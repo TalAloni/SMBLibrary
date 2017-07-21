@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB2
         public static readonly byte[] ProtocolSignature = new byte[] { 0xFE, 0x53, 0x4D, 0x42 };
 
         public byte[] ProtocolId; // 4 bytes, 0xFE followed by "SMB"
-        public ushort StructureSize;
+        private ushort StructureSize;
         public ushort CreditCharge;
         public NTStatus Status;
         public SMB2CommandName Command;

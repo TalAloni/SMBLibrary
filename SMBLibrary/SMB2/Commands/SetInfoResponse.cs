@@ -17,7 +17,7 @@ namespace SMBLibrary.SMB2
     {
         public const int DeclaredSize = 2;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
 
         public SetInfoResponse() : base(SMB2CommandName.SetInfo)
         {

@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB2
         public const int FixedSize = 8;
         public const int DeclaredSize = 9;
 
-        public ushort StructureSize;
+        private ushort StructureSize;
         private ushort OutputBufferOffset;
         private uint OutputBufferLength;
         public byte[] OutputBuffer = new byte[0];
