@@ -289,6 +289,7 @@
     <Compile Include="SMB1\Commands\NegotiateResponse.cs" />
     <Compile Include="SMB1\Commands\NegotiateResponseExtended.cs" />
     <Compile Include="SMB1\Commands\NegotiateResponseNotSupported.cs" />
+    <Compile Include="SMB1\Commands\NTCancelRequest.cs" />
     <Compile Include="SMB1\Commands\NTCreateAndXRequest.cs" />
     <Compile Include="SMB1\Commands\NTCreateAndXResponse.cs" />
     <Compile Include="SMB1\Commands\NTCreateAndXResponseExtended.cs" />

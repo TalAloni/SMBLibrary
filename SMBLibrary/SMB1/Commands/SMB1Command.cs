@@ -155,6 +155,8 @@ namespace SMBLibrary.SMB1
                     return new NTTransactSecondaryRequest(buffer, offset);
                 case CommandName.SMB_COM_NT_CREATE_ANDX:
                     return new NTCreateAndXRequest(buffer, offset, isUnicode);
+                case CommandName.SMB_COM_NT_CANCEL:
+                    return new NTCancelRequest(buffer, offset);
                 default:
                     throw new NotImplementedException("SMB Command 0x" + commandName.ToString("X"));
             }
