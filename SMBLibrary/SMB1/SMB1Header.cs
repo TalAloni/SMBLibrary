@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
         public const int Length = 32;
         public static readonly byte[] ProtocolSignature = new byte[] { 0xFF, 0x53, 0x4D, 0x42 };
 
-        public byte[] Protocol; // byte[4], 0xFF followed by "SMB"
+        private byte[] Protocol; // byte[4], 0xFF followed by "SMB"
         public CommandName Command;
         public NTStatus Status;
         public HeaderFlags Flags;
