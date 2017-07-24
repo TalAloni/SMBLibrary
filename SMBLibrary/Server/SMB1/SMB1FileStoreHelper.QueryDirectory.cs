@@ -31,7 +31,9 @@ namespace SMBLibrary.Server.SMB1
                 string fileName = fileNamePattern.Substring(separatorIndex + 1);
                 object handle;
                 FileStatus fileStatus;
-                NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.FILE_LIST_DIRECTORY | DirectoryAccessMask.FILE_TRAVERSE, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
+                DirectoryAccessMask accessMask = DirectoryAccessMask.FILE_LIST_DIRECTORY | DirectoryAccessMask.FILE_TRAVERSE | DirectoryAccessMask.SYNCHRONIZE;
+                CreateOptions createOptions = CreateOptions.FILE_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_NONALERT;
+                NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, accessMask, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, createOptions, securityContext);
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
                     result = null;
