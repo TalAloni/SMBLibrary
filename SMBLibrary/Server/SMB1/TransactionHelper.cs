@@ -27,6 +27,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 // A secondary transaction request is pending
                 ProcessStateObject processState = state.CreateProcessState(header.PID);
+                processState.MaxParameterCount = request.MaxParameterCount;
                 processState.MaxDataCount = request.MaxDataCount;
                 processState.Name = request.Name;
                 processState.TransactionSetup = request.Setup;
