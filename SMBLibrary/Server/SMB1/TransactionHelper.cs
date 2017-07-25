@@ -117,6 +117,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_SMB;
                 return new ErrorResponse(CommandName.SMB_COM_TRANSACTION);
             }
+            state.LogToServer(Severity.Verbose, "Received complete SMB_COM_TRANSACTION subcommand: {0}", subcommand.SubcommandName);
             TransactionSubcommand subcommandResponse = null;
 
             if (subcommand is TransactionSetNamedPipeStateRequest)
@@ -191,6 +192,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INVALID_SMB;
                 return new ErrorResponse(CommandName.SMB_COM_TRANSACTION2);
             }
+            state.LogToServer(Severity.Verbose, "Received complete SMB_COM_TRANSACTION2 subcommand: {0}", subcommand.SubcommandName);
             Transaction2Subcommand subcommandResponse = null;
 
             if (subcommand is Transaction2FindFirst2Request)

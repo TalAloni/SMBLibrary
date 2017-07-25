@@ -75,6 +75,7 @@ namespace SMBLibrary.Server.SMB1
         internal static List<SMB1Command> GetCompleteNTTransactResponse(SMB1Header header, uint maxParameterCount, uint maxDataCount, NTTransactSubcommandName subcommandName, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             NTTransactSubcommand subcommand = NTTransactSubcommand.GetSubcommandRequest(subcommandName, requestSetup, requestParameters, requestData, header.UnicodeFlag);
+            state.LogToServer(Severity.Verbose, "Received complete SMB_COM_NT_TRANSACT subcommand: {0}", subcommand.SubcommandName);
             NTTransactSubcommand subcommandResponse = null;
 
             if (subcommand is NTTransactCreateRequest)
