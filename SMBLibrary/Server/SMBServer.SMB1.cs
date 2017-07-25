@@ -287,7 +287,7 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName);
         }
 
-        private static void EnqueueMessage(ConnectionState state, SMB1Message response)
+        internal static void EnqueueMessage(ConnectionState state, SMB1Message response)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();

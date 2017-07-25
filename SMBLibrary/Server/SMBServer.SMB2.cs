@@ -201,7 +201,7 @@ namespace SMBLibrary.Server
             return new ErrorResponse(command.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
         }
 
-        private static void EnqueueResponse(ConnectionState state, SMB2Command response)
+        internal static void EnqueueResponse(ConnectionState state, SMB2Command response)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = response.GetBytes();
