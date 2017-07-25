@@ -158,5 +158,30 @@ namespace SMBLibrary.Server.SMB1
             }
             return response;
         }
+
+        internal static SMB1Command GetFlushResponse(SMB1Header header, FlushRequest request, ISMBShare share, SMB1ConnectionState state)
+        {
+            SMB1Session session = state.GetSession(header.UID);
+            if (request.FID == 0xFFFF)
+            {
+                // [MS-CIFS] If the FID is 0xFFFF, the Server.Connection.FileOpenTable MUST be scanned for
+                // all files that were opened by the PID listed in the request header.
+                // The server MUST attempt to flush each Server.Open so listed.
+                return new FlushResponse();
+            }
+
+            OpenFileObject openFile = session.GetOpenFileObject(request.FID);
+            if (openFile == null)
+            {
+                header.Status = NTStatus.STATUS_INVALID_HANDLE;
+                return new ErrorResponse(request.CommandName);
+            }
+            header.Status = share.FileStore.FlushFileBuffers(openFile.Handle);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                return new ErrorResponse(request.CommandName);
+            }
+            return new FlushResponse();
+        }
     }
 }

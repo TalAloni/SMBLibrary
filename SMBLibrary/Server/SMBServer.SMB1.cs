@@ -176,7 +176,8 @@ namespace SMBLibrary.Server
                     }
                     else if (command is FlushRequest)
                     {
-                        return new FlushResponse();
+                        FlushRequest request = (FlushRequest)command;
+                        return ReadWriteResponseHelper.GetFlushResponse(header, request, share, state);
                     }
                     else if (command is DeleteRequest)
                     {
