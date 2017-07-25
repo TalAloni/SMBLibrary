@@ -25,6 +25,8 @@ namespace SMBLibrary.Server
 
         // Key is PID (PID MUST be unique within an SMB connection)
         private Dictionary<uint, ProcessStateObject> m_processStateList = new Dictionary<uint, ProcessStateObject>();
+        
+        private List<SMB1AsyncContext> m_pendingRequests = new List<SMB1AsyncContext>();
 
         public SMB1ConnectionState(ConnectionState state) : base(state)
         {
@@ -211,6 +213,64 @@ namespace SMBLibrary.Server
         public void RemoveProcessState(uint processID)
         {
             m_processStateList.Remove(processID);
+        }
+
+        public SMB1AsyncContext CreateAsyncContext(ushort userID, ushort treeID, uint processID, ushort multiplexID, ushort fileID, SMB1ConnectionState connection)
+        {
+            SMB1AsyncContext context = new SMB1AsyncContext();
+            context.UID = userID;
+            context.TID = treeID;
+            context.MID = multiplexID;
+            context.PID = processID;
+            context.FileID = fileID;
+            context.Connection = connection;
+            lock (m_pendingRequests)
+            {
+                m_pendingRequests.Add(context);
+            }
+            return context;
+        }
+
+        public SMB1AsyncContext GetAsyncContext(ushort userID, ushort treeID, uint processID, ushort multiplexID)
+        {
+            lock (m_pendingRequests)
+            {
+                int index = IndexOfAsyncContext(userID, treeID, processID, multiplexID);
+                if (index >= 0)
+                {
+                    return m_pendingRequests[index];
+                }
+            }
+            return null;
+        }
+
+        public void RemoveAsyncContext(SMB1AsyncContext context)
+        {
+            lock (m_pendingRequests)
+            {
+                int index = IndexOfAsyncContext(context.UID, context.TID, context.PID, context.MID);
+                if (index >= 0)
+                {
+                    m_pendingRequests.RemoveAt(index);
+                }
+            }
+        }
+
+        private int IndexOfAsyncContext(ushort userID, ushort treeID, uint processID, ushort multiplexID)
+        {
+            for (int index = 0; index < m_pendingRequests.Count; index++)
+            {
+                SMB1AsyncContext context = m_pendingRequests[index];
+                if (context.UID == userID &&
+                    context.TID == treeID &&
+                    context.PID == processID &&
+                    context.MID == multiplexID)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
         }
     }
 }

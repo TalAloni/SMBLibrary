@@ -15,6 +15,21 @@ namespace SMBLibrary.Server.SMB1
     {
         internal static void ProcessNTCancelRequest(SMB1Header header, NTCancelRequest request, ISMBShare share, SMB1ConnectionState state)
         {
+            SMB1Session session = state.GetSession(header.UID);
+            SMB1AsyncContext context = state.GetAsyncContext(header.UID, header.TID, header.PID, header.MID);
+            if (context != null)
+            {
+                NTStatus status = share.FileStore.Cancel(context.IORequest);
+                OpenFileObject openFile = session.GetOpenFileObject(context.FileID);
+                if (openFile != null)
+                {
+                    state.LogToServer(Severity.Information, "Cancel: Requested cancel on '{0}{1}', NTStatus: {2}. PID: {3}. MID: {4}.", share.Name, openFile.Path, status, context.PID, context.MID);
+                }
+                if (status == NTStatus.STATUS_SUCCESS || status == NTStatus.STATUS_CANCELLED)
+                {
+                    state.RemoveAsyncContext(context);
+                }
+            }
         }
     }
 }
