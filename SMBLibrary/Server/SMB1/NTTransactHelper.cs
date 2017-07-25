@@ -74,7 +74,17 @@ namespace SMBLibrary.Server.SMB1
 
         internal static List<SMB1Command> GetCompleteNTTransactResponse(SMB1Header header, uint maxParameterCount, uint maxDataCount, NTTransactSubcommandName subcommandName, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
-            NTTransactSubcommand subcommand = NTTransactSubcommand.GetSubcommandRequest(subcommandName, requestSetup, requestParameters, requestData, header.UnicodeFlag);
+            NTTransactSubcommand subcommand;
+            try
+            {
+                subcommand = NTTransactSubcommand.GetSubcommandRequest(subcommandName, requestSetup, requestParameters, requestData, header.UnicodeFlag);
+            }
+            catch
+            {
+                // [MS-CIFS] If the Function code is not defined, the server MUST return STATUS_INVALID_SMB.
+                header.Status = NTStatus.STATUS_INVALID_SMB;
+                return new ErrorResponse(CommandName.SMB_COM_NT_TRANSACT);
+            }
             state.LogToServer(Severity.Verbose, "Received complete SMB_COM_NT_TRANSACT subcommand: {0}", subcommand.SubcommandName);
             NTTransactSubcommand subcommandResponse = null;
 
@@ -102,6 +112,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else
             {
+                // [MS-CIFS] If the Function code is defined but not implemented, the server MUST return STATUS_SMB_BAD_COMMAND.
                 header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
             }
 
