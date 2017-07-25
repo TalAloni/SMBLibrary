@@ -281,6 +281,13 @@ namespace SMBLibrary.Server
                         NTCreateAndXRequest request = (NTCreateAndXRequest)command;
                         return NTCreateHelper.GetNTCreateResponse(header, request, share, state);
                     }
+                    else if (command is NTCancelRequest)
+                    {
+                        NTCancelRequest request = (NTCancelRequest)command;
+                        CancelHelper.ProcessNTCancelRequest(header, request, share, state);
+                        // [MS-CIFS] The SMB_COM_NT_CANCEL command MUST NOT send a response.
+                        return new List<SMB1Command>();
+                    }
                 }
             }
 

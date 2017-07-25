@@ -102,9 +102,11 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is NTTransactNotifyChangeRequest)
             {
-                // [MS-CIFS] If the server does not support the NT_TRANSACT_NOTIFY_CHANGE subcommand, it can return an
-                // error response with STATUS_NOT_IMPLEMENTED [..] in response to an NT_TRANSACT_NOTIFY_CHANGE Request.
-                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                NotifyChangeHelper.ProcessNTTransactNotifyChangeRequest(header, maxParameterCount, (NTTransactNotifyChangeRequest)subcommand, share, state);
+                if (header.Status == NTStatus.STATUS_PENDING)
+                {
+                    return new List<SMB1Command>();
+                }
             }
             else if (subcommand is NTTransactQuerySecurityDescriptorRequest)
             {

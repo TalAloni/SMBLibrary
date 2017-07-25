@@ -113,22 +113,16 @@ namespace SMBLibrary.Server
                     state.RemoveSession(command.Header.SessionID);
                     return new LogoffResponse();
                 }
-                else
+                else if (command.Header.IsAsync)
                 {
-                    // Cancel requests can have an ASYNC header (TreeID will not be present)
+                    // TreeID will not be present in an ASYNC header
                     if (command is CancelRequest)
                     {
-                        if (command.Header.IsAsync && command.Header.AsyncID == 0)
-                        {
-                            ErrorResponse response = new ErrorResponse(command.CommandName, NTStatus.STATUS_CANCELLED);
-                            response.Header.IsAsync = true;
-                            return response;
-                        }
-
-                        // [MS-SMB2] If a request is not found, the server MUST stop processing for this cancel request. No response is sent.
-                        return null;
+                        return CancelHelper.GetCancelResponse((CancelRequest)command, state);
                     }
-
+                }
+                else
+                {
                     ISMBShare share = session.GetConnectedTree(command.Header.TreeID);
                     if (share == null)
                     {
@@ -175,14 +169,13 @@ namespace SMBLibrary.Server
                     {
                         return IOCtlHelper.GetIOCtlResponse((IOCtlRequest)command, share, state);
                     }
+                    else if (command is CancelRequest)
+                    {
+                        return CancelHelper.GetCancelResponse((CancelRequest)command, state);
+                    }
                     else if (command is ChangeNotifyRequest)
                     {
-                        // [MS-SMB2] If the underlying object store does not support change notifications, the server MUST fail this request with STATUS_NOT_SUPPORTED
-                        ErrorResponse response = new ErrorResponse(command.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
-                        // Windows 7 / 8 / 10 will infinitely retry sending ChangeNotify requests if the response does not have SMB2_FLAGS_ASYNC_COMMAND set.
-                        // Note: NoRemoteChangeNotify can be set in the registry to prevent the client from sending ChangeNotify requests altogether.
-                        response.Header.IsAsync = true;
-                        return response;
+                        return ChangeNotifyHelper.GetChangeNotifyInterimResponse((ChangeNotifyRequest)command, share, state);
                     }
                 }
             }
