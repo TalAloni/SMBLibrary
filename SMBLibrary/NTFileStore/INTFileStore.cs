@@ -11,6 +11,8 @@ using Utilities;
 
 namespace SMBLibrary
 {
+    public delegate void OnNotifyChangeCompleted(NTStatus status, byte[] buffer, object context);
+
     /// <summary>
     /// A file store (a.k.a. object store) interface to allow access to a file system or a named pipe in an NT-like manner dictated by the SMB protocol.
     /// </summary>
@@ -33,6 +35,19 @@ namespace SMBLibrary
         NTStatus SetFileInformation(object handle, FileInformation information);
 
         NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass);
+
+        /// <summary>
+        /// Monitor the contents of a directory (and its subdirectories) by using change notifications.
+        /// When something changes within the directory being watched this operation is completed.
+        /// </summary>
+        /// <returns>
+        /// STATUS_PENDING - The directory is being watched, change notification will be provided using callback method.
+        /// STATUS_NOT_SUPPORTED - The underlying object store does not support change notifications.
+        /// STATUS_INVALID_HANDLE - The handle supplied is invalid.
+        /// </returns>
+        NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context);
+
+        NTStatus Cancel(object ioRequest);
 
         NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength);
     }

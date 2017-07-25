@@ -382,6 +382,17 @@ namespace SMBLibrary
             return NTStatus.STATUS_SUCCESS;
         }
 
+        public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
+        {
+            ioRequest = null;
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
+        public NTStatus Cancel(object ioRequest)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
         {
             output = null;
