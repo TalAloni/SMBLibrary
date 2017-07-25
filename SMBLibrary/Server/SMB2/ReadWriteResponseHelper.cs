@@ -71,5 +71,21 @@ namespace SMBLibrary.Server.SMB2
             response.Count = (uint)numberOfBytesWritten;
             return response;
         }
+
+        internal static SMB2Command GetFlushResponse(FlushRequest request, ISMBShare share, SMB2ConnectionState state)
+        {
+            SMB2Session session = state.GetSession(request.Header.SessionID);
+            OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
+            if (openFile == null)
+            {
+                return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
+            }
+            NTStatus status = share.FileStore.FlushFileBuffers(openFile.Handle);
+            if (status != NTStatus.STATUS_SUCCESS)
+            {
+                return new ErrorResponse(request.CommandName, status);
+            }
+            return new FlushResponse();
+        }
     }
 }

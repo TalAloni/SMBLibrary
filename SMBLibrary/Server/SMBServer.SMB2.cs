@@ -165,18 +165,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is FlushRequest)
                     {
-                        FlushRequest request = (FlushRequest)command;
-                        OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
-                        if (openFile == null)
-                        {
-                            return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
-                        }
-                        NTStatus status = share.FileStore.FlushFileBuffers(openFile.Handle);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return new ErrorResponse(request.CommandName, status);
-                        }
-                        return new FlushResponse();
+                        return ReadWriteResponseHelper.GetFlushResponse((FlushRequest)command, share, state);
                     }
                     else if (command is CloseRequest)
                     {
