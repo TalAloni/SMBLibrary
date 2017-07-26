@@ -37,6 +37,7 @@ namespace SMBLibrary.Server.SMB2
             NTStatus readStatus = share.FileStore.ReadFile(out data, openFile.Handle, (long)request.Offset, (int)request.ReadLength);
             if (readStatus != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Read from '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, readStatus);
                 return new ErrorResponse(request.CommandName, readStatus);
             }
             ReadResponse response = new ReadResponse();
@@ -67,6 +68,7 @@ namespace SMBLibrary.Server.SMB2
             NTStatus writeStatus = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, (long)request.Offset, request.Data);
             if (writeStatus != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Write to '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, writeStatus);
                 return new ErrorResponse(request.CommandName, writeStatus);
             }
             WriteResponse response = new WriteResponse();
@@ -86,6 +88,7 @@ namespace SMBLibrary.Server.SMB2
             NTStatus status = share.FileStore.FlushFileBuffers(openFile.Handle);
             if (status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Flush '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, status);
                 return new ErrorResponse(request.CommandName, status);
             }
             return new FlushResponse();
