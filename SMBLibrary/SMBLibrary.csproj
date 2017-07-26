@@ -203,6 +203,8 @@
     <Compile Include="Server\Shares\NamedPipeShare.cs" />
     <Compile Include="Server\Shares\SMBShareCollection.cs" />
     <Compile Include="Server\SMB1\CancelHelper.cs" />
+    <Compile Include="Server\SMB1\CloseHelper.cs" />
+    <Compile Include="Server\SMB1\EchoHelper.cs" />
     <Compile Include="Server\SMB1\FileStoreResponseHelper.cs" />
     <Compile Include="Server\SMB1\NegotiateHelper.cs" />
     <Compile Include="Server\SMB1\NotifyChangeHelper.cs" />
@@ -210,7 +212,6 @@
     <Compile Include="Server\SMB1\NTTransactHelper.cs" />
     <Compile Include="Server\SMB1\OpenAndXHelper.cs" />
     <Compile Include="Server\SMB1\ReadWriteResponseHelper.cs" />
-    <Compile Include="Server\SMB1\ServerResponseHelper.cs" />
     <Compile Include="Server\SMB1\SessionSetupHelper.cs" />
     <Compile Include="Server\SMB1\SMB1FileStoreHelper.cs" />
     <Compile Include="Server\SMB1\SMB1FileStoreHelper.Query.cs" />

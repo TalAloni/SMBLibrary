@@ -127,7 +127,7 @@ namespace SMBLibrary.Server
             }
             else if (command is EchoRequest)
             {
-                return ServerResponseHelper.GetEchoResponse((EchoRequest)command);
+                return EchoHelper.GetEchoResponse((EchoRequest)command);
             }
             else
             {
@@ -172,7 +172,7 @@ namespace SMBLibrary.Server
                     else if (command is CloseRequest)
                     {
                         CloseRequest request = (CloseRequest)command;
-                        return ServerResponseHelper.GetCloseResponse(header, request, share, state);
+                        return CloseHelper.GetCloseResponse(header, request, share, state);
                     }
                     else if (command is FlushRequest)
                     {
@@ -249,7 +249,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is FindClose2Request)
                     {
-                        return ServerResponseHelper.GetFindClose2Request(header, (FindClose2Request)command, state);
+                        return CloseHelper.GetFindClose2Response(header, (FindClose2Request)command, state);
                     }
                     else if (command is TreeDisconnectRequest)
                     {

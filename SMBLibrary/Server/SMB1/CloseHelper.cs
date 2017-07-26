@@ -6,14 +6,12 @@
  */
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using SMBLibrary.SMB1;
 using Utilities;
 
 namespace SMBLibrary.Server.SMB1
 {
-    internal partial class ServerResponseHelper
+    internal class CloseHelper
     {
         internal static SMB1Command GetCloseResponse(SMB1Header header, CloseRequest request, ISMBShare share, SMB1ConnectionState state)
         {
@@ -37,24 +35,11 @@ namespace SMBLibrary.Server.SMB1
             return new CloseResponse();
         }
 
-        internal static SMB1Command GetFindClose2Request(SMB1Header header, FindClose2Request request, SMB1ConnectionState state)
+        internal static SMB1Command GetFindClose2Response(SMB1Header header, FindClose2Request request, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             session.RemoveOpenSearch(request.SearchHandle);
             return new FindClose2Response();
-        }
-
-        internal static List<SMB1Command> GetEchoResponse(EchoRequest request)
-        {
-            List<SMB1Command> response = new List<SMB1Command>();
-            for (int index = 0; index < request.EchoCount; index++)
-            {
-                EchoResponse echo = new EchoResponse();
-                echo.SequenceNumber = (ushort)index;
-                echo.SMBData = request.SMBData;
-                response.Add(echo);
-            }
-            return response;
         }
     }
 }
