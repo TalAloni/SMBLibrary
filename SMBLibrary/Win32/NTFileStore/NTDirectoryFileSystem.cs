@@ -161,6 +161,14 @@ namespace SMBLibrary.Win32
             createOptions &= ~CreateOptions.FILE_SYNCHRONOUS_IO_NONALERT;
             createOptions |= CreateOptions.FILE_SYNCHRONOUS_IO_ALERT;
 
+            if ((createOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0 &&
+                (desiredAccess.File & FileAccessMask.FILE_APPEND_DATA) > 0)
+            {
+                // FILE_NO_INTERMEDIATE_BUFFERING is incompatible with FILE_APPEND_DATA
+                // [MS-SMB2] 3.3.5.9 suggests setting FILE_APPEND_DATA to zero in this case.
+                desiredAccess = (AccessMask)((uint)desiredAccess & (uint)~FileAccessMask.FILE_APPEND_DATA);
+            }
+
             NTStatus status = CreateFile(out fileHandle, out fileStatus, nativePath, desiredAccess, 0, fileAttributes, shareAccess, createDisposition, createOptions);
             handle = fileHandle;
             return status;
