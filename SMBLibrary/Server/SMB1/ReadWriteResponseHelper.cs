@@ -78,7 +78,14 @@ namespace SMBLibrary.Server.SMB1
             }
             byte[] data;
             header.Status = share.FileStore.ReadFile(out data, openFile.Handle, (long)request.Offset, (int)maxCount);
-            if (header.Status != NTStatus.STATUS_SUCCESS)
+            if (header.Status == NTStatus.STATUS_END_OF_FILE)
+            {
+                // [MS-CIFS] Windows servers set the DataLength field to 0x0000 and return STATUS_SUCCESS.
+                // JCIFS expects the same response.
+                data = new byte[0];
+                header.Status = NTStatus.STATUS_SUCCESS;
+            }
+            else if (header.Status != NTStatus.STATUS_SUCCESS)
             {
                 state.LogToServer(Severity.Verbose, "Read from '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
                 return new ErrorResponse(request.CommandName);
