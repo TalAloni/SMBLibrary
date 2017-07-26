@@ -14,6 +14,11 @@ namespace SMBLibrary
     /// <summary>
     /// [MS-FSCC] 2.4.21.2 - FileLinkInformation Type 2
     /// </summary>
+    /// <remarks>
+    /// [MS-FSA] 2.1.5.14.6
+    /// FILE_LINK_INFORMATION_TYPE_1: Used for 32-bit local clients.
+    /// FILE_LINK_INFORMATION_TYPE_2: Used for remote clients or 64-bit local clients.
+    /// </remarks>
     public class FileLinkInformationType2 : FileInformation
     {
         public const int FixedLength = 20;
