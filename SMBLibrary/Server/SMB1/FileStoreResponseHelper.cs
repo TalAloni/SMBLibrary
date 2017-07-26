@@ -31,9 +31,11 @@ namespace SMBLibrary.Server.SMB1
             header.Status = SMB1FileStoreHelper.CreateDirectory(share.FileStore, request.DirectoryName, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Create Directory '{0}{1}' failed. NTStatus: {2}.", share.Name, request.DirectoryName, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
 
+            state.LogToServer(Severity.Verbose, "Create Directory: User '{0}' created '{1}{2}'.", session.UserName, share.Name, request.DirectoryName);
             return new CreateDirectoryResponse();
         }
 
@@ -53,8 +55,10 @@ namespace SMBLibrary.Server.SMB1
             header.Status = SMB1FileStoreHelper.DeleteDirectory(share.FileStore, request.DirectoryName, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Delete Directory '{0}{1}' failed. NTStatus: {2}.", share.Name, request.DirectoryName, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
+            state.LogToServer(Severity.Verbose, "Delete Directory: User '{0}' deleted '{1}{2}'.", session.UserName, share.Name, request.DirectoryName);
             return new DeleteDirectoryResponse();
         }
 
@@ -75,8 +79,10 @@ namespace SMBLibrary.Server.SMB1
             header.Status = SMB1FileStoreHelper.DeleteFile(share.FileStore, request.FileName, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Delete '{0}{1}' failed. NTStatus: {2}.", share.Name, request.FileName, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
+            state.LogToServer(Severity.Verbose, "Delete: User '{0}' deleted '{1}{2}'.", session.UserName, share.Name, request.FileName);
             return new DeleteResponse();
         }
 
@@ -102,8 +108,10 @@ namespace SMBLibrary.Server.SMB1
             header.Status = SMB1FileStoreHelper.Rename(share.FileStore, request.OldFileName, request.NewFileName, request.SearchAttributes, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Rename '{0}{1}' to '{0}{2}' failed. NTStatus: {3}.", share.Name, request.OldFileName, request.NewFileName, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
+            state.LogToServer(Severity.Verbose, "Rename: User '{0}' renamed '{1}{2}' to '{1}{3}'.", session.UserName, share.Name, request.OldFileName, request.NewFileName);
             return new RenameResponse();
         }
 
@@ -184,9 +192,11 @@ namespace SMBLibrary.Server.SMB1
             header.Status = SMB1FileStoreHelper.SetInformation(share.FileStore, request.FileName, request.FileAttributes, request.LastWriteTime, session.SecurityContext);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Set Information on '{0}{1}' failed. NTStatus: {2}", share.Name, request.FileName, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
 
+            state.LogToServer(Severity.Verbose, "Set Information on '{0}{1}' succeeded.", share.Name, request.FileName);
             return new SetInformationResponse();
         }
 
@@ -213,9 +223,11 @@ namespace SMBLibrary.Server.SMB1
             header.Status = SMB1FileStoreHelper.SetInformation2(share.FileStore, openFile.Handle, request.CreationDateTime, request.LastAccessDateTime, request.LastWriteDateTime);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Verbose, "Set Information 2 on '{0}{1}' failed. NTStatus: {2}", share.Name, openFile.Path, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
 
+            state.LogToServer(Severity.Verbose, "Set Information 2 on '{0}{1}' succeeded.", share.Name, openFile.Path);
             return new SetInformation2Response();
         }
     }

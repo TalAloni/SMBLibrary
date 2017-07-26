@@ -38,6 +38,7 @@ namespace SMBLibrary.Server.SMB2
                 }
                 else
                 {
+                    state.LogToServer(Severity.Verbose, "IOCTL failed. Invalid FileId.");
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
                 }
             }
@@ -51,9 +52,11 @@ namespace SMBLibrary.Server.SMB2
             NTStatus status = share.FileStore.DeviceIOControl(handle, request.CtlCode, request.Input, out output, maxOutputLength);
             if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_BUFFER_OVERFLOW)
             {
+                state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: 0x{0}. NTStatus: {1}.", request.CtlCode.ToString("x"), status);
                 return new ErrorResponse(request.CommandName, status);
             }
 
+            state.LogToServer(Severity.Verbose, "IOCTL succeeded. CTL Code: 0x{0}.", request.CtlCode.ToString("x"));
             IOCtlResponse response = new IOCtlResponse();
             response.Header.Status = status;
             response.CtlCode = request.CtlCode;

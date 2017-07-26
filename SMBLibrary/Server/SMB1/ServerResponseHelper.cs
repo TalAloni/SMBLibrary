@@ -21,6 +21,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "Close failed. Invalid FID.");
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
                 return new ErrorResponse(request.CommandName);
             }

@@ -20,6 +20,7 @@ namespace SMBLibrary.Server.SMB2
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "Read failed. Invalid FileId.");
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
 
@@ -49,6 +50,7 @@ namespace SMBLibrary.Server.SMB2
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "Write failed. Invalid FileId.");
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
 
@@ -78,6 +80,7 @@ namespace SMBLibrary.Server.SMB2
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "Flush failed. Invalid FileId.");
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
             NTStatus status = share.FileStore.FlushFileBuffers(openFile.Handle);
