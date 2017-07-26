@@ -160,3 +160,23 @@ Revision History:
         Improved implementation of RPC PDUs.
         SMBServer: Improved Named Pipe implementation.
         Several enums and events were renamed.
+
+1.2.2 - NTFileSystemAdapter: Bugfix: FILE_DELETE_ON_CLOSE flag was ignored in some cases.
+        FileSystemInformation: Added GetFileSystemInformation method.
+        INTFileStore: CreateFile: Added FileAttributes parameter.
+        SMB1FileStoreHelper: Delete / Rename: The status of SetFileInformation should be returned regardless of the status of CloseFile.
+        SMB1FileStoreHelper: QueryInformation / SetInformation / QueryDirectory: Bugfix: Temporary handle was not closed.
+        SMB2 Commands: Marked StructureSize as private.
+        Improved compatibility with Windows Native API.
+        Added SMB_COM_NT_CANCEL request implementation.
+        SMB1: NTTransactionHelper / TransactionHelper: Store MaxParameterCount (required for NT_TRANSACT_NOTIFY_CHANGE).
+        SMB1/SMB2 Headers: Marked Protocol ID bytes as private.
+        SMBServer: SMB1: SMB_COM_FLUSH will now call FlushFileBuffers on the handle associated with the specified FID.
+        SMBServer: SMB1: Properly handle SMB_COM_NT_TRANSACT requests with invalid function code.
+        SMBServer: SMB2: Do not try to process async commands other than Cancel.
+        INTFileStore: Added NotifyChange and Cancel methods.
+        SMBServer: Added Support for NotifyChange and Cancel if the underlying file store supports it.
+        NTFileStore: Added FileLinkInformationType1 and FileRenameInformation Type1 implementations.
+        Added NTDirectoryFileSystem implementation for passsing-through IO requests to the local NT storage subsystem.
+        SMBServer: SMB2: Bugfix: Last SessionSetupResponse was not signed, final async response was not signed.
+        Minor logging improvements.
