@@ -20,6 +20,7 @@ using SMBLibrary;
 using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.Server;
+using SMBLibrary.Win32;
 using SMBLibrary.Win32.Security;
 using Utilities;
 
@@ -101,14 +102,6 @@ namespace SMBServer
             m_logWriter = new LogWriter();
             m_server.LogEntryAdded += new EventHandler<LogEntry>(m_logWriter.OnLogEntryAdded);
 
-            foreach (FileSystemShare share in shares)
-            {
-                if (share.FileStore is NTFileSystemAdapter)
-                {
-                    ((NTFileSystemAdapter)share.FileStore).LogEntryAdded += new EventHandler<LogEntry>(m_logWriter.OnLogEntryAdded);
-                }
-            }
-
             try
             {
                 m_server.Start(serverAddress, transportType, chkSMB1.Checked, chkSMB2.Checked);
@@ -175,7 +168,7 @@ namespace SMBServer
                 List<string> readAccess = ReadAccessList(readAccessNode);
                 XmlNode writeAccessNode = shareNode.SelectSingleNode("WriteAccess");
                 List<string> writeAccess = ReadAccessList(writeAccessNode);
-                FileSystemShare share = new FileSystemShare(shareName, new DirectoryFileSystem(sharePath));
+                FileSystemShare share = new FileSystemShare(shareName, new NTDirectoryFileSystem(sharePath));
                 share.AccessRequested += delegate(object sender, AccessRequestArgs args)
                 {
                     bool hasReadAccess = Contains(readAccess, "Users") || Contains(readAccess, args.UserName);
