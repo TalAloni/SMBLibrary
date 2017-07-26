@@ -19,6 +19,7 @@ namespace SMBLibrary.Server
         private byte[] m_sessionKey;
         private SecurityContext m_securityContext;
         private DateTime m_creationDT;
+        private bool m_signingRequired;
 
         // Key is TreeID
         private Dictionary<uint, ISMBShare> m_connectedTrees = new Dictionary<uint, ISMBShare>();
@@ -31,13 +32,14 @@ namespace SMBLibrary.Server
         // Key is the volatile portion of the FileID
         private Dictionary<ulong, OpenSearch> m_openSearches = new Dictionary<ulong, OpenSearch>();
 
-        public SMB2Session(SMB2ConnectionState connection, ulong sessionID, string userName, string machineName, byte[] sessionKey, object accessToken)
+        public SMB2Session(SMB2ConnectionState connection, ulong sessionID, string userName, string machineName, byte[] sessionKey, object accessToken, bool signingRequired)
         {
             m_connection = connection;
             m_sessionID = sessionID;
             m_sessionKey = sessionKey;
             m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
             m_creationDT = DateTime.Now;
+            m_signingRequired = signingRequired;
         }
 
         private uint? AllocateTreeID()
@@ -243,6 +245,14 @@ namespace SMBLibrary.Server
             get
             {
                 return m_creationDT;
+            }
+        }
+
+        public bool SigningRequired
+        {
+            get
+            {
+                return m_signingRequired;
             }
         }
     }

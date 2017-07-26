@@ -66,12 +66,13 @@ namespace SMBLibrary.Server.SMB2
                 if (!isGuest.HasValue || !isGuest.Value)
                 {
                     state.LogToServer(Severity.Information, "Session Setup: User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}', OS version: '{3}').", userName, domainName, machineName, osVersion);
-                    state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken);
+                    bool signingRequired = (request.SecurityMode == SecurityMode.SigningRequired);
+                    state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken, signingRequired);
                 }
                 else
                 {
                     state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}', OS version: '{3}'), logged in as guest.", userName, domainName, machineName, osVersion);
-                    state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken);
+                    state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken, false);
                     response.SessionFlags = SessionFlags.IsGuest;
                 }
             }

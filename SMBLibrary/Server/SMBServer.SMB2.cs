@@ -28,7 +28,7 @@ namespace SMBLibrary.Server
                 SMB2Command response = ProcessSMB2Command(request, ref state);
                 if (response != null)
                 {
-                    UpdateSMB2Header(response, request);
+                    UpdateSMB2Header(response, request, state);
                     responseChain.Add(response);
                     if (!request.Header.IsRelatedOperations)
                     {
@@ -185,10 +185,9 @@ namespace SMBLibrary.Server
 
         internal static void EnqueueResponse(ConnectionState state, SMB2Command response)
         {
-            SessionMessagePacket packet = new SessionMessagePacket();
-            packet.Trailer = response.GetBytes();
-            state.SendQueue.Enqueue(packet);
-            state.LogToServer(Severity.Verbose, "SMB2 response queued: {0}, Packet length: {1}", response.CommandName.ToString(), packet.Length);
+            List<SMB2Command> responseChain = new List<SMB2Command>();
+            responseChain.Add(response);
+            EnqueueResponseChain(state, responseChain);
         }
 
         private static void EnqueueResponseChain(ConnectionState state, List<SMB2Command> responseChain)
@@ -216,16 +215,12 @@ namespace SMBLibrary.Server
             state.LogToServer(Severity.Verbose, "SMB2 response chain queued: Response count: {0}, First response: {1}, Packet length: {2}", responseChain.Count, responseChain[0].CommandName.ToString(), packet.Length);
         }
 
-        private static void UpdateSMB2Header(SMB2Command response, SMB2Command request)
+        private static void UpdateSMB2Header(SMB2Command response, SMB2Command request, ConnectionState state)
         {
             response.Header.MessageID = request.Header.MessageID;
             response.Header.CreditCharge = request.Header.CreditCharge;
             response.Header.Credits = Math.Max((ushort)1, request.Header.Credits);
             response.Header.IsRelatedOperations = request.Header.IsRelatedOperations;
-            // [MS-SMB2] The server SHOULD sign the message [..] if the request was signed by the client,
-            // and the response is not an interim response to an asynchronously processed request.
-            bool isInterimResponse = (request.Header.IsAsync && request.Header.Status == NTStatus.STATUS_PENDING);
-            response.Header.IsSigned = request.Header.IsSigned && !isInterimResponse;
             response.Header.Reserved = request.Header.Reserved;
             if (response.Header.SessionID == 0)
             {
@@ -235,6 +230,19 @@ namespace SMBLibrary.Server
             {
                 response.Header.TreeID = request.Header.TreeID;
             }
+            bool signingRequired = false;
+            if (state is SMB2ConnectionState)
+            {
+                SMB2Session session = ((SMB2ConnectionState)state).GetSession(response.Header.SessionID);
+                if (session != null && session.SigningRequired)
+                {
+                    signingRequired = true;
+                }
+            }
+            // [MS-SMB2] The server SHOULD sign the message [..] if the request was signed by the client,
+            // and the response is not an interim response to an asynchronously processed request.
+            bool isInterimResponse = (response.Header.IsAsync && response.Header.Status == NTStatus.STATUS_PENDING);
+            response.Header.IsSigned = (request.Header.IsSigned || signingRequired) && !isInterimResponse;
         }
 
         private static void SetRequestFileID(SMB2Command command, FileID fileID)

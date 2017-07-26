@@ -59,6 +59,7 @@ namespace SMBLibrary.Server.SMB2
                 ChangeNotifyResponse response = new ChangeNotifyResponse();
                 response.Header.Status = status;
                 response.Header.IsAsync = true;
+                response.Header.IsSigned = session.SigningRequired;
                 response.Header.AsyncID = asyncContext.AsyncID;
                 response.Header.SessionID = asyncContext.SessionID;
                 response.OutputBuffer = buffer;
