@@ -551,7 +551,7 @@
     <Compile Include="Tests\SMB2SigningTests.cs" />
     <Compile Include="Utilities\LogEntry.cs" />
     <Compile Include="Utilities\SocketUtils.cs" />
-    <Compile Include="Win32\IntegratedNTLMAuthenticationProvider.cs" />
+    <Compile Include="Win32\Security\IntegratedNTLMAuthenticationProvider.cs" />
     <Compile Include="Win32\Security\LoginAPI.cs" />
     <Compile Include="Win32\Security\NetworkAPI.cs" />
     <Compile Include="Win32\Security\SSPIHelper.cs" />
