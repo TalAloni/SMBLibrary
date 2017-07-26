@@ -551,12 +551,16 @@
     <Compile Include="Tests\SMB2SigningTests.cs" />
     <Compile Include="Utilities\LogEntry.cs" />
     <Compile Include="Utilities\SocketUtils.cs" />
+    <Compile Include="Win32\NTFileStore\NTDirectoryFileSystem.cs" />
+    <Compile Include="Win32\NTFileStore\PendingRequestCollection.cs" />
+    <Compile Include="Win32\ProcessHelper.cs" />
     <Compile Include="Win32\Security\IntegratedNTLMAuthenticationProvider.cs" />
     <Compile Include="Win32\Security\LoginAPI.cs" />
     <Compile Include="Win32\Security\NetworkAPI.cs" />
     <Compile Include="Win32\Security\SSPIHelper.cs" />
     <Compile Include="Win32\Security\Structures\SecBuffer.cs" />
     <Compile Include="Win32\Security\Structures\SecBufferDesc.cs" />
+    <Compile Include="Win32\ThreadingHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />
