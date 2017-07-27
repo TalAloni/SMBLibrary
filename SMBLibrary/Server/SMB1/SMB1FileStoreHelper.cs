@@ -49,10 +49,6 @@ namespace SMBLibrary.Server.SMB1
             FileDispositionInformation fileDispositionInfo = new FileDispositionInformation();
             fileDispositionInfo.DeletePending = true;
             status = fileStore.SetFileInformation(handle, fileDispositionInfo);
-            if (status != NTStatus.STATUS_SUCCESS)
-            {
-                return status;
-            }
             fileStore.CloseFile(handle);
             return status;
         }
@@ -77,10 +73,6 @@ namespace SMBLibrary.Server.SMB1
             renameInfo.ReplaceIfExists = false;
             renameInfo.FileName = newName;
             status = fileStore.SetFileInformation(handle, renameInfo);
-            if (status != NTStatus.STATUS_SUCCESS)
-            {
-                return status;
-            }
             fileStore.CloseFile(handle);
             return status;
         }
