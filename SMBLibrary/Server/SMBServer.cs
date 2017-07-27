@@ -82,6 +82,7 @@ namespace SMBLibrary.Server
             Log(Severity.Information, "Stopping server");
             m_listening = false;
             SocketUtils.ReleaseSocket(m_listenerSocket);
+            m_connectionManager.ReleaseAllConnections();
         }
 
         // This method Accepts new connections

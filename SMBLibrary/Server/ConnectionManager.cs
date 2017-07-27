@@ -44,6 +44,15 @@ namespace SMBLibrary.Server
             RemoveConnection(connection);
         }
 
+        public void ReleaseAllConnections()
+        {
+            List<ConnectionState> connections = new List<ConnectionState>(m_activeConnections);
+            foreach (ConnectionState connection in connections)
+            {
+                ReleaseConnection(connection);
+            }
+        }
+
         public List<SessionInformation> GetSessionsInformation()
         {
             List<SessionInformation> result = new List<SessionInformation>();
