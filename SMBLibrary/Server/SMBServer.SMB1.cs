@@ -19,13 +19,13 @@ namespace SMBLibrary.Server
         {
             SMB1Header header = new SMB1Header();
             PrepareResponseHeader(header, message.Header);
-            List<SMB1Command> sendQueue = new List<SMB1Command>();
+            List<SMB1Command> responses = new List<SMB1Command>();
 
             bool isBatchedRequest = (message.Commands.Count > 1);
             foreach (SMB1Command command in message.Commands)
             {
-                List<SMB1Command> responses = ProcessSMB1Command(header, command, ref state);
-                sendQueue.AddRange(responses);
+                List<SMB1Command> commandResponses = ProcessSMB1Command(header, command, ref state);
+                responses.AddRange(commandResponses);
 
                 if (header.Status != NTStatus.STATUS_SUCCESS)
                 {
@@ -35,17 +35,17 @@ namespace SMBLibrary.Server
 
             if (isBatchedRequest)
             {
-                if (sendQueue.Count > 0)
+                if (responses.Count > 0)
                 {
                     // The server MUST batch the response into an AndX Response chain.
                     SMB1Message reply = new SMB1Message();
                     reply.Header = header;
-                    for (int index = 0; index < sendQueue.Count; index++)
+                    for (int index = 0; index < responses.Count; index++)
                     {
-                        if (sendQueue[index] is SMBAndXCommand || index == sendQueue.Count - 1)
+                        if (responses[index] is SMBAndXCommand || index == responses.Count - 1)
                         {
-                            reply.Commands.Add(sendQueue[index]);
-                            sendQueue.RemoveAt(index);
+                            reply.Commands.Add(responses[index]);
+                            responses.RemoveAt(index);
                             index--;
                         }
                     }
@@ -53,7 +53,7 @@ namespace SMBLibrary.Server
                 }
             }
 
-            foreach (SMB1Command response in sendQueue)
+            foreach (SMB1Command response in responses)
             {
                 SMB1Message reply = new SMB1Message();
                 reply.Header = header;
