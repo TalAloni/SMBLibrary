@@ -41,7 +41,8 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.DELETE, 0, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
+            ShareAccess shareAccess = ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE | ShareAccess.FILE_SHARE_DELETE;
+            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, DirectoryAccessMask.DELETE, 0, shareAccess, CreateDisposition.FILE_OPEN, createOptions, securityContext);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return status;
@@ -64,7 +65,8 @@ namespace SMBLibrary.Server.SMB1
             {
                 createOptions = CreateOptions.FILE_NON_DIRECTORY_FILE;
             }
-            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, oldName, DirectoryAccessMask.DELETE, 0, 0, CreateDisposition.FILE_OPEN, createOptions, securityContext);
+            ShareAccess shareAccess = ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE | ShareAccess.FILE_SHARE_DELETE;
+            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, oldName, DirectoryAccessMask.DELETE, 0, shareAccess, CreateDisposition.FILE_OPEN, createOptions, securityContext);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return status;
