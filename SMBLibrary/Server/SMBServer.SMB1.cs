@@ -42,11 +42,16 @@ namespace SMBLibrary.Server
                     reply.Header = header;
                     for (int index = 0; index < responses.Count; index++)
                     {
-                        if (responses[index] is SMBAndXCommand || index == responses.Count - 1)
+                        if (reply.Commands.Count == 0 ||
+                            reply.Commands[reply.Commands.Count - 1] is SMBAndXCommand)
                         {
                             reply.Commands.Add(responses[index]);
                             responses.RemoveAt(index);
                             index--;
+                        }
+                        else
+                        {
+                            break;
                         }
                     }
                     EnqueueMessage(state, reply);
