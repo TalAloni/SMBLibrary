@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -23,10 +23,10 @@ namespace SMBLibrary.SMB1
         public uint TotalDataCount;
         //uint ParameterCount;
         //uint ParameterOffset;
-        //uint ParameterDisplacement;
+        public uint ParameterDisplacement;
         //uint DataCount;
         //uint DataOffset;
-        //uint DataDisplacement;
+        public uint DataDisplacement;
         //byte SetupCount; // In 2-byte words
         public byte[] Setup;
         // Data:
@@ -48,10 +48,10 @@ namespace SMBLibrary.SMB1
             TotalDataCount = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
             uint parameterCount = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
             uint parameterOffset = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
-            uint parameterDisplacement = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
+            ParameterDisplacement = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
             uint dataCount = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
             uint dataOffset = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
-            uint dataDisplacement = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
+            DataDisplacement = LittleEndianReader.ReadUInt32(this.SMBParameters, ref readOffset);
             byte setupCount = ByteReader.ReadByte(this.SMBParameters, ref readOffset);
             Setup = ByteReader.ReadBytes(this.SMBParameters, ref offset, setupCount * 2);
 
@@ -64,8 +64,6 @@ namespace SMBLibrary.SMB1
             byte setupCount = (byte)(Setup.Length / 2);
             uint parameterCount = (ushort)TransParameters.Length;
             uint dataCount = (ushort)TransData.Length;
-            uint parameterDisplacement = 0;
-            uint dataDisplacement = 0;
 
             // WordCount + ByteCount are additional 3 bytes
             uint parameterOffset = (ushort)(SMB1Header.Length + 3 + (FixedSMBParametersLength + Setup.Length));
@@ -82,10 +80,10 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, TotalDataCount);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, parameterCount);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, parameterOffset);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, parameterDisplacement);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, ParameterDisplacement);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, dataCount);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, dataOffset);
-            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, dataDisplacement);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref writeOffset, DataDisplacement);
             ByteWriter.WriteByte(this.SMBParameters, ref writeOffset, setupCount);
             ByteWriter.WriteBytes(this.SMBParameters, ref writeOffset, Setup);
 
