@@ -60,10 +60,6 @@ namespace SMBLibrary.Server.SMB2
             {
                 FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, handle);
                 CreateResponse response = CreateResponseFromFileSystemEntry(fileInfo, fileID.Value, fileStatus);
-                if (request.RequestedOplockLevel == OplockLevel.Batch)
-                {
-                    response.OplockLevel = OplockLevel.Batch;
-                }
                 return response;
             }
         }

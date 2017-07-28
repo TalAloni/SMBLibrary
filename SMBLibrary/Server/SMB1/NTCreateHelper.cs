@@ -76,19 +76,11 @@ namespace SMBLibrary.Server.SMB1
                 if (isExtended)
                 {
                     NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileInformation(fileInfo, fileID.Value, fileStatus);
-                    if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
-                    {
-                        response.OpLockLevel = OpLockLevel.BatchOpLockGranted;
-                    }
                     return response;
                 }
                 else
                 {
                     NTCreateAndXResponse response = CreateResponseFromFileInformation(fileInfo, fileID.Value, fileStatus);
-                    if ((request.Flags & NTCreateFlags.NT_CREATE_REQUEST_OPBATCH) > 0)
-                    {
-                        response.OpLockLevel = OpLockLevel.BatchOpLockGranted;
-                    }
                     return response;
                 }
             }
