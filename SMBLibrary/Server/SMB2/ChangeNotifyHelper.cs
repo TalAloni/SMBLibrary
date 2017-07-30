@@ -48,11 +48,10 @@ namespace SMBLibrary.Server.SMB2
                 SMB2Session session = connection.GetSession(asyncContext.SessionID);
                 if (session != null)
                 {
-                    ISMBShare share = session.GetConnectedTree(asyncContext.TreeID);
                     OpenFileObject openFile = session.GetOpenFileObject(asyncContext.FileID);
-                    if (share != null && openFile != null)
+                    if (openFile != null)
                     {
-                        connection.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' completed. NTStatus: {2}. AsyncID: {3}", share.Name, openFile.Path, status, asyncContext.AsyncID);
+                        connection.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' completed. NTStatus: {2}. AsyncID: {3}", openFile.ShareName, openFile.Path, status, asyncContext.AsyncID);
                     }
                 }
 

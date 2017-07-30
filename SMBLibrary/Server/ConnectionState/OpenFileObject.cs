@@ -14,12 +14,14 @@ namespace SMBLibrary.Server
     internal class OpenFileObject
     {
         public uint TreeID;
+        public string ShareName;
         public string Path;
         public object Handle;
 
-        public OpenFileObject(uint treeID, string path, object handle)
+        public OpenFileObject(uint treeID, string shareName, string path, object handle)
         {
             TreeID = treeID;
+            ShareName = shareName;
             Path = path;
             Handle = handle;
         }

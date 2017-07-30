@@ -87,19 +87,19 @@ namespace SMBLibrary.Server
 
         /// <param name="relativePath">Should include the path relative to the share</param>
         /// <returns>FileID</returns>
-        public ushort? AddOpenFile(ushort treeID, string relativePath)
+        public ushort? AddOpenFile(ushort treeID, string shareName, string relativePath)
         {
-            return AddOpenFile(treeID, relativePath, null);
+            return AddOpenFile(treeID, shareName, relativePath, null);
         }
 
-        public ushort? AddOpenFile(ushort treeID, string relativePath, object handle)
+        public ushort? AddOpenFile(ushort treeID, string shareName, string relativePath, object handle)
         {
             ushort? fileID = m_connection.AllocateFileID();
             if (fileID.HasValue)
             {
                 lock (m_openFiles)
                 {
-                    m_openFiles.Add(fileID.Value, new OpenFileObject(treeID, relativePath, handle));
+                    m_openFiles.Add(fileID.Value, new OpenFileObject(treeID, shareName, relativePath, handle));
                 }
             }
             return fileID;

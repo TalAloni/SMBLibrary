@@ -47,11 +47,10 @@ namespace SMBLibrary.Server.SMB1
                 SMB1Session session = connection.GetSession(asyncContext.UID);
                 if (session != null)
                 {
-                    ISMBShare share = session.GetConnectedTree(asyncContext.TID);
                     OpenFileObject openFile = session.GetOpenFileObject(asyncContext.FileID);
-                    if (share != null && openFile != null)
+                    if (openFile != null)
                     {
-                        connection.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' completed. NTStatus: {2}. PID: {3}. MID: {4}.", share.Name, openFile.Path, status, asyncContext.PID, asyncContext.MID);
+                        connection.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' completed. NTStatus: {2}. PID: {3}. MID: {4}.", openFile.ShareName, openFile.Path, status, asyncContext.PID, asyncContext.MID);
                     }
                 }
                 SMB1Header header = new SMB1Header();

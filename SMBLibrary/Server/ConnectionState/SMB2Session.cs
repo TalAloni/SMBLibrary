@@ -129,7 +129,7 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public FileID? AddOpenFile(uint treeID, string relativePath, object handle)
+        public FileID? AddOpenFile(uint treeID, string shareName, string relativePath, object handle)
         {
             ulong? volatileFileID = AllocateVolatileFileID();
             if (volatileFileID.HasValue)
@@ -141,7 +141,7 @@ namespace SMBLibrary.Server
                 fileID.Persistent = volatileFileID.Value;
                 lock (m_openFiles)
                 {
-                    m_openFiles.Add(volatileFileID.Value, new OpenFileObject(treeID, relativePath, handle));
+                    m_openFiles.Add(volatileFileID.Value, new OpenFileObject(treeID, shareName, relativePath, handle));
                 }
                 return fileID;
             }

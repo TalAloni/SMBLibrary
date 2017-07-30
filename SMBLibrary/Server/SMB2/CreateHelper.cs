@@ -45,7 +45,7 @@ namespace SMBLibrary.Server.SMB2
             }
 
             state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}'.", share.Name, path);
-            FileID? fileID = session.AddOpenFile(request.Header.TreeID, path, handle);
+            FileID? fileID = session.AddOpenFile(request.Header.TreeID, share.Name, path, handle);
             if (fileID == null)
             {
                 share.FileStore.CloseFile(handle);
