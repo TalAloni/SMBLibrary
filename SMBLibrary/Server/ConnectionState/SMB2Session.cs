@@ -171,7 +171,7 @@ namespace SMBLibrary.Server
             {
                 foreach (OpenFileObject openFile in m_openFiles.Values)
                 {
-                    result.Add(openFile.Path);
+                    result.Add(@"\" + openFile.ShareName + openFile.Path);
                 }
             }
             return result;
