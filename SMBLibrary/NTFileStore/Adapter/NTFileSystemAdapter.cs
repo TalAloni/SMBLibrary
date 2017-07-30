@@ -244,7 +244,7 @@ namespace SMBLibrary
             }
             else
             {
-                // Note that SetFileInformationByHandle/FILE_DISPOSITION_INFO has no effect if the handle was opened with FILE_FLAG_DELETE_ON_CLOSE.
+                // Note that SetFileInformationByHandle/FILE_DISPOSITION_INFO has no effect if the handle was opened with FILE_DELETE_ON_CLOSE.
                 NTStatus openStatus = OpenFileStream(out stream, path, fileAccess, shareAccess, createOptions);
                 if (openStatus != NTStatus.STATUS_SUCCESS)
                 {
