@@ -57,9 +57,10 @@ namespace SMBLibrary.Server.SMB1
                 header.Command = CommandName.SMB_COM_NT_TRANSACT;
                 header.Status = status;
                 header.Flags = HeaderFlags.CaseInsensitive | HeaderFlags.CanonicalizedPaths | HeaderFlags.Reply;
+                // [MS-CIFS] SMB_FLAGS2_LONG_NAMES SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
                 // [MS-CIFS] SMB_FLAGS2_UNICODE SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
                 // [MS-CIFS] The Windows NT Server implementation of NT_TRANSACT_NOTIFY_CHANGE always returns the names of changed files in Unicode format.
-                header.Flags2 = HeaderFlags2.Unicode | HeaderFlags2.NTStatusCode;
+                header.Flags2 = HeaderFlags2.LongNamesAllowed | HeaderFlags2.NTStatusCode | HeaderFlags2.Unicode;
                 header.UID = asyncContext.UID;
                 header.TID = asyncContext.TID;
                 header.PID = asyncContext.PID;
