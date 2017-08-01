@@ -85,7 +85,7 @@ namespace SMBLibrary.Server
             m_connectionManager.ReleaseAllConnections();
         }
 
-        // This method Accepts new connections
+        // This method accepts new connections
         private void ConnectRequestCallback(IAsyncResult ar)
         {
             Socket listenerSocket = (Socket)ar.AsyncState;
@@ -101,11 +101,11 @@ namespace SMBLibrary.Server
             }
             catch (SocketException ex)
             {
-                const int WSAECONNRESET = 10054;
-                // Client may have closed the connection before we start to process the connection request.
-                // When we get this error, we have to continue to accept other requests.
+                const int WSAECONNRESET = 10054; // The client may have closed the connection before we start to process the connection request.
+                const int WSAETIMEDOUT = 10060; // The client did not properly respond after a period of time.
+                // When we get WSAECONNRESET or WSAETIMEDOUT, we have to continue to accept other connection requests.
                 // See http://stackoverflow.com/questions/7704417/socket-endaccept-error-10054
-                if (ex.ErrorCode == WSAECONNRESET)
+                if (ex.ErrorCode == WSAECONNRESET || ex.ErrorCode == WSAETIMEDOUT)
                 {
                     listenerSocket.BeginAccept(ConnectRequestCallback, listenerSocket);
                 }
