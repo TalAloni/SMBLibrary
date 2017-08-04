@@ -273,30 +273,41 @@ namespace SMBLibrary.Win32
             IO_STATUS_BLOCK ioStatusBlock;
             if (information is FileRenameInformationType2)
             {
-                FileRenameInformationType2 fileRenameInformation2 = (FileRenameInformationType2)information;
-                fileRenameInformation2.FileName = ToNativePath(fileRenameInformation2.FileName);
-
-                // Note: WOW64 process should use FILE_RENAME_INFORMATION_TYPE_1.
-                // Note: Server 2003 x64 has issues with using FILE_RENAME_INFORMATION under WOW64.
-                if (!ProcessHelper.Is64BitProcess)
+                FileRenameInformationType2 fileRenameInformationRemote = (FileRenameInformationType2)information;
+                if (ProcessHelper.Is64BitProcess)
                 {
-                    FileRenameInformationType1 fileRenameInformation1 = new FileRenameInformationType1();
-                    fileRenameInformation1.ReplaceIfExists = fileRenameInformation2.ReplaceIfExists;
-                    fileRenameInformation1.FileName = fileRenameInformation2.FileName;
-                    information = fileRenameInformation1;
+                    // We should not modify the FileRenameInformationType2 instance we received - the caller may use it later.
+                    FileRenameInformationType2 fileRenameInformationLocal = new FileRenameInformationType2();
+                    fileRenameInformationLocal.ReplaceIfExists = fileRenameInformationRemote.ReplaceIfExists;
+                    fileRenameInformationLocal.FileName = ToNativePath(fileRenameInformationRemote.FileName);
+                    information = fileRenameInformationLocal;
+                }
+                else
+                {
+                    // Note: WOW64 process should use FILE_RENAME_INFORMATION_TYPE_1.
+                    // Note: Server 2003 x64 has issues with using FILE_RENAME_INFORMATION under WOW64.
+                    FileRenameInformationType1 fileRenameInformationLocal = new FileRenameInformationType1();
+                    fileRenameInformationLocal.ReplaceIfExists = fileRenameInformationRemote.ReplaceIfExists;
+                    fileRenameInformationLocal.FileName = ToNativePath(fileRenameInformationRemote.FileName);
+                    information = fileRenameInformationLocal;
                 }
             }
             else if (information is FileLinkInformationType2)
             {
-                FileLinkInformationType2 fileLinkInformation2 = (FileLinkInformationType2)information;
-                fileLinkInformation2.FileName = ToNativePath(fileLinkInformation2.FileName);
-
-                if (!ProcessHelper.Is64BitProcess)
+                FileLinkInformationType2 fileLinkInformationRemote = (FileLinkInformationType2)information;
+                if (ProcessHelper.Is64BitProcess)
                 {
-                    FileLinkInformationType1 fileLinkInformation1 = new FileLinkInformationType1();
-                    fileLinkInformation1.ReplaceIfExists = fileLinkInformation2.ReplaceIfExists;
-                    fileLinkInformation1.FileName = fileLinkInformation2.FileName;
-                    information = fileLinkInformation1;
+                    FileRenameInformationType2 fileLinkInformationLocal = new FileRenameInformationType2();
+                    fileLinkInformationLocal.ReplaceIfExists = fileLinkInformationRemote.ReplaceIfExists;
+                    fileLinkInformationLocal.FileName = ToNativePath(fileLinkInformationRemote.FileName);
+                    information = fileLinkInformationRemote;
+                }
+                else
+                {
+                    FileLinkInformationType1 fileLinkInformationLocal = new FileLinkInformationType1();
+                    fileLinkInformationLocal.ReplaceIfExists = fileLinkInformationRemote.ReplaceIfExists;
+                    fileLinkInformationLocal.FileName = ToNativePath(fileLinkInformationRemote.FileName);
+                    information = fileLinkInformationRemote;
                 }
             }
             byte[] buffer = information.GetBytes();
