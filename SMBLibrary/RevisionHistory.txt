@@ -180,3 +180,19 @@ Revision History:
         Added NTDirectoryFileSystem implementation for passsing-through IO requests to the local NT storage subsystem.
         SMBServer: SMB2: Bugfix: Last SessionSetupResponse was not signed, final async response was not signed.
         Minor logging improvements.
+
+1.2.3 - SMBServer: SMB1: ReadAndX: Added workaround for JCIFS.
+        SMBServer: Release connections and associated resources when stopping the server.
+        SMBServer: SMB1FileStoreHelper: Delete / Rename: Bugfix: The temporary file handle was not closed.
+        SMBServer: SMB1: Delete / Rename commands no longer require exlusive access to the file / directory being delete / renamed.
+        SMBServer: Bugfix: Incorrect OplockLevel was reported.
+        Improved SMB_COM_NT_TRANSACT response implementation.
+        SMBServer: SMB1: Added support for splitting SMB_COM_NT_TRANSACT transaction over multiple responses.
+        SMBServer: SMB1: Corrected assembly of AndX Response chain.
+        SMBServer: Store the share name for each open file.
+        SMBServer: GetSessionsInformation: Include share name when listing open files.
+        SMBServer: Bugfix: Keep accepting new connections after getting WSAETIMEDOUT on a new connection request.
+        SMBServer: SMB1: Set SMB_FLAGS2_LONG_NAMES in NT_TRANSACT_NOTIFY_CHANGE response.
+        NTDirectoryFileSystem: CreateFile: Workaround for using FILE_NO_INTERMEDIATE_BUFFERING and FILE_APPEND_DATA together.
+        NTDirectoryFileSystem: SetFileInformation will no longed modify the FileInformation instance received.
+        Minor logging improvement.
