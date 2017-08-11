@@ -38,6 +38,7 @@
     <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationToken.cs" />
     <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenInit.cs" />
     <Compile Include="Authentication\GSSAPI\SPNEGO\SimpleProtectedNegotiationTokenResponse.cs" />
+    <Compile Include="Authentication\LoginCounter.cs" />
     <Compile Include="Authentication\NTLM\Helpers\AuthenticationMessageUtils.cs" />
     <Compile Include="Authentication\NTLM\Helpers\AVPairUtils.cs" />
     <Compile Include="Authentication\NTLM\Helpers\MD4.cs" />

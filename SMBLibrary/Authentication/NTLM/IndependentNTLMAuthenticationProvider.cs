@@ -33,14 +33,22 @@ namespace SMBLibrary.Authentication.NTLM
             }
         }
 
+        private static readonly int DefaultMaxLoginAttemptsInWindow = 12;
+        private static readonly TimeSpan DefaultLoginWindowDuration = new TimeSpan(0, 5, 0);
         private GetUserPassword m_GetUserPassword;
+        private LoginCounter m_loginCounter;
 
         /// <param name="getUserPassword">
         /// The NTLM challenge response will be compared against the provided password.
         /// </param>
-        public IndependentNTLMAuthenticationProvider(GetUserPassword getUserPassword)
+        public IndependentNTLMAuthenticationProvider(GetUserPassword getUserPassword) : this(getUserPassword, DefaultMaxLoginAttemptsInWindow, DefaultLoginWindowDuration)
+        {
+        }
+
+        public IndependentNTLMAuthenticationProvider(GetUserPassword getUserPassword, int maxLoginAttemptsInWindow, TimeSpan loginWindowDuration)
         {
             m_GetUserPassword = getUserPassword;
+            m_loginCounter = new LoginCounter(maxLoginAttemptsInWindow, loginWindowDuration);
         }
 
         public override NTStatus GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
@@ -154,6 +162,11 @@ namespace SMBLibrary.Authentication.NTLM
                 }
             }
 
+            if (!m_loginCounter.HasRemainingLoginAttempts(message.UserName.ToLower()))
+            {
+                return NTStatus.STATUS_ACCOUNT_LOCKED_OUT;
+            }
+
             string password = m_GetUserPassword(message.UserName);
             if (password == null)
             {
@@ -164,7 +177,14 @@ namespace SMBLibrary.Authentication.NTLM
                 }
                 else
                 {
-                    return NTStatus.STATUS_LOGON_FAILURE;
+                    if (m_loginCounter.HasRemainingLoginAttempts(message.UserName.ToLower(), true))
+                    {
+                        return NTStatus.STATUS_LOGON_FAILURE;
+                    }
+                    else
+                    {
+                        return NTStatus.STATUS_ACCOUNT_LOCKED_OUT;
+                    }
                 }
             }
 
@@ -228,7 +248,14 @@ namespace SMBLibrary.Authentication.NTLM
             }
             else
             {
-                return NTStatus.STATUS_LOGON_FAILURE;
+                if (m_loginCounter.HasRemainingLoginAttempts(message.UserName.ToLower(), true))
+                {
+                    return NTStatus.STATUS_LOGON_FAILURE;
+                }
+                else
+                {
+                    return NTStatus.STATUS_ACCOUNT_LOCKED_OUT;
+                }
             }
         }
 
