@@ -12,6 +12,7 @@ using Utilities;
 
 namespace SMBLibrary.Authentication.NTLM
 {
+    /// <returns>null if the account does not exist</returns>
     public delegate string GetUserPassword(string userName);
 
     public class IndependentNTLMAuthenticationProvider : NTLMAuthenticationProviderBase
