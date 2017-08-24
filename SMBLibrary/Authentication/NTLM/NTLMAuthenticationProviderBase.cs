@@ -25,16 +25,32 @@ namespace SMBLibrary.Authentication.NTLM
             MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(inputToken);
             if (messageType == MessageTypeName.Negotiate)
             {
-                NegotiateMessage input = new NegotiateMessage(inputToken);
-                ChallengeMessage output;
-                NTStatus status = GetChallengeMessage(out context, input, out output);
-                outputToken = output.GetBytes();
+                NegotiateMessage negotiateMessage;
+                try
+                {
+                    negotiateMessage = new NegotiateMessage(inputToken);
+                }
+                catch
+                {
+                    return NTStatus.SEC_E_INVALID_TOKEN;
+                }
+                ChallengeMessage challengeMessage;
+                NTStatus status = GetChallengeMessage(out context, negotiateMessage, out challengeMessage);
+                outputToken = challengeMessage.GetBytes();
                 return status;
             }
             else if (messageType == MessageTypeName.Authenticate)
             {
-                AuthenticateMessage message = new AuthenticateMessage(inputToken);
-                return Authenticate(context, message);
+                AuthenticateMessage authenticateMessage;
+                try
+                {
+                    authenticateMessage = new AuthenticateMessage(inputToken);
+                }
+                catch
+                {
+                    return NTStatus.SEC_E_INVALID_TOKEN;
+                }
+                return Authenticate(context, authenticateMessage);
             }
             else
             {
