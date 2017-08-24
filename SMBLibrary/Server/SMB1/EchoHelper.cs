@@ -19,7 +19,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 EchoResponse echo = new EchoResponse();
                 echo.SequenceNumber = (ushort)index;
-                echo.SMBData = request.SMBData;
+                echo.Data = request.Data;
                 response.Add(echo);
             }
             return response;

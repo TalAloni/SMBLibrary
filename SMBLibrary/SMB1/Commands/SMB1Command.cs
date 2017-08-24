@@ -13,8 +13,8 @@ namespace SMBLibrary.SMB1
 {
     public abstract class SMB1Command
     {
-        public byte[] SMBParameters; // SMB_Parameters
-        public byte[] SMBData; // SMB_Data
+        protected byte[] SMBParameters; // SMB_Parameters
+        protected byte[] SMBData; // SMB_Data
 
         public SMB1Command()
         {
