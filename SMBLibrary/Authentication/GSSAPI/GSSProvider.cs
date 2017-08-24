@@ -54,7 +54,15 @@ namespace SMBLibrary.Authentication.GSSAPI
         public virtual NTStatus AcceptSecurityContext(ref GSSContext context, byte[] inputToken, out byte[] outputToken)
         {
             outputToken = null;
-            SimpleProtectedNegotiationToken spnegoToken = SimpleProtectedNegotiationToken.ReadToken(inputToken, 0);
+            SimpleProtectedNegotiationToken spnegoToken = null;
+            try
+            {
+                spnegoToken = SimpleProtectedNegotiationToken.ReadToken(inputToken, 0);
+            }
+            catch
+            {
+            }
+
             if (spnegoToken != null)
             {
                 if (spnegoToken is SimpleProtectedNegotiationTokenInit)
