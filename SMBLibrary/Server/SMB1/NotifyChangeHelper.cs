@@ -52,31 +52,31 @@ namespace SMBLibrary.Server.SMB1
                     {
                         connection.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' completed. NTStatus: {2}. PID: {3}. MID: {4}.", openFile.ShareName, openFile.Path, status, asyncContext.PID, asyncContext.MID);
                     }
-                }
-                SMB1Header header = new SMB1Header();
-                header.Command = CommandName.SMB_COM_NT_TRANSACT;
-                header.Status = status;
-                header.Flags = HeaderFlags.CaseInsensitive | HeaderFlags.CanonicalizedPaths | HeaderFlags.Reply;
-                // [MS-CIFS] SMB_FLAGS2_LONG_NAMES SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
-                // [MS-CIFS] SMB_FLAGS2_UNICODE SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
-                // [MS-CIFS] The Windows NT Server implementation of NT_TRANSACT_NOTIFY_CHANGE always returns the names of changed files in Unicode format.
-                header.Flags2 = HeaderFlags2.LongNamesAllowed | HeaderFlags2.NTStatusCode | HeaderFlags2.Unicode;
-                header.UID = asyncContext.UID;
-                header.TID = asyncContext.TID;
-                header.PID = asyncContext.PID;
-                header.MID = asyncContext.MID;
-                notifyChangeResponse.FileNotifyInformationBytes = buffer;
+                    SMB1Header header = new SMB1Header();
+                    header.Command = CommandName.SMB_COM_NT_TRANSACT;
+                    header.Status = status;
+                    header.Flags = HeaderFlags.CaseInsensitive | HeaderFlags.CanonicalizedPaths | HeaderFlags.Reply;
+                    // [MS-CIFS] SMB_FLAGS2_LONG_NAMES SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
+                    // [MS-CIFS] SMB_FLAGS2_UNICODE SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
+                    // [MS-CIFS] The Windows NT Server implementation of NT_TRANSACT_NOTIFY_CHANGE always returns the names of changed files in Unicode format.
+                    header.Flags2 = HeaderFlags2.LongNamesAllowed | HeaderFlags2.NTStatusCode | HeaderFlags2.Unicode;
+                    header.UID = asyncContext.UID;
+                    header.TID = asyncContext.TID;
+                    header.PID = asyncContext.PID;
+                    header.MID = asyncContext.MID;
+                    notifyChangeResponse.FileNotifyInformationBytes = buffer;
 
-                byte[] responseSetup = notifyChangeResponse.GetSetup();
-                byte[] responseParameters = notifyChangeResponse.GetParameters(false);
-                byte[] responseData = notifyChangeResponse.GetData();
-                List<SMB1Command> responseList = NTTransactHelper.GetNTTransactResponse(responseSetup, responseParameters, responseData, asyncContext.Connection.MaxBufferSize);
-                foreach (SMB1Command response in responseList)
-                {
-                    SMB1Message reply = new SMB1Message();
-                    reply.Header = header;
-                    reply.Commands.Add(response);
-                    SMBServer.EnqueueMessage(asyncContext.Connection, reply);
+                    byte[] responseSetup = notifyChangeResponse.GetSetup();
+                    byte[] responseParameters = notifyChangeResponse.GetParameters(false);
+                    byte[] responseData = notifyChangeResponse.GetData();
+                    List<SMB1Command> responseList = NTTransactHelper.GetNTTransactResponse(responseSetup, responseParameters, responseData, asyncContext.Connection.MaxBufferSize);
+                    foreach (SMB1Command response in responseList)
+                    {
+                        SMB1Message reply = new SMB1Message();
+                        reply.Header = header;
+                        reply.Commands.Add(response);
+                        SMBServer.EnqueueMessage(asyncContext.Connection, reply);
+                    }
                 }
             }
         }

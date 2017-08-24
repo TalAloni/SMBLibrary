@@ -53,17 +53,16 @@ namespace SMBLibrary.Server.SMB2
                     {
                         connection.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' completed. NTStatus: {2}. AsyncID: {3}", openFile.ShareName, openFile.Path, status, asyncContext.AsyncID);
                     }
+                    ChangeNotifyResponse response = new ChangeNotifyResponse();
+                    response.Header.Status = status;
+                    response.Header.IsAsync = true;
+                    response.Header.IsSigned = session.SigningRequired;
+                    response.Header.AsyncID = asyncContext.AsyncID;
+                    response.Header.SessionID = asyncContext.SessionID;
+                    response.OutputBuffer = buffer;
+
+                    SMBServer.EnqueueResponse(connection, response);
                 }
-
-                ChangeNotifyResponse response = new ChangeNotifyResponse();
-                response.Header.Status = status;
-                response.Header.IsAsync = true;
-                response.Header.IsSigned = session.SigningRequired;
-                response.Header.AsyncID = asyncContext.AsyncID;
-                response.Header.SessionID = asyncContext.SessionID;
-                response.OutputBuffer = buffer;
-
-                SMBServer.EnqueueResponse(connection, response);
             }
         }
     }
