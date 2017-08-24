@@ -22,6 +22,7 @@ namespace SMBLibrary.Authentication.GSSAPI
         /// <summary>
         /// https://tools.ietf.org/html/rfc2743
         /// </summary>
+        /// <exception cref="System.IO.InvalidDataException"></exception>
         public static SimpleProtectedNegotiationToken ReadToken(byte[] tokenBytes, int offset)
         {
             byte tag = ByteReader.ReadByte(tokenBytes, ref offset);

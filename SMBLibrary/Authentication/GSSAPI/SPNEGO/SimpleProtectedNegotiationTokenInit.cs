@@ -35,6 +35,7 @@ namespace SMBLibrary.Authentication.GSSAPI
         }
 
         /// <param name="offset">The offset following the NegTokenInit tag</param>
+        /// <exception cref="System.IO.InvalidDataException"></exception>
         public SimpleProtectedNegotiationTokenInit(byte[] buffer, int offset)
         {
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
