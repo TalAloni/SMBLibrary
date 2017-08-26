@@ -7,31 +7,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.Server
 {
-    public class AccessRequestArgs : EventArgs
-    {
-        public string UserName;
-        public string Path;
-        public FileAccess RequestedAccess;
-        public string MachineName;
-        public IPEndPoint ClientEndPoint;
-        public bool Allow = true;
-
-        public AccessRequestArgs(string userName, string path, FileAccess requestedAccess, string machineName, IPEndPoint clientEndPoint)
-        {
-            UserName = userName;
-            Path = path;
-            RequestedAccess = requestedAccess;
-            MachineName = machineName;
-            ClientEndPoint = clientEndPoint;
-        }
-    }
-
     public class FileSystemShare : ISMBShare
     {
         private string m_name;
