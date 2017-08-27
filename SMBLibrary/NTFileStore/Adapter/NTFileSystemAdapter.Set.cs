@@ -72,7 +72,7 @@ namespace SMBLibrary
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "SetFileInformation: Cannot rename '{0}'. {1}.", fileHandle.Path, status);
+                    Log(Severity.Verbose, "SetFileInformation: Cannot rename '{0}' to '{1}'. {2}.", fileHandle.Path, destination, status);
                     return status;
                 }
                 fileHandle.Path = destination;

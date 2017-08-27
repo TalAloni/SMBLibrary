@@ -93,13 +93,13 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.OldFileName))
                 {
-                    state.LogToServer(Severity.Verbose, "Rename '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.OldFileName, session.UserName);
+                    state.LogToServer(Severity.Verbose, "Rename '{0}{1}' to '{0}{2}' failed. User '{3}' was denied access.", share.Name, request.OldFileName, request.NewFileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, request.NewFileName))
                 {
-                    state.LogToServer(Severity.Verbose, "Rename '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.OldFileName, session.UserName);
+                    state.LogToServer(Severity.Verbose, "Rename '{0}{1}' to '{0}{2}' failed. User '{3}' was denied access.", share.Name, request.OldFileName, request.NewFileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
