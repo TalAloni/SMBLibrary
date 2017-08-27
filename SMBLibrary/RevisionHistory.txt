@@ -196,3 +196,13 @@ Revision History:
         NTDirectoryFileSystem: CreateFile: Workaround for using FILE_NO_INTERMEDIATE_BUFFERING and FILE_APPEND_DATA together.
         NTDirectoryFileSystem: SetFileInformation will no longed modify the FileInformation instance received.
         Minor logging improvement.
+
+1.2.4 - IndependentNTLMAuthenticationProvider: Added account lockout mechanism to hinder bruteforce attacks.
+        SMBServer: Bugfix: Do not send NotifyChange response if the session has been closed.
+        SMB1Command: Mark SMBParameters and SMBData as protected.
+        NTLMAuthenticationProviderBase: Properly handle invalid NegotiateMessage / AuthenticateMessage.
+        GSSProvider: Properly handle invalid SPNEGO Token.
+        FileSystemShare: Added ability to specify client-side caching policy.
+        Bugfix: Check share-level write access on the new file name before sending FileRenameInformation to the object store.
+        Minor logging improvements.
+        Minor code refactoring.
