@@ -162,10 +162,10 @@
     <Compile Include="NTFileStore\Structures\SecurityDescriptor.cs" />
     <Compile Include="NTFileStore\Structures\SID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RPC\Enum\NegotiationResult.cs" />
-    <Compile Include="RPC\Enum\PacketFlags.cs" />
-    <Compile Include="RPC\Enum\PacketTypeName.cs" />
-    <Compile Include="RPC\Enum\RejectionReason.cs" />
+    <Compile Include="RPC\Enums\NegotiationResult.cs" />
+    <Compile Include="RPC\Enums\PacketFlags.cs" />
+    <Compile Include="RPC\Enums\PacketTypeName.cs" />
+    <Compile Include="RPC\Enums\RejectionReason.cs" />
     <Compile Include="RPC\EnumStructures\DataRepresentationFormat.cs" />
     <Compile Include="RPC\NDR\INDRStructure.cs" />
     <Compile Include="RPC\NDR\NDRConformantArray.cs" />
