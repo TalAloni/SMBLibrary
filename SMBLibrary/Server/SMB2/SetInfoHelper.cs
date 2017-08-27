@@ -56,6 +56,20 @@ namespace SMBLibrary.Server.SMB2
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
                 }
 
+                if ((share is FileSystemShare) && (information is FileRenameInformationType2))
+                {
+                    string newFileName = ((FileRenameInformationType2)information).FileName;
+                    if (!newFileName.StartsWith(@"\"))
+                    {
+                        newFileName = @"\" + newFileName;
+                    }
+                    if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, newFileName))
+                    {
+                        state.LogToServer(Severity.Verbose, "SetFileInformation: Rename '{0}{1}' to '{0}{2}' failed. User '{3}' was denied access.", share.Name, openFile.Path, newFileName, session.UserName);
+                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                    }
+                }
+
                 NTStatus status = share.FileStore.SetFileInformation(openFile.Handle, information);
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
