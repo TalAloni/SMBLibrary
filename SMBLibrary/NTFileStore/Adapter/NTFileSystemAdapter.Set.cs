@@ -48,10 +48,10 @@ namespace SMBLibrary
             else if (information is FileRenameInformationType2)
             {
                 FileRenameInformationType2 renameInformation = (FileRenameInformationType2)information;
-                string destination = renameInformation.FileName;
-                if (!destination.StartsWith(@"\"))
+                string newFileName = renameInformation.FileName;
+                if (!newFileName.StartsWith(@"\"))
                 {
-                    destination = @"\" + destination;
+                    newFileName = @"\" + newFileName;
                 }
 
                 if (fileHandle.Stream != null)
@@ -62,20 +62,20 @@ namespace SMBLibrary
                 // Note: it's possible that we just want to upcase / downcase a filename letter.
                 try
                 {
-                    if (renameInformation.ReplaceIfExists && (m_fileSystem.GetEntry(destination) != null))
+                    if (renameInformation.ReplaceIfExists && (m_fileSystem.GetEntry(newFileName) != null))
                     {
-                        m_fileSystem.Delete(destination);
+                        m_fileSystem.Delete(newFileName);
                     }
-                    m_fileSystem.Move(fileHandle.Path, destination);
-                    Log(Severity.Information, "SetFileInformation: Renamed '{0}' to '{1}'", fileHandle.Path, destination);
+                    m_fileSystem.Move(fileHandle.Path, newFileName);
+                    Log(Severity.Information, "SetFileInformation: Renamed '{0}' to '{1}'", fileHandle.Path, newFileName);
                 }
                 catch (Exception ex)
                 {
                     NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "SetFileInformation: Cannot rename '{0}' to '{1}'. {2}.", fileHandle.Path, destination, status);
+                    Log(Severity.Verbose, "SetFileInformation: Cannot rename '{0}' to '{1}'. {2}.", fileHandle.Path, newFileName, status);
                     return status;
                 }
-                fileHandle.Path = destination;
+                fileHandle.Path = newFileName;
                 return NTStatus.STATUS_SUCCESS;
             }
             else if (information is FileDispositionInformation)
