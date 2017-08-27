@@ -31,13 +31,13 @@ namespace SMBLibrary.Server.SMB2
             else
             {
                 share = shares.GetShareFromName(shareName);
-                shareType = ShareType.Disk;
-                shareFlags = ShareFlags.ManualCaching;
                 if (share == null)
                 {
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_OBJECT_PATH_NOT_FOUND);
                 }
 
+                shareType = ShareType.Disk;
+                shareFlags = GetShareCachingFlags(((FileSystemShare)share).CachingPolicy);
                 if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, @"\"))
                 {
                     state.LogToServer(Severity.Verbose, "Tree Connect to '{0}' failed. User '{1}' was denied access.", share.Name, session.UserName);
@@ -60,6 +60,21 @@ namespace SMBLibrary.Server.SMB2
                                           FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
                                           FileAccessMask.DELETE | FileAccessMask.READ_CONTROL | FileAccessMask.WRITE_DAC | FileAccessMask.WRITE_OWNER | FileAccessMask.SYNCHRONIZE;
             return response;
+        }
+
+        private static ShareFlags GetShareCachingFlags(CachingPolicy cachingPolicy)
+        {
+            switch (cachingPolicy)
+            {
+                case CachingPolicy.ManualCaching:
+                    return ShareFlags.ManualCaching;
+                case CachingPolicy.AutoCaching:
+                    return ShareFlags.AutoCaching;
+                case CachingPolicy.VideoCaching:
+                    return ShareFlags.VdoCaching;
+                default:
+                    return ShareFlags.NoCaching;
+            }
         }
 
         internal static SMB2Command GetTreeDisconnectResponse(TreeDisconnectRequest request, ISMBShare share, SMB2ConnectionState state)

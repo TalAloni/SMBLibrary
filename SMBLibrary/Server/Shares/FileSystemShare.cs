@@ -15,19 +15,26 @@ namespace SMBLibrary.Server
     {
         private string m_name;
         private INTFileStore m_fileSystem;
+        private CachingPolicy m_cachingPolicy;
 
         public event EventHandler<AccessRequestArgs> AccessRequested;
 
-        public FileSystemShare(string shareName, INTFileStore fileSystem)
+        public FileSystemShare(string shareName, INTFileStore fileSystem) : this(shareName, fileSystem, CachingPolicy.ManualCaching)
+        {
+        }
+
+        public FileSystemShare(string shareName, INTFileStore fileSystem, CachingPolicy cachingPolicy)
         {
             m_name = shareName;
             m_fileSystem = fileSystem;
+            m_cachingPolicy = cachingPolicy;
         }
 
-        public FileSystemShare(string shareName, IFileSystem fileSystem)
+        public FileSystemShare(string shareName, IFileSystem fileSystem, CachingPolicy cachingPolicy)
         {
             m_name = shareName;
             m_fileSystem = new NTFileSystemAdapter(fileSystem);
+            m_cachingPolicy = cachingPolicy;
         }
 
         public bool HasReadAccess(SecurityContext securityContext, string path)
@@ -66,6 +73,14 @@ namespace SMBLibrary.Server
             get
             {
                 return m_fileSystem;
+            }
+        }
+
+        public CachingPolicy CachingPolicy
+        {
+            get
+            {
+                return m_cachingPolicy;
             }
         }
     }

@@ -13,9 +13,9 @@ namespace SMBLibrary.Server
 {
     public class SMBShareCollection : List<FileSystemShare>
     {
-        public void Add(string shareName, IFileSystem fileSystem)
+        public void Add(string shareName, IFileSystem fileSystem, CachingPolicy cachingPolicy)
         {
-            FileSystemShare share = new FileSystemShare(shareName, fileSystem);
+            FileSystemShare share = new FileSystemShare(shareName, fileSystem, cachingPolicy);
             this.Add(share);
         }
 

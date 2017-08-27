@@ -31,13 +31,14 @@ namespace SMBLibrary.Server.SMB1
             else
             {
                 share = shares.GetShareFromName(shareName);
-                serviceName = ServiceName.DiskShare;
-                supportFlags = OptionalSupportFlags.SMB_SUPPORT_SEARCH_BITS | OptionalSupportFlags.SMB_CSC_CACHE_MANUAL_REINT;
                 if (share == null)
                 {
                     header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
                     return new ErrorResponse(request.CommandName);
                 }
+
+                serviceName = ServiceName.DiskShare;
+                supportFlags = OptionalSupportFlags.SMB_SUPPORT_SEARCH_BITS | GetCachingSupportFlags(((FileSystemShare)share).CachingPolicy);
 
                 if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, @"\"))
                 {
@@ -61,6 +62,21 @@ namespace SMBLibrary.Server.SMB1
             else
             {
                 return CreateTreeConnectResponse(serviceName, supportFlags);
+            }
+        }
+
+        private static OptionalSupportFlags GetCachingSupportFlags(CachingPolicy cachingPolicy)
+        {
+            switch (cachingPolicy)
+            {
+                case CachingPolicy.ManualCaching:
+                    return OptionalSupportFlags.SMB_CSC_CACHE_MANUAL_REINT;
+                case CachingPolicy.AutoCaching:
+                    return OptionalSupportFlags.SMB_CSC_CACHE_AUTO_REINT;
+                case CachingPolicy.VideoCaching:
+                    return OptionalSupportFlags.SMB_CSC_CACHE_VDO;
+                default:
+                    return OptionalSupportFlags.SMB_CSC_NO_CACHING;
             }
         }
 
