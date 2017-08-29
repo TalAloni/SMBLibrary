@@ -139,6 +139,7 @@ namespace SMBServer
             // chkSMB2
             // 
             this.chkSMB2.AutoSize = true;
+            this.chkSMB2.Checked = true;
             this.chkSMB2.Location = new System.Drawing.Point(204, 86);
             this.chkSMB2.Name = "chkSMB2";
             this.chkSMB2.Size = new System.Drawing.Size(93, 17);
