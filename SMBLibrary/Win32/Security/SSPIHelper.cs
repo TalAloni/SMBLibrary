@@ -278,7 +278,7 @@ namespace SMBLibrary.Win32.Security
             {
                 if (result == SEC_E_INVALID_HANDLE)
                 {
-                    throw new Exception("InitializeSecurityContext failed, invalid handle");
+                    throw new Exception("InitializeSecurityContext failed, Invalid handle");
                 }
                 else if (result == SEC_E_INVALID_TOKEN)
                 {
@@ -286,11 +286,11 @@ namespace SMBLibrary.Win32.Security
                 }
                 else if (result == SEC_E_BUFFER_TOO_SMALL)
                 {
-                    throw new Exception("InitializeSecurityContext failed, buffer too small");
+                    throw new Exception("InitializeSecurityContext failed, Buffer too small");
                 }
                 else
                 {
-                    throw new Exception("InitializeSecurityContext failed, error code 0x" + result.ToString("X"));
+                    throw new Exception("InitializeSecurityContext failed, Error code 0x" + result.ToString("X"));
                 }
             }
             byte[] messageBytes = output.GetBufferBytes(0);
@@ -317,7 +317,7 @@ namespace SMBLibrary.Win32.Security
             {
                 if (result == SEC_E_INVALID_HANDLE)
                 {
-                    throw new Exception("AcceptSecurityContext failed, invalid handle");
+                    throw new Exception("AcceptSecurityContext failed, Invalid handle");
                 }
                 else if (result == SEC_E_INVALID_TOKEN)
                 {
@@ -325,11 +325,11 @@ namespace SMBLibrary.Win32.Security
                 }
                 else if (result == SEC_E_BUFFER_TOO_SMALL)
                 {
-                    throw new Exception("AcceptSecurityContext failed, buffer too small");
+                    throw new Exception("AcceptSecurityContext failed, Buffer too small");
                 }
                 else
                 {
-                    throw new Exception("AcceptSecurityContext failed, error code 0x" + result.ToString("X"));
+                    throw new Exception("AcceptSecurityContext failed, Error code 0x" + result.ToString("X"));
                 }
             }
             FreeCredentialsHandle(ref credentialsHandle);
@@ -386,15 +386,15 @@ namespace SMBLibrary.Win32.Security
             {
                 if (result == SEC_E_INVALID_HANDLE)
                 {
-                    throw new Exception("AcceptSecurityContext failed, invalid handle");
+                    throw new Exception("AcceptSecurityContext failed, Invalid handle");
                 }
                 else if (result == SEC_E_INVALID_TOKEN)
                 {
-                    throw new Exception("AcceptSecurityContext failed, invalid security token");
+                    throw new Exception("AcceptSecurityContext failed, Invalid security token");
                 }
                 else
                 {
-                    throw new Exception("AcceptSecurityContext failed, error code 0x" + result.ToString("X"));
+                    throw new Exception("AcceptSecurityContext failed, Error code 0x" + result.ToString("X"));
                 }
             }
         }
