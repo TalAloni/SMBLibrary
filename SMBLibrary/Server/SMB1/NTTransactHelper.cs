@@ -132,32 +132,31 @@ namespace SMBLibrary.Server.SMB1
         private static NTTransactIOCTLResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, NTTransactIOCTLRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
-            NTTransactIOCTLResponse response = new NTTransactIOCTLResponse();
-            if (subcommand.IsFsctl)
-            {
-                OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
-                if (openFile == null)
-                {
-                    header.Status = NTStatus.STATUS_INVALID_HANDLE;
-                    return null;
-                }
-                int maxOutputLength = (int)maxDataCount;
-                byte[] output;
-                header.Status = share.FileStore.DeviceIOControl(openFile.Handle, subcommand.FunctionCode, subcommand.Data, out output, maxOutputLength);
-                if (header.Status != NTStatus.STATUS_SUCCESS && header.Status != NTStatus.STATUS_BUFFER_OVERFLOW)
-                {
-                    return null;
-                }
-
-                response.Data = output;
-                return response;
-            }
-            else
+            if (!subcommand.IsFsctl)
             {
                 // [MS-SMB] If the IsFsctl field is set to zero, the server SHOULD fail the request with STATUS_NOT_SUPPORTED
                 header.Status = NTStatus.STATUS_NOT_SUPPORTED;
                 return null;
             }
+
+            OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
+            if (openFile == null)
+            {
+                header.Status = NTStatus.STATUS_INVALID_HANDLE;
+                return null;
+            }
+
+            int maxOutputLength = (int)maxDataCount;
+            byte[] output;
+            header.Status = share.FileStore.DeviceIOControl(openFile.Handle, subcommand.FunctionCode, subcommand.Data, out output, maxOutputLength);
+            if (header.Status != NTStatus.STATUS_SUCCESS && header.Status != NTStatus.STATUS_BUFFER_OVERFLOW)
+            {
+                return null;
+            }
+
+            NTTransactIOCTLResponse response = new NTTransactIOCTLResponse();
+            response.Data = output;
+            return response;
         }
 
         internal static List<SMB1Command> GetNTTransactResponse(byte[] responseSetup, byte[] responseParameters, byte[] responseData, int maxBufferSize)
