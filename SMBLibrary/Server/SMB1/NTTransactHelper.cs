@@ -132,9 +132,11 @@ namespace SMBLibrary.Server.SMB1
         private static NTTransactIOCTLResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, NTTransactIOCTLRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
+            string ctlCode = Enum.IsDefined(typeof(IoControlCode), subcommand.FunctionCode) ? ((IoControlCode)subcommand.FunctionCode).ToString() : ("0x" + subcommand.FunctionCode.ToString("x"));
             if (!subcommand.IsFsctl)
             {
                 // [MS-SMB] If the IsFsctl field is set to zero, the server SHOULD fail the request with STATUS_NOT_SUPPORTED
+                state.LogToServer(Severity.Verbose, "IOCTL: Non-FSCTL requests are not supported. CTL Code: {0}", ctlCode);
                 header.Status = NTStatus.STATUS_NOT_SUPPORTED;
                 return null;
             }
@@ -142,6 +144,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. Invalid FID.", ctlCode);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
@@ -151,9 +154,11 @@ namespace SMBLibrary.Server.SMB1
             header.Status = share.FileStore.DeviceIOControl(openFile.Handle, subcommand.FunctionCode, subcommand.Data, out output, maxOutputLength);
             if (header.Status != NTStatus.STATUS_SUCCESS && header.Status != NTStatus.STATUS_BUFFER_OVERFLOW)
             {
+                state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. NTStatus: {1}.", ctlCode, header.Status);
                 return null;
             }
 
+            state.LogToServer(Severity.Verbose, "IOCTL succeeded. CTL Code: {0}.", ctlCode);
             NTTransactIOCTLResponse response = new NTTransactIOCTLResponse();
             response.Data = output;
             return response;
