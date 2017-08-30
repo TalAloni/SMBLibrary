@@ -29,6 +29,7 @@ namespace SMBLibrary.Server.SMB1
                 ProcessStateObject processState = state.CreateProcessState(header.PID);
                 processState.MaxParameterCount = request.MaxParameterCount;
                 processState.MaxDataCount = request.MaxDataCount;
+                processState.Timeout = request.Timeout;
                 processState.Name = request.Name;
                 processState.TransactionSetup = request.Setup;
                 processState.TransactionParameters = new byte[request.TotalParameterCount];
@@ -55,7 +56,7 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, request.MaxDataCount, request.Name, request.Setup, request.TransParameters, request.TransData, share, state);
+                    return GetCompleteTransactionResponse(header, request.MaxDataCount, request.Timeout, request.Name, request.Setup, request.TransParameters, request.TransData, share, state);
                 }
             }
         }
@@ -92,12 +93,12 @@ namespace SMBLibrary.Server.SMB1
                 }
                 else
                 {
-                    return GetCompleteTransactionResponse(header, processState.MaxDataCount, processState.Name, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
+                    return GetCompleteTransactionResponse(header, processState.MaxDataCount, processState.Timeout, processState.Name, processState.TransactionSetup, processState.TransactionParameters, processState.TransactionData, share, state);
                 }
             }
         }
 
-        internal static List<SMB1Command> GetCompleteTransactionResponse(SMB1Header header, uint maxDataCount, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
+        internal static List<SMB1Command> GetCompleteTransactionResponse(SMB1Header header, uint maxDataCount, uint timeout, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
             if (String.Equals(name, @"\pipe\lanman", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -158,7 +159,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is TransactionWaitNamedPipeRequest)
             {
-                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                TransactionSubcommandHelper.ProcessSubcommand(header, timeout, name, (TransactionWaitNamedPipeRequest)subcommand, share, state);
             }
             else if (subcommand is TransactionCallNamedPipeRequest)
             {

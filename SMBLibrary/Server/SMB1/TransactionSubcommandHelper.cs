@@ -39,5 +39,32 @@ namespace SMBLibrary.Server.SMB1
             response.ReadData = output;
             return response;
         }
+
+        internal static void ProcessSubcommand(SMB1Header header, uint timeout, string name, TransactionWaitNamedPipeRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        {
+            if (!name.StartsWith(@"\PIPE\", StringComparison.OrdinalIgnoreCase))
+            {
+                // [MS-CIFS] The name field MUST be set to the name of the pipe being waited for, in the format \PIPE\<pipename>
+                state.LogToServer(Severity.Verbose, "TransactWaitNamedPipe failed. Invalid pipe name: {0}.", name);
+                header.Status = NTStatus.STATUS_INVALID_SMB;
+            }
+
+            string pipeName = name.Substring(6);
+            PipeWaitRequest pipeWaitRequest = new PipeWaitRequest();
+            pipeWaitRequest.Timeout = timeout;
+            pipeWaitRequest.TimeSpecified = true;
+            pipeWaitRequest.Name = pipeName;
+            byte[] input = pipeWaitRequest.GetBytes();
+            byte[] output;
+            header.Status = share.FileStore.DeviceIOControl(null, (uint)IoControlCode.FSCTL_PIPE_WAIT, input, out output, 0);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                state.LogToServer(Severity.Verbose, "TransactWaitNamedPipe failed. Pipe name: {0}. NTStatus: {1}.", pipeName, header.Status);
+            }
+            else
+            {
+                state.LogToServer(Severity.Verbose, "TransactWaitNamedPipe succeeded. Pipe name: {0}.", pipeName);
+            }
+        }
     }
 }

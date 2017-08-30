@@ -15,6 +15,7 @@ namespace SMBLibrary.Server
         public ushort SubcommandID;
         public uint MaxParameterCount; // The maximum number of Trans_Parameters bytes that the client accepts in the transaction response
         public uint MaxDataCount;      // The maximum number of Trans_Data bytes that the client accepts in the transaction response
+        public uint Timeout;
         public string Name; // The pathname of the [..] named pipe to which the transaction subcommand applies, or a client-supplied [..] name for the transaction.
         public byte[] TransactionSetup;
         public byte[] TransactionParameters;
