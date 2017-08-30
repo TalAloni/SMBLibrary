@@ -158,6 +158,7 @@
     <Compile Include="NTFileStore\Structures\FileSystemInformation\FileFsSizeInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileSystemInformation\FileFsVolumeInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileSystemInformation\FileSystemInformation.cs" />
+    <Compile Include="NTFileStore\Structures\IOCtl\PipeWaitRequest.cs" />
     <Compile Include="NTFileStore\Structures\ObjectIDBufferType1.cs" />
     <Compile Include="NTFileStore\Structures\SecurityDescriptor.cs" />
     <Compile Include="NTFileStore\Structures\SID.cs" />
