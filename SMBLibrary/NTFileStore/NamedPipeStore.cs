@@ -60,7 +60,7 @@ namespace SMBLibrary
 
             foreach (RemoteService service in m_services)
             {
-                if (String.Equals(path, service.PipeName, StringComparison.InvariantCultureIgnoreCase))
+                if (String.Equals(path, service.PipeName, StringComparison.OrdinalIgnoreCase))
                 {
                     return service;
                 }

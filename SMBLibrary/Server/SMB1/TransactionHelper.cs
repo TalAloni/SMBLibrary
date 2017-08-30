@@ -100,7 +100,7 @@ namespace SMBLibrary.Server.SMB1
 
         internal static List<SMB1Command> GetCompleteTransactionResponse(SMB1Header header, uint maxDataCount, uint timeout, string name, byte[] requestSetup, byte[] requestParameters, byte[] requestData, ISMBShare share, SMB1ConnectionState state)
         {
-            if (String.Equals(name, @"\pipe\lanman", StringComparison.InvariantCultureIgnoreCase))
+            if (String.Equals(name, @"\PIPE\lanman", StringComparison.OrdinalIgnoreCase))
             {
                 // [MS-RAP] Remote Administration Protocol request
                 state.LogToServer(Severity.Debug, "Remote Administration Protocol requests are not implemented");

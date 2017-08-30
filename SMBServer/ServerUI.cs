@@ -261,7 +261,7 @@ namespace SMBServer
         {
             for (int index = 0; index < list.Count; index++)
             {
-                if (string.Equals(list[index], value, StringComparison.InvariantCultureIgnoreCase))
+                if (string.Equals(list[index], value, StringComparison.OrdinalIgnoreCase))
                 {
                     return index;
                 }

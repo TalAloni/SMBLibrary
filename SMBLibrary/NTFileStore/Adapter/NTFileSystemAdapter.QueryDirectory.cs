@@ -128,15 +128,15 @@ namespace SMBLibrary
 
                 if (!findExactNameWithoutExtension)
                 {
-                    if (fileName.StartsWith(desiredFileNameStart, StringComparison.InvariantCultureIgnoreCase))
+                    if (fileName.StartsWith(desiredFileNameStart, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
                 }
                 else
                 {
-                    if (fileName.StartsWith(desiredFileNameStart + ".", StringComparison.InvariantCultureIgnoreCase) ||
-                        fileName.Equals(desiredFileNameStart, StringComparison.InvariantCultureIgnoreCase))
+                    if (fileName.StartsWith(desiredFileNameStart + ".", StringComparison.OrdinalIgnoreCase) ||
+                        fileName.Equals(desiredFileNameStart, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -145,12 +145,12 @@ namespace SMBLibrary
             else if (expression.StartsWith("<"))
             {
                 string desiredFileNameEnd = expression.Substring(1);
-                if (fileName.EndsWith(desiredFileNameEnd, StringComparison.InvariantCultureIgnoreCase))
+                if (fileName.EndsWith(desiredFileNameEnd, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
             }
-            else if (String.Equals(fileName, expression, StringComparison.CurrentCultureIgnoreCase))
+            else if (String.Equals(fileName, expression, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

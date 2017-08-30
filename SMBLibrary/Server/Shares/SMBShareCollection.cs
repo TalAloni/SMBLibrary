@@ -50,7 +50,7 @@ namespace SMBLibrary.Server
         /// <param name="relativePath">e.g. \Shared</param>
         public FileSystemShare GetShareFromName(string shareName)
         {
-            int index = IndexOf(shareName, StringComparison.InvariantCultureIgnoreCase);
+            int index = IndexOf(shareName, StringComparison.OrdinalIgnoreCase);
             if (index >= 0)
             {
                 return this[index];

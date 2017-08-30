@@ -20,7 +20,7 @@ namespace SMBServer
         {
             for (int index = 0; index < this.Count; index++)
             {
-                if (string.Equals(this[index].AccountName, accountName, StringComparison.InvariantCultureIgnoreCase))
+                if (string.Equals(this[index].AccountName, accountName, StringComparison.OrdinalIgnoreCase))
                 {
                     return index;
                 }

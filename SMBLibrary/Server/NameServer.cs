@@ -109,7 +109,7 @@ namespace SMBLibrary.Server
                             string name = NetBiosUtils.GetNameFromMSNetBiosName(request.Question.Name);
                             NetBiosSuffix suffix = (NetBiosSuffix)request.Question.Name[15];
 
-                            bool nameMatch = String.Equals(name, Environment.MachineName, StringComparison.InvariantCultureIgnoreCase);
+                            bool nameMatch = String.Equals(name, Environment.MachineName, StringComparison.OrdinalIgnoreCase);
                             
                             if (nameMatch && ((suffix == NetBiosSuffix.WorkstationService) || (suffix == NetBiosSuffix.FileServiceService)))
                             {

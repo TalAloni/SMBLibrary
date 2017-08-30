@@ -22,7 +22,7 @@ namespace SMBLibrary.Server.SMB2
             ISMBShare share;
             ShareType shareType;
             ShareFlags shareFlags;
-            if (String.Equals(shareName, NamedPipeShare.NamedPipeShareName, StringComparison.InvariantCultureIgnoreCase))
+            if (String.Equals(shareName, NamedPipeShare.NamedPipeShareName, StringComparison.OrdinalIgnoreCase))
             {
                 share = services;
                 shareType = ShareType.Pipe;

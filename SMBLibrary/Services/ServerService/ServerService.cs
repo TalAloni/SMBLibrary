@@ -166,7 +166,7 @@ namespace SMBLibrary.Services
         {
             for (int index = 0; index < m_shares.Count; index++)
             {
-                if (m_shares[index].Equals(shareName, StringComparison.InvariantCultureIgnoreCase))
+                if (m_shares[index].Equals(shareName, StringComparison.OrdinalIgnoreCase))
                 {
                     return index;
                 }
