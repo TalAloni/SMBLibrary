@@ -22,6 +22,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "TransactNamedPipe failed. Invalid FID.");
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
@@ -31,6 +32,7 @@ namespace SMBLibrary.Server.SMB1
             header.Status = share.FileStore.DeviceIOControl(openFile.Handle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, subcommand.WriteData, out output, maxOutputLength);
             if (header.Status != NTStatus.STATUS_SUCCESS && header.Status != NTStatus.STATUS_BUFFER_OVERFLOW)
             {
+                state.LogToServer(Severity.Verbose, "TransactNamedPipe failed. NTStatus: {0}.", header.Status);
                 return null;
             }
             TransactionTransactNamedPipeResponse response = new TransactionTransactNamedPipeResponse();

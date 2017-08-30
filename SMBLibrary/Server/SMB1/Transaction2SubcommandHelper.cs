@@ -32,6 +32,7 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (UnsupportedInformationLevelException)
             {
+                state.LogToServer(Severity.Verbose, "FindFirst2: Unsupported information level: {0}.", subcommand.InformationLevel);
                 header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
                 return null;
             }
@@ -64,6 +65,7 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (UnsupportedInformationLevelException)
             {
+                state.LogToServer(Severity.Verbose, "FindFirst2: Unsupported information level: {0}.", subcommand.InformationLevel);
                 header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
                 return null;
             }
@@ -98,6 +100,7 @@ namespace SMBLibrary.Server.SMB1
             OpenSearch openSearch = session.GetOpenSearch(subcommand.SID);
             if (openSearch == null)
             {
+                state.LogToServer(Severity.Verbose, "FindNext2 failed. Invalid SID.");
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
@@ -113,6 +116,7 @@ namespace SMBLibrary.Server.SMB1
             }
             catch (UnsupportedInformationLevelException)
             {
+                state.LogToServer(Severity.Verbose, "FindNext2: Unsupported information level: {0}.", subcommand.InformationLevel);
                 header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
                 return null;
             }
@@ -194,6 +198,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "QueryFileInformation failed. Invalid FID.");
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
@@ -228,6 +233,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
+                state.LogToServer(Severity.Verbose, "SetFileInformation failed. Invalid FID.");
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }
