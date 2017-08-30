@@ -102,7 +102,28 @@ namespace SMBLibrary
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
         {
             output = null;
-            if (ctlCode == (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE)
+            if (ctlCode == (uint)IoControlCode.FSCTL_PIPE_WAIT)
+            {
+                PipeWaitRequest request;
+                try
+                {
+                    request = new PipeWaitRequest(input, 0);
+                }
+                catch
+                {
+                    return NTStatus.STATUS_INVALID_PARAMETER;
+                }
+
+                RemoteService service = GetService(request.Name);
+                if (service == null)
+                {
+                    return NTStatus.STATUS_OBJECT_NAME_NOT_FOUND;
+                }
+
+                output = new byte[0];
+                return NTStatus.STATUS_SUCCESS;
+            }
+            else if (ctlCode == (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE)
             {
                 int numberOfBytesWritten;
                 NTStatus writeStatus = WriteFile(out numberOfBytesWritten, handle, 0, input);
