@@ -23,14 +23,17 @@ namespace SMBLibrary
 
         public FileStreamInformation(byte[] buffer, int offset)
         {
-            FileStreamEntry entry;
-            do
+            if (offset < buffer.Length)
             {
-                entry = new FileStreamEntry(buffer, offset);
-                m_entries.Add(entry);
-                offset += (int)entry.NextEntryOffset;
+                FileStreamEntry entry;
+                do
+                {
+                    entry = new FileStreamEntry(buffer, offset);
+                    m_entries.Add(entry);
+                    offset += (int)entry.NextEntryOffset;
+                }
+                while (entry.NextEntryOffset != 0);
             }
-            while (entry.NextEntryOffset != 0);
         }
 
         public override void WriteBytes(byte[] buffer, int offset)

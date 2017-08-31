@@ -276,6 +276,8 @@ namespace SMBLibrary.Win32
             NTStatus status = NtQueryInformationFile((IntPtr)handle, out ioStatusBlock, buffer, (uint)buffer.Length, (uint)informationClass);
             if (status == NTStatus.STATUS_SUCCESS)
             {
+                int numberOfBytesWritten = (int)ioStatusBlock.Information;
+                buffer = ByteReader.ReadBytes(buffer, 0, numberOfBytesWritten);
                 result = FileInformation.GetFileInformation(buffer, 0, informationClass);
             }
             else

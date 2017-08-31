@@ -24,14 +24,17 @@ namespace SMBLibrary.SMB1
 
         public QueryFileStreamInfo(byte[] buffer, int offset)
         {
-            FileStreamEntry entry;
-            do
+            if (offset < buffer.Length)
             {
-                entry = new FileStreamEntry(buffer, offset);
-                m_entries.Add(entry);
-                offset += (int)entry.NextEntryOffset;
+                FileStreamEntry entry;
+                do
+                {
+                    entry = new FileStreamEntry(buffer, offset);
+                    m_entries.Add(entry);
+                    offset += (int)entry.NextEntryOffset;
+                }
+                while (entry.NextEntryOffset != 0);
             }
-            while (entry.NextEntryOffset != 0);
         }
 
         public override byte[] GetBytes()

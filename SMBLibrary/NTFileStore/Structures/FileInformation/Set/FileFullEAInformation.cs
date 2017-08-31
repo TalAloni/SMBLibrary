@@ -62,14 +62,17 @@ namespace SMBLibrary
         public static List<FileFullEAEntry> ReadList(byte[] buffer, int offset)
         {
             List<FileFullEAEntry> result = new List<FileFullEAEntry>();
-            FileFullEAEntry entry;
-            do
+            if (offset < buffer.Length)
             {
-                entry = new FileFullEAEntry(buffer, offset);
-                result.Add(entry);
-                offset += (int)entry.NextEntryOffset;
+                FileFullEAEntry entry;
+                do
+                {
+                    entry = new FileFullEAEntry(buffer, offset);
+                    result.Add(entry);
+                    offset += (int)entry.NextEntryOffset;
+                }
+                while (entry.NextEntryOffset != 0);
             }
-            while (entry.NextEntryOffset != 0);
             return result;
         }
 
