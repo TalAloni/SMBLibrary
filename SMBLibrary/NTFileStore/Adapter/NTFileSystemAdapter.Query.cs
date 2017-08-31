@@ -130,9 +130,11 @@ namespace SMBLibrary
                         // This information class is used to enumerate the data streams of a file or a directory.
                         // A buffer of FileStreamInformation data elements is returned by the server.
                         FileStreamInformation information = new FileStreamInformation();
-                        information.StreamSize = (long)entry.Size;
-                        information.StreamAllocationSize = (long)GetAllocationSize(entry.Size);
-                        information.StreamName = "::$DATA";
+                        FileStreamEntry streamEntry = new FileStreamEntry();
+                        streamEntry.StreamSize = (long)entry.Size;
+                        streamEntry.StreamAllocationSize = (long)GetAllocationSize(entry.Size);
+                        streamEntry.StreamName = "::$DATA";
+                        information.Entries.Add(streamEntry);
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
                     }

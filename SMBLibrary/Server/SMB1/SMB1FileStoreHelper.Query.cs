@@ -163,9 +163,7 @@ namespace SMBLibrary.Server.SMB1
                         FileStreamInformation fileStreamInfo = (FileStreamInformation)fileInfo;
 
                         QueryFileStreamInfo information = new QueryFileStreamInfo();
-                        information.StreamSize = fileStreamInfo.StreamSize;
-                        information.StreamAllocationSize = fileStreamInfo.StreamAllocationSize;
-                        information.StreamName = fileStreamInfo.StreamName;
+                        information.Entries.AddRange(fileStreamInfo.Entries);
                         result = information;
                         return NTStatus.STATUS_SUCCESS;
                     }

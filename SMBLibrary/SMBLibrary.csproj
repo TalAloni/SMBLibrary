@@ -131,6 +131,7 @@
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileNetworkOpenInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FilePositionInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileStandardInformation.cs" />
+    <Compile Include="NTFileStore\Structures\FileInformation\Query\FileStreamEntry.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileStreamInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\QueryDirectory\FileBothDirectoryInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\QueryDirectory\FileDirectoryInformation.cs" />

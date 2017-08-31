@@ -15,13 +15,7 @@ namespace SMBLibrary
     /// </summary>
     public class FileStreamInformation : FileInformation
     {
-        public const int FixedLength = 24;
-
-        public uint NextEntryOffset;
-        private uint StreamNameLength;
-        public long StreamSize;
-        public long StreamAllocationSize;
-        public string StreamName = String.Empty;
+        List<FileStreamEntry> m_entries = new List<FileStreamEntry>();
 
         public FileStreamInformation()
         {
@@ -29,22 +23,39 @@ namespace SMBLibrary
 
         public FileStreamInformation(byte[] buffer, int offset)
         {
-            NextEntryOffset = LittleEndianConverter.ToUInt32(buffer, offset + 0);
-            StreamNameLength = LittleEndianConverter.ToUInt32(buffer, offset + 4);
-            StreamSize = LittleEndianConverter.ToInt64(buffer, offset + 8);
-            StreamAllocationSize = LittleEndianConverter.ToInt64(buffer, offset + 16);
-            ByteReader.ReadUTF16String(buffer, offset + 24, (int)StreamNameLength / 2);
-
+            FileStreamEntry entry;
+            do
+            {
+                entry = new FileStreamEntry(buffer, offset);
+                m_entries.Add(entry);
+                offset += (int)entry.NextEntryOffset;
+            }
+            while (entry.NextEntryOffset != 0);
         }
 
         public override void WriteBytes(byte[] buffer, int offset)
         {
-            StreamNameLength = (uint)(StreamName.Length * 2);
-            LittleEndianWriter.WriteUInt32(buffer, offset + 0, NextEntryOffset);
-            LittleEndianWriter.WriteUInt32(buffer, offset + 4, StreamNameLength);
-            LittleEndianWriter.WriteInt64(buffer, offset + 8, StreamSize);
-            LittleEndianWriter.WriteInt64(buffer, offset + 16, StreamAllocationSize);
-            ByteWriter.WriteUTF16String(buffer, offset + 24, StreamName);
+            for (int index = 0; index < m_entries.Count; index++)
+            {
+                FileStreamEntry entry = m_entries[index];
+                entry.WriteBytes(buffer, offset);
+                int entryLength = entry.Length;
+                offset += entryLength;
+                if (index < m_entries.Count - 1)
+                {
+                    // [MS-FSCC] When multiple FILE_STREAM_INFORMATION data elements are present in the buffer, each MUST be aligned on an 8-byte boundary
+                    int padding = (8 - (entryLength % 8)) % 8;
+                    offset += padding;
+                }
+            }
+        }
+
+        public List<FileStreamEntry> Entries
+        {
+            get
+            {
+                return m_entries;
+            }
         }
 
         public override FileInformationClass FileInformationClass
@@ -59,7 +70,20 @@ namespace SMBLibrary
         {
             get
             {
-                return FixedLength + StreamName.Length * 2;
+                int length = 0;
+                for (int index = 0; index < m_entries.Count; index++)
+                {
+                    FileStreamEntry entry = m_entries[index];
+                    int entryLength = entry.Length;
+                    length += entryLength;
+                    if (index < m_entries.Count - 1)
+                    {
+                        // [MS-FSCC] When multiple FILE_STREAM_INFORMATION data elements are present in the buffer, each MUST be aligned on an 8-byte boundary
+                        int padding = (8 - (entryLength % 8)) % 8;
+                        length += padding;
+                    }
+                }
+                return length;
             }
         }
     }
