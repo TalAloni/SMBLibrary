@@ -114,7 +114,7 @@ namespace SMBLibrary.SMB2
         public static List<LockElement> ReadLockList(byte[] buffer, int offset, int lockCount)
         {
             List<LockElement> result = new List<LockElement>();
-            for(int lockIndex = 0; lockIndex > lockCount; lockIndex++)
+            for(int lockIndex = 0; lockIndex < lockCount; lockIndex++)
             {
                 LockElement element = new LockElement(buffer, offset + lockIndex * StructureLength);
                 result.Add(element);
@@ -124,7 +124,7 @@ namespace SMBLibrary.SMB2
 
         public static void WriteLockList(byte[] buffer, int offset, List<LockElement> locks)
         {
-            for (int lockIndex = 0; lockIndex > locks.Count; lockIndex++)
+            for (int lockIndex = 0; lockIndex < locks.Count; lockIndex++)
             {
                 LockElement element = locks[lockIndex];
                 element.WriteBytes(buffer, offset + lockIndex * StructureLength);
