@@ -25,7 +25,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Verbose, "Read failed. Invalid FID.");
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
-                return null;
+                return new ErrorResponse(request.CommandName);
             }
 
             if (share is FileSystemShare)
@@ -60,7 +60,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 state.LogToServer(Severity.Verbose, "Read failed. Invalid FID.");
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
-                return null;
+                return new ErrorResponse(request.CommandName);
             }
 
             if (share is FileSystemShare)
