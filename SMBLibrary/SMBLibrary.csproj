@@ -125,6 +125,8 @@
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileBasicInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileCompressionInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileEaInformation.cs" />
+    <Compile Include="NTFileStore\Structures\FileInformation\Query\FileFullEAEntry.cs" />
+    <Compile Include="NTFileStore\Structures\FileInformation\Query\FileFullEAInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileInternalInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileModeInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Query\FileNameInformation.cs" />
@@ -143,8 +145,6 @@
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileAllocationInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileDispositionInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileEndOfFileInformation.cs" />
-    <Compile Include="NTFileStore\Structures\FileInformation\Set\FileFullEAEntry.cs" />
-    <Compile Include="NTFileStore\Structures\FileInformation\Set\FileFullEAInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileLinkInformationType1.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileLinkInformationType2.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileRenameInformationType1.cs" />
