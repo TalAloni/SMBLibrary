@@ -143,6 +143,7 @@
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileAllocationInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileDispositionInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileEndOfFileInformation.cs" />
+    <Compile Include="NTFileStore\Structures\FileInformation\Set\FileFullEAEntry.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileFullEAInformation.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileLinkInformationType1.cs" />
     <Compile Include="NTFileStore\Structures\FileInformation\Set\FileLinkInformationType2.cs" />

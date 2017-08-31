@@ -16,14 +16,7 @@ namespace SMBLibrary
     /// </summary>
     public class FileFullEAInformation : FileInformation
     {
-        public const int FixedLength = 8;
-
-        public uint NextEntryOffset;
-        public byte Flags;
-        private byte EaNameLength;
-        private ushort EaValueLength;
-        public string EaName; // 8-bit ASCII
-        public string EaValue; // 8-bit ASCII
+        List<FileFullEAEntry> m_entries = new List<FileFullEAEntry>();
 
         public FileFullEAInformation()
         {
@@ -31,24 +24,12 @@ namespace SMBLibrary
 
         public FileFullEAInformation(byte[] buffer, int offset)
         {
-            NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            Flags = ByteReader.ReadByte(buffer, ref offset);
-            EaNameLength = ByteReader.ReadByte(buffer, ref offset);
-            EaValueLength = LittleEndianReader.ReadUInt16(buffer, ref offset);
-            EaName = ByteReader.ReadAnsiString(buffer, ref offset, EaNameLength);
-            EaValue = ByteReader.ReadAnsiString(buffer, ref offset, EaValueLength);
+            m_entries = ReadList(buffer, offset);
         }
 
         public override void WriteBytes(byte[] buffer, int offset)
         {
-            EaNameLength = (byte)EaName.Length;
-            EaValueLength = (ushort)EaValue.Length;
-            LittleEndianWriter.WriteUInt32(buffer, ref offset, NextEntryOffset);
-            ByteWriter.WriteByte(buffer, ref offset, Flags);
-            ByteWriter.WriteByte(buffer, ref offset, EaNameLength);
-            LittleEndianWriter.WriteUInt16(buffer, ref offset, EaValueLength);
-            ByteWriter.WriteAnsiString(buffer, ref offset, EaName);
-            ByteWriter.WriteAnsiString(buffer, ref offset, EaValue);
+            WriteList(buffer, offset, m_entries);
         }
 
         public override FileInformationClass FileInformationClass
@@ -63,54 +44,50 @@ namespace SMBLibrary
         {
             get
             {
-                return FixedLength + EaName.Length + EaValue.Length;
+                int length = 0;
+                for (int index = 0; index < m_entries.Count; index++)
+                {
+                    length += m_entries[index].Length;
+                    if (index < m_entries.Count - 1)
+                    {
+                        // When multiple FILE_FULL_EA_INFORMATION data elements are present in the buffer, each MUST be aligned on a 4-byte boundary
+                        int padding = (4 - (length % 4)) % 4;
+                        length += padding;
+                    }
+                }
+                return length;
             }
         }
 
-        public static List<FileFullEAInformation> ReadList(byte[] buffer, int offset)
+        public static List<FileFullEAEntry> ReadList(byte[] buffer, int offset)
         {
-            List<FileFullEAInformation> result = new List<FileFullEAInformation>();
-            FileFullEAInformation entry;
+            List<FileFullEAEntry> result = new List<FileFullEAEntry>();
+            FileFullEAEntry entry;
             do
             {
-                entry = new FileFullEAInformation(buffer, offset);
+                entry = new FileFullEAEntry(buffer, offset);
                 result.Add(entry);
+                offset += (int)entry.NextEntryOffset;
             }
             while (entry.NextEntryOffset != 0);
             return result;
         }
 
-        public static void WriteList(byte[] buffer, int offset, List<FileFullEAInformation> list)
+        public static void WriteList(byte[] buffer, int offset, List<FileFullEAEntry> list)
         {
-            // When multiple FILE_FULL_EA_INFORMATION data elements are present in the buffer, each MUST be aligned on a 4-byte boundary
             for (int index = 0; index < list.Count; index++)
             {
-                FileFullEAInformation entry = list[index];
+                FileFullEAEntry entry = list[index];
                 entry.WriteBytes(buffer, offset);
                 int entryLength = entry.Length;
                 offset += entryLength;
                 if (index < list.Count - 1)
                 {
+                    // When multiple FILE_FULL_EA_INFORMATION data elements are present in the buffer, each MUST be aligned on a 4-byte boundary
                     int padding = (4 - (entryLength % 4)) % 4;
                     offset += padding;
                 }
             }
-        }
-
-        public int GetListLength(List<FileFullEAInformation> list)
-        {
-            // When multiple FILE_FULL_EA_INFORMATION data elements are present in the buffer, each MUST be aligned on a 4-byte boundary
-            int length = 0;
-            for (int index = 0; index < list.Count; index++)
-            {
-                length += list[index].Length;
-                if (index < list.Count - 1)
-                {
-                    int padding = (4 - (length % 4)) % 4;
-                    length += padding;
-                }
-            }
-            return length;
         }
     }
 }

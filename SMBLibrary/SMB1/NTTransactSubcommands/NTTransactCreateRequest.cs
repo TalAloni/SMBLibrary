@@ -34,7 +34,7 @@ namespace SMBLibrary.SMB1
         public string Name; // OEM / Unicode. NOT null terminated. (MUST be aligned to start on a 2-byte boundary from the start of the NT_Trans_Parameters)
         // Data:
         public SecurityDescriptor SecurityDescriptor;
-        public List<FileFullEAInformation> ExtendedAttributes;
+        public List<FileFullEAEntry> ExtendedAttributes;
 
         public NTTransactCreateRequest()
         {
