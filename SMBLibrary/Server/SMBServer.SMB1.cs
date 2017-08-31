@@ -145,8 +145,7 @@ namespace SMBLibrary.Server
 
                 if (command is TreeConnectAndXRequest)
                 {
-                    TreeConnectAndXRequest request = (TreeConnectAndXRequest)command;
-                    return TreeConnectHelper.GetTreeConnectResponse(header, request, state, m_services, m_shares);
+                    return TreeConnectHelper.GetTreeConnectResponse(header, (TreeConnectAndXRequest)command, state, m_services, m_shares);
                 }
                 else if (command is LogoffAndXRequest)
                 {
@@ -166,58 +165,47 @@ namespace SMBLibrary.Server
 
                     if (command is CreateDirectoryRequest)
                     {
-                        CreateDirectoryRequest request = (CreateDirectoryRequest)command;
-                        return FileStoreResponseHelper.GetCreateDirectoryResponse(header, request, share, state);
+                        return FileStoreResponseHelper.GetCreateDirectoryResponse(header, (CreateDirectoryRequest)command, share, state);
                     }
                     else if (command is DeleteDirectoryRequest)
                     {
-                        DeleteDirectoryRequest request = (DeleteDirectoryRequest)command;
-                        return FileStoreResponseHelper.GetDeleteDirectoryResponse(header, request, share, state);
+                        return FileStoreResponseHelper.GetDeleteDirectoryResponse(header, (DeleteDirectoryRequest)command, share, state);
                     }
                     else if (command is CloseRequest)
                     {
-                        CloseRequest request = (CloseRequest)command;
-                        return CloseHelper.GetCloseResponse(header, request, share, state);
+                        return CloseHelper.GetCloseResponse(header, (CloseRequest)command, share, state);
                     }
                     else if (command is FlushRequest)
                     {
-                        FlushRequest request = (FlushRequest)command;
-                        return ReadWriteResponseHelper.GetFlushResponse(header, request, share, state);
+                        return ReadWriteResponseHelper.GetFlushResponse(header, (FlushRequest)command, share, state);
                     }
                     else if (command is DeleteRequest)
                     {
-                        DeleteRequest request = (DeleteRequest)command;
-                        return FileStoreResponseHelper.GetDeleteResponse(header, request, share, state);
+                        return FileStoreResponseHelper.GetDeleteResponse(header, (DeleteRequest)command, share, state);
                     }
                     else if (command is RenameRequest)
                     {
-                        RenameRequest request = (RenameRequest)command;
-                        return FileStoreResponseHelper.GetRenameResponse(header, request, share, state);
+                        return FileStoreResponseHelper.GetRenameResponse(header, (RenameRequest)command, share, state);
                     }
                     else if (command is QueryInformationRequest)
                     {
-                        QueryInformationRequest request = (QueryInformationRequest)command;
-                        return FileStoreResponseHelper.GetQueryInformationResponse(header, request, share, state);
+                        return FileStoreResponseHelper.GetQueryInformationResponse(header, (QueryInformationRequest)command, share, state);
                     }
                     else if (command is SetInformationRequest)
                     {
-                        SetInformationRequest request = (SetInformationRequest)command;
-                        return FileStoreResponseHelper.GetSetInformationResponse(header, request, share, state);
+                        return FileStoreResponseHelper.GetSetInformationResponse(header, (SetInformationRequest)command, share, state);
                     }
                     else if (command is ReadRequest)
                     {
-                        ReadRequest request = (ReadRequest)command;
-                        return ReadWriteResponseHelper.GetReadResponse(header, request, share, state);
+                        return ReadWriteResponseHelper.GetReadResponse(header, (ReadRequest)command, share, state);
                     }
                     else if (command is WriteRequest)
                     {
-                        WriteRequest request = (WriteRequest)command;
-                        return ReadWriteResponseHelper.GetWriteResponse(header, request, share, state);
+                        return ReadWriteResponseHelper.GetWriteResponse(header, (WriteRequest)command, share, state);
                     }
                     else if (command is CheckDirectoryRequest)
                     {
-                        CheckDirectoryRequest request = (CheckDirectoryRequest)command;
-                        return FileStoreResponseHelper.GetCheckDirectoryResponse(header, request, share, state);
+                        return FileStoreResponseHelper.GetCheckDirectoryResponse(header, (CheckDirectoryRequest)command, share, state);
                     }
                     else if (command is WriteRawRequest)
                     {
@@ -229,8 +217,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is SetInformation2Request)
                     {
-                        SetInformation2Request request = (SetInformation2Request)command;
-                        return FileStoreResponseHelper.GetSetInformation2Response(header, request, share, state);
+                        return FileStoreResponseHelper.GetSetInformation2Response(header, (SetInformation2Request)command, share, state);
                     }
                     else if (command is LockingAndXRequest)
                     {
@@ -239,18 +226,15 @@ namespace SMBLibrary.Server
                     }
                     else if (command is OpenAndXRequest)
                     {
-                        OpenAndXRequest request = (OpenAndXRequest)command;
-                        return OpenAndXHelper.GetOpenAndXResponse(header, request, share, state);
+                        return OpenAndXHelper.GetOpenAndXResponse(header, (OpenAndXRequest)command, share, state);
                     }
                     else if (command is ReadAndXRequest)
                     {
-                        ReadAndXRequest request = (ReadAndXRequest)command;
-                        return ReadWriteResponseHelper.GetReadResponse(header, request, share, state);
+                        return ReadWriteResponseHelper.GetReadResponse(header, (ReadAndXRequest)command, share, state);
                     }
                     else if (command is WriteAndXRequest)
                     {
-                        WriteAndXRequest request = (WriteAndXRequest)command;
-                        return ReadWriteResponseHelper.GetWriteResponse(header, request, share, state);
+                        return ReadWriteResponseHelper.GetWriteResponse(header, (WriteAndXRequest)command, share, state);
                     }
                     else if (command is FindClose2Request)
                     {
@@ -258,38 +242,31 @@ namespace SMBLibrary.Server
                     }
                     else if (command is TreeDisconnectRequest)
                     {
-                        TreeDisconnectRequest request = (TreeDisconnectRequest)command;
-                        return TreeConnectHelper.GetTreeDisconnectResponse(header, request, share, state);
+                        return TreeConnectHelper.GetTreeDisconnectResponse(header, (TreeDisconnectRequest)command, share, state);
                     }
                     else if (command is TransactionRequest) // Both TransactionRequest and Transaction2Request
                     {
-                        TransactionRequest request = (TransactionRequest)command;
-                        return TransactionHelper.GetTransactionResponse(header, request, share, state);
+                        return TransactionHelper.GetTransactionResponse(header, (TransactionRequest)command, share, state);
                     }
                     else if (command is TransactionSecondaryRequest) // Both TransactionSecondaryRequest and Transaction2SecondaryRequest
                     {
-                        TransactionSecondaryRequest request = (TransactionSecondaryRequest)command;
-                        return TransactionHelper.GetTransactionResponse(header, request, share, state);
+                        return TransactionHelper.GetTransactionResponse(header, (TransactionSecondaryRequest)command, share, state);
                     }
                     else if (command is NTTransactRequest)
                     {
-                        NTTransactRequest request = (NTTransactRequest)command;
-                        return NTTransactHelper.GetNTTransactResponse(header, request, share, state);
+                        return NTTransactHelper.GetNTTransactResponse(header, (NTTransactRequest)command, share, state);
                     }
                     else if (command is NTTransactSecondaryRequest)
                     {
-                        NTTransactSecondaryRequest request = (NTTransactSecondaryRequest)command;
-                        return NTTransactHelper.GetNTTransactResponse(header, request, share, state);
+                        return NTTransactHelper.GetNTTransactResponse(header, (NTTransactSecondaryRequest)command, share, state);
                     }
                     else if (command is NTCreateAndXRequest)
                     {
-                        NTCreateAndXRequest request = (NTCreateAndXRequest)command;
-                        return NTCreateHelper.GetNTCreateResponse(header, request, share, state);
+                        return NTCreateHelper.GetNTCreateResponse(header, (NTCreateAndXRequest)command, share, state);
                     }
                     else if (command is NTCancelRequest)
                     {
-                        NTCancelRequest request = (NTCancelRequest)command;
-                        CancelHelper.ProcessNTCancelRequest(header, request, share, state);
+                        CancelHelper.ProcessNTCancelRequest(header, (NTCancelRequest)command, share, state);
                         // [MS-CIFS] The SMB_COM_NT_CANCEL command MUST NOT send a response.
                         return new List<SMB1Command>();
                     }
