@@ -212,6 +212,7 @@
     <Compile Include="Server\SMB1\CloseHelper.cs" />
     <Compile Include="Server\SMB1\EchoHelper.cs" />
     <Compile Include="Server\SMB1\FileStoreResponseHelper.cs" />
+    <Compile Include="Server\SMB1\LockingHelper.cs" />
     <Compile Include="Server\SMB1\NegotiateHelper.cs" />
     <Compile Include="Server\SMB1\NotifyChangeHelper.cs" />
     <Compile Include="Server\SMB1\NTCreateHelper.cs" />
@@ -233,6 +234,7 @@
     <Compile Include="Server\SMB2\CloseHelper.cs" />
     <Compile Include="Server\SMB2\CreateHelper.cs" />
     <Compile Include="Server\SMB2\IOCtlHelper.cs" />
+    <Compile Include="Server\SMB2\LockHelper.cs" />
     <Compile Include="Server\SMB2\NegotiateHelper.cs" />
     <Compile Include="Server\SMB2\QueryDirectoryHelper.cs" />
     <Compile Include="Server\SMB2\QueryInfoHelper.cs" />

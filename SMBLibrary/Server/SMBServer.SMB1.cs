@@ -221,8 +221,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is LockingAndXRequest)
                     {
-                        header.Status = NTStatus.STATUS_ACCESS_DENIED;
-                        return new ErrorResponse(command.CommandName);
+                        return LockingHelper.GetLockingAndXResponse(header, (LockingAndXRequest)command, share, state);
                     }
                     else if (command is OpenAndXRequest)
                     {

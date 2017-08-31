@@ -157,6 +157,10 @@ namespace SMBLibrary.Server
                     {
                         return ReadWriteResponseHelper.GetWriteResponse((WriteRequest)command, share, state);
                     }
+                    else if (command is LockRequest)
+                    {
+                        return LockHelper.GetLockResponse((LockRequest)command, share, state);
+                    }
                     else if (command is FlushRequest)
                     {
                         return ReadWriteResponseHelper.GetFlushResponse((FlushRequest)command, share, state);
