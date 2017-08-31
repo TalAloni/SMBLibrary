@@ -282,12 +282,6 @@ namespace SMBLibrary.Server.SMB1
         {
             switch (informationLevel)
             {
-                case FindInformationLevel.SMB_INFO_STANDARD:
-                    return FileInformationClass.FileDirectoryInformation;
-                case FindInformationLevel.SMB_INFO_QUERY_EA_SIZE:
-                    return FileInformationClass.FileFullDirectoryInformation;
-                case FindInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST:
-                    return FileInformationClass.FileDirectoryInformation;
                 case FindInformationLevel.SMB_FIND_FILE_DIRECTORY_INFO:
                     return FileInformationClass.FileDirectoryInformation;
                 case FindInformationLevel.SMB_FIND_FILE_FULL_DIRECTORY_INFO:
@@ -296,6 +290,10 @@ namespace SMBLibrary.Server.SMB1
                     return FileInformationClass.FileNamesInformation;
                 case FindInformationLevel.SMB_FIND_FILE_BOTH_DIRECTORY_INFO:
                     return FileInformationClass.FileBothDirectoryInformation;
+                case FindInformationLevel.SMB_FIND_FILE_ID_FULL_DIRECTORY_INFO:
+                    return FileInformationClass.FileIdFullDirectoryInformation;
+                case FindInformationLevel.SMB_FIND_FILE_ID_BOTH_DIRECTORY_INFO:
+                    return FileInformationClass.FileIdBothDirectoryInformation;
                 default:
                     throw new UnsupportedInformationLevelException();
             }

@@ -138,6 +138,46 @@ namespace SMBLibrary.Server.SMB1
                         result.FileName = fileBothDirectoryInfo.FileName;
                         return result;
                     }
+                case FindInformationLevel.SMB_FIND_FILE_ID_FULL_DIRECTORY_INFO:
+                    {
+                        FileIdFullDirectoryInformation fileIDFullDirectoryInfo = (FileIdFullDirectoryInformation)entry;
+
+                        FindFileIDFullDirectoryInfo result = new FindFileIDFullDirectoryInfo();
+                        result.FileIndex = fileIDFullDirectoryInfo.FileIndex;
+                        result.CreationTime = fileIDFullDirectoryInfo.CreationTime;
+                        result.LastAccessTime = fileIDFullDirectoryInfo.LastAccessTime;
+                        result.LastWriteTime = fileIDFullDirectoryInfo.LastWriteTime;
+                        result.LastAttrChangeTime = fileIDFullDirectoryInfo.LastWriteTime;
+                        result.EndOfFile = fileIDFullDirectoryInfo.EndOfFile;
+                        result.AllocationSize = fileIDFullDirectoryInfo.AllocationSize;
+                        result.ExtFileAttributes = (ExtendedFileAttributes)fileIDFullDirectoryInfo.FileAttributes;
+                        result.EASize = fileIDFullDirectoryInfo.EaSize;
+                        result.Reserved = fileIDFullDirectoryInfo.Reserved;
+                        result.FileID = fileIDFullDirectoryInfo.FileId;
+                        result.FileName = fileIDFullDirectoryInfo.FileName;
+                        return result;
+                    }
+                case FindInformationLevel.SMB_FIND_FILE_ID_BOTH_DIRECTORY_INFO:
+                    {
+                        FileIdBothDirectoryInformation fileIDBothDirectoryInfo = (FileIdBothDirectoryInformation)entry;
+
+                        FindFileIDBothDirectoryInfo result = new FindFileIDBothDirectoryInfo();
+                        result.FileIndex = fileIDBothDirectoryInfo.FileIndex;
+                        result.CreationTime = fileIDBothDirectoryInfo.CreationTime;
+                        result.LastAccessTime = fileIDBothDirectoryInfo.LastAccessTime;
+                        result.LastWriteTime = fileIDBothDirectoryInfo.LastWriteTime;
+                        result.LastChangeTime = fileIDBothDirectoryInfo.LastWriteTime;
+                        result.EndOfFile = fileIDBothDirectoryInfo.EndOfFile;
+                        result.AllocationSize = fileIDBothDirectoryInfo.AllocationSize;
+                        result.ExtFileAttributes = (ExtendedFileAttributes)fileIDBothDirectoryInfo.FileAttributes;
+                        result.EASize = fileIDBothDirectoryInfo.EaSize;
+                        result.Reserved = fileIDBothDirectoryInfo.Reserved1;
+                        result.ShortName = fileIDBothDirectoryInfo.ShortName;
+                        result.Reserved2 = fileIDBothDirectoryInfo.Reserved2;
+                        result.FileID = fileIDBothDirectoryInfo.FileId;
+                        result.FileName = fileIDBothDirectoryInfo.FileName;
+                        return result;
+                    }
                 default:
                     {
                         throw new UnsupportedInformationLevelException();

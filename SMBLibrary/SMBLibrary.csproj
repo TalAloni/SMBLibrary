@@ -281,6 +281,8 @@
     <Compile Include="Services\WorkstationService\Structures\WorkstationInfo101.cs" />
     <Compile Include="Services\WorkstationService\Structures\WorkstationInfoLevel.cs" />
     <Compile Include="Services\WorkstationService\WorkstationService.cs" />
+    <Compile Include="SMB1FileStore\Structures\FindInformation\FindFileIDBothDirectoryInfo.cs" />
+    <Compile Include="SMB1FileStore\Structures\FindInformation\FindFileIDFullDirectoryInfo.cs" />
     <Compile Include="SMB1\Commands\CheckDirectoryRequest.cs" />
     <Compile Include="SMB1\Commands\CheckDirectoryResponse.cs" />
     <Compile Include="SMB1\Commands\CloseRequest.cs" />
