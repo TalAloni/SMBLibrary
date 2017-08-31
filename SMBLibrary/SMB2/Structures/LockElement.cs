@@ -35,6 +35,82 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt64(buffer, offset + 20, Reserved);
         }
 
+        public bool SharedLock
+        {
+            get
+            {
+                return (Flags & LockFlags.SharedLock) > 0;
+            }
+            set
+            {
+                if (value)
+                {
+                    Flags |= LockFlags.SharedLock;
+                }
+                else
+                {
+                    Flags &= ~LockFlags.SharedLock;
+                }
+            }
+        }
+
+        public bool ExclusiveLock
+        {
+            get
+            {
+                return (Flags & LockFlags.ExclusiveLock) > 0;
+            }
+            set
+            {
+                if (value)
+                {
+                    Flags |= LockFlags.ExclusiveLock;
+                }
+                else
+                {
+                    Flags &= ~LockFlags.ExclusiveLock;
+                }
+            }
+        }
+
+        public bool Unlock
+        {
+            get
+            {
+                return (Flags & LockFlags.Unlock) > 0;
+            }
+            set
+            {
+                if (value)
+                {
+                    Flags |= LockFlags.Unlock;
+                }
+                else
+                {
+                    Flags &= ~LockFlags.Unlock;
+                }
+            }
+        }
+
+        public bool FailImmediately
+        {
+            get
+            {
+                return (Flags & LockFlags.FailImmediately) > 0;
+            }
+            set
+            {
+                if (value)
+                {
+                    Flags |= LockFlags.FailImmediately;
+                }
+                else
+                {
+                    Flags &= ~LockFlags.FailImmediately;
+                }
+            }
+        }
+
         public static List<LockElement> ReadLockList(byte[] buffer, int offset, int lockCount)
         {
             List<LockElement> result = new List<LockElement>();
