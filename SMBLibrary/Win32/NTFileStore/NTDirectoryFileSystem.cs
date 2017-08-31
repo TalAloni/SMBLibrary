@@ -73,7 +73,7 @@ namespace SMBLibrary.Win32
 
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
         private static extern NTStatus NtClose(IntPtr handle);
-        
+
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
         private static extern NTStatus NtReadFile(IntPtr handle, IntPtr evt, IntPtr apcRoutine, IntPtr apcContext, out IO_STATUS_BLOCK ioStatusBlock, byte[] buffer, uint length, ref long byteOffset, IntPtr key);
 
@@ -82,7 +82,13 @@ namespace SMBLibrary.Win32
 
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
         private static extern NTStatus NtFlushBuffersFile(IntPtr handle, out IO_STATUS_BLOCK ioStatusBlock);
-        
+
+        [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
+        private static extern NTStatus NtLockFile(IntPtr handle, IntPtr evt, IntPtr apcRoutine, IntPtr apcContext, out IO_STATUS_BLOCK ioStatusBlock, ref long byteOffset, ref long length, uint key, bool failImmediately, bool exclusiveLock);
+
+        [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
+        private static extern NTStatus NtUnlockFile(IntPtr handle, out IO_STATUS_BLOCK ioStatusBlock, ref long byteOffset, ref long length, uint key);
+
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
         private static extern NTStatus NtQueryDirectoryFile(IntPtr handle, IntPtr evt, IntPtr apcRoutine, IntPtr apcContext, out IO_STATUS_BLOCK ioStatusBlock, byte[] fileInformation, uint length, uint fileInformationClass, bool returnSingleEntry, ref UNICODE_STRING fileName, bool restartScan);
 
@@ -227,12 +233,14 @@ namespace SMBLibrary.Win32
 
         public NTStatus LockFile(object handle, long byteOffset, long length, bool exclusiveLock)
         {
-            return NTStatus.STATUS_NOT_SUPPORTED;
+            IO_STATUS_BLOCK ioStatusBlock;
+            return NtLockFile((IntPtr)handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, out ioStatusBlock, ref byteOffset, ref length, 0, true, exclusiveLock);
         }
 
         public NTStatus UnlockFile(object handle, long byteOffset, long length)
         {
-            return NTStatus.STATUS_NOT_SUPPORTED;
+            IO_STATUS_BLOCK ioStatusBlock;
+            return NtUnlockFile((IntPtr)handle, out ioStatusBlock, ref byteOffset, ref length, 0);
         }
 
         public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
