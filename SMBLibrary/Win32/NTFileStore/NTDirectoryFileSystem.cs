@@ -110,7 +110,6 @@ namespace SMBLibrary.Win32
 
         public NTDirectoryFileSystem(string path) : this(new DirectoryInfo(path))
         {
-
         }
 
         public NTDirectoryFileSystem(DirectoryInfo directory)
@@ -224,6 +223,16 @@ namespace SMBLibrary.Win32
         {
             IO_STATUS_BLOCK ioStatusBlock;
             return NtFlushBuffersFile((IntPtr)handle, out ioStatusBlock);
+        }
+
+        public NTStatus LockFile(object handle, long byteOffset, long length, bool exclusiveLock)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
+        public NTStatus UnlockFile(object handle, long byteOffset, long length)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
         }
 
         public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)

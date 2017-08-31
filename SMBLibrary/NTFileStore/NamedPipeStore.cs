@@ -99,6 +99,16 @@ namespace SMBLibrary
             return NTStatus.STATUS_SUCCESS;
         }
 
+        public NTStatus LockFile(object handle, long byteOffset, long length, bool exclusiveLock)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
+        public NTStatus UnlockFile(object handle, long byteOffset, long length)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
         {
             output = null;

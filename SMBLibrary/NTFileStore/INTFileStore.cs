@@ -28,6 +28,10 @@ namespace SMBLibrary
 
         NTStatus FlushFileBuffers(object handle);
 
+        NTStatus LockFile(object handle, long byteOffset, long length, bool exclusiveLock);
+
+        NTStatus UnlockFile(object handle, long byteOffset, long length);
+
         NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass);
 
         NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass);
