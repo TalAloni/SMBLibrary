@@ -22,7 +22,7 @@ namespace SMBLibrary
         public byte Flags;
         private byte EaNameLength;
         private ushort EaValueLength;
-        public string EaName; // 8-bit ASCII
+        public string EaName; // 8-bit ASCII followed by a single terminating null character byte
         public string EaValue; // 8-bit ASCII
 
         public FileFullEAEntry()
@@ -36,6 +36,7 @@ namespace SMBLibrary
             EaNameLength = ByteReader.ReadByte(buffer, ref offset);
             EaValueLength = LittleEndianReader.ReadUInt16(buffer, ref offset);
             EaName = ByteReader.ReadAnsiString(buffer, ref offset, EaNameLength);
+            offset++; // terminating null
             EaValue = ByteReader.ReadAnsiString(buffer, ref offset, EaValueLength);
         }
 
@@ -48,6 +49,7 @@ namespace SMBLibrary
             ByteWriter.WriteByte(buffer, ref offset, EaNameLength);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, EaValueLength);
             ByteWriter.WriteAnsiString(buffer, ref offset, EaName);
+            ByteWriter.WriteByte(buffer, ref offset, 0); // terminating null
             ByteWriter.WriteAnsiString(buffer, ref offset, EaValue);
         }
 
@@ -55,7 +57,7 @@ namespace SMBLibrary
         {
             get
             {
-                return FixedLength + EaName.Length + EaValue.Length;
+                return FixedLength + EaName.Length + 1 + EaValue.Length;
             }
         }
     }
