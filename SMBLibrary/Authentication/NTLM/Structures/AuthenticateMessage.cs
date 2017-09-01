@@ -59,13 +59,16 @@ namespace SMBLibrary.Authentication.NTLM
 
         public byte[] GetBytes()
         {
-            int fixedLength = 64;
+            if ((NegotiateFlags & NegotiateFlags.KeyExchange) == 0)
+            {
+                EncryptedRandomSessionKey = new byte[0];
+            }
 
+            int fixedLength = 64;
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 fixedLength += NTLMVersion.Length;
             }
-
             int payloadLength = LmChallengeResponse.Length + NtChallengeResponse.Length + DomainName.Length * 2 + UserName.Length * 2 + WorkStation.Length * 2 + EncryptedRandomSessionKey.Length;
             byte[] buffer = new byte[fixedLength + payloadLength];
             ByteWriter.WriteAnsiString(buffer, 0, ValidSignature, 8);
