@@ -46,6 +46,16 @@ namespace SMBLibrary.Authentication.NTLM
 
         public byte[] GetBytes()
         {
+            if ((NegotiateFlags & NegotiateFlags.DomainNameSupplied) == 0)
+            {
+                DomainName = String.Empty;
+            }
+
+            if ((NegotiateFlags & NegotiateFlags.WorkstationNameSupplied) == 0)
+            {
+                Workstation = String.Empty;
+            }
+
             int fixedLength = 32;
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
