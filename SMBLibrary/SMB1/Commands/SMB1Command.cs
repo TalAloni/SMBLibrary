@@ -142,7 +142,7 @@ namespace SMBLibrary.SMB1
                         }
                         else
                         {
-                            throw new InvalidRequestException();
+                            throw new InvalidDataException();
                         }
                     }
                 case CommandName.SMB_COM_LOGOFF_ANDX:

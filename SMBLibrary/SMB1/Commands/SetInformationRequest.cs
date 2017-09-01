@@ -6,7 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using Utilities;
 
 namespace SMBLibrary.SMB1
@@ -41,7 +41,7 @@ namespace SMBLibrary.SMB1
             BufferFormat = ByteReader.ReadByte(this.SMBData, 0);
             if (BufferFormat != SupportedBufferFormat)
             {
-                throw new InvalidRequestException("Unsupported Buffer Format");
+                throw new InvalidDataException("Unsupported Buffer Format");
             }
             FileName = SMB1Helper.ReadSMBString(this.SMBData, 1, isUnicode);
         }

@@ -6,7 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using SMBLibrary.SMB1;
 using Utilities;
 
@@ -52,7 +52,7 @@ namespace SMBLibrary.Server.SMB1
             ProcessStateObject processState = state.GetProcessState(header.PID);
             if (processState == null)
             {
-                throw new InvalidRequestException();
+                throw new InvalidDataException();
             }
             ByteWriter.WriteBytes(processState.TransactionParameters, (int)request.ParameterDisplacement, request.TransParameters);
             ByteWriter.WriteBytes(processState.TransactionData, (int)request.DataDisplacement, request.TransData);

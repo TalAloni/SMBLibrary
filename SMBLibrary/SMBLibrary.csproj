@@ -60,7 +60,6 @@
     <Compile Include="Enums\SMBTransportType.cs" />
     <Compile Include="Enums\Win32Error.cs" />
     <Compile Include="EnumStructures\AccessMask.cs" />
-    <Compile Include="Exceptions\InvalidRequestException.cs" />
     <Compile Include="Exceptions\UnsupportedInformationLevelException.cs" />
     <Compile Include="Helpers\FileTimeHelper.cs" />
     <Compile Include="NetBios\NameServicePackets\Enums\NameRecordType.cs" />

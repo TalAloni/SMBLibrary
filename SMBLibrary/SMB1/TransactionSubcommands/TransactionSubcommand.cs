@@ -6,7 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using Utilities;
 
 namespace SMBLibrary.SMB1
@@ -68,7 +68,7 @@ namespace SMBLibrary.SMB1
                         return new TransactionCallNamedPipeRequest(setup, data);
                 }
             }
-            throw new InvalidRequestException();
+            throw new InvalidDataException();
         }
     }
 }
