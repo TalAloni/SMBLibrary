@@ -75,7 +75,7 @@ namespace SMBLibrary.Authentication.NTLM
             int offset = fixedLength;
             AuthenticationMessageUtils.WriteBufferPointer(buffer, 16, (ushort)(DomainName.Length * 2), (uint)offset);
             ByteWriter.WriteUTF16String(buffer, ref offset, DomainName);
-            AuthenticationMessageUtils.WriteBufferPointer(buffer, 16, (ushort)(Workstation.Length * 2), (uint)offset);
+            AuthenticationMessageUtils.WriteBufferPointer(buffer, 24, (ushort)(Workstation.Length * 2), (uint)offset);
             ByteWriter.WriteUTF16String(buffer, ref offset, Workstation);
 
             return buffer;
