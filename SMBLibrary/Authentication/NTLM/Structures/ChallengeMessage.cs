@@ -22,7 +22,7 @@ namespace SMBLibrary.Authentication.NTLM
         public NegotiateFlags NegotiateFlags;
         public byte[] ServerChallenge; // 8 bytes
         // Reserved - 8 bytes
-        public byte[] TargetInfo; // sequence of AV_PAIR structures
+        public KeyValuePairList<AVPairKey, byte[]> TargetInfo = new KeyValuePairList<AVPairKey,byte[]>();
         public NTLMVersion Version;
 
         public ChallengeMessage()
@@ -39,7 +39,11 @@ namespace SMBLibrary.Authentication.NTLM
             NegotiateFlags = (NegotiateFlags)LittleEndianConverter.ToUInt32(buffer, 20);
             ServerChallenge = ByteReader.ReadBytes(buffer, 24, 8);
             // Reserved
-            TargetInfo = AuthenticationMessageUtils.ReadBufferPointer(buffer, 40);
+            byte[] targetInfoBytes = AuthenticationMessageUtils.ReadBufferPointer(buffer, 40);
+            if (targetInfoBytes.Length > 0)
+            {
+                TargetInfo = AVPairUtils.ReadAVPairSequence(targetInfoBytes, 0);
+            }
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 Version = new NTLMVersion(buffer, 48);
@@ -53,9 +57,10 @@ namespace SMBLibrary.Authentication.NTLM
                 TargetName = String.Empty;
             }
 
+            byte[] targetInfoBytes = AVPairUtils.GetAVPairSequenceBytes(TargetInfo);
             if ((NegotiateFlags & NegotiateFlags.TargetInfo) == 0)
             {
-                TargetInfo = new byte[0];
+                targetInfoBytes = new byte[0];
             }
 
             int fixedLength = 48;
@@ -63,7 +68,7 @@ namespace SMBLibrary.Authentication.NTLM
             {
                 fixedLength += 8;
             }
-            int payloadLength = TargetName.Length * 2 + TargetInfo.Length;
+            int payloadLength = TargetName.Length * 2 + targetInfoBytes.Length;
             byte[] buffer = new byte[fixedLength + payloadLength];
             ByteWriter.WriteAnsiString(buffer, 0, AuthenticateMessage.ValidSignature, 8);
             LittleEndianWriter.WriteUInt32(buffer, 8, (uint)MessageType);
@@ -77,8 +82,8 @@ namespace SMBLibrary.Authentication.NTLM
             int offset = fixedLength;
             AuthenticationMessageUtils.WriteBufferPointer(buffer, 12, (ushort)(TargetName.Length * 2), (uint)offset);
             ByteWriter.WriteUTF16String(buffer, ref offset, TargetName);
-            AuthenticationMessageUtils.WriteBufferPointer(buffer, 40, (ushort)TargetInfo.Length, (uint)offset);
-            ByteWriter.WriteBytes(buffer, ref offset, TargetInfo);
+            AuthenticationMessageUtils.WriteBufferPointer(buffer, 40, (ushort)targetInfoBytes.Length, (uint)offset);
+            ByteWriter.WriteBytes(buffer, ref offset, targetInfoBytes);
 
             return buffer;
         }

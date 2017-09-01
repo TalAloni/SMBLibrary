@@ -99,8 +99,7 @@ namespace SMBLibrary
             message.Version = new NTLMVersion(6, 0, 6000, NTLMVersion.NTLMSSP_REVISION_W2K3);
             message.NegotiateFlags = NegotiateFlags.UnicodeEncoding | NegotiateFlags.OEMEncoding | NegotiateFlags.TargetNameSupplied | NegotiateFlags.Sign | NegotiateFlags.Seal | NegotiateFlags.NTLMSessionSecurity | NegotiateFlags.AlwaysSign | NegotiateFlags.TargetTypeServer | NegotiateFlags.ExtendedSessionSecurity | NegotiateFlags.TargetInfo | NegotiateFlags.Version | NegotiateFlags.Use128BitEncryption | NegotiateFlags.KeyExchange | NegotiateFlags.Use56BitEncryption;
             message.TargetName = "Server";
-            byte[] serverAVPair = AVPairUtils.GetAVPairSequence("Domain", "Server");
-            message.TargetInfo = serverAVPair;
+            message.TargetInfo = AVPairUtils.GetAVPairSequence("Domain", "Server");
 
             byte[] messageBytes = message.GetBytes();
             bool success = ByteUtils.AreByteArraysEqual(expected, messageBytes);
@@ -130,7 +129,6 @@ namespace SMBLibrary
             byte[] sessionKey = {0xc5, 0xda, 0xd2, 0x54, 0x4f, 0xc9, 0x79, 0x90, 0x94, 0xce, 0x1c, 0xe9, 0x0b, 0xc9, 0xd0, 0x3e};
             byte[] serverChallenge = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
             byte[] clientChallenge = new byte[] { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa };
-            byte[] serverAVPair = AVPairUtils.GetAVPairSequence("Domain", "Server");
             DateTime time = DateTime.FromFileTimeUtc(0); // same as new byte[8]
             NTLMv2ClientChallenge clientChallengeStructure = new NTLMv2ClientChallenge(time, clientChallenge, "Domain", "Server");
             byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();

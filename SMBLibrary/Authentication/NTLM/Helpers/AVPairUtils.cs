@@ -13,36 +13,44 @@ namespace SMBLibrary.Authentication.NTLM
 {
     public class AVPairUtils
     {
-        public static byte[] GetAVPairSequence(string domainName, string computerName)
+        public static KeyValuePairList<AVPairKey, byte[]> GetAVPairSequence(string domainName, string computerName)
         {
             KeyValuePairList<AVPairKey, byte[]> pairs = new KeyValuePairList<AVPairKey, byte[]>();
             pairs.Add(AVPairKey.NbDomainName, UnicodeEncoding.Unicode.GetBytes(domainName));
             pairs.Add(AVPairKey.NbComputerName, UnicodeEncoding.Unicode.GetBytes(computerName));
-            return AVPairUtils.GetAVPairSequenceBytes(pairs);
+            return pairs;
         }
 
         public static byte[] GetAVPairSequenceBytes(KeyValuePairList<AVPairKey, byte[]> pairs)
         {
-            int length = 0;
+            int length = GetAVPairSequenceLength(pairs);
+            byte[] result = new byte[length];
+            int offset = 0;
+            WriteAVPairSequence(result, ref offset, pairs);
+            return result;
+        }
+
+		public static int GetAVPairSequenceLength(KeyValuePairList<AVPairKey, byte[]> pairs)
+		{
+			int length = 0;
             foreach (KeyValuePair<AVPairKey, byte[]> pair in pairs)
             {
                 length += 4 + pair.Value.Length;
             }
-            length += 4;
+			return length + 4;
+		}
 
-            byte[] result = new byte[length];
-            int offset = 0;
-            foreach (KeyValuePair<AVPairKey, byte[]> pair in pairs)
+		public static void WriteAVPairSequence(byte[] buffer, ref int offset, KeyValuePairList<AVPairKey, byte[]> pairs)
+		{
+			foreach (KeyValuePair<AVPairKey, byte[]> pair in pairs)
             {
-                WriteAVPair(result, ref offset, pair.Key, pair.Value);
+                WriteAVPair(buffer, ref offset, pair.Key, pair.Value);
             }
-            LittleEndianWriter.WriteUInt16(result, ref offset, (ushort)AVPairKey.EOL);
-            LittleEndianWriter.WriteUInt16(result, ref offset, 0);
+            LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)AVPairKey.EOL);
+            LittleEndianWriter.WriteUInt16(buffer, ref offset, 0);
+		}
 
-            return result;
-        }
-
-        public static void WriteAVPair(byte[] buffer, ref int offset, AVPairKey key, byte[] value)
+        private static void WriteAVPair(byte[] buffer, ref int offset, AVPairKey key, byte[] value)
         {
             LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)key);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)value.Length);
@@ -63,7 +71,7 @@ namespace SMBLibrary.Authentication.NTLM
             return result;
         }
 
-        public static KeyValuePair<AVPairKey, byte[]> ReadAVPair(byte[] buffer, ref int offset)
+        private static KeyValuePair<AVPairKey, byte[]> ReadAVPair(byte[] buffer, ref int offset)
         {
             AVPairKey key = (AVPairKey)LittleEndianReader.ReadUInt16(buffer, ref offset);
             ushort length = LittleEndianReader.ReadUInt16(buffer, ref offset);
