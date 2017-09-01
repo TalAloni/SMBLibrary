@@ -264,9 +264,11 @@ namespace SMBLibrary.Win32
                 {
                     return status;
                 }
-                restartScan = false;
+                int numberOfBytesWritten = (int)ioStatusBlock.Information;
+                buffer = ByteReader.ReadBytes(buffer, 0, numberOfBytesWritten);
                 List<QueryDirectoryFileInformation> page = QueryDirectoryFileInformation.ReadFileInformationList(buffer, 0, informationClass);
                 result.AddRange(page);
+                restartScan = false;
             }
             fileNameStructure.Dispose();
             return NTStatus.STATUS_SUCCESS;
@@ -353,6 +355,8 @@ namespace SMBLibrary.Win32
             CloseFile(volumeHandle);
             if (status == NTStatus.STATUS_SUCCESS)
             {
+                int numberOfBytesWritten = (int)ioStatusBlock.Information;
+                buffer = ByteReader.ReadBytes(buffer, 0, numberOfBytesWritten);
                 result = FileSystemInformation.GetFileSystemInformation(buffer, 0, informationClass);
             }
             return status;
