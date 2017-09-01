@@ -19,7 +19,7 @@ namespace SMBLibrary
         public const int FixedLength = 8;
 
         public uint NextEntryOffset;
-        public byte Flags;
+        public ExtendedAttributeFlags Flags;
         private byte EaNameLength;
         private ushort EaValueLength;
         public string EaName; // 8-bit ASCII followed by a single terminating null character byte
@@ -32,7 +32,7 @@ namespace SMBLibrary
         public FileFullEAEntry(byte[] buffer, int offset)
         {
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
-            Flags = ByteReader.ReadByte(buffer, ref offset);
+            Flags = (ExtendedAttributeFlags)ByteReader.ReadByte(buffer, ref offset);
             EaNameLength = ByteReader.ReadByte(buffer, ref offset);
             EaValueLength = LittleEndianReader.ReadUInt16(buffer, ref offset);
             EaName = ByteReader.ReadAnsiString(buffer, ref offset, EaNameLength);
@@ -45,7 +45,7 @@ namespace SMBLibrary
             EaNameLength = (byte)EaName.Length;
             EaValueLength = (ushort)EaValue.Length;
             LittleEndianWriter.WriteUInt32(buffer, ref offset, NextEntryOffset);
-            ByteWriter.WriteByte(buffer, ref offset, Flags);
+            ByteWriter.WriteByte(buffer, ref offset, (byte)Flags);
             ByteWriter.WriteByte(buffer, ref offset, EaNameLength);
             LittleEndianWriter.WriteUInt16(buffer, ref offset, EaValueLength);
             ByteWriter.WriteAnsiString(buffer, ref offset, EaName);

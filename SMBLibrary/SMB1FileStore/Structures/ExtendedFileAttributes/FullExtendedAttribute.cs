@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class FullExtendedAttribute
     {
-        public ExtendedAttributeFlag ExtendedAttributeFlag;
+        public ExtendedAttributeFlags ExtendedAttributeFlag;
         private byte AttributeNameLengthInBytes;
         private ushort AttributeValueLengthInBytes;
         public string AttributeName; // ANSI, AttributeNameLengthInBytes + 1 byte null termination
@@ -28,7 +28,7 @@ namespace SMBLibrary.SMB1
 
         public FullExtendedAttribute(byte[] buffer, int offset)
         {
-            ExtendedAttributeFlag = (ExtendedAttributeFlag)ByteReader.ReadByte(buffer, offset);
+            ExtendedAttributeFlag = (ExtendedAttributeFlags)ByteReader.ReadByte(buffer, offset);
             AttributeNameLengthInBytes = ByteReader.ReadByte(buffer, offset + 1);
             AttributeValueLengthInBytes = LittleEndianConverter.ToUInt16(buffer, offset + 2);
             AttributeName = ByteReader.ReadAnsiString(buffer, offset + 4, AttributeNameLengthInBytes);

@@ -94,6 +94,7 @@
     <Compile Include="NTFileStore\Adapter\NTFileSystemAdapter.QueryFileSystem.cs" />
     <Compile Include="NTFileStore\Adapter\NTFileSystemAdapter.Set.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\CompressionFormat.cs" />
+    <Compile Include="NTFileStore\Enums\FileInformation\ExtendedAttributeFlags.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\FileAttributes.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\FileInformationClass.cs" />
     <Compile Include="NTFileStore\Enums\FileSystemInformation\DeviceCharacteristics.cs" />
@@ -458,7 +459,6 @@
     <Compile Include="SMB1FileStore\Enums\QueryFSInformationLevel.cs" />
     <Compile Include="SMB1FileStore\Enums\QueryInformationLevel.cs" />
     <Compile Include="SMB1FileStore\Enums\SetInformationLevel.cs" />
-    <Compile Include="SMB1FileStore\Structures\ExtendedFileAttributes\Enums\ExtendedAttributeFlag.cs" />
     <Compile Include="SMB1FileStore\Structures\ExtendedFileAttributes\ExtendedAttributeName.cs" />
     <Compile Include="SMB1FileStore\Structures\ExtendedFileAttributes\ExtendedAttributeNameList.cs" />
     <Compile Include="SMB1FileStore\Structures\ExtendedFileAttributes\FullExtendedAttribute.cs" />
