@@ -48,12 +48,21 @@ namespace SMBLibrary.Authentication.NTLM
 
         public byte[] GetBytes()
         {
+            if ((NegotiateFlags & NegotiateFlags.TargetNameSupplied) == 0)
+            {
+                TargetName = String.Empty;
+            }
+
+            if ((NegotiateFlags & NegotiateFlags.TargetInfo) == 0)
+            {
+                TargetInfo = new byte[0];
+            }
+
             int fixedLength = 48;
             if ((NegotiateFlags & NegotiateFlags.Version) > 0)
             {
                 fixedLength += 8;
             }
-
             int payloadLength = TargetName.Length * 2 + TargetInfo.Length;
             byte[] buffer = new byte[fixedLength + payloadLength];
             ByteWriter.WriteAnsiString(buffer, 0, AuthenticateMessage.ValidSignature, 8);
