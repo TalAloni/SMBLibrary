@@ -25,12 +25,14 @@ namespace SMBLibrary.SMB1
         private ushort SecurityBlobLength;
         // Data:
         public byte[] SecurityBlob;
-        public string NativeOS = String.Empty;     // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
-        public string NativeLanMan = String.Empty; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeOS;     // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeLanMan; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
 
         public SessionSetupAndXResponseExtended() : base()
         {
             SecurityBlob = new byte[0];
+            NativeOS = String.Empty;
+            NativeLanMan = String.Empty;
         }
 
         public SessionSetupAndXResponseExtended(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)

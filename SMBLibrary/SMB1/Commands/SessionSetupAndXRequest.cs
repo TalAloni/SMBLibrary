@@ -37,6 +37,10 @@ namespace SMBLibrary.SMB1
 
         public SessionSetupAndXRequest(): base()
         {
+            AccountName = String.Empty;
+            PrimaryDomain = String.Empty;
+            NativeOS = String.Empty;
+            NativeLanMan = String.Empty;
         }
 
         public SessionSetupAndXRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
@@ -69,6 +73,8 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
+            Capabilities &= ~ServerCapabilities.ExtendedSecurity;
+
             OEMPasswordLength = (ushort)OEMPassword.Length;
             UnicodePasswordLength = (ushort)UnicodePassword.Length;
             

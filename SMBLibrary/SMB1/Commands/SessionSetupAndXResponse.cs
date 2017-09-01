@@ -23,12 +23,15 @@ namespace SMBLibrary.SMB1
         //ushort AndXOffset;
         public SessionSetupAction Action;
         // Data:
-        public string NativeOS = String.Empty;      // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
-        public string NativeLanMan = String.Empty;  // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
-        public string PrimaryDomain = String.Empty; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeOS;      // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeLanMan;  // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string PrimaryDomain; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
 
         public SessionSetupAndXResponse() : base()
         {
+            NativeOS = String.Empty;
+            NativeLanMan = String.Empty;
+            PrimaryDomain = String.Empty;
         }
 
         public SessionSetupAndXResponse(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)

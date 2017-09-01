@@ -27,11 +27,13 @@ namespace SMBLibrary.SMB1
         public ServerCapabilities Capabilities;
         // Data:
         public byte[] SecurityBlob;
-        public string NativeOS = String.Empty;     // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
-        public string NativeLanMan = String.Empty; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeOS;     // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeLanMan; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
 
         public SessionSetupAndXRequestExtended(): base()
         {
+            NativeOS = String.Empty;
+            NativeLanMan = String.Empty;
         }
 
         public SessionSetupAndXRequestExtended(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
@@ -60,6 +62,7 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
+            Capabilities |= ServerCapabilities.ExtendedSecurity;
             SecurityBlobLength = (ushort)SecurityBlob.Length;
 
             this.SMBParameters = new byte[ParametersLength];
