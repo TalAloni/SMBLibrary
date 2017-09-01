@@ -24,13 +24,14 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
-            state.LogToServer(Severity.Information, "Close: Closing '{0}{1}'", share.Name, openFile.Path);
             header.Status = share.FileStore.CloseFile(openFile.Handle);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
+                state.LogToServer(Severity.Information, "Close: Closing '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
                 return new ErrorResponse(request.CommandName);
             }
 
+            state.LogToServer(Severity.Information, "Close: Closed '{0}{1}'.", share.Name, openFile.Path);
             session.RemoveOpenFile(request.FID);
             return new CloseResponse();
         }
