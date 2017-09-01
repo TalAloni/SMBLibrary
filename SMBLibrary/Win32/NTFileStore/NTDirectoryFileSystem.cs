@@ -105,6 +105,9 @@ namespace SMBLibrary.Win32
         private static extern NTStatus NtNotifyChangeDirectoryFile(IntPtr handle, IntPtr evt, IntPtr apcRoutine, IntPtr apcContext, out IO_STATUS_BLOCK ioStatusBlock, byte[] buffer, uint bufferSize, NotifyChangeFilter completionFilter, bool watchTree);
 
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
+        private static extern NTStatus NtFsControlFile(IntPtr handle, IntPtr evt, IntPtr apcRoutine, IntPtr apcContext, out IO_STATUS_BLOCK ioStatusBlock, uint ioControlCode, byte[] inputBuffer, uint inputBufferLength, byte[] outputBuffer, uint outputBufferLength);
+
+        [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
         private static extern NTStatus NtAlertThread(IntPtr threadHandle);
 
         // Available starting from Windows Vista.
@@ -447,8 +450,43 @@ namespace SMBLibrary.Win32
 
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
         {
-            output = null;
-            return NTStatus.STATUS_NOT_SUPPORTED;
+            switch ((IoControlCode)ctlCode)
+            {
+                case IoControlCode.FSCTL_IS_PATHNAME_VALID:
+                case IoControlCode.FSCTL_GET_COMPRESSION:
+                case IoControlCode.FSCTL_GET_RETRIEVAL_POINTERS:
+                case IoControlCode.FSCTL_SET_OBJECT_ID:
+                case IoControlCode.FSCTL_GET_OBJECT_ID:
+                case IoControlCode.FSCTL_DELETE_OBJECT_ID:
+                case IoControlCode.FSCTL_SET_OBJECT_ID_EXTENDED:
+                case IoControlCode.FSCTL_CREATE_OR_GET_OBJECT_ID:
+                case IoControlCode.FSCTL_SET_SPARSE:
+                case IoControlCode.FSCTL_READ_FILE_USN_DATA:
+                case IoControlCode.FSCTL_SET_DEFECT_MANAGEMENT:
+                case IoControlCode.FSCTL_SET_COMPRESSION:
+                case IoControlCode.FSCTL_QUERY_SPARING_INFO:
+                case IoControlCode.FSCTL_QUERY_ON_DISK_VOLUME_INFO:
+                case IoControlCode.FSCTL_SET_ZERO_ON_DEALLOCATION:
+                case IoControlCode.FSCTL_QUERY_FILE_REGIONS:
+                case IoControlCode.FSCTL_QUERY_ALLOCATED_RANGES:
+                case IoControlCode.FSCTL_SET_ZERO_DATA:
+                    {
+                        IO_STATUS_BLOCK ioStatusBlock;
+                        output = new byte[maxOutputLength];
+                        NTStatus status = NtFsControlFile((IntPtr)handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, out ioStatusBlock, ctlCode, input, (uint)input.Length, output, (uint)maxOutputLength);
+                        if (status == NTStatus.STATUS_SUCCESS)
+                        {
+                            int numberOfBytesWritten = (int)ioStatusBlock.Information;
+                            output = ByteReader.ReadBytes(output, 0, numberOfBytesWritten);
+                        }
+                        return status;
+                    }
+                default:
+                    {
+                        output = null;
+                        return NTStatus.STATUS_NOT_SUPPORTED;
+                    }
+            }
         }
     }
 }
