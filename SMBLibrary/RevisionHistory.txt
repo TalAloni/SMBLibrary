@@ -206,3 +206,22 @@ Revision History:
         Bugfix: Check share-level write access on the new file name before sending FileRenameInformation to the object store.
         Minor logging improvements.
         Minor code refactoring.
+
+1.2.5 - IOCtlHelper: Improved compliance with the specifications.
+        Added FSCTL_PIPE_WAIT Request implementation.
+        Pass TRANS_WAIT_NMPIPE requests to the underlying object store.
+        Corrected StringComparison type.
+        NamedPipeStore: Added support for FSCTL_PIPE_WAIT.
+        IOControlCode: Added additional values.
+        NTStatus: Added STATUS_PRIVILEGE_NOT_HELD.
+        SMBServer: SMB1: Fixed unhandled NullReferenceException when an Invalid FID was specified for a Read / ReadAndX request.
+        SMB2: Improved LockRequest implementation.
+        SMB2: LockElement: Added SharedLock / ExclusiveLock / Unlock / FailImmediately properties.
+        INTFileStore: Added LockFile and UnlockFile methods.
+        SMB2: LockElement: Fixed a bug in ReadLockList / WriteLockList.
+        Pass lock / unlock requests to the underlying object store.
+        NTDirectoryFileSystem: Pass-through LockFile / UnlockFile requests.
+        Corrected FileStreamInformation implementation.
+        Corrected FileFullEaInformation implementation.
+        SMBServer: SMB1: Added support for SMB_FIND_FILE_ID_FULL_DIRECTORY_INFO and SMB_FIND_FILE_ID_BOTH_DIRECTORY_INFO.
+        Logging improvements.
