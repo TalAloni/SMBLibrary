@@ -11,6 +11,9 @@ using Utilities;
 
 namespace SMBLibrary.SMB1
 {
+    /// <summary>
+    /// SMB_COM_SESSION_SETUP_ANDX Response
+    /// </summary>
     public class SessionSetupAndXResponse : SMBAndXCommand
     {
         public const int ParametersLength = 6;
@@ -20,9 +23,9 @@ namespace SMBLibrary.SMB1
         //ushort AndXOffset;
         public SessionSetupAction Action;
         // Data:
-        public string NativeOS;      // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
-        public string NativeLanMan;  // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
-        public string PrimaryDomain; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeOS = String.Empty;      // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string NativeLanMan = String.Empty;  // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
+        public string PrimaryDomain = String.Empty; // SMB_STRING (this field WILL be aligned to start on a 2-byte boundary from the start of the SMB header)
 
         public SessionSetupAndXResponse() : base()
         {
@@ -62,7 +65,7 @@ namespace SMBLibrary.SMB1
             {
                 this.SMBData = new byte[NativeOS.Length + NativeLanMan.Length + PrimaryDomain.Length + 3];
             }
-            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode,  NativeOS);
+            SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeOS);
             SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, NativeLanMan);
             SMB1Helper.WriteSMBString(this.SMBData, ref offset, isUnicode, PrimaryDomain);
 

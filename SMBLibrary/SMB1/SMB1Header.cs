@@ -114,6 +114,17 @@ namespace SMBLibrary.SMB1
             {
                 return (Flags2 & HeaderFlags2.Unicode) > 0;
             }
+            set
+            {
+                if (value)
+                {
+                    this.Flags2 |= HeaderFlags2.Unicode;
+                }
+                else
+                {
+                    this.Flags2 &= ~HeaderFlags2.Unicode;
+                }
+            }
         }
 
         public static bool IsValidSMB1Header(byte[] buffer)
