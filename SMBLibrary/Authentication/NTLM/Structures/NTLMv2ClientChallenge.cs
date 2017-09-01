@@ -44,6 +44,15 @@ namespace SMBLibrary.Authentication.NTLM
             AVPairs.Add(AVPairKey.NbComputerName, UnicodeEncoding.Unicode.GetBytes(computerName));
         }
 
+        public NTLMv2ClientChallenge(DateTime timeStamp, byte[] clientChallenge, KeyValuePairList<AVPairKey, byte[]> targetInfo)
+        {
+            CurrentVersion = StructureVersion;
+            MaximumSupportedVersion = StructureVersion;
+            TimeStamp = timeStamp;
+            ClientChallenge = clientChallenge;
+            AVPairs = targetInfo;
+        }
+
         public NTLMv2ClientChallenge(byte[] buffer) : this(buffer, 0)
         {
         }
