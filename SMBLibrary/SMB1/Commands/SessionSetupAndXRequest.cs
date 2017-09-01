@@ -58,7 +58,7 @@ namespace SMBLibrary.SMB1
             {
                 // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
                 // Note: SMBData starts at an odd offset.
-                int padding = (OEMPasswordLength + UnicodePasswordLength + 1) % 2;
+                int padding = (1 + OEMPasswordLength + UnicodePasswordLength) % 2;
                 dataOffset += padding;
             }
             AccountName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
@@ -86,7 +86,7 @@ namespace SMBLibrary.SMB1
             {
                 // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
                 // Note: SMBData starts at an odd offset.
-                padding = (OEMPasswordLength + UnicodePasswordLength + 1) % 2;
+                padding = (1 + OEMPasswordLength + UnicodePasswordLength) % 2;
                 this.SMBData = new byte[OEMPassword.Length + UnicodePassword.Length + padding + (AccountName.Length + 1) * 2 + (PrimaryDomain.Length + 1) * 2 + (NativeOS.Length + 1) * 2 + (NativeLanMan.Length + 1) * 2];
             }
             else

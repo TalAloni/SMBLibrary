@@ -31,11 +31,10 @@ namespace SMBLibrary.SMB1
         private byte ChallengeLength; // MUST be set to 0
         // Data:
         public Guid ServerGuid;
-        public byte[] SecurityBlob;
+        public byte[] SecurityBlob;   // [MS-SMB] 3.3.5.2: The server can leave SecurityBlob empty if not configured to send GSS token.
 
         public NegotiateResponseExtended() : base()
         {
-            // [MS-SMB] 3.3.5.2: The server can leave SecurityBlob empty if not configured to send GSS token.
             SecurityBlob = new byte[0];
         }
 
