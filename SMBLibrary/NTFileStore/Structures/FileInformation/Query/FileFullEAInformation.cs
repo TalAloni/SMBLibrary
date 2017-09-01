@@ -32,6 +32,14 @@ namespace SMBLibrary
             WriteList(buffer, offset, m_entries);
         }
 
+        public List<FileFullEAEntry> Entries
+        {
+            get
+            {
+                return m_entries;
+            }
+        }
+
         public override FileInformationClass FileInformationClass
         {
             get
