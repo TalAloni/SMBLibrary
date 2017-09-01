@@ -69,6 +69,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 10, SessionKey);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 14, SecurityBlobLength);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 16, Reserved);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, 20, (uint)Capabilities);
 
             int padding = 0;
             if (isUnicode)
@@ -76,7 +77,7 @@ namespace SMBLibrary.SMB1
                 // A Unicode string MUST be aligned to a 16-bit boundary with respect to the beginning of the SMB Header.
                 // Note: SMBData starts at an odd offset.
                 padding = (SecurityBlobLength + 1) % 2;
-                this.SMBData = new byte[SecurityBlob.Length + (NativeOS.Length + 1) * 2 + (NativeLanMan.Length  + 1) * 2];
+                this.SMBData = new byte[SecurityBlob.Length + padding + (NativeOS.Length + 1) * 2 + (NativeLanMan.Length  + 1) * 2];
             }
             else
             {
