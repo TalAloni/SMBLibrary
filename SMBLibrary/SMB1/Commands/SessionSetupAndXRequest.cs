@@ -80,6 +80,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 14, OEMPasswordLength);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 16, UnicodePasswordLength);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 18, Reserved);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, 22, (uint)Capabilities);
 
             int padding = 0;
             if (isUnicode)
