@@ -149,7 +149,7 @@ namespace SMBLibrary.Server
                 }
                 else if (command is LogoffAndXRequest)
                 {
-                    state.LogToServer(Severity.Information, "Logoff: User '{0}' logged off.", session.UserName);
+                    state.LogToServer(Severity.Information, "Logoff: User '{0}' logged off. (UID: {1})", session.UserName, header.UID);
                     m_securityProvider.DeleteSecurityContext(ref session.SecurityContext.AuthenticationContext);
                     state.RemoveSession(header.UID);
                     return new LogoffAndXResponse();
@@ -159,6 +159,7 @@ namespace SMBLibrary.Server
                     ISMBShare share = session.GetConnectedTree(header.TID);
                     if (share == null)
                     {
+                        state.LogToServer(Severity.Verbose, "{0} failed. Invalid TID (UID: {1}, TID: {2}).", command.CommandName, header.UID, header.TID);
                         header.Status = NTStatus.STATUS_SMB_BAD_TID;
                         return new ErrorResponse(command.CommandName);
                     }

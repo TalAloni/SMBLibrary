@@ -108,7 +108,7 @@ namespace SMBLibrary.Server
                 }
                 else if (command is LogoffRequest)
                 {
-                    state.LogToServer(Severity.Information, "Logoff: User '{0}' logged off.", session.UserName);
+                    state.LogToServer(Severity.Information, "Logoff: User '{0}' logged off. (SessionID: {1})", session.UserName, command.Header.SessionID);
                     m_securityProvider.DeleteSecurityContext(ref session.SecurityContext.AuthenticationContext);
                     state.RemoveSession(command.Header.SessionID);
                     return new LogoffResponse();
@@ -126,6 +126,7 @@ namespace SMBLibrary.Server
                     ISMBShare share = session.GetConnectedTree(command.Header.TreeID);
                     if (share == null)
                     {
+                        state.LogToServer(Severity.Verbose, "{0} failed. Invalid TreeID (SessionID: {1}, TreeID: {2}).", command.CommandName, command.Header.SessionID, command.Header.TreeID);
                         return new ErrorResponse(command.CommandName, NTStatus.STATUS_NETWORK_NAME_DELETED);
                     }
 

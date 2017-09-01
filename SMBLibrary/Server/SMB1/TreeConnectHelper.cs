@@ -53,7 +53,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_INSUFF_SERVER_RESOURCES;
                 return new ErrorResponse(request.CommandName);
             }
-            state.LogToServer(Severity.Information, "Tree Connect: User '{0}' connected to '{1}'", session.UserName, share.Name);
+            state.LogToServer(Severity.Information, "Tree Connect: User '{0}' connected to '{1}' (UID: {2}, TID: {3})", session.UserName, share.Name, header.UID, treeID.Value);
             header.TID = treeID.Value;
             if (isExtended)
             {
@@ -111,7 +111,7 @@ namespace SMBLibrary.Server.SMB1
         {
             SMB1Session session = state.GetSession(header.UID);
             session.DisconnectTree(header.TID);
-            state.LogToServer(Severity.Information, "Tree Disconnect: User '{0}' disconnected from '{1}'", session.UserName, share.Name);
+            state.LogToServer(Severity.Information, "Tree Disconnect: User '{0}' disconnected from '{1}' (UID: {2}, TID: {3})", session.UserName, share.Name, header.UID, header.TID);
             return new TreeDisconnectResponse();
         }
     }

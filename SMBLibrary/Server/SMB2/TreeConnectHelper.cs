@@ -50,7 +50,7 @@ namespace SMBLibrary.Server.SMB2
             {
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_INSUFF_SERVER_RESOURCES);
             }
-            state.LogToServer(Severity.Information, "Tree Connect: User '{0}' connected to '{1}'", session.UserName, share.Name);
+            state.LogToServer(Severity.Information, "Tree Connect: User '{0}' connected to '{1}' (SessionID: {2}, TreeID: {3})", session.UserName, share.Name, request.Header.SessionID, treeID.Value);
             response.Header.TreeID = treeID.Value;
             response.ShareType = shareType;
             response.ShareFlags = shareFlags;
@@ -81,7 +81,7 @@ namespace SMBLibrary.Server.SMB2
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
             session.DisconnectTree(request.Header.TreeID);
-            state.LogToServer(Severity.Information, "Tree Disconnect: User '{0}' disconnected from '{1}'", session.UserName, share.Name);
+            state.LogToServer(Severity.Information, "Tree Disconnect: User '{0}' disconnected from '{1}' (SessionID: {2}, TreeID: {3})", session.UserName, share.Name, request.Header.SessionID, request.Header.TreeID);
             return new TreeDisconnectResponse();
         }
     }
