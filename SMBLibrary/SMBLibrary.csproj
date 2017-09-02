@@ -55,6 +55,8 @@
     <Compile Include="Authentication\NTLM\Structures\NTLMv2ClientChallenge.cs" />
     <Compile Include="Authentication\NTLM\Structures\NTLMVersion.cs" />
     <Compile Include="Client\ConnectionState.cs" />
+    <Compile Include="Client\Enums\AuthenticationMethod.cs" />
+    <Compile Include="Client\NTLMAuthenticationHelper.cs" />
     <Compile Include="Client\SMB1Client.cs" />
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />

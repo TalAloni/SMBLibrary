@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.NetBios;
 using SMBLibrary.SMB1;
 using Utilities;
@@ -21,15 +22,24 @@ namespace SMBLibrary.Client
         public const int NetBiosOverTCPPort = 139;
         public const int DirectTCPPort = 445;
         public const string NTLanManagerDialect = "NT LM 0.12";
+        
+        public const int MaxBufferSize = 65535; // Valid range: 512 - 65535
+        public const int MaxMpxCount = 1;
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
         private Socket m_clientSocket;
         private IAsyncResult m_currentAsyncResult;
+        private bool m_forceExtendedSecurity;
 
         private object m_incomingQueueLock = new object();
         private List<SMB1Message> m_incomingQueue = new List<SMB1Message>();
         private EventWaitHandle m_incomingQueueEventHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+
+        private ushort m_userID;
+        private byte[] m_serverChallenge;
+        private byte[] m_securityBlob;
+        private byte[] m_sessionKey;
 
         public SMB1Client()
         {
@@ -37,9 +47,15 @@ namespace SMBLibrary.Client
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
         {
+            return Connect(serverAddress, transport, true);
+        }
+
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
+        {
             m_transport = transport;
             if (!m_isConnected)
             {
+                m_forceExtendedSecurity = forceExtendedSecurity;
                 m_clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 int port;
                 if (transport == SMBTransportType.DirectTCPTransport)
@@ -62,7 +78,7 @@ namespace SMBLibrary.Client
                 ConnectionState state = new ConnectionState();
                 NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
                 m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnServerSocketReceive), state);
-                bool supportsCIFS = NegotiateNTLanManagerDialect();
+                bool supportsCIFS = NegotiateNTLanManagerDialect(m_forceExtendedSecurity);
                 if (!supportsCIFS)
                 {
                     m_clientSocket.Close();
@@ -75,6 +91,91 @@ namespace SMBLibrary.Client
             return m_isConnected;
         }
 
+        public bool Login(string domainName, string userName, string password)
+        {
+            return Login(domainName, userName, password, AuthenticationMethod.NTLMv2);
+        }
+
+        public bool Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
+        {
+            if (!m_isConnected)
+            {
+                return false;
+            }
+
+            if (m_serverChallenge != null)
+            {
+                SessionSetupAndXRequest request = new SessionSetupAndXRequest();
+                request.MaxBufferSize = MaxBufferSize;
+                request.MaxMpxCount = MaxMpxCount;
+                request.Capabilities = ServerCapabilities.Unicode | ServerCapabilities.NTStatusCode;
+                request.AccountName = userName;
+                request.PrimaryDomain = domainName;
+                byte[] clientChallenge = new byte[8];
+                new Random().NextBytes(clientChallenge);
+                if (authenticationMethod == AuthenticationMethod.NTLMv1)
+                {
+                    request.OEMPassword = NTLMCryptography.ComputeLMv1Response(m_serverChallenge, password);
+                    request.UnicodePassword = NTLMCryptography.ComputeNTLMv1Response(m_serverChallenge, password);
+                }
+                else if (authenticationMethod == AuthenticationMethod.NTLMv1ExtendedSessionSecurity)
+                {
+                    // [MS-CIFS] CIFS does not support Extended Session Security because there is no mechanism in CIFS to negotiate Extended Session Security
+                    throw new ArgumentException("SMB Extended Security must be negotiated in order for NTLMv1 Extended Session Security to be used");
+                }
+                else // NTLMv2
+                {
+                    // Note: NTLMv2 over non-extended security session setup is not supported under Windows Vista and later which will return STATUS_INVALID_PARAMETER.
+                    // https://msdn.microsoft.com/en-us/library/ee441701.aspx
+                    // https://msdn.microsoft.com/en-us/library/cc236700.aspx
+                    request.OEMPassword = NTLMCryptography.ComputeLMv2Response(m_serverChallenge, clientChallenge, password, userName, domainName);
+                    NTLMv2ClientChallenge clientChallengeStructure = new NTLMv2ClientChallenge(DateTime.UtcNow, clientChallenge, AVPairUtils.GetAVPairSequence(domainName, Environment.MachineName));
+                    byte[] temp = clientChallengeStructure.GetBytesPadded();
+                    byte[] proofStr = NTLMCryptography.ComputeNTLMv2Proof(m_serverChallenge, temp, password, userName, domainName);
+                    request.UnicodePassword = ByteUtils.Concatenate(proofStr, temp);
+                }
+                
+                TrySendMessage(m_clientSocket, request);
+
+                SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                if (reply != null && reply.Header.Status == NTStatus.STATUS_SUCCESS)
+                {
+                    return true;
+                }
+                return false;
+            }
+            else if (m_securityBlob != null)
+            {
+                SessionSetupAndXRequestExtended request = new SessionSetupAndXRequestExtended();
+                request.MaxBufferSize = MaxBufferSize;
+                request.MaxMpxCount = MaxMpxCount;
+                request.Capabilities = ServerCapabilities.Unicode | ServerCapabilities.NTStatusCode;
+                request.SecurityBlob = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
+                TrySendMessage(m_clientSocket, request);
+                
+                SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                if (reply != null && reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
+                {
+                    SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
+                    m_userID = reply.Header.UID;
+                    request = new SessionSetupAndXRequestExtended();
+                    request.MaxBufferSize = MaxBufferSize;
+                    request.MaxMpxCount = MaxMpxCount;
+                    request.Capabilities = ServerCapabilities.Unicode | ServerCapabilities.NTStatusCode | ServerCapabilities.ExtendedSecurity;
+
+                    request.SecurityBlob = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
+                    TrySendMessage(m_clientSocket, request);
+
+                    reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
+                    if (reply != null && reply.Header.Status == NTStatus.STATUS_SUCCESS)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         public void Disconnect()
         {
             if (m_isConnected)
@@ -84,7 +185,7 @@ namespace SMBLibrary.Client
             }
         }
 
-        private bool NegotiateNTLanManagerDialect()
+        private bool NegotiateNTLanManagerDialect(bool forceExtendedSecurity)
         {
             if (m_transport == SMBTransportType.NetBiosOverTCP)
             {
@@ -95,6 +196,7 @@ namespace SMBLibrary.Client
             }
             NegotiateRequest request = new NegotiateRequest();
             request.Dialects.Add(NTLanManagerDialect);
+
             TrySendMessage(m_clientSocket, request);
             SMB1Message reply = WaitForMessage(CommandName.SMB_COM_NEGOTIATE);
             if (reply == null)
@@ -102,14 +204,16 @@ namespace SMBLibrary.Client
                 return false;
             }
 
-            if (reply.Commands[0] is NegotiateResponse)
+            if (reply.Commands[0] is NegotiateResponse && !forceExtendedSecurity)
             {
                 NegotiateResponse response = (NegotiateResponse)reply.Commands[0];
+                m_serverChallenge = response.Challenge;
                 return true;
             }
             else if (reply.Commands[0] is NegotiateResponseExtended)
             {
                 NegotiateResponseExtended response = (NegotiateResponseExtended)reply.Commands[0];
+                m_securityBlob = response.SecurityBlob;
                 return true;
             }
             else
@@ -200,7 +304,6 @@ namespace SMBLibrary.Client
             }
         }
 
-
         private void ProcessPacket(SessionPacket packet, ConnectionState state)
         {
             if (packet is SessionKeepAlivePacket && m_transport == SMBTransportType.NetBiosOverTCP)
@@ -263,30 +366,34 @@ namespace SMBLibrary.Client
             return null;
         }
 
-        public void Log(string message)
+        private void Log(string message)
         {
             System.Diagnostics.Debug.Print(message);
         }
 
-        public static void TrySendMessage(Socket serverSocket, SMB1Command request)
+        public void TrySendMessage(Socket socket, SMB1Command request)
         {
             SMB1Message message = new SMB1Message();
+            message.Header.UnicodeFlag = true;
+            message.Header.ExtendedSecurityFlag = m_forceExtendedSecurity;
+            message.Header.Flags2 |= HeaderFlags2.LongNamesAllowed | HeaderFlags2.LongNameUsed | HeaderFlags2.NTStatusCode;
+            message.Header.UID = m_userID;
             message.Commands.Add(request);
-            TrySendMessage(serverSocket, message);
+            TrySendMessage(socket, message);
         }
 
-        public static void TrySendMessage(Socket serverSocket, SMB1Message message)
+        public static void TrySendMessage(Socket socket, SMB1Message message)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = message.GetBytes();
-            TrySendPacket(serverSocket, packet);
+            TrySendPacket(socket, packet);
         }
 
-        public static void TrySendPacket(Socket serverSocket, SessionPacket response)
+        public static void TrySendPacket(Socket socket, SessionPacket response)
         {
             try
             {
-                serverSocket.Send(response.GetBytes());
+                socket.Send(response.GetBytes());
             }
             catch (SocketException)
             {
