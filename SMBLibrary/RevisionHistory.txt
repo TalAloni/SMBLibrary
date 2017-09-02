@@ -225,3 +225,23 @@ Revision History:
         Corrected FileFullEaInformation implementation.
         SMBServer: SMB1: Added support for SMB_FIND_FILE_ID_FULL_DIRECTORY_INFO and SMB_FIND_FILE_ID_BOTH_DIRECTORY_INFO.
         Logging improvements.
+
+1.2.6 - NTDirectoryFileSystem: Pass-through FSCTL requests.
+        NTDirectoryFileSystem: QueryDirectory / GetFileSystemInformation: Prevent possibility of reading data beyond the number of bytes written.
+        NTLM: NEGOTIATE_MESSAGE: Do not include DomainName and WorkstationName if the appropriate flags are not set.
+        NTLM: CHALLENGE_MESSAGE: Do not include TargetName and TargetInfo if the appropriate flags are not set.
+        NTLM: AUTHENTICATE_MESSAGE: Do not include EncryptedRandomSessionKey if the appropriate flags are not set.
+        NTLM: NEGOTIATE_MESSAGE: Bugfix: Workstation overwrote DomainName.
+        NTLM: NEGOTIATE_MESSAGE: Improved implementation.
+        NTLM: Added constructor to NTLMv2_CLIENT_CHALLENGE.
+        NTLM: NegotiateFlags: Renamed LanManagerKey to LanManagerSessionKey.
+        NTLM: Renamed NTLMv1 Extended Security to NTLMv1 Extended Session Security.
+        NTLM: Corrected CHALLENGE_MESSAGE test.
+        SMB1: Corrected implementation of SMB_COM_SESSION_SETUP_ANDX response.
+        SMB1: Corrected implementaion SMB_COM_SESSION_SETUP_ANDX Extended Security response.
+        SMB1: Improved implementation of SMB1Command.ReadCommandResponse method.
+        SMB1: SessionSetupHelper: Invalid NTLM flag was set (and ignored) in some cases.
+        SMB1: Minor implementation improvements of SMB1 commands.
+        SMB2: Renamed ServerCapabilities to Capabilities and added notes.
+        Use InvalidDataException instead of InvalidRequestException.
+        Logging improvement.
