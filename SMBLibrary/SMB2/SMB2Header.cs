@@ -173,8 +173,8 @@ namespace SMBLibrary.SMB2
         {
             if (buffer.Length >= 4)
             {
-                byte[] signature = ByteReader.ReadBytes(buffer, 0, 4);
-                return ByteUtils.AreByteArraysEqual(signature, ProtocolSignature);
+                byte[] protocol = ByteReader.ReadBytes(buffer, 0, 4);
+                return ByteUtils.AreByteArraysEqual(protocol, ProtocolSignature);
             }
             return false;
         }
