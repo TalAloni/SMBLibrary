@@ -13,10 +13,10 @@ namespace SMBLibrary.Authentication.NTLM
         Datagram = 0x00000040,                // NTLMSSP_NEGOTIATE_DATAGRAM
 
         /// <summary>
-        /// LanManagerKey and ExtendedSessionSecurity are mutually exclusive
-        /// If both are set then LanManagerKey must be ignored
+        /// LanManagerSessionKey and ExtendedSessionSecurity are mutually exclusive
+        /// If both are set then LanManagerSessionKey must be ignored
         /// </summary>
-        LanManagerKey = 0x00000080,           // NTLMSSP_NEGOTIATE_LM_KEY
+        LanManagerSessionKey = 0x00000080,    // NTLMSSP_NEGOTIATE_LM_KEY
         NTLMSessionSecurity = 0x00000200,     // NTLMSSP_NEGOTIATE_NTLM
         
         /// <summary>
@@ -31,8 +31,8 @@ namespace SMBLibrary.Authentication.NTLM
         TargetTypeServer = 0x00020000,        // NTLMSSP_TARGET_TYPE_SERVER
 
         /// <summary>
-        /// LanManagerKey and ExtendedSessionSecurity are mutually exclusive
-        /// If both are set then LanManagerKey must be ignored.
+        /// LanManagerSessionKey and ExtendedSessionSecurity are mutually exclusive
+        /// If both are set then LanManagerSessionKey must be ignored.
         /// NTLM v2 requires this flag to be set.
         /// </summary>
         ExtendedSessionSecurity = 0x00080000, // NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY

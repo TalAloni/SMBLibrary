@@ -78,9 +78,9 @@ namespace SMBLibrary.Authentication.NTLM
             {
                 challengeMessage.NegotiateFlags |= NegotiateFlags.ExtendedSessionSecurity;
             }
-            else if ((negotiateMessage.NegotiateFlags & NegotiateFlags.LanManagerKey) > 0)
+            else if ((negotiateMessage.NegotiateFlags & NegotiateFlags.LanManagerSessionKey) > 0)
             {
-                challengeMessage.NegotiateFlags |= NegotiateFlags.LanManagerKey;
+                challengeMessage.NegotiateFlags |= NegotiateFlags.LanManagerSessionKey;
             }
 
             if ((negotiateMessage.NegotiateFlags & NegotiateFlags.Sign) > 0)

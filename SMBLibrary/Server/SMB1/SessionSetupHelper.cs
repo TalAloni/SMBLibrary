@@ -156,7 +156,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else
             {
-                authenticateMessage.NegotiateFlags |= NegotiateFlags.LanManagerKey;
+                authenticateMessage.NegotiateFlags |= NegotiateFlags.LanManagerSessionKey;
             }
             authenticateMessage.UserName = accountNameToAuth;
             authenticateMessage.LmChallengeResponse = lmChallengeResponse;

@@ -210,7 +210,7 @@ namespace SMBLibrary.Authentication.NTLM
         {
             if ((negotiateFlags & NegotiateFlags.ExtendedSessionSecurity) == 0)
             {
-                if ((negotiateFlags & NegotiateFlags.LanManagerKey) > 0)
+                if ((negotiateFlags & NegotiateFlags.LanManagerSessionKey) > 0)
                 {
                     byte[] k1 = ByteReader.ReadBytes(lmowf, 0, 7);
                     byte[] k2 = ByteUtils.Concatenate(ByteReader.ReadBytes(lmowf, 7, 1), new byte[] { 0xBD, 0xBD, 0xBD, 0xBD, 0xBD, 0xBD });

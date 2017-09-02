@@ -81,7 +81,7 @@ namespace SMBLibrary.Server.SMB1
             negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
                                               NegotiateFlags.OEMEncoding |
                                               NegotiateFlags.Sign |
-                                              NegotiateFlags.LanManagerKey |
+                                              NegotiateFlags.LanManagerSessionKey |
                                               NegotiateFlags.NTLMSessionSecurity |
                                               NegotiateFlags.AlwaysSign |
                                               NegotiateFlags.Version |
