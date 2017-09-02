@@ -149,7 +149,7 @@ namespace SMBLibrary.Server.SMB1
                                                  NegotiateFlags.Version |
                                                  NegotiateFlags.Use128BitEncryption |
                                                  NegotiateFlags.Use56BitEncryption;
-            if (AuthenticationMessageUtils.IsNTLMv1ExtendedSecurity(lmChallengeResponse) ||
+            if (AuthenticationMessageUtils.IsNTLMv1ExtendedSessionSecurity(lmChallengeResponse) ||
                 AuthenticationMessageUtils.IsNTLMv2NTResponse(ntChallengeResponse))
             {
                 authenticateMessage.NegotiateFlags |= NegotiateFlags.ExtendedSessionSecurity;

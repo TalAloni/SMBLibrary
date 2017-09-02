@@ -194,9 +194,9 @@ namespace SMBLibrary.Authentication.NTLM
             byte[] keyExchangeKey = null;
             if ((message.NegotiateFlags & NegotiateFlags.ExtendedSessionSecurity) > 0)
             {
-                if (AuthenticationMessageUtils.IsNTLMv1ExtendedSecurity(message.LmChallengeResponse))
+                if (AuthenticationMessageUtils.IsNTLMv1ExtendedSessionSecurity(message.LmChallengeResponse))
                 {
-                    // NTLM v1 Extended Security:
+                    // NTLM v1 Extended Session Security:
                     success = AuthenticateV1Extended(password, serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
                     if (success)
                     {
@@ -314,12 +314,12 @@ namespace SMBLibrary.Authentication.NTLM
         }
 
         /// <summary>
-        /// LM v1 / NTLM v1 Extended Security
+        /// LM v1 / NTLM v1 Extended Session Security
         /// </summary>
         private static bool AuthenticateV1Extended(string password, byte[] serverChallenge, byte[] lmResponse, byte[] ntResponse)
         {
             byte[] clientChallenge = ByteReader.ReadBytes(lmResponse, 0, 8);
-            byte[] expectedNTLMv1Response = NTLMCryptography.ComputeNTLMv1ExtendedSecurityResponse(serverChallenge, clientChallenge, password);
+            byte[] expectedNTLMv1Response = NTLMCryptography.ComputeNTLMv1ExtendedSessionSecurityResponse(serverChallenge, clientChallenge, password);
 
             return ByteUtils.AreByteArraysEqual(expectedNTLMv1Response, ntResponse);
         }

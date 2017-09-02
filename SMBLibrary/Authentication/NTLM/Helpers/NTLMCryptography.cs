@@ -28,7 +28,7 @@ namespace SMBLibrary.Authentication.NTLM
             return DesLongEncrypt(hash, challenge);
         }
 
-        public static byte[] ComputeNTLMv1ExtendedSecurityResponse(byte[] serverChallenge, byte[] clientChallenge, string password)
+        public static byte[] ComputeNTLMv1ExtendedSessionSecurityResponse(byte[] serverChallenge, byte[] clientChallenge, string password)
         {
             byte[] passwordHash = NTOWFv1(password);
             byte[] challengeHash = MD5.Create().ComputeHash(ByteUtils.Concatenate(serverChallenge, clientChallenge));

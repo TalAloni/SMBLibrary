@@ -59,18 +59,18 @@ namespace SMBLibrary.Authentication.NTLM
         }
 
         /// <summary>
-        /// If NTLM v1 Extended Security is used, LMResponse starts with 8-byte challenge, followed by 16 bytes of padding (set to zero).
+        /// If NTLM v1 Extended Session Security is used, LMResponse starts with 8-byte challenge, followed by 16 bytes of padding (set to zero).
         /// </summary>
         /// <remarks>
-        /// LMResponse is 24 bytes for NTLM v1, NTLM v1 Extended Security and NTLM v2.
+        /// LMResponse is 24 bytes for NTLM v1, NTLM v1 Extended Session Security and NTLM v2.
         /// </remarks>
-        public static bool IsNTLMv1ExtendedSecurity(byte[] lmResponse)
+        public static bool IsNTLMv1ExtendedSessionSecurity(byte[] lmResponse)
         {
             if (lmResponse.Length == 24)
             {
                 if (ByteUtils.AreByteArraysEqual(ByteReader.ReadBytes(lmResponse, 0, 8), new byte[8]))
                 {
-                    // Challenge not present, cannot be NTLM v1 Extended Security
+                    // Challenge not present, cannot be NTLM v1 Extended Session Security
                     return false;
                 }
                 return ByteUtils.AreByteArraysEqual(ByteReader.ReadBytes(lmResponse, 8, 16), new byte[16]);
@@ -79,7 +79,7 @@ namespace SMBLibrary.Authentication.NTLM
         }
 
         /// <remarks>
-        /// NTLM v1 / NTLM v1 Extended Security NTResponse is 24 bytes.
+        /// NTLM v1 / NTLM v1 Extended Session Security NTResponse is 24 bytes.
         /// </remarks>
         public static bool IsNTLMv2NTResponse(byte[] ntResponse)
         {

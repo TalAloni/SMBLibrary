@@ -94,7 +94,7 @@ namespace SMBLibrary
             return ByteUtils.AreByteArraysEqual(mic, expected);
         }
 
-        public static bool TestNTLMv1ExtendedSecurityKeyExchangeMIC()
+        public static bool TestNTLMv1ExtendedSessionSecurityKeyExchangeMIC()
         {
             string password = "Password";
             byte[] type1 = new byte[] { 0x4e, 0x54, 0x4c, 0x4d, 0x53, 0x53, 0x50, 0x00, 0x01, 0x00, 0x00, 0x00, 0x97, 0x82, 0x08, 0xe2,
