@@ -21,7 +21,7 @@ namespace SMBLibrary.SMB2
         private ushort DialectCount;
         public SecurityMode SecurityMode;
         public ushort Reserved;
-        public ServerCapabilities Capabilities;
+        public Capabilities Capabilities; // If the client does not implements the SMB 3.x dialect family, this field MUST be set to 0.
         public Guid ClientGuid;
         public DateTime ClientStartTime;
         public List<SMB2Dialect> Dialects = new List<SMB2Dialect>();
@@ -37,7 +37,7 @@ namespace SMBLibrary.SMB2
             DialectCount = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 2);
             SecurityMode = (SecurityMode)LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 4);
             Reserved = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 6);
-            Capabilities = (ServerCapabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 8);
+            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 8);
             ClientGuid = LittleEndianConverter.ToGuid(buffer, offset + SMB2Header.Length + 12);
             ClientStartTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + SMB2Header.Length + 28));
 

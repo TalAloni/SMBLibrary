@@ -3,7 +3,7 @@ using System;
 namespace SMBLibrary.SMB2
 {
     [Flags]
-    public enum ServerCapabilities : uint
+    public enum Capabilities : uint
     {
         DFS = 0x00000001,               // SMB2_GLOBAL_CAP_DFS
         Leasing = 0x00000002,           // SMB2_GLOBAL_CAP_LEASING

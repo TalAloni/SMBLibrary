@@ -532,9 +532,9 @@
     <Compile Include="SMB2\Enums\Create\OplockLevel.cs" />
     <Compile Include="SMB2\Enums\InfoType.cs" />
     <Compile Include="SMB2\Enums\IOCtl\IOCtlRequestFlags.cs" />
+    <Compile Include="SMB2\Enums\Negotiate\Capabilities.cs" />
     <Compile Include="SMB2\Enums\Negotiate\NegotiateContextType.cs" />
     <Compile Include="SMB2\Enums\Negotiate\SecurityMode.cs" />
-    <Compile Include="SMB2\Enums\Negotiate\ServerCapabilities.cs" />
     <Compile Include="SMB2\Enums\Negotiate\SMB2Dialect.cs" />
     <Compile Include="SMB2\Enums\QueryDirectory\QueryDirectoryFlags.cs" />
     <Compile Include="SMB2\Enums\Read\ReadFlags.cs" />

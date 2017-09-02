@@ -23,7 +23,7 @@ namespace SMBLibrary.SMB2
         public SMB2Dialect DialectRevision;
         private ushort NegotiateContextCount;
         public Guid ServerGuid;
-        public ServerCapabilities Capabilities;
+        public Capabilities Capabilities;
         public uint MaxTransactSize;
         public uint MaxReadSize;
         public uint MaxWriteSize;
@@ -48,7 +48,7 @@ namespace SMBLibrary.SMB2
             DialectRevision = (SMB2Dialect)LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 4);
             NegotiateContextCount = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 6);
             ServerGuid = LittleEndianConverter.ToGuid(buffer, offset + SMB2Header.Length + 8);
-            Capabilities = (ServerCapabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 24);
+            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 24);
             MaxTransactSize = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 28);
             MaxReadSize = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 32);
             MaxWriteSize = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 36);

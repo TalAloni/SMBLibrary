@@ -21,7 +21,7 @@ namespace SMBLibrary.SMB2
         private ushort StructureSize;
         public SessionSetupFlags Flags;
         public SecurityMode SecurityMode;
-        public ServerCapabilities Capabilities;
+        public Capabilities Capabilities; // Values other than SMB2_GLOBAL_CAP_DFS should be treated as reserved.
         public uint Channel;
         private ushort SecurityBufferOffset;
         private ushort SecurityBufferLength;
@@ -38,7 +38,7 @@ namespace SMBLibrary.SMB2
             StructureSize = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 0);
             Flags = (SessionSetupFlags)ByteReader.ReadByte(buffer, offset + SMB2Header.Length + 2);
             SecurityMode = (SecurityMode)ByteReader.ReadByte(buffer, offset + SMB2Header.Length + 3);
-            Capabilities = (ServerCapabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 4);
+            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 4);
             Channel = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 8);
             SecurityBufferOffset = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 12);
             SecurityBufferLength = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 14);
