@@ -23,7 +23,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Read failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "Read failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, request.FID);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }
@@ -58,7 +58,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Read failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "Read failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, request.FID);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }
@@ -109,7 +109,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Write failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "Write failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, request.FID);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }
@@ -142,7 +142,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Write failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "Write failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, request.FID);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }
@@ -188,7 +188,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Flush failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "Flush failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, request.FID);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return new ErrorResponse(request.CommandName);
             }

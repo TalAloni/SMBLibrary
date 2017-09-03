@@ -22,7 +22,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "TransactNamedPipe failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "TransactNamedPipe failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, subcommand.FID);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }

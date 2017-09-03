@@ -19,7 +19,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Close failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "Close failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, request.FID);
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
                 return new ErrorResponse(request.CommandName);
             }
@@ -27,11 +27,11 @@ namespace SMBLibrary.Server.SMB1
             header.Status = share.FileStore.CloseFile(openFile.Handle);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Information, "Close: Closing '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
+                state.LogToServer(Severity.Information, "Close: Closing '{0}{1}' failed. NTStatus: {2}. (UID: {3}, TID: {4}, FID: {5})", share.Name, openFile.Path, header.Status, header.UID, header.TID, request.FID);
                 return new ErrorResponse(request.CommandName);
             }
 
-            state.LogToServer(Severity.Information, "Close: Closed '{0}{1}'.", share.Name, openFile.Path);
+            state.LogToServer(Severity.Information, "Close: Closed '{0}{1}'. (UID: {2}, TID: {3}, FID: {4})", share.Name, openFile.Path, header.UID, header.TID, request.FID);
             session.RemoveOpenFile(request.FID);
             return new CloseResponse();
         }

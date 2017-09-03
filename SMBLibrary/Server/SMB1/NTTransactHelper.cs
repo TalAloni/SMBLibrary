@@ -144,7 +144,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. Invalid FID.", ctlCode);
+                state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. Invalid FID. (UID: {1}, TID: {2}, FID: {3})", ctlCode, header.UID, header.TID, subcommand.FID);
                 header.Status = NTStatus.STATUS_INVALID_HANDLE;
                 return null;
             }

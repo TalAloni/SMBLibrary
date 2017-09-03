@@ -50,15 +50,16 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
-            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}'.", share.Name, path);
             ushort? fileID = session.AddOpenFile(header.TID, share.Name, path, handle);
             if (!fileID.HasValue)
             {
                 share.FileStore.CloseFile(handle);
+                state.LogToServer(Severity.Verbose, "Create: Opening '{0}{1}' failed. Too many open files.", share.Name, path);
                 header.Status = NTStatus.STATUS_TOO_MANY_OPENED_FILES;
                 return new ErrorResponse(request.CommandName);
             }
 
+            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}'. (UID: {2}, TID: {3}, FID: {4})", share.Name, path, header.UID, header.TID, fileID.Value);
             if (share is NamedPipeShare)
             {
                 if (isExtended)

@@ -206,7 +206,7 @@ namespace SMBLibrary.Server.SMB1
             OpenFileObject openFile = session.GetOpenFileObject(request.FID);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Set Information 2 failed. Invalid FID.");
+                state.LogToServer(Severity.Verbose, "Set Information 2 failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, request.FID);
                 header.Status = NTStatus.STATUS_SMB_BAD_FID;
                 return new ErrorResponse(request.CommandName);
             }

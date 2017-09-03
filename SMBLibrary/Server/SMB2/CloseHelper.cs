@@ -20,18 +20,18 @@ namespace SMBLibrary.Server.SMB2
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             if (openFile == null)
             {
-                state.LogToServer(Severity.Verbose, "Close failed. Invalid FileId.");
+                state.LogToServer(Severity.Verbose, "Close failed. Invalid FileId. (SessionID: {0}, TreeID: {1}, FileId: {2})", request.Header.SessionID, request.Header.TreeID, request.FileId.Volatile);
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
             }
 
             NTStatus closeStatus = share.FileStore.CloseFile(openFile.Handle);
             if (closeStatus != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Information, "Close: Closing '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, closeStatus);
+                state.LogToServer(Severity.Information, "Close: Closing '{0}{1}' failed. NTStatus: {2}. (SessionID: {3}, TreeID: {4}, FileId: {5})", share.Name, openFile.Path, closeStatus, request.Header.SessionID, request.Header.TreeID, request.FileId.Volatile);
                 return new ErrorResponse(request.CommandName, closeStatus);
             }
 
-            state.LogToServer(Severity.Information, "Close: Closed '{0}{1}'.", share.Name, openFile.Path);
+            state.LogToServer(Severity.Information, "Close: Closed '{0}{1}'. (SessionID: {2}, TreeID: {3}, FileId: {4})", share.Name, openFile.Path, request.Header.SessionID, request.Header.TreeID, request.FileId.Volatile);
             session.RemoveOpenFile(request.FileId);
             CloseResponse response = new CloseResponse();
             if (request.PostQueryAttributes)

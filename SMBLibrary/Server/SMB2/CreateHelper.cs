@@ -44,14 +44,15 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, createStatus);
             }
 
-            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}'.", share.Name, path);
             FileID? fileID = session.AddOpenFile(request.Header.TreeID, share.Name, path, handle);
             if (fileID == null)
             {
                 share.FileStore.CloseFile(handle);
+                state.LogToServer(Severity.Verbose, "Create: Opening '{0}{1}' failed. Too many open files.", share.Name, path);
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
             }
 
+            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}'. (SessionID: {2}, TreeID: {3}, FileId: {4})", share.Name, path, request.Header.SessionID, request.Header.TreeID, fileID.Value.Volatile);
             if (share is NamedPipeShare)
             {
                 return CreateResponseForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);

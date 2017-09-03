@@ -22,7 +22,7 @@ namespace SMBLibrary.Server.SMB2
                 OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
                 if (openFile == null)
                 {
-                    state.LogToServer(Severity.Verbose, "SetFileInformation failed. Invalid FileId.");
+                    state.LogToServer(Severity.Verbose, "SetFileInformation failed. Invalid FileId. (SessionID: {0}, TreeID: {1}, FileId: {2})", request.Header.SessionID, request.Header.TreeID, request.FileId.Volatile);
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
                 }
 

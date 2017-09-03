@@ -42,7 +42,7 @@ namespace SMBLibrary.Server.SMB2
                 // FSCTL_VALIDATE_NEGOTIATE_INFO requests MUST have FileId set to 0xFFFFFFFFFFFFFFFF.
                 if (request.FileId.Persistent != 0xFFFFFFFFFFFFFFFF || request.FileId.Volatile != 0xFFFFFFFFFFFFFFFF)
                 {
-                    state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. Invalid FileId.", ctlCode);
+                    state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. FileId MUST be 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", ctlCode);
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
                 }
                 handle = null;
@@ -52,7 +52,7 @@ namespace SMBLibrary.Server.SMB2
                 OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
                 if (openFile == null)
                 {
-                    state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. Invalid FileId.", ctlCode);
+                    state.LogToServer(Severity.Verbose, "IOCTL failed. CTL Code: {0}. Invalid FileId. (SessionID: {1}, TreeID: {2}, FileId: {3})", ctlCode, request.Header.SessionID, request.Header.TreeID, request.FileId.Volatile);
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
                 }
                 handle = openFile.Handle;
