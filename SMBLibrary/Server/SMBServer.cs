@@ -358,11 +358,13 @@ namespace SMBLibrary.Server
                 catch (SocketException ex)
                 {
                     state.LogToServer(Severity.Debug, "Failed to send packet. SocketException: {0}", ex.Message);
+                    m_connectionManager.ReleaseConnection(state);
                     return;
                 }
                 catch (ObjectDisposedException)
                 {
                     state.LogToServer(Severity.Debug, "Failed to send packet. ObjectDisposedException.");
+                    m_connectionManager.ReleaseConnection(state);
                     return;
                 }
             }
