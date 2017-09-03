@@ -34,7 +34,7 @@ namespace Utilities
         }
 
         /// <summary>
-        /// Socket will be forcefully closed, all pending data will be ignored, and socket will be deallocated.
+        /// Socket will be forcefully closed and all pending data will be ignored.
         /// </summary>
         public static void ReleaseSocket(Socket socket)
         {
@@ -52,12 +52,11 @@ namespace Utilities
                         return;
                     }
                     catch (SocketException)
-                    { }
+                    {
+                    }
                 }
+                // Closing socket closes the connection, and Close is a wrapper-method around Dispose.
                 socket.Close();
-                socket = null;
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
             }
         }
     }
