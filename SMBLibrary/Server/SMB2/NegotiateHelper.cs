@@ -65,6 +65,7 @@ namespace SMBLibrary.Server.SMB2
             }
             else
             {
+                state.LogToServer(Severity.Verbose, "Negotiate failure: None of the requested SMB2 dialects is supported");
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
             }
             response.SecurityMode = SecurityMode.SigningEnabled;
