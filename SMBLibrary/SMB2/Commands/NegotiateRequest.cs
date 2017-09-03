@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB2
         public const int DeclaredSize = 36;
 
         private ushort StructureSize;
-        private ushort DialectCount;
+        // ushort DialectCount;
         public SecurityMode SecurityMode;
         public ushort Reserved;
         public Capabilities Capabilities; // If the client does not implements the SMB 3.x dialect family, this field MUST be set to 0.
@@ -34,14 +34,14 @@ namespace SMBLibrary.SMB2
         public NegotiateRequest(byte[] buffer, int offset) : base(buffer, offset)
         {
             StructureSize = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 0);
-            DialectCount = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 2);
+            ushort dialectCount = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 2);
             SecurityMode = (SecurityMode)LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 4);
             Reserved = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 6);
             Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 8);
             ClientGuid = LittleEndianConverter.ToGuid(buffer, offset + SMB2Header.Length + 12);
             ClientStartTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + SMB2Header.Length + 28));
 
-            for (int index = 0; index < DialectCount; index++)
+            for (int index = 0; index < dialectCount; index++)
             {
                 SMB2Dialect dialect = (SMB2Dialect)LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 36 + index * 2);
                 Dialects.Add(dialect);
@@ -51,7 +51,7 @@ namespace SMBLibrary.SMB2
         public override void WriteCommandBytes(byte[] buffer, int offset)
         {
             LittleEndianWriter.WriteUInt16(buffer, offset + 0, StructureSize);
-            LittleEndianWriter.WriteUInt16(buffer, offset + 2, DialectCount);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 2, (ushort)Dialects.Count);
             LittleEndianWriter.WriteUInt16(buffer, offset + 4, (ushort)SecurityMode);
             LittleEndianWriter.WriteUInt16(buffer, offset + 6, Reserved);
             LittleEndianWriter.WriteUInt32(buffer, offset + 8, (uint)Capabilities);
