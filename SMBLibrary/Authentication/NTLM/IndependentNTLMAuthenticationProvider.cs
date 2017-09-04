@@ -33,8 +33,18 @@ namespace SMBLibrary.Authentication.NTLM
             }
         }
 
-        private static readonly int DefaultMaxLoginAttemptsInWindow = 12;
-        private static readonly TimeSpan DefaultLoginWindowDuration = new TimeSpan(0, 5, 0);
+        // Here is an account of the maximum number of times I have witnessed Windows 7 SP1 attempts to login
+        // to a server with the same invalid credentials before displaying a login prompt:
+        // Note: The number of login attempts is related to the number of slashes following the server name.
+        // \\servername                                    -  8 login attempts
+        // \\servername\sharename                          - 29 login attempts
+        // \\servername\sharename\dir1                     - 52 login attempts
+        // \\servername\sharename\dir1\dir2                - 71 login attempts
+        // \\servername\sharename\dir1\dir2\dir3           - 63 login attempts
+        // \\servername\sharename\dir1\dir2\dir3\dir4      - 81 login attempts
+        // \\servername\sharename\dir1\dir2\dir3\dir4\dir5 - 57 login attempts
+        private static readonly int DefaultMaxLoginAttemptsInWindow = 100;
+        private static readonly TimeSpan DefaultLoginWindowDuration = new TimeSpan(0, 20, 0);
         private GetUserPassword m_GetUserPassword;
         private LoginCounter m_loginCounter;
 
