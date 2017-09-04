@@ -16,24 +16,23 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class EchoRequest : SMB1Command
     {
-        public const int ParametersLength = 1;
+        public const int ParametersLength = 2;
         // Parameters
-        public byte EchoCount;
+        public ushort EchoCount;
 
         public EchoRequest() : base()
         {
-
         }
 
         public EchoRequest(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            EchoCount = ByteReader.ReadByte(this.SMBParameters, 0);
+            EchoCount = LittleEndianConverter.ToUInt16(this.SMBParameters, 0);
         }
 
         public override byte[] GetBytes(bool isUnicode)
         {
             this.SMBParameters = new byte[ParametersLength];
-            ByteWriter.WriteByte(this.SMBParameters, 0, EchoCount);
+            LittleEndianWriter.WriteUInt16(this.SMBParameters, 0, EchoCount);
 
             return base.GetBytes(isUnicode);
         }
@@ -49,7 +48,7 @@ namespace SMBLibrary.SMB1
                 this.SMBData = value;
             }
         }
- 
+
         public override CommandName CommandName
         {
             get
