@@ -37,7 +37,6 @@ namespace SMBLibrary.Server.SMB1
 
         private static void OnNotifyChangeCompleted(NTStatus status, byte[] buffer, object context)
         {
-            NTTransactNotifyChangeResponse notifyChangeResponse = new NTTransactNotifyChangeResponse();
             SMB1AsyncContext asyncContext = (SMB1AsyncContext)context;
             // Wait until the 'Monitoring started' will be written to the log
             lock (asyncContext)
@@ -64,14 +63,41 @@ namespace SMBLibrary.Server.SMB1
                     header.TID = asyncContext.TID;
                     header.PID = asyncContext.PID;
                     header.MID = asyncContext.MID;
-                    notifyChangeResponse.FileNotifyInformationBytes = buffer;
 
-                    byte[] responseSetup = notifyChangeResponse.GetSetup();
-                    byte[] responseParameters = notifyChangeResponse.GetParameters(false);
-                    byte[] responseData = notifyChangeResponse.GetData();
-                    List<SMB1Command> responseList = NTTransactHelper.GetNTTransactResponse(responseSetup, responseParameters, responseData, asyncContext.Connection.MaxBufferSize);
-                    foreach (SMB1Command response in responseList)
+                    if (status == NTStatus.STATUS_SUCCESS)
                     {
+                        NTTransactNotifyChangeResponse notifyChangeResponse = new NTTransactNotifyChangeResponse();
+                        notifyChangeResponse.FileNotifyInformationBytes = buffer;
+                        byte[] responseSetup = notifyChangeResponse.GetSetup();
+                        byte[] responseParameters = notifyChangeResponse.GetParameters(false);
+                        byte[] responseData = notifyChangeResponse.GetData();
+                        List<SMB1Command> responseList = NTTransactHelper.GetNTTransactResponse(responseSetup, responseParameters, responseData, asyncContext.Connection.MaxBufferSize);
+                        if (responseList.Count == 1)
+                        {
+                            SMB1Message reply = new SMB1Message();
+                            reply.Header = header;
+                            reply.Commands.Add(responseList[0]);
+                            SMBServer.EnqueueMessage(asyncContext.Connection, reply);
+                        }
+                        else
+                        {
+                            // [MS-CIFS] In the event that the number of changes exceeds [..] the maximum size of the NT_Trans_Parameter block in
+                            // the response [..] the NT Trans subsystem MUST return an error response with a Status value of STATUS_NOTIFY_ENUM_DIR.
+                            header.Status = NTStatus.STATUS_NOTIFY_ENUM_DIR;
+                            ErrorResponse response = new ErrorResponse(CommandName.SMB_COM_NT_TRANSACT);
+                            SMB1Message reply = new SMB1Message();
+                            reply.Header = header;
+                            reply.Commands.Add(response);
+                            SMBServer.EnqueueMessage(asyncContext.Connection, reply);
+                        }
+                    }
+                    else
+                    {
+                        // Windows Server 2008 SP1 Will use ErrorResponse to return any status other than STATUS_SUCCESS (including STATUS_CANCELLED and STATUS_DELETE_PENDING).
+                        //
+                        // [MS-CIFS] In the event that the number of changes exceeds the size of the change notify buffer [..] 
+                        // the NT Trans subsystem MUST return an error response with a Status value of STATUS_NOTIFY_ENUM_DIR.
+                        ErrorResponse response = new ErrorResponse(CommandName.SMB_COM_NT_TRANSACT);
                         SMB1Message reply = new SMB1Message();
                         reply.Header = header;
                         reply.Commands.Add(response);
