@@ -31,7 +31,7 @@ namespace SMBLibrary.Server.SMB2
                     if (status == NTStatus.STATUS_SUCCESS || status == NTStatus.STATUS_CANCELLED)
                     {
                         state.RemoveAsyncContext(context);
-                        // If the target request is successfully canceled, the target request MUST be failed by sending
+                        // [MS-SMB2] If the target request is successfully canceled, the target request MUST be failed by sending
                         // an ERROR response packet [..] with the status field of the SMB2 header set to STATUS_CANCELLED.
                         ErrorResponse response = new ErrorResponse(request.CommandName, NTStatus.STATUS_CANCELLED);
                         response.Header.IsAsync = true;
