@@ -24,6 +24,12 @@ namespace SMBLibrary.Server.SMB1
             OptionalSupportFlags supportFlags;
             if (String.Equals(shareName, NamedPipeShare.NamedPipeShareName, StringComparison.OrdinalIgnoreCase))
             {
+                if (request.Service != ServiceName.AnyType && request.Service != ServiceName.NamedPipe)
+                {
+                    header.Status = NTStatus.STATUS_BAD_DEVICE_TYPE;
+                    return new ErrorResponse(request.CommandName);
+                }
+
                 share = services;
                 serviceName = ServiceName.NamedPipe;
                 supportFlags = OptionalSupportFlags.SMB_SUPPORT_SEARCH_BITS | OptionalSupportFlags.SMB_CSC_NO_CACHING;
@@ -34,6 +40,12 @@ namespace SMBLibrary.Server.SMB1
                 if (share == null)
                 {
                     header.Status = NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
+                    return new ErrorResponse(request.CommandName);
+                }
+
+                if (request.Service != ServiceName.AnyType && request.Service != ServiceName.DiskShare)
+                {
+                    header.Status = NTStatus.STATUS_BAD_DEVICE_TYPE;
                     return new ErrorResponse(request.CommandName);
                 }
 
