@@ -33,6 +33,7 @@ namespace SMBLibrary
         STATUS_SHARING_VIOLATION = 0xC0000043,
         STATUS_FILE_LOCK_CONFLICT = 0xC0000054,
         STATUS_LOCK_NOT_GRANTED = 0xC0000055,
+        STATUS_DELETE_PENDING = 0xC0000056,
         STATUS_PRIVILEGE_NOT_HELD = 0xC0000061,
         STATUS_LOGON_FAILURE = 0xC000006D, // Authentication failure.
         STATUS_ACCOUNT_RESTRICTION = 0xC000006E, // The user has an empty password, which is not allowed
