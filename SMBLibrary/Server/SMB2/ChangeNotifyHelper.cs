@@ -53,15 +53,32 @@ namespace SMBLibrary.Server.SMB2
                     {
                         connection.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' completed. NTStatus: {2}. AsyncID: {3}", openFile.ShareName, openFile.Path, status, asyncContext.AsyncID);
                     }
-                    ChangeNotifyResponse response = new ChangeNotifyResponse();
-                    response.Header.Status = status;
-                    response.Header.IsAsync = true;
-                    response.Header.IsSigned = session.SigningRequired;
-                    response.Header.AsyncID = asyncContext.AsyncID;
-                    response.Header.SessionID = asyncContext.SessionID;
-                    response.OutputBuffer = buffer;
 
-                    SMBServer.EnqueueResponse(connection, response);
+                    if (status == NTStatus.STATUS_SUCCESS ||
+                        status == NTStatus.STATUS_NOTIFY_CLEANUP ||
+                        status == NTStatus.STATUS_NOTIFY_ENUM_DIR)
+                    {
+                        ChangeNotifyResponse response = new ChangeNotifyResponse();
+                        response.Header.Status = status;
+                        response.Header.IsAsync = true;
+                        response.Header.IsSigned = session.SigningRequired;
+                        response.Header.AsyncID = asyncContext.AsyncID;
+                        response.Header.SessionID = asyncContext.SessionID;
+                        response.OutputBuffer = buffer;
+
+                        SMBServer.EnqueueResponse(connection, response);
+                    }
+                    else
+                    {
+                        // [MS-SMB2] If the object store returns an error, the server MUST fail the request with the error code received.
+                        ErrorResponse response = new ErrorResponse(SMB2CommandName.ChangeNotify);
+                        response.Header.Status = status;
+                        response.Header.IsAsync = true;
+                        response.Header.IsSigned = session.SigningRequired;
+                        response.Header.AsyncID = asyncContext.AsyncID;
+
+                        SMBServer.EnqueueResponse(connection, response);
+                    }
                 }
             }
         }
