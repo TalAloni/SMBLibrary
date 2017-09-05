@@ -25,7 +25,7 @@ namespace SMBLibrary.SMB1
         public uint MaxBufferSize;
         public uint MaxRawSize;
         public uint SessionKey;
-        public ServerCapabilities Capabilities;
+        public Capabilities Capabilities;
         public DateTime SystemTime;
         public short ServerTimeZone;
         private byte ChallengeLength; // MUST be set to 0
@@ -47,7 +47,7 @@ namespace SMBLibrary.SMB1
             MaxBufferSize = LittleEndianConverter.ToUInt32(this.SMBParameters, 7);
             MaxRawSize = LittleEndianConverter.ToUInt32(this.SMBParameters, 11);
             SessionKey = LittleEndianConverter.ToUInt32(this.SMBParameters, 15);
-            Capabilities = (ServerCapabilities)LittleEndianConverter.ToUInt32(this.SMBParameters, 19);
+            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(this.SMBParameters, 19);
             SystemTime = FileTimeHelper.ReadFileTime(this.SMBParameters, 23);
             ServerTimeZone = LittleEndianConverter.ToInt16(this.SMBParameters, 31);
             ChallengeLength = ByteReader.ReadByte(this.SMBParameters, 33);

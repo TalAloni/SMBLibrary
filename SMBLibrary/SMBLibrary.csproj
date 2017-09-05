@@ -366,8 +366,8 @@
     <Compile Include="SMB1\Enums\HeaderFlags.cs" />
     <Compile Include="SMB1\Enums\HeaderFlags2.cs" />
     <Compile Include="SMB1\Enums\Locking\LockType.cs" />
+    <Compile Include="SMB1\Enums\Negotiate\Capabilities.cs" />
     <Compile Include="SMB1\Enums\Negotiate\SecurityMode.cs" />
-    <Compile Include="SMB1\Enums\Negotiate\ServerCapabilities.cs" />
     <Compile Include="SMB1\Enums\NTCreate\FileStatusFlags.cs" />
     <Compile Include="SMB1\Enums\NTCreate\ImpersonationLevel.cs" />
     <Compile Include="SMB1\Enums\NTCreate\NTCreateFlags.cs" />

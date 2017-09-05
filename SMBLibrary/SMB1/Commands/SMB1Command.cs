@@ -370,8 +370,8 @@ namespace SMBLibrary.SMB1
                         // Both NegotiateResponse and NegotiateResponseExtended have WordCount set to 17
                         if (wordCount * 2 == NegotiateResponse.ParametersLength)
                         {
-                            ServerCapabilities capabilities = (ServerCapabilities)LittleEndianConverter.ToUInt32(buffer, offset + 20);
-                            if ((capabilities & ServerCapabilities.ExtendedSecurity) > 0)
+                            Capabilities capabilities = (Capabilities)LittleEndianConverter.ToUInt32(buffer, offset + 20);
+                            if ((capabilities & Capabilities.ExtendedSecurity) > 0)
                             {
                                 return new NegotiateResponseExtended(buffer, offset);
                             }

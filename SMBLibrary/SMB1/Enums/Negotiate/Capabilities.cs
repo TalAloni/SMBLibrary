@@ -3,7 +3,7 @@ using System;
 namespace SMBLibrary.SMB1
 {
     [Flags]
-    public enum ServerCapabilities : uint
+    public enum Capabilities : uint
     {
         RawMode          = 0x00000001, // CAP_RAW_MODE
         MPXMode          = 0x00000002, // SMB_COM_READ_MPX

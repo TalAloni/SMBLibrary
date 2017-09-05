@@ -24,7 +24,7 @@ namespace SMBLibrary.SMB1
         public uint SessionKey;
         private ushort SecurityBlobLength;
         public uint Reserved;
-        public ServerCapabilities Capabilities;
+        public Capabilities Capabilities;
         // Data:
         public byte[] SecurityBlob;
         public string NativeOS;     // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
@@ -44,7 +44,7 @@ namespace SMBLibrary.SMB1
             SessionKey = LittleEndianConverter.ToUInt32(this.SMBParameters, 10);
             SecurityBlobLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 14);
             Reserved = LittleEndianConverter.ToUInt32(this.SMBParameters, 16);
-            Capabilities = (ServerCapabilities)LittleEndianConverter.ToUInt32(this.SMBParameters, 20);
+            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(this.SMBParameters, 20);
 
             SecurityBlob = ByteReader.ReadBytes(this.SMBData, 0, SecurityBlobLength);
 
@@ -62,7 +62,7 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            Capabilities |= ServerCapabilities.ExtendedSecurity;
+            Capabilities |= Capabilities.ExtendedSecurity;
             SecurityBlobLength = (ushort)SecurityBlob.Length;
 
             this.SMBParameters = new byte[ParametersLength];

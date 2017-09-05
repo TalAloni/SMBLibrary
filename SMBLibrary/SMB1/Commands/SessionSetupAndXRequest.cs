@@ -25,7 +25,7 @@ namespace SMBLibrary.SMB1
         private ushort OEMPasswordLength;
         private ushort UnicodePasswordLength;
         public uint Reserved;
-        public ServerCapabilities Capabilities;
+        public Capabilities Capabilities;
         // Data:
         public byte[] OEMPassword;
         public byte[] UnicodePassword;
@@ -52,7 +52,7 @@ namespace SMBLibrary.SMB1
             OEMPasswordLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 14);
             UnicodePasswordLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 16);
             Reserved = LittleEndianConverter.ToUInt32(this.SMBParameters, 18);
-            Capabilities = (ServerCapabilities)LittleEndianConverter.ToUInt32(this.SMBParameters, 22);
+            Capabilities = (Capabilities)LittleEndianConverter.ToUInt32(this.SMBParameters, 22);
 
             OEMPassword = ByteReader.ReadBytes(this.SMBData, 0, OEMPasswordLength);
             UnicodePassword = ByteReader.ReadBytes(this.SMBData, OEMPasswordLength, UnicodePasswordLength);
@@ -73,7 +73,7 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            Capabilities &= ~ServerCapabilities.ExtendedSecurity;
+            Capabilities &= ~Capabilities.ExtendedSecurity;
 
             OEMPasswordLength = (ushort)OEMPassword.Length;
             UnicodePasswordLength = (ushort)UnicodePassword.Length;

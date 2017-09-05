@@ -154,7 +154,7 @@ namespace SMBLibrary.Client
                 SessionSetupAndXRequest request = new SessionSetupAndXRequest();
                 request.MaxBufferSize = MaxBufferSize;
                 request.MaxMpxCount = MaxMpxCount;
-                request.Capabilities = ServerCapabilities.Unicode | ServerCapabilities.NTStatusCode;
+                request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode;
                 request.AccountName = userName;
                 request.PrimaryDomain = domainName;
                 byte[] clientChallenge = new byte[8];
@@ -195,7 +195,7 @@ namespace SMBLibrary.Client
                 SessionSetupAndXRequestExtended request = new SessionSetupAndXRequestExtended();
                 request.MaxBufferSize = MaxBufferSize;
                 request.MaxMpxCount = MaxMpxCount;
-                request.Capabilities = ServerCapabilities.Unicode | ServerCapabilities.NTStatusCode;
+                request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode;
                 request.SecurityBlob = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
                 TrySendMessage(request);
                 
@@ -209,7 +209,7 @@ namespace SMBLibrary.Client
                         request = new SessionSetupAndXRequestExtended();
                         request.MaxBufferSize = MaxBufferSize;
                         request.MaxMpxCount = MaxMpxCount;
-                        request.Capabilities = ServerCapabilities.Unicode | ServerCapabilities.NTStatusCode | ServerCapabilities.ExtendedSecurity;
+                        request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode | Capabilities.ExtendedSecurity;
 
                         request.SecurityBlob = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
                         TrySendMessage(request);

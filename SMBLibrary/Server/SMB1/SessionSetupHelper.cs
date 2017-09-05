@@ -58,11 +58,11 @@ namespace SMBLibrary.Server.SMB1
 
             header.UID = session.UserID;
             response.PrimaryDomain = request.PrimaryDomain;
-            if ((request.Capabilities & ServerCapabilities.LargeRead) > 0)
+            if ((request.Capabilities & Capabilities.LargeRead) > 0)
             {
                 state.LargeRead = true;
             }
-            if ((request.Capabilities & ServerCapabilities.LargeWrite) > 0)
+            if ((request.Capabilities & Capabilities.LargeWrite) > 0)
             {
                 state.LargeWrite = true;
             }

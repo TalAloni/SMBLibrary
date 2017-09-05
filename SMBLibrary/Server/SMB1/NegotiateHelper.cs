@@ -29,13 +29,13 @@ namespace SMBLibrary.Server.SMB1
             response.MaxNumberVcs = 1;
             response.MaxBufferSize = 16644;
             response.MaxRawSize = 65536;
-            response.Capabilities = ServerCapabilities.Unicode |
-                                    ServerCapabilities.LargeFiles |
-                                    ServerCapabilities.NTSMB |
-                                    ServerCapabilities.NTStatusCode |
-                                    ServerCapabilities.NTFind |
-                                    ServerCapabilities.LargeRead |
-                                    ServerCapabilities.LargeWrite;
+            response.Capabilities = Capabilities.Unicode |
+                                    Capabilities.LargeFiles |
+                                    Capabilities.NTSMB |
+                                    Capabilities.NTStatusCode |
+                                    Capabilities.NTFind |
+                                    Capabilities.LargeRead |
+                                    Capabilities.LargeWrite;
             response.SystemTime = DateTime.UtcNow;
             response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
             NegotiateMessage negotiateMessage = CreateNegotiateMessage();
@@ -60,14 +60,14 @@ namespace SMBLibrary.Server.SMB1
             response.MaxNumberVcs = 1;
             response.MaxBufferSize = 16644;
             response.MaxRawSize = 65536;
-            response.Capabilities = ServerCapabilities.Unicode |
-                                    ServerCapabilities.LargeFiles |
-                                    ServerCapabilities.NTSMB |
-                                    ServerCapabilities.NTStatusCode |
-                                    ServerCapabilities.NTFind |
-                                    ServerCapabilities.LargeRead |
-                                    ServerCapabilities.LargeWrite |
-                                    ServerCapabilities.ExtendedSecurity;
+            response.Capabilities = Capabilities.Unicode |
+                                    Capabilities.LargeFiles |
+                                    Capabilities.NTSMB |
+                                    Capabilities.NTStatusCode |
+                                    Capabilities.NTFind |
+                                    Capabilities.LargeRead |
+                                    Capabilities.LargeWrite |
+                                    Capabilities.ExtendedSecurity;
             response.SystemTime = DateTime.UtcNow;
             response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
             response.ServerGuid = serverGuid;
