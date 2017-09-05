@@ -18,9 +18,9 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 100;
         // Parameters:
-        //CommandName AndXCommand;
-        //byte AndXReserved;
-        //ushort AndXOffset;
+        // CommandName AndXCommand;
+        // byte AndXReserved;
+        // ushort AndXOffset;
         public OpLockLevel OpLockLevel;
         public ushort FID;
         public CreateDisposition CreateDisposition;
@@ -61,8 +61,8 @@ namespace SMBLibrary.SMB1
             Directory = (ByteReader.ReadByte(this.SMBParameters, ref parametersOffset) > 0);
             VolumeGuid = LittleEndianReader.ReadGuid(this.SMBParameters, ref parametersOffset);
             FileID = LittleEndianReader.ReadUInt64(this.SMBParameters, ref parametersOffset);
-            MaximalAccessRights = new AccessMask(this.SMBParameters, ref parametersOffset);
-            GuestMaximalAccessRights = new AccessMask(this.SMBParameters, ref parametersOffset);
+            MaximalAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
+            GuestMaximalAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
         }
 
         public override byte[] GetBytes(bool isUnicode)
@@ -84,8 +84,8 @@ namespace SMBLibrary.SMB1
             ByteWriter.WriteByte(this.SMBParameters, ref parametersOffset, Convert.ToByte(Directory));
             LittleEndianWriter.WriteGuidBytes(this.SMBParameters, ref parametersOffset, VolumeGuid);
             LittleEndianWriter.WriteUInt64(this.SMBParameters, ref parametersOffset, FileID);
-            MaximalAccessRights.WriteBytes(this.SMBParameters, ref parametersOffset);
-            GuestMaximalAccessRights.WriteBytes(this.SMBParameters, ref parametersOffset);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)MaximalAccessRights);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)GuestMaximalAccessRights);
             return base.GetBytes(isUnicode);
         }
 

@@ -41,7 +41,7 @@ namespace SMBLibrary.Server.SMB1
             FileStatus fileStatus;
             FileAttributes fileAttributes = ToFileAttributes(request.ExtFileAttributes);
             // GetFileInformation/FileNetworkOpenInformation requires FILE_READ_ATTRIBUTES
-            FileAccessMask desiredAccess = request.DesiredAccess | FileAccessMask.FILE_READ_ATTRIBUTES;
+            AccessMask desiredAccess = request.DesiredAccess | (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES;
             NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, fileAttributes, request.ShareAccess, request.CreateDisposition, request.CreateOptions, session.SecurityContext);
             if (createStatus != NTStatus.STATUS_SUCCESS)
             {
@@ -112,15 +112,15 @@ namespace SMBLibrary.Server.SMB1
             status.ReadMode = ReadMode.MessageMode;
             status.NamedPipeType = NamedPipeType.MessageModePipe;
             response.NMPipeStatus = status;
-            response.MaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
-                                                FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                FileAccessMask.FILE_EXECUTE |
-                                                FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                FileAccessMask.DELETE | FileAccessMask.READ_CONTROL | FileAccessMask.WRITE_DAC | FileAccessMask.WRITE_OWNER | FileAccessMask.SYNCHRONIZE;
-            response.GuestMaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
-                                                    FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                    FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                    FileAccessMask.READ_CONTROL | FileAccessMask.SYNCHRONIZE;
+            response.MaximalAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
+                                                        FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                        FileAccessMask.FILE_EXECUTE |
+                                                        FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                        AccessMask.DELETE | AccessMask.READ_CONTROL | AccessMask.WRITE_DAC | AccessMask.WRITE_OWNER | AccessMask.SYNCHRONIZE;
+            response.GuestMaximalAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
+                                                             FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                             FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                             AccessMask.READ_CONTROL | AccessMask.SYNCHRONIZE;
             return response;
         }
 
@@ -156,15 +156,15 @@ namespace SMBLibrary.Server.SMB1
             response.ResourceType = ResourceType.FileTypeDisk;
             response.FileStatusFlags = FileStatusFlags.NO_EAS | FileStatusFlags.NO_SUBSTREAMS | FileStatusFlags.NO_REPARSETAG;
             response.Directory = fileInfo.IsDirectory;
-            response.MaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
-                                                FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                FileAccessMask.FILE_EXECUTE |
-                                                FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                FileAccessMask.DELETE | FileAccessMask.READ_CONTROL | FileAccessMask.WRITE_DAC | FileAccessMask.WRITE_OWNER | FileAccessMask.SYNCHRONIZE;
-            response.GuestMaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
-                                                    FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                    FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                    FileAccessMask.READ_CONTROL | FileAccessMask.SYNCHRONIZE;
+            response.MaximalAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
+                                                        FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                        FileAccessMask.FILE_EXECUTE |
+                                                        FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                        AccessMask.DELETE | AccessMask.READ_CONTROL | AccessMask.WRITE_DAC | AccessMask.WRITE_OWNER | AccessMask.SYNCHRONIZE;
+            response.GuestMaximalAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
+                                                             FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                             FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                             AccessMask.READ_CONTROL | AccessMask.SYNCHRONIZE;
             return response;
         }
 

@@ -33,7 +33,7 @@ namespace SMBLibrary.Server.SMB1
                 FileStatus fileStatus;
                 DirectoryAccessMask accessMask = DirectoryAccessMask.FILE_LIST_DIRECTORY | DirectoryAccessMask.FILE_TRAVERSE | DirectoryAccessMask.SYNCHRONIZE;
                 CreateOptions createOptions = CreateOptions.FILE_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_NONALERT;
-                NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, accessMask, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, createOptions, securityContext);
+                NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)accessMask, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, createOptions, securityContext);
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
                     result = null;

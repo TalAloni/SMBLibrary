@@ -61,7 +61,6 @@
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />
     <Compile Include="Enums\Win32Error.cs" />
-    <Compile Include="EnumStructures\AccessMask.cs" />
     <Compile Include="Exceptions\UnsupportedInformationLevelException.cs" />
     <Compile Include="Helpers\FileTimeHelper.cs" />
     <Compile Include="NetBios\NameServicePackets\Enums\NameRecordType.cs" />
@@ -94,6 +93,9 @@
     <Compile Include="NTFileStore\Adapter\NTFileSystemAdapter.QueryDirectory.cs" />
     <Compile Include="NTFileStore\Adapter\NTFileSystemAdapter.QueryFileSystem.cs" />
     <Compile Include="NTFileStore\Adapter\NTFileSystemAdapter.Set.cs" />
+    <Compile Include="NTFileStore\Enums\AccessMask\AccessMask.cs" />
+    <Compile Include="NTFileStore\Enums\AccessMask\DirectoryAccessMask.cs" />
+    <Compile Include="NTFileStore\Enums\AccessMask\FileAccessMask.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\CompressionFormat.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\ExtendedAttributeFlags.cs" />
     <Compile Include="NTFileStore\Enums\FileInformation\FileAttributes.cs" />

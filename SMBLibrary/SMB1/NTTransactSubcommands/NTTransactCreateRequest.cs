@@ -20,15 +20,15 @@ namespace SMBLibrary.SMB1
         // Parameters:
         public NTCreateFlags Flags;
         public uint RootDirectoryFID;
-        public FileAccessMask DesiredAccess;
+        public AccessMask DesiredAccess;
         public long AllocationSize;
         public ExtendedFileAttributes ExtFileAttributes;
         public ShareAccess ShareAccess;
         public CreateDisposition CreateDisposition;
         public CreateOptions CreateOptions;
-        //uint SecurityDescriptiorLength;
-        //uint EALength;
-        //uint NameLength;
+        // uint SecurityDescriptiorLength;
+        // uint EALength;
+        // uint NameLength;
         public ImpersonationLevel ImpersonationLevel;
         public SecurityFlags SecurityFlags;
         public string Name; // OEM / Unicode. NOT null terminated. (MUST be aligned to start on a 2-byte boundary from the start of the NT_Trans_Parameters)
@@ -45,7 +45,7 @@ namespace SMBLibrary.SMB1
             int parametersOffset = 0;
             Flags = (NTCreateFlags)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
             RootDirectoryFID = LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
-            DesiredAccess = (FileAccessMask)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
+            DesiredAccess = (AccessMask)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
             AllocationSize = LittleEndianReader.ReadInt64(parameters, ref parametersOffset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);
             ShareAccess = (ShareAccess)LittleEndianReader.ReadUInt32(parameters, ref parametersOffset);

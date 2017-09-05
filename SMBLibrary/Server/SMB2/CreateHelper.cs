@@ -36,7 +36,7 @@ namespace SMBLibrary.Server.SMB2
             object handle;
             FileStatus fileStatus;
             // GetFileInformation/FileNetworkOpenInformation requires FILE_READ_ATTRIBUTES
-            AccessMask desiredAccess = request.DesiredAccess.File | FileAccessMask.FILE_READ_ATTRIBUTES;
+            AccessMask desiredAccess = request.DesiredAccess | (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES;
             NTStatus createStatus = share.FileStore.CreateFile(out handle, out fileStatus, path, desiredAccess, request.FileAttributes, request.ShareAccess, request.CreateDisposition, request.CreateOptions, session.SecurityContext);
             if (createStatus != NTStatus.STATUS_SUCCESS)
             {

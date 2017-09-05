@@ -18,9 +18,9 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 14;
         // Parameters:
-        //CommandName AndXCommand;
-        //byte AndXReserved;
-        //ushort AndXOffset;
+        // CommandName AndXCommand;
+        // byte AndXReserved;
+        // ushort AndXOffset;
         public OptionalSupportFlags OptionalSupport;
         public AccessMask MaximalShareAccessRights;
         public AccessMask GuestMaximalShareAccessRights;
@@ -36,8 +36,8 @@ namespace SMBLibrary.SMB1
         {
             int parametersOffset = 4;
             OptionalSupport = (OptionalSupportFlags)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
-            MaximalShareAccessRights = new AccessMask(this.SMBParameters, ref parametersOffset);
-            GuestMaximalShareAccessRights = new AccessMask(this.SMBParameters, ref parametersOffset);
+            MaximalShareAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
+            GuestMaximalShareAccessRights = (AccessMask)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
 
             int dataOffset = 0;
             string serviceString = ByteReader.ReadNullTerminatedAnsiString(this.SMBData, ref dataOffset);
@@ -51,8 +51,8 @@ namespace SMBLibrary.SMB1
             this.SMBParameters = new byte[ParametersLength];
             int parametersOffset = 4;
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)OptionalSupport);
-            MaximalShareAccessRights.WriteBytes(this.SMBParameters, ref parametersOffset);
-            GuestMaximalShareAccessRights.WriteBytes(this.SMBParameters, ref parametersOffset);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)MaximalShareAccessRights);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)GuestMaximalShareAccessRights);
 
             // Should be written as OEM string but it doesn't really matter
             string serviceString = ServiceNameHelper.GetServiceString(Service);

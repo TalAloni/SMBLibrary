@@ -17,31 +17,31 @@ namespace SMBLibrary
         {
             FileAccess result = 0;
 
-            if ((desiredAccess.File & FileAccessMask.FILE_READ_DATA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_READ_EA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_READ_ATTRIBUTES) > 0 ||
-                (desiredAccess.File & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_ALL) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_READ) > 0)
+            if (((FileAccessMask)desiredAccess & FileAccessMask.FILE_READ_DATA) > 0 ||
+                ((FileAccessMask)desiredAccess & FileAccessMask.FILE_READ_EA) > 0 ||
+                ((FileAccessMask)desiredAccess & FileAccessMask.FILE_READ_ATTRIBUTES) > 0 ||
+                (desiredAccess & AccessMask.MAXIMUM_ALLOWED) > 0 ||
+                (desiredAccess & AccessMask.GENERIC_ALL) > 0 ||
+                (desiredAccess & AccessMask.GENERIC_READ) > 0)
             {
                 result |= FileAccess.Read;
             }
 
-            if ((desiredAccess.File & FileAccessMask.FILE_WRITE_DATA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_APPEND_DATA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_WRITE_EA) > 0 ||
-                (desiredAccess.File & FileAccessMask.FILE_WRITE_ATTRIBUTES) > 0 ||
-                (desiredAccess.File & FileAccessMask.DELETE) > 0 ||
-                (desiredAccess.File & FileAccessMask.WRITE_DAC) > 0 ||
-                (desiredAccess.File & FileAccessMask.WRITE_OWNER) > 0 ||
-                (desiredAccess.File & FileAccessMask.MAXIMUM_ALLOWED) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_ALL) > 0 ||
-                (desiredAccess.File & FileAccessMask.GENERIC_WRITE) > 0)
+            if (((FileAccessMask)desiredAccess & FileAccessMask.FILE_WRITE_DATA) > 0 ||
+                ((FileAccessMask)desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0 ||
+                ((FileAccessMask)desiredAccess & FileAccessMask.FILE_WRITE_EA) > 0 ||
+                ((FileAccessMask)desiredAccess & FileAccessMask.FILE_WRITE_ATTRIBUTES) > 0 ||
+                (desiredAccess & AccessMask.DELETE) > 0 ||
+                (desiredAccess & AccessMask.WRITE_DAC) > 0 ||
+                (desiredAccess & AccessMask.WRITE_OWNER) > 0 ||
+                (desiredAccess & AccessMask.MAXIMUM_ALLOWED) > 0 ||
+                (desiredAccess & AccessMask.GENERIC_ALL) > 0 ||
+                (desiredAccess & AccessMask.GENERIC_WRITE) > 0)
             {
                 result |= FileAccess.Write;
             }
 
-            if ((desiredAccess.Directory & DirectoryAccessMask.FILE_DELETE_CHILD) > 0)
+            if (((DirectoryAccessMask)desiredAccess & DirectoryAccessMask.FILE_DELETE_CHILD) > 0)
             {
                 result |= FileAccess.Write;
             }
@@ -103,7 +103,7 @@ namespace SMBLibrary
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, FileAccessMask.FILE_READ_ATTRIBUTES, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return null;

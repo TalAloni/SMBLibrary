@@ -37,7 +37,7 @@ namespace SMBLibrary.SMB2
             Reserved = ByteReader.ReadByte(buffer, offset + SMB2Header.Length + 3);
             ShareFlags = (ShareFlags)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 4);
             Capabilities = (ShareCapabilities)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 8);
-            MaximalAccess = new AccessMask(buffer, offset + SMB2Header.Length + 12);
+            MaximalAccess = (AccessMask)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 12);
         }
 
         public override void WriteCommandBytes(byte[] buffer, int offset)
@@ -47,7 +47,7 @@ namespace SMBLibrary.SMB2
             ByteWriter.WriteByte(buffer, offset + 3, Reserved);
             LittleEndianWriter.WriteUInt32(buffer, offset + 4, (uint)ShareFlags);
             LittleEndianWriter.WriteUInt32(buffer, offset + 8, (uint)Capabilities);
-            MaximalAccess.WriteBytes(buffer, offset + 12);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 12, (uint)MaximalAccess);
         }
 
         public override int CommandLength

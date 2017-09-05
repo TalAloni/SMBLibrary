@@ -49,7 +49,7 @@ namespace SMBLibrary.SMB2
             ImpersonationLevel = (ImpersonationLevel)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 4);
             SmbCreateFlags = LittleEndianConverter.ToUInt64(buffer, offset + SMB2Header.Length + 8);
             Reserved = LittleEndianConverter.ToUInt64(buffer, offset + SMB2Header.Length + 16);
-            DesiredAccess = new AccessMask(buffer, offset + SMB2Header.Length + 24);
+            DesiredAccess = (AccessMask)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 24);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 28);
             ShareAccess = (ShareAccess)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 32);
             CreateDisposition = (CreateDisposition)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 36);
@@ -87,7 +87,7 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt32(buffer, offset + 4, (uint)ImpersonationLevel);
             LittleEndianWriter.WriteUInt64(buffer, offset + 8, (ulong)SmbCreateFlags);
             LittleEndianWriter.WriteUInt64(buffer, offset + 16, (ulong)Reserved);
-            DesiredAccess.WriteBytes(buffer, offset + 24);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 24, (uint)DesiredAccess);
             LittleEndianWriter.WriteUInt32(buffer, offset + 28, (uint)FileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, offset + 32, (uint)ShareAccess);
             LittleEndianWriter.WriteUInt32(buffer, offset + 36, (uint)CreateDisposition);

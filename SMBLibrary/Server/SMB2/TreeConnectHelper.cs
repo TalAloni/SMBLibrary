@@ -54,11 +54,11 @@ namespace SMBLibrary.Server.SMB2
             response.Header.TreeID = treeID.Value;
             response.ShareType = shareType;
             response.ShareFlags = shareFlags;
-            response.MaximalAccess.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
-                                          FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                          FileAccessMask.FILE_EXECUTE |
-                                          FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                          FileAccessMask.DELETE | FileAccessMask.READ_CONTROL | FileAccessMask.WRITE_DAC | FileAccessMask.WRITE_OWNER | FileAccessMask.SYNCHRONIZE;
+            response.MaximalAccess = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
+                                                  FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                  FileAccessMask.FILE_EXECUTE |
+                                                  FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                  AccessMask.DELETE | AccessMask.READ_CONTROL | AccessMask.WRITE_DAC | AccessMask.WRITE_OWNER | AccessMask.SYNCHRONIZE;
             return response;
         }
 

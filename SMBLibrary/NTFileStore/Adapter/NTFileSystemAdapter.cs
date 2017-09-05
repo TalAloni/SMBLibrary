@@ -236,7 +236,7 @@ namespace SMBLibrary
                 return NTStatus.STATUS_INVALID_PARAMETER;
             }
 
-            FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(desiredAccess.File);
+            FileAccess fileAccess = NTFileStoreHelper.ToFileAccess((FileAccessMask)desiredAccess);
             Stream stream;
             if (fileAccess == (FileAccess)0 || entry.IsDirectory)
             {

@@ -93,15 +93,15 @@ namespace SMBLibrary.Server.SMB1
         {
             TreeConnectAndXResponseExtended response = new TreeConnectAndXResponseExtended();
             response.OptionalSupport = supportFlags;
-            response.MaximalShareAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
-                                                        FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                        FileAccessMask.FILE_EXECUTE |
-                                                        FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                        FileAccessMask.DELETE | FileAccessMask.READ_CONTROL | FileAccessMask.WRITE_DAC | FileAccessMask.WRITE_OWNER | FileAccessMask.SYNCHRONIZE;
-            response.GuestMaximalShareAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
-                                                            FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                            FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                            FileAccessMask.READ_CONTROL | FileAccessMask.SYNCHRONIZE;
+            response.MaximalShareAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
+                                                             FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                             FileAccessMask.FILE_EXECUTE |
+                                                             FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                             AccessMask.DELETE | AccessMask.READ_CONTROL | AccessMask.WRITE_DAC | AccessMask.WRITE_OWNER | AccessMask.SYNCHRONIZE;
+            response.GuestMaximalShareAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
+                                                                  FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                                  FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                                  AccessMask.READ_CONTROL | AccessMask.SYNCHRONIZE;
             response.NativeFileSystem = String.Empty;
             response.Service = serviceName;
             return response;

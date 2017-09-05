@@ -165,12 +165,12 @@ namespace SMBLibrary.Win32
             // NtQueryDirectoryFile will return STATUS_PENDING if the directory handle was not opened with SYNCHRONIZE and FILE_SYNCHRONOUS_IO_ALERT or FILE_SYNCHRONOUS_IO_NONALERT.
             // Our usage of NtNotifyChangeDirectoryFile assumes the directory handle is opened with SYNCHRONIZE and FILE_SYNCHRONOUS_IO_ALERT (or FILE_SYNCHRONOUS_IO_NONALERT starting from Windows Vista).
             // Note: Sometimes a directory will be opened without specifying FILE_DIRECTORY_FILE.
-            desiredAccess.Directory |= DirectoryAccessMask.SYNCHRONIZE;
+            desiredAccess |= AccessMask.SYNCHRONIZE;
             createOptions &= ~CreateOptions.FILE_SYNCHRONOUS_IO_NONALERT;
             createOptions |= CreateOptions.FILE_SYNCHRONOUS_IO_ALERT;
 
             if ((createOptions & CreateOptions.FILE_NO_INTERMEDIATE_BUFFERING) > 0 &&
-                (desiredAccess.File & FileAccessMask.FILE_APPEND_DATA) > 0)
+                ((FileAccessMask)desiredAccess & FileAccessMask.FILE_APPEND_DATA) > 0)
             {
                 // FILE_NO_INTERMEDIATE_BUFFERING is incompatible with FILE_APPEND_DATA
                 // [MS-SMB2] 3.3.5.9 suggests setting FILE_APPEND_DATA to zero in this case.
@@ -345,7 +345,7 @@ namespace SMBLibrary.Win32
             IntPtr volumeHandle;
             FileStatus fileStatus;
             string nativePath = @"\??\" + m_directory.FullName.Substring(0, 3);
-            NTStatus status = CreateFile(out volumeHandle, out fileStatus, nativePath, DirectoryAccessMask.GENERIC_READ, 0, (FileAttributes)0, ShareAccess.FILE_SHARE_READ, CreateDisposition.FILE_OPEN, (CreateOptions)0);
+            NTStatus status = CreateFile(out volumeHandle, out fileStatus, nativePath, AccessMask.GENERIC_READ, 0, (FileAttributes)0, ShareAccess.FILE_SHARE_READ, CreateDisposition.FILE_OPEN, (CreateOptions)0);
             result = null;
             if (status != NTStatus.STATUS_SUCCESS)
             {

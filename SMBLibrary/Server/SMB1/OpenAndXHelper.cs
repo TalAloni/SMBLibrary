@@ -103,19 +103,19 @@ namespace SMBLibrary.Server.SMB1
         {
             if (accessMode == AccessMode.Read)
             {
-                return FileAccessMask.GENERIC_READ;
+                return AccessMask.GENERIC_READ;
             }
-            if (accessMode == AccessMode.Write)
+            else if (accessMode == AccessMode.Write)
             {
-                return FileAccessMask.GENERIC_WRITE | FileAccessMask.FILE_READ_ATTRIBUTES;
+                return AccessMask.GENERIC_WRITE | (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES;
             }
             else if (accessMode == AccessMode.ReadWrite)
             {
-                return FileAccessMask.GENERIC_READ | FileAccessMask.GENERIC_WRITE;
+                return AccessMask.GENERIC_READ | AccessMask.GENERIC_WRITE;
             }
             else if (accessMode == AccessMode.Execute)
             {
-                return FileAccessMask.GENERIC_READ | FileAccessMask.GENERIC_EXECUTE;
+                return AccessMask.GENERIC_READ | AccessMask.GENERIC_EXECUTE;
             }
             else
             {
@@ -301,15 +301,15 @@ namespace SMBLibrary.Server.SMB1
             response.AccessRights = AccessRights.SMB_DA_ACCESS_READ;
             response.ResourceType = ResourceType.FileTypeDisk;
             response.OpenResults.OpenResult = openResult;
-            response.MaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
-                                                FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                FileAccessMask.FILE_EXECUTE |
-                                                FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                FileAccessMask.DELETE | FileAccessMask.READ_CONTROL | FileAccessMask.WRITE_DAC | FileAccessMask.WRITE_OWNER | FileAccessMask.SYNCHRONIZE;
-            response.GuestMaximalAccessRights.File = FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
-                                                    FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
-                                                    FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES |
-                                                    FileAccessMask.READ_CONTROL | FileAccessMask.SYNCHRONIZE;
+            response.MaximalAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA | FileAccessMask.FILE_APPEND_DATA |
+                                                        FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                        FileAccessMask.FILE_EXECUTE |
+                                                        FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                        AccessMask.DELETE | AccessMask.READ_CONTROL | AccessMask.WRITE_DAC | AccessMask.WRITE_OWNER | AccessMask.SYNCHRONIZE;
+            response.GuestMaximalAccessRights = (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA |
+                                                             FileAccessMask.FILE_READ_EA | FileAccessMask.FILE_WRITE_EA |
+                                                             FileAccessMask.FILE_READ_ATTRIBUTES | FileAccessMask.FILE_WRITE_ATTRIBUTES) |
+                                                             AccessMask.READ_CONTROL | AccessMask.SYNCHRONIZE;
             return response;
         }
     }

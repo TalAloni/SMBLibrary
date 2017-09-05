@@ -18,9 +18,9 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 38;
         // Parameters:
-        //CommandName AndXCommand;
-        //byte AndXReserved;
-        //ushort AndXOffset;
+        // CommandName AndXCommand;
+        // byte AndXReserved;
+        // ushort AndXOffset;
         public ushort FID;
         public SMBFileAttributes FileAttrs;
         public DateTime? LastWriteTime; // UTime
@@ -57,8 +57,8 @@ namespace SMBLibrary.SMB1
             OpenResults.WriteBytes(this.SMBParameters, ref parametersOffset);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, ServerFID);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, Reserved);
-            MaximalAccessRights.WriteBytes(this.SMBParameters, ref parametersOffset);
-            GuestMaximalAccessRights.WriteBytes(this.SMBParameters, ref parametersOffset);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)MaximalAccessRights);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)GuestMaximalAccessRights);
             return base.GetBytes(isUnicode);
         }
 
