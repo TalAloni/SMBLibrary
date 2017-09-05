@@ -19,12 +19,17 @@ namespace SMBLibrary.SMB1
         public const int ParametersLength = 8;
         // Parameters:
         public TreeConnectFlags Flags;
-        //ushort PasswordLength;
+        // ushort PasswordLength;
         // Data:
         public byte[] Password;
         // Padding
         public string Path;         // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
         public ServiceName Service; // OEM string
+
+        public TreeConnectAndXRequest()
+        {
+            Password = new byte[0];
+        }
 
         public TreeConnectAndXRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
@@ -56,7 +61,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, passwordLength);
 
             string serviceString = ServiceNameHelper.GetServiceString(Service);
-            int dataLength = Password.Length + serviceString.Length;
+            int dataLength = Password.Length + serviceString.Length + 1;
             if (isUnicode)
             {
                 int padding = (1 + passwordLength) % 2;
