@@ -8,7 +8,7 @@ namespace SMBLibrary.SMB1
     [Flags]
     public enum ExtendedFileAttributes : uint
     {
-        Readonly = 0x00000001,        // ATTR_READONLY
+        ReadOnly = 0x00000001,        // ATTR_READONLY
         Hidden = 0x00000002,          // ATTR_HIDDEN
         System = 0x00000004,          // ATTR_SYSTEM
         Directory = 0x00000010,       // ATTR_DIRECTORY
