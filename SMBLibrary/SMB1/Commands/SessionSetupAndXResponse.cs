@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -18,9 +18,9 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 6;
         // Parameters:
-        //CommandName AndXCommand;
-        //byte AndXReserved;
-        //ushort AndXOffset;
+        // CommandName AndXCommand;
+        // byte AndXReserved;
+        // ushort AndXOffset;
         public SessionSetupAction Action;
         // Data:
         public string NativeOS;      // SMB_STRING (If Unicode, this field MUST be aligned to start on a 2-byte boundary from the start of the SMB header)
@@ -47,6 +47,11 @@ namespace SMBLibrary.SMB1
             }
             NativeOS = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
             NativeLanMan = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
+            if ((this.SMBData.Length - dataOffset) % 2 == 1)
+            {
+                // Workaround for a single terminating null byte
+                this.SMBData = ByteUtils.Concatenate(this.SMBData, new byte[1]);
+            }
             PrimaryDomain = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, isUnicode);
         }
 
