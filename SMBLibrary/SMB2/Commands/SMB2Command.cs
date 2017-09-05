@@ -6,6 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using Utilities;
 
@@ -63,8 +64,8 @@ namespace SMBLibrary.SMB2
 
         public static SMB2Command ReadRequest(byte[] buffer, int offset)
         {
-            SMB2CommandName Command = (SMB2CommandName)LittleEndianConverter.ToUInt16(buffer, offset + 12);
-            switch (Command)
+            SMB2CommandName command = (SMB2CommandName)LittleEndianConverter.ToUInt16(buffer, offset + 12);
+            switch (command)
             {
                 case SMB2CommandName.Negotiate:
                     return new NegotiateRequest(buffer, offset);
@@ -103,7 +104,7 @@ namespace SMBLibrary.SMB2
                 case SMB2CommandName.SetInfo:
                     return new SetInfoRequest(buffer, offset);
                 default:
-                    throw new System.IO.InvalidDataException("Invalid SMB2 command in buffer");
+                    throw new InvalidDataException("Invalid SMB2 command in buffer");
             }
         }
 
@@ -173,6 +174,319 @@ namespace SMBLibrary.SMB2
                 offset += paddedLength;
             }
             return buffer;
+        }
+
+        public static SMB2Command ReadResponse(byte[] buffer, int offset)
+        {
+            SMB2CommandName command = (SMB2CommandName)LittleEndianConverter.ToUInt16(buffer, offset + 12);
+            ushort structureSize = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 0);
+            switch (command)
+            {
+                case SMB2CommandName.Negotiate:
+                    {
+                        if (structureSize == NegotiateResponse.DeclaredSize)
+                        {
+                            return new NegotiateResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.SessionSetup:
+                    {
+                        // SESSION_SETUP Response and ERROR Response have the same declared StructureSize of 9.
+                        if (structureSize == SessionSetupResponse.DeclaredSize)
+                        {
+                            NTStatus status = (NTStatus)LittleEndianConverter.ToUInt32(buffer, offset + 8);
+                            if (status == NTStatus.STATUS_SUCCESS || status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED)
+                            {
+                                return new SessionSetupResponse(buffer, offset);
+                            }
+                            else
+                            {
+                                return new ErrorResponse(buffer, offset);
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Logoff:
+                    {
+                        if (structureSize == LogoffResponse.DeclaredSize)
+                        {
+                            return new LogoffResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.TreeConnect:
+                    {
+                        if (structureSize == TreeConnectResponse.DeclaredSize)
+                        {
+                            return new TreeConnectResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.TreeDisconnect:
+                    {
+                        if (structureSize == TreeDisconnectResponse.DeclaredSize)
+                        {
+                            return new TreeDisconnectResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Create:
+                    {
+                        if (structureSize == CreateResponse.DeclaredSize)
+                        {
+                            return new CreateResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Close:
+                    {
+                        if (structureSize == CloseResponse.DeclaredSize)
+                        {
+                            return new CloseResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Flush:
+                    {
+                        if (structureSize == FlushResponse.DeclaredSize)
+                        {
+                            return new FlushResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Read:
+                    {
+                        if (structureSize == SMB2.ReadResponse.DeclaredSize)
+                        {
+                            return new ReadResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Write:
+                    {
+                        if (structureSize == WriteResponse.DeclaredSize)
+                        {
+                            return new WriteResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Lock:
+                    {
+                        if (structureSize == LockResponse.DeclaredSize)
+                        {
+                            return new LockResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.IOCtl:
+                    {
+                        if (structureSize == IOCtlResponse.DeclaredSize)
+                        {
+                            return new IOCtlResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Cancel:
+                    {
+                        if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.Echo:
+                    {
+                        if (structureSize == EchoResponse.DeclaredSize)
+                        {
+                            return new EchoResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.QueryDirectory:
+                    {
+                        // QUERY_DIRECTORY Response and ERROR Response have the same declared StructureSize of 9.
+                        if (structureSize == QueryDirectoryResponse.DeclaredSize)
+                        {
+                            NTStatus status = (NTStatus)LittleEndianConverter.ToUInt32(buffer, offset + 8);
+                            if (status == NTStatus.STATUS_SUCCESS)
+                            {
+                                return new QueryDirectoryResponse(buffer, offset);
+                            }
+                            else
+                            {
+                                return new ErrorResponse(buffer, offset);
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.ChangeNotify:
+                    {
+                        // CHANGE_NOTIFY Response and ERROR Response have the same declared StructureSize of 9.
+                        if (structureSize == ChangeNotifyResponse.DeclaredSize)
+                        {
+                            NTStatus status = (NTStatus)LittleEndianConverter.ToUInt32(buffer, offset + 8);
+                            if (status == NTStatus.STATUS_SUCCESS ||
+                                status == NTStatus.STATUS_NOTIFY_CLEANUP || 
+                                status == NTStatus.STATUS_NOTIFY_ENUM_DIR)
+                            {
+                                return new ChangeNotifyResponse(buffer, offset);
+                            }
+                            else
+                            {
+                                return new ErrorResponse(buffer, offset);
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.QueryInfo:
+                    {
+                        // QUERY_INFO Response and ERROR Response have the same declared StructureSize of 9.
+                        if (structureSize == QueryInfoResponse.DeclaredSize)
+                        {
+                            NTStatus status = (NTStatus)LittleEndianConverter.ToUInt32(buffer, offset + 8);
+                            if (status == NTStatus.STATUS_SUCCESS)
+                            {
+                                return new QueryInfoResponse(buffer, offset);
+                            }
+                            else
+                            {
+                                return new ErrorResponse(buffer, offset);
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case SMB2CommandName.SetInfo:
+                    {
+                        if (structureSize == SetInfoResponse.DeclaredSize)
+                        {
+                            return new SetInfoResponse(buffer, offset);
+                        }
+                        else if (structureSize == ErrorResponse.DeclaredSize)
+                        {
+                            return new ErrorResponse(buffer, offset);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                default:
+                    throw new InvalidDataException("Invalid SMB2 command in buffer");
+            }
+        }
+
+        public static List<SMB2Command> ReadResponseChain(byte[] buffer, int offset)
+        {
+            List<SMB2Command> result = new List<SMB2Command>();
+            SMB2Command command;
+            do
+            {
+                command = ReadResponse(buffer, offset);
+                result.Add(command);
+                offset += (int)command.Header.NextCommand;
+            }
+            while (command.Header.NextCommand != 0);
+            return result;
         }
     }
 }
