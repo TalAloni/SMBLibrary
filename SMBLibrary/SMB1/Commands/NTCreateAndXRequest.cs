@@ -18,11 +18,11 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 48;
         // Parameters:
-        //CommandName AndXCommand;
-        //byte AndXReserved;
-        //ushort AndXOffset;
+        // CommandName AndXCommand;
+        // byte AndXReserved;
+        // ushort AndXOffset;
         public byte Reserved;
-        private ushort NameLength; // in bytes
+        // ushort NameLength; // in bytes
         public NTCreateFlags Flags;
         public uint RootDirectoryFID;
         public FileAccessMask DesiredAccess;
@@ -43,7 +43,7 @@ namespace SMBLibrary.SMB1
         public NTCreateAndXRequest(byte[] buffer, int offset, bool isUnicode) : base(buffer, offset, isUnicode)
         {
             Reserved = ByteReader.ReadByte(this.SMBParameters, 4);
-            NameLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 5);
+            ushort nameLength = LittleEndianConverter.ToUInt16(this.SMBParameters, 5);
             Flags = (NTCreateFlags)LittleEndianConverter.ToUInt32(this.SMBParameters, 7);
             RootDirectoryFID = LittleEndianConverter.ToUInt32(this.SMBParameters, 11);
             DesiredAccess = (FileAccessMask)LittleEndianConverter.ToUInt32(this.SMBParameters, 15);
@@ -67,13 +67,17 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            NameLength = (ushort)FileName.Length;
+            ushort nameLength = (ushort)FileName.Length;
+            if (isUnicode)
+            {
+                nameLength *= 2;
+            }
             this.SMBParameters = new byte[ParametersLength];
             ByteWriter.WriteByte(this.SMBParameters, 0, (byte)AndXCommand);
             ByteWriter.WriteByte(this.SMBParameters, 1, AndXReserved);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 2, AndXOffset);
             ByteWriter.WriteByte(this.SMBParameters, 4, Reserved);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 5, NameLength);
+            LittleEndianWriter.WriteUInt16(this.SMBParameters, 5, nameLength);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 7, (uint)Flags);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 11, RootDirectoryFID);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 15, (uint)DesiredAccess);
