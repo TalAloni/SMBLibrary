@@ -22,7 +22,7 @@ namespace SMBLibrary.SMB2
 
         public LogoffRequest() : base(SMB2CommandName.Logoff)
         {
-            StructureSize = 4;
+            StructureSize = DeclaredSize;
         }
 
         public LogoffRequest(byte[] buffer, int offset) : base(buffer, offset)
