@@ -195,7 +195,7 @@ namespace SMBLibrary.Client
                 SessionSetupAndXRequestExtended request = new SessionSetupAndXRequestExtended();
                 request.MaxBufferSize = MaxBufferSize;
                 request.MaxMpxCount = MaxMpxCount;
-                request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode;
+                request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode | Capabilities.LargeRead | Capabilities.LargeWrite;
                 request.SecurityBlob = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
                 TrySendMessage(request);
                 
@@ -209,7 +209,7 @@ namespace SMBLibrary.Client
                         request = new SessionSetupAndXRequestExtended();
                         request.MaxBufferSize = MaxBufferSize;
                         request.MaxMpxCount = MaxMpxCount;
-                        request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode | Capabilities.ExtendedSecurity;
+                        request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode | Capabilities.LargeRead | Capabilities.LargeWrite | Capabilities.ExtendedSecurity;
 
                         request.SecurityBlob = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
                         TrySendMessage(request);
@@ -227,6 +227,29 @@ namespace SMBLibrary.Client
                 }
                 return NTStatus.STATUS_INVALID_SMB;
             }
+        }
+
+        public SMB1FileStore TreeConnect(string shareName, ServiceName serviceName, out NTStatus status)
+        {
+            TreeConnectAndXRequest request = new TreeConnectAndXRequest();
+            request.Path = shareName;
+            request.Service = serviceName;
+            TrySendMessage(request);
+            SMB1Message reply = WaitForMessage(CommandName.SMB_COM_TREE_CONNECT_ANDX);
+            if (reply != null)
+            {
+                status = reply.Header.Status;
+                if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is TreeConnectAndXResponse)
+                {
+                    TreeConnectAndXResponse response = (TreeConnectAndXResponse)reply.Commands[0];
+                    return new SMB1FileStore(this, reply.Header.TID);
+                }
+            }
+            else
+            {
+                status = NTStatus.STATUS_INVALID_SMB;
+            }
+            return null;
         }
 
         private void OnServerSocketReceive(IAsyncResult ar)
