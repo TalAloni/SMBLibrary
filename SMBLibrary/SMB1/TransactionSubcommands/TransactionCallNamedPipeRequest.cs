@@ -23,7 +23,6 @@ namespace SMBLibrary.SMB1
 
         public TransactionCallNamedPipeRequest() : base()
         {
-
         }
 
         public TransactionCallNamedPipeRequest(byte[] setup, byte[] data) : base()
@@ -38,7 +37,7 @@ namespace SMBLibrary.SMB1
             byte[] setup = new byte[4];
             LittleEndianWriter.WriteUInt16(setup, 0, (ushort)this.SubcommandName);
             LittleEndianWriter.WriteUInt16(setup, 2, Priority);
-            return base.GetSetup();
+            return setup;
         }
 
         public override byte[] GetData()
