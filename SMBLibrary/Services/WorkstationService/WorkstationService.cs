@@ -32,9 +32,9 @@ namespace SMBLibrary.Services
 
         public override byte[] GetResponseBytes(ushort opNum, byte[] requestBytes)
         {
-            switch (opNum)
+            switch ((WorkstationServiceOpName)opNum)
             {
-                case 0:
+                case WorkstationServiceOpName.NetrWkstaGetInfo:
                     NetrWkstaGetInfoRequest request = new NetrWkstaGetInfoRequest(requestBytes);
                     NetrWkstaGetInfoResponse response = GetNetrWkstaGetInfoResponse(request);
                     return response.GetBytes();

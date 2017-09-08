@@ -40,21 +40,21 @@ namespace SMBLibrary.Services
 
         public override byte[] GetResponseBytes(ushort opNum, byte[] requestBytes)
         {
-            switch (opNum)
+            switch ((ServerServiceOpName)opNum)
             {
-                case 15:
+                case ServerServiceOpName.NetrShareEnum:
                     {
                         NetrShareEnumRequest request = new NetrShareEnumRequest(requestBytes);
                         NetrShareEnumResponse response = GetNetrShareEnumResponse(request);
                         return response.GetBytes();
                     }
-                case 16:
+                case ServerServiceOpName.NetrShareGetInfo:
                     {
                         NetrShareGetInfoRequest request = new NetrShareGetInfoRequest(requestBytes);
                         NetrShareGetInfoResponse response = GetNetrShareGetInfoResponse(request);
                         return response.GetBytes();
                     }
-                case 21:
+                case ServerServiceOpName.NetrServerGetInfo:
                     {
                         NetrServerGetInfoRequest request = new NetrServerGetInfoRequest(requestBytes);
                         NetrServerGetInfoResponse response = GetNetrWkstaGetInfoResponse(request);

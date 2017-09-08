@@ -257,6 +257,7 @@
     <Compile Include="Services\RemoteServiceHelper.cs" />
     <Compile Include="Services\RPCPipeStream.cs" />
     <Compile Include="Services\ServerService\Enums\Permissions.cs" />
+    <Compile Include="Services\ServerService\Enums\ServerServiceOpName.cs" />
     <Compile Include="Services\ServerService\Enums\ServerType.cs" />
     <Compile Include="Services\ServerService\EnumStructures\ShareTypeExtended.cs" />
     <Compile Include="Services\ServerService\NetrServerGetInfoRequest.cs" />
@@ -279,6 +280,7 @@
     <Compile Include="Services\ServerService\Structures\ShareInfo\ShareInfo1Container.cs" />
     <Compile Include="Services\ServerService\Structures\ShareInfo\ShareInfo1Entry.cs" />
     <Compile Include="Services\ServerService\Structures\ShareInfo\ShareInfo2Entry.cs" />
+    <Compile Include="Services\WorkstationService\Enums\WorkstationServiceOpName.cs" />
     <Compile Include="Services\WorkstationService\NetrWkstaGetInfoRequest.cs" />
     <Compile Include="Services\WorkstationService\NetrWkstaGetInfoResponse.cs" />
     <Compile Include="Services\WorkstationService\Structures\WorkstationInfo.cs" />
