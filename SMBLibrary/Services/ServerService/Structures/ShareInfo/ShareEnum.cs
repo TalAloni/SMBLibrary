@@ -67,13 +67,13 @@ namespace SMBLibrary.Services
         {
             if (Info != null && Level != Info.Level)
             {
-                throw new ArgumentException("Invalid SHARE_ENUM_STRUCT Level");
+                throw new ArgumentException("SHARE_ENUM_STRUCT Level mismatch");
             }
 
             writer.BeginStructure(); // SHARE_ENUM_STRUCT
             writer.WriteUInt32(Level);
             writer.BeginStructure(); // SHARE_ENUM_UNION
-            writer.WriteUInt32(Info.Level);
+            writer.WriteUInt32(Level);
             writer.WriteEmbeddedStructureFullPointer(Info);
             writer.EndStructure(); // SHARE_ENUM_UNION
             writer.EndStructure(); // SHARE_ENUM_STRUCT
