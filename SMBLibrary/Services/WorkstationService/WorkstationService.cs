@@ -15,6 +15,10 @@ namespace SMBLibrary.Services
     /// </summary>
     public class WorkstationService : RemoteService
     {
+        public const string ServicePipeName = @"wkssvc";
+        public static readonly Guid ServiceInterfaceGuid = new Guid("6BFFD098-A112-3610-9833-46C3F87E345A");
+        public const int ServiceVersion = 1;
+
         private uint m_platformID;
         private string m_computerName;
         private string m_lanGroup;
@@ -79,7 +83,7 @@ namespace SMBLibrary.Services
         {
             get
             {
-                return new Guid("6BFFD098-A112-3610-9833-46C3F87E345A");
+                return ServiceInterfaceGuid;
             }
         }
 
@@ -87,7 +91,7 @@ namespace SMBLibrary.Services
         {
             get
             {
-                return "wkssvc";
+                return ServicePipeName;
             }
         }
     }
