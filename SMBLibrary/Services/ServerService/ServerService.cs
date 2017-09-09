@@ -16,6 +16,10 @@ namespace SMBLibrary.Services
     /// </summary>
     public class ServerService : RemoteService
     {
+        public const string ServicePipeName = @"srvsvc";
+        public static readonly Guid ServiceInterfaceGuid = new Guid("4B324FC8-1670-01D3-1278-5A47BF6EE188");
+        public const int ServiceVersion = 3;
+
         public const int MaxPreferredLength = -1; // MAX_PREFERRED_LENGTH
 
         private PlatformName m_platformID;
@@ -36,7 +40,6 @@ namespace SMBLibrary.Services
 
             m_shares = shares;
         }
-
 
         public override byte[] GetResponseBytes(ushort opNum, byte[] requestBytes)
         {
@@ -179,7 +182,7 @@ namespace SMBLibrary.Services
         {
             get
             {
-                return new Guid("4B324FC8-1670-01D3-1278-5A47BF6EE188");
+                return ServiceInterfaceGuid;
             }
         }
 
@@ -187,7 +190,7 @@ namespace SMBLibrary.Services
         {
             get
             {
-                return "srvsvc";
+                return ServicePipeName;
             }
         }
     }
