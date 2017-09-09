@@ -83,6 +83,8 @@ namespace SMBLibrary.RPC
                     return new BindPDU(buffer, offset);
                 case PacketTypeName.BindAck:
                     return new BindAckPDU(buffer, offset);
+                case PacketTypeName.BindNak:
+                    return new BindNakPDU(buffer, offset);
                 default:
                     throw new NotImplementedException();
             }

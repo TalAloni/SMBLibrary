@@ -182,6 +182,7 @@
     <Compile Include="RPC\NDR\NDRUnicodeString.cs" />
     <Compile Include="RPC\NDR\NDRWriter.cs" />
     <Compile Include="RPC\PDU\BindAckPDU.cs" />
+    <Compile Include="RPC\PDU\BindNakPDU.cs" />
     <Compile Include="RPC\PDU\BindPDU.cs" />
     <Compile Include="RPC\PDU\FaultPDU.cs" />
     <Compile Include="RPC\PDU\RequestPDU.cs" />
@@ -193,6 +194,8 @@
     <Compile Include="RPC\Structures\ResultElement.cs" />
     <Compile Include="RPC\Structures\ResultList.cs" />
     <Compile Include="RPC\Structures\SyntaxID.cs" />
+    <Compile Include="RPC\Structures\Version.cs" />
+    <Compile Include="RPC\Structures\VersionsSupported.cs" />
     <Compile Include="Server\ConnectionManager.cs" />
     <Compile Include="Server\ConnectionState\SMB1AsyncContext.cs" />
     <Compile Include="Server\ConnectionState\SMB2AsyncContext.cs" />
