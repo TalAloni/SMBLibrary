@@ -16,12 +16,16 @@ namespace SMBLibrary.Services
     {
         // v1 - DCE 1.1: Remote Procedure Call
         // v2 - [MS-RPCE] 2.2.4.12 NDR Transfer Syntax Identifier
-        private static readonly Guid NDRTransferSyntaxIdentifier = new Guid("8A885D04-1CEB-11C9-9FE8-08002B104860");
+        public static readonly Guid NDRTransferSyntaxIdentifier = new Guid("8A885D04-1CEB-11C9-9FE8-08002B104860");
+        public const int NDRTransferSyntaxVersion = 2;
+
         // v1 - [MS-RPCE] 3.3.1.5.3 - Bind Time Feature Negotiation
         // Windows will reject this:
         //private static readonly Guid BindTimeFeatureIdentifier1 = new Guid("6CB71C2C-9812-4540-0100-000000000000");
         // Windows will return NegotiationResult.NegotiateAck:
-        private static readonly Guid BindTimeFeatureIdentifier3 = new Guid("6CB71C2C-9812-4540-0300-000000000000");
+        public static readonly Guid BindTimeFeatureIdentifier3 = new Guid("6CB71C2C-9812-4540-0300-000000000000");
+        public const int BindTimeFeatureIdentifierVersion = 1;
+
         private static uint m_associationGroupID = 1;
 
         public static BindAckPDU GetRPCBindResponse(BindPDU bindPDU, RemoteService service)
