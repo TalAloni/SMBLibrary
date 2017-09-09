@@ -42,14 +42,9 @@ namespace SMBLibrary.Services
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            int lengthOfPDUs = 0;
-            do
-            {
-                RPCPDU rpcRequest = RPCPDU.GetPDU(buffer, offset);
-                ProcessRPCRequest(rpcRequest);
-                lengthOfPDUs += rpcRequest.FragmentLength;
-            }
-            while (lengthOfPDUs < count);
+            // [MC-CIFS] In message mode, the system treats the bytes read or written in each I/O operation to the pipe as a message unit.
+            RPCPDU rpcRequest = RPCPDU.GetPDU(buffer, offset);
+            ProcessRPCRequest(rpcRequest);
         }
 
         private void ProcessRPCRequest(RPCPDU rpcRequest)
