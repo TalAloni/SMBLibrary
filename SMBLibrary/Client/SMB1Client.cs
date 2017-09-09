@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using System.Threading;
 using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.NetBios;
+using SMBLibrary.Services;
 using SMBLibrary.SMB1;
 using Utilities;
 
@@ -28,6 +29,7 @@ namespace SMBLibrary.Client
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
+        private bool m_isLoggedIn;
         private Socket m_clientSocket;
         private IAsyncResult m_currentAsyncResult;
         private bool m_forceExtendedSecurity;
@@ -186,6 +188,7 @@ namespace SMBLibrary.Client
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 if (reply != null)
                 {
+                    m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
                     return reply.Header.Status;
                 }
                 return NTStatus.STATUS_INVALID_SMB;
@@ -217,6 +220,7 @@ namespace SMBLibrary.Client
                         reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                         if (reply != null)
                         {
+                            m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
                             return reply.Header.Status;
                         }
                     }
@@ -229,8 +233,44 @@ namespace SMBLibrary.Client
             }
         }
 
+        public NTStatus Logoff()
+        {
+            LogoffAndXRequest request = new LogoffAndXRequest();
+            TrySendMessage(request);
+
+            SMB1Message reply = WaitForMessage(CommandName.SMB_COM_LOGOFF_ANDX);
+            if (reply != null)
+            {
+                m_isLoggedIn = (reply.Header.Status != NTStatus.STATUS_SUCCESS);
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
+        }
+
+        public List<string> ListShares(out NTStatus status)
+        {
+            if (!m_isConnected || !m_isLoggedIn)
+            {
+                throw new InvalidOperationException("A login session must be successfully established before retrieving share list");
+            }
+
+
+            SMB1FileStore namedPipeShare = TreeConnect("IPC$", ServiceName.NamedPipe, out status);
+            if (namedPipeShare == null)
+            {
+                return null;
+            }
+
+            return ServerServiceHelper.ListShares(namedPipeShare, ShareType.DiskDrive, out status);
+        }
+
         public SMB1FileStore TreeConnect(string shareName, ServiceName serviceName, out NTStatus status)
         {
+            if (!m_isConnected || !m_isLoggedIn)
+            {
+                throw new InvalidOperationException("A login session must be successfully established before connecting to a share");
+            }
+
             TreeConnectAndXRequest request = new TreeConnectAndXRequest();
             request.Path = shareName;
             request.Service = serviceName;
