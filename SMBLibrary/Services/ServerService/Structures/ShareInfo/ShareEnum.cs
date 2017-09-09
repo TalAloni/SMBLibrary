@@ -56,8 +56,13 @@ namespace SMBLibrary.Services
                     parser.ReadEmbeddedStructureFullPointer<ShareInfo1Container>(ref info1);
                     Info = info1;
                     break;
-                default:
+                case 2:
+                case 501:
+                case 502:
+                case 503:
                     throw new NotImplementedException();
+                default:
+                    break;
             }
             parser.EndStructure(); // SHARE_ENUM_UNION
             parser.EndStructure(); // SHARE_ENUM_STRUCT
