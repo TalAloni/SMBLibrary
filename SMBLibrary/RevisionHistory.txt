@@ -245,3 +245,37 @@ Revision History:
         SMB2: Renamed ServerCapabilities to Capabilities and added notes.
         Use InvalidDataException instead of InvalidRequestException.
         Logging improvement.
+
+1.2.7 - SMBServer: Bugfix: Connection resources were not released after send error in some cases.
+        SMBServer: SMB1: NotifyChange: Use ErrorResponse for any status other than STATUS_SUCCESS.
+        SMBServer: SMB1: Return STATUS_BAD_DEVICE_TYPE when applicable.
+        SMBServer: SMB2: Improved handling of compunded related requests.
+        SMBServer: SMB2: ChangeNotify: Return ErrorResponse if the object store returns an error.
+        NTLM: IndependentNTLMAuthenticationProvider: Changed the default account lockout settings.
+        SMB1: Corrected implementation of SMB_COM_ECHO request.
+        SMB1: Corrected SMB_COM_TREE_CONNECT_ANDX request implementation and added constructor.
+        SMB1: Corrected SMB_COM_NT_CREATE_ANDX implementation.
+        SMB1: Renamed ServerCapabilities to Capabilities.
+        SMB1: SMB_COM_SESSION_SETUP_ANDX response: Added workaround for a single terminating null byte.
+        SMB1: Corrected implementation of SMB_COM_TRANSACTION subcommand request.
+        SMB1: Improved SMB_COM_TRANSACTION request implementation and corrected GetBytes() implementation.
+        SMB2: NegotiateRequest: Corrected implementation.
+        SMB2: SMB2Command: Added ReadResponse and ReadResponseChain methods.
+        Improved AccessMask implementation.
+        RPCPipeStream: Treat the bytes written to the pipe as a single message unit.
+        RPC: Improved PDUs implementation: Hid FragmentLength variable and added Length property.
+        RPC: Added constructor to ContextElement.
+        RPC: Added BindNakPDU implementation.
+        Services: Added ServerServiceOpName and WorkstationServiceOpName enums.
+        Services: RemoteServiceHelper: Marked transfer syntax GUIDs as public and added version numbers.
+        Services: ServerService: Added ServicePipeName, ServiceInterfaceGuid and ServiceVersion declarations.
+        Services: WorkstationService: Added ServicePipeName, ServiceInterfaceGuid and ServiceVersion declarations.
+        Services: ServerService: NetrServerGetInfo: Added constructor.
+        Services: ServerService: ShareEnum: Bugfix: NullReferenceException was thrown if Info was null.
+        Services: ServerService: Implementation improvement.
+        Services: ServerService: SHARE_INFO_0_CONTAINER, SHARE_INFO_1_CONTAINER: Changed the default value of Entries to null.
+        NTStatus: Added STATUS_DELETE_PENDING, STATUS_BAD_DEVICE_TYPE and STATUS_BAD_NETWORK_NAME.
+        SocketUtils: Improved ReleaseSocket implementation.
+        Logging and documentation improvements.
+        SMB1 Client: Added Login implementation using NTLM authentication.
+        SMB1Client: Additional client functions implemented.
