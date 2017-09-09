@@ -33,6 +33,7 @@ namespace SMBLibrary.Client
             request.ShareAccess = shareAccess;
             request.CreateDisposition = createDisposition;
             request.CreateOptions = createOptions;
+            request.ImpersonationLevel = ImpersonationLevel.SEC_IMPERSONATE;
 
             TrySendMessage(request);
             SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_NT_CREATE_ANDX);
@@ -155,7 +156,73 @@ namespace SMBLibrary.Client
 
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
         {
-            throw new NotImplementedException();
+            if ((IoControlCode)ctlCode == IoControlCode.FSCTL_PIPE_TRANSCEIVE)
+            {
+                return FsCtlPipeTranscieve(handle, input, out output, maxOutputLength);
+            }
+
+            output = null;
+            NTTransactIOCTLRequest subcommand = new NTTransactIOCTLRequest();
+            subcommand.FID = (ushort)handle;
+            subcommand.FunctionCode = ctlCode;
+            subcommand.IsFsctl = true;
+            subcommand.Data = input;
+
+            NTTransactRequest request = new NTTransactRequest();
+            request.Function = subcommand.SubcommandName;
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = subcommand.GetParameters(true);
+            request.TransData = subcommand.GetData();
+            request.TotalDataCount = (uint)request.TransData.Length;
+            request.TotalParameterCount = (uint)request.TransParameters.Length;
+            request.MaxParameterCount = 0;
+            request.MaxDataCount = (uint)maxOutputLength;
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_NT_TRANSACT);
+            if (reply != null)
+            {
+                if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is NTTransactResponse)
+                {
+                    NTTransactResponse response = (NTTransactResponse)reply.Commands[0];
+                    NTTransactIOCTLResponse subcommandResponse = new NTTransactIOCTLResponse(response.Setup, response.TransData);
+                    output = subcommandResponse.Data;
+                }
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
+        }
+
+        public NTStatus FsCtlPipeTranscieve(object handle, byte[] input, out byte[] output, int maxOutputLength)
+        {
+            output = null;
+            TransactionTransactNamedPipeRequest subcommand = new TransactionTransactNamedPipeRequest();
+            subcommand.FID = (ushort)handle;
+            subcommand.WriteData = input;
+
+            TransactionRequest request = new TransactionRequest();
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = subcommand.GetParameters(true);
+            request.TransData = subcommand.GetData();
+            request.TotalDataCount = (ushort)request.TransData.Length;
+            request.TotalParameterCount = (ushort)request.TransParameters.Length;
+            request.MaxParameterCount = 0;
+            request.MaxDataCount = (ushort)maxOutputLength;
+            request.Name = @"\PIPE\";
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION);
+            if (reply != null)
+            {
+                if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is TransactionResponse)
+                {
+                    TransactionResponse response = (TransactionResponse)reply.Commands[0];
+                    TransactionTransactNamedPipeResponse subcommandResponse = new TransactionTransactNamedPipeResponse(response.TransData);
+                    output = subcommandResponse.ReadData;
+                }
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         private static ExtendedFileAttributes ToExtendedFileAttributes(FileAttributes fileAttributes)
