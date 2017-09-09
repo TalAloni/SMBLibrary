@@ -24,7 +24,7 @@ namespace SMBLibrary.RPC
         public PacketTypeName PacketType;
         public PacketFlags Flags;
         public DataRepresentationFormat DataRepresentation;
-        public ushort FragmentLength; // The length of the entire PDU
+        protected ushort FragmentLength; // The length of the entire PDU
         public ushort AuthLength;
         public uint CallID;
 
@@ -55,9 +55,17 @@ namespace SMBLibrary.RPC
             ByteWriter.WriteByte(buffer, 2, (byte)PacketType);
             ByteWriter.WriteByte(buffer, 3, (byte)Flags);
             DataRepresentation.WriteBytes(buffer, 4);
-            LittleEndianWriter.WriteUInt16(buffer, 8, FragmentLength);
+            LittleEndianWriter.WriteUInt16(buffer, 8, (ushort)Length);
             LittleEndianWriter.WriteUInt16(buffer, 10, AuthLength);
             LittleEndianWriter.WriteUInt32(buffer, 12, CallID);
+        }
+
+        /// <summary>
+        /// The length of the entire PDU
+        /// </summary>
+        public abstract int Length
+        {
+            get;
         }
 
         public static RPCPDU GetPDU(byte[] buffer, int offset)
@@ -78,6 +86,12 @@ namespace SMBLibrary.RPC
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public static ushort GetPDULength(byte[] buffer, int offset)
+        {
+            ushort fragmentLength = LittleEndianConverter.ToUInt16(buffer, offset + 8);
+            return fragmentLength;
         }
     }
 }

@@ -53,8 +53,7 @@ namespace SMBLibrary.RPC
         {
             AuthLength = (ushort)AuthVerifier.Length;
             int padding = (4 - ((SecondaryAddress.Length + 3) % 4)) % 4;
-            FragmentLength = (ushort)(CommonFieldsLength + BindAckFieldsFixedLength + SecondaryAddress.Length + 3 + padding + ResultList.Length + AuthLength);
-            byte[] buffer = new byte[FragmentLength];
+            byte[] buffer = new byte[Length];
             WriteCommonFieldsBytes(buffer);
             int offset = CommonFieldsLength;
             LittleEndianWriter.WriteUInt16(buffer, ref offset, MaxTransmitFragmentSize);
@@ -66,6 +65,15 @@ namespace SMBLibrary.RPC
             ByteWriter.WriteBytes(buffer, offset, AuthVerifier);
             
             return buffer;
+        }
+
+        public override int Length
+        {
+            get
+            {
+                int padding = (4 - ((SecondaryAddress.Length + 3) % 4)) % 4;
+                return CommonFieldsLength + BindAckFieldsFixedLength + SecondaryAddress.Length + 3 + padding + ResultList.Length + AuthLength;
+            }
         }
     }
 }

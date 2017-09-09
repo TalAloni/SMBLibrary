@@ -45,8 +45,7 @@ namespace SMBLibrary.RPC
         public override byte[] GetBytes()
         {
             AuthLength =(ushort)AuthVerifier.Length;
-            FragmentLength = (ushort)(CommonFieldsLength + BindFieldsFixedLength + ContextList.Length + AuthLength);
-            byte[] buffer = new byte[FragmentLength];
+            byte[] buffer = new byte[Length];
             WriteCommonFieldsBytes(buffer);
             int offset = CommonFieldsLength;
             LittleEndianWriter.WriteUInt16(buffer, ref offset, MaxTransmitFragmentSize);
@@ -58,5 +57,12 @@ namespace SMBLibrary.RPC
             return buffer;
         }
 
+        public override int Length
+        {
+            get
+            {
+                return CommonFieldsLength + BindFieldsFixedLength + ContextList.Length + AuthLength;
+            }
+        }
     }
 }
