@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using SMBLibrary.RPC;
 using SMBLibrary.Services;
+using Utilities;
 
 namespace SMBLibrary.Client
 {
@@ -65,7 +66,8 @@ namespace SMBLibrary.Client
             requestPDU.Data = shareEnumRequest.GetBytes();
             requestPDU.AllocationHint = (uint)requestPDU.Data.Length;
             input = requestPDU.GetBytes();
-            status = namedPipeShare.DeviceIOControl(pipeHandle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, input, out output, 4096);
+            int maxOutputLength = bindAckPDU.MaxTransmitFragmentSize;
+            status = namedPipeShare.DeviceIOControl(pipeHandle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, input, out output, maxOutputLength);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return null;
@@ -76,7 +78,24 @@ namespace SMBLibrary.Client
                 status = NTStatus.STATUS_NOT_SUPPORTED;
                 return null;
             }
-            NetrShareEnumResponse shareEnumResponse = new NetrShareEnumResponse(responsePDU.Data);
+
+            byte[] responseData = responsePDU.Data;
+            while ((responsePDU.Flags & PacketFlags.LastFragment) == 0)
+            {
+                status = namedPipeShare.ReadFile(out output, pipeHandle, 0, maxOutputLength);
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    return null;
+                }
+                responsePDU = RPCPDU.GetPDU(output, 0) as ResponsePDU;
+                if (responsePDU == null)
+                {
+                    status = NTStatus.STATUS_NOT_SUPPORTED;
+                    return null;
+                }
+                responseData = ByteUtils.Concatenate(responseData, responsePDU.Data);
+            }
+            NetrShareEnumResponse shareEnumResponse = new NetrShareEnumResponse(responseData);
             ShareInfo1Container shareInfo1 = shareEnumResponse.InfoStruct.Info as ShareInfo1Container;
             if (shareInfo1 == null)
             {
