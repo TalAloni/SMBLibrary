@@ -61,7 +61,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList;
             try
             {
-                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -112,7 +112,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList;
             try
             {
-                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, returnResumeKeys, maxLength);
+                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {

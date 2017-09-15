@@ -51,13 +51,13 @@ namespace SMBLibrary.Server.SMB1
         }
 
         /// <exception cref="SMBLibrary.UnsupportedInformationLevelException"></exception>
-        public static FindInformationList GetFindInformationList(List<QueryDirectoryFileInformation> entries, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys, int maxLength)
+        public static FindInformationList GetFindInformationList(List<QueryDirectoryFileInformation> entries, FindInformationLevel informationLevel, bool isUnicode, int maxLength)
         {
             FindInformationList result = new FindInformationList();
             int pageLength = 0;
             for (int index = 0; index < entries.Count; index++)
             {
-                FindInformation infoEntry = GetFindInformation(entries[index], informationLevel, isUnicode, returnResumeKeys);
+                FindInformation infoEntry = GetFindInformation(entries[index], informationLevel);
                 int entryLength = infoEntry.GetLength(isUnicode);
                 if (pageLength + entryLength <= maxLength)
                 {
@@ -73,7 +73,7 @@ namespace SMBLibrary.Server.SMB1
         }
 
         /// <exception cref="SMBLibrary.UnsupportedInformationLevelException"></exception>
-        public static FindInformation GetFindInformation(QueryDirectoryFileInformation entry, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
+        public static FindInformation GetFindInformation(QueryDirectoryFileInformation entry, FindInformationLevel informationLevel)
         {
             switch (informationLevel)
             {
