@@ -57,9 +57,9 @@ namespace SMBLibrary.SMB1
             return FindInformationListBytes;
         }
 
-        public FindInformationList GetFindInformationList(FindInformationLevel findInformationLevel, bool isUnicode, bool returnResumeKeys)
+        public FindInformationList GetFindInformationList(FindInformationLevel findInformationLevel, bool isUnicode)
         {
-            return new FindInformationList(FindInformationListBytes, findInformationLevel, isUnicode, returnResumeKeys);
+            return new FindInformationList(FindInformationListBytes, findInformationLevel, isUnicode);
         }
 
         public void SetFindInformationList(FindInformationList findInformationList, bool isUnicode)

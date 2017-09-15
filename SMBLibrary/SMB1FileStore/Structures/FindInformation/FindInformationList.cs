@@ -17,12 +17,12 @@ namespace SMBLibrary.SMB1
         {
         }
 
-        public FindInformationList(byte[] buffer, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
+        public FindInformationList(byte[] buffer, FindInformationLevel informationLevel, bool isUnicode)
         {
             int offset = 0;
             while (offset < buffer.Length)
             {
-                FindInformation entry = FindInformation.ReadEntry(buffer, offset, informationLevel, isUnicode, returnResumeKeys);
+                FindInformation entry = FindInformation.ReadEntry(buffer, offset, informationLevel, isUnicode);
                 this.Add(entry);
                 offset += (int)entry.NextEntryOffset;
             }

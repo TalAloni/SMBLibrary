@@ -27,7 +27,7 @@ namespace SMBLibrary.SMB1
             get;
         }
 
-        public static FindInformation ReadEntry(byte[] buffer, int offset, FindInformationLevel informationLevel, bool isUnicode, bool returnResumeKeys)
+        public static FindInformation ReadEntry(byte[] buffer, int offset, FindInformationLevel informationLevel, bool isUnicode)
         {
             switch (informationLevel)
             {
