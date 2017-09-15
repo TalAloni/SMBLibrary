@@ -129,6 +129,77 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
+        public NTStatus QueryDirectory(out List<FindInformation> result, string fileName, FindInformationLevel informationLevel)
+        {
+            result = null;
+            int maxOutputLength = 4096;
+            Transaction2FindFirst2Request subcommand = new Transaction2FindFirst2Request();
+            subcommand.SearchAttributes = SMBFileAttributes.Hidden | SMBFileAttributes.System | SMBFileAttributes.Directory;
+            subcommand.SearchCount = UInt16.MaxValue;
+            subcommand.Flags = FindFlags.SMB_FIND_CLOSE_AT_EOS;
+            subcommand.InformationLevel = informationLevel;
+            subcommand.FileName = fileName;
+
+            Transaction2Request request = new Transaction2Request();
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = subcommand.GetParameters(true);
+            request.TransData = subcommand.GetData(true);
+            request.TotalDataCount = (ushort)request.TransData.Length;
+            request.TotalParameterCount = (ushort)request.TransParameters.Length;
+            request.MaxParameterCount = Transaction2FindFirst2Response.ParametersLength;
+            request.MaxDataCount = (ushort)maxOutputLength;
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+            if (reply != null)
+            {
+                if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
+                {
+                    result = new List<FindInformation>();
+                    Transaction2Response response = (Transaction2Response)reply.Commands[0];
+                    Transaction2FindFirst2Response subcommandResponse = new Transaction2FindFirst2Response(response.TransParameters, response.TransData, true);
+                    FindInformationList findInformationList = subcommandResponse.GetFindInformationList(subcommand.InformationLevel, true);
+                    result.AddRange(findInformationList);
+                    bool endOfSearch = subcommandResponse.EndOfSearch;
+                    while (!endOfSearch)
+                    {
+                        Transaction2FindNext2Request nextSubcommand = new Transaction2FindNext2Request();
+                        nextSubcommand.SID = subcommandResponse.SID;
+                        nextSubcommand.SearchCount = UInt16.MaxValue;
+                        nextSubcommand.Flags = FindFlags.SMB_FIND_CLOSE_AT_EOS | FindFlags.SMB_FIND_CONTINUE_FROM_LAST;
+                        nextSubcommand.InformationLevel = informationLevel;
+                        nextSubcommand.FileName = fileName;
+
+                        request = new Transaction2Request();
+                        request.Setup = nextSubcommand.GetSetup();
+                        request.TransParameters = nextSubcommand.GetParameters(true);
+                        request.TransData = nextSubcommand.GetData(true);
+                        request.TotalDataCount = (ushort)request.TransData.Length;
+                        request.TotalParameterCount = (ushort)request.TransParameters.Length;
+                        request.MaxParameterCount = Transaction2FindNext2Response.ParametersLength;
+                        request.MaxDataCount = (ushort)maxOutputLength;
+
+                        TrySendMessage(request);
+                        reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+                        if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
+                        {
+                            response = (Transaction2Response)reply.Commands[0];
+                            Transaction2FindNext2Response nextSubcommandResponse = new Transaction2FindNext2Response(response.TransParameters, response.TransData, true);
+                            findInformationList = nextSubcommandResponse.GetFindInformationList(subcommand.InformationLevel, true);
+                            result.AddRange(findInformationList);
+                            endOfSearch = nextSubcommandResponse.EndOfSearch;
+                        }
+                        else
+                        {
+                            endOfSearch = true;
+                        }
+                    }
+                }
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
+        }
+
         public NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass)
         {
             throw new NotImplementedException();
