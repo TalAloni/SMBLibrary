@@ -97,7 +97,7 @@ namespace SMBLibrary.Client
             }
             NetrShareEnumResponse shareEnumResponse = new NetrShareEnumResponse(responseData);
             ShareInfo1Container shareInfo1 = shareEnumResponse.InfoStruct.Info as ShareInfo1Container;
-            if (shareInfo1 == null)
+            if (shareInfo1 == null || shareInfo1.Entries == null)
             {
                 if (shareEnumResponse.Result == Win32Error.ERROR_ACCESS_DENIED)
                 {
