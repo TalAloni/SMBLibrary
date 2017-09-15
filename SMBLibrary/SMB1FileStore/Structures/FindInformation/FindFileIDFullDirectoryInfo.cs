@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB1
     {
         public const int FixedLength = 80;
 
-        public uint NextEntryOffset;
+        // uint NextEntryOffset;
         public uint FileIndex; // SHOULD be set to zero when sent in a response and SHOULD be ignored when received by the client
         public DateTime? CreationTime;
         public DateTime? LastAccessTime;
@@ -33,11 +33,11 @@ namespace SMBLibrary.SMB1
         public ulong FileID;
         public string FileName; // OEM / Unicode character array. MUST be written as SMB_STRING, and read as fixed length string.
 
-        public FindFileIDFullDirectoryInfo() : base(false)
+        public FindFileIDFullDirectoryInfo() : base()
         {
         }
 
-        public FindFileIDFullDirectoryInfo(byte[] buffer, ref int offset, bool isUnicode) : base(false)
+        public FindFileIDFullDirectoryInfo(byte[] buffer, int offset, bool isUnicode) : base()
         {
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
             FileIndex = LittleEndianReader.ReadUInt32(buffer, ref offset);

@@ -22,36 +22,20 @@ namespace SMBLibrary.SMB1
             int offset = 0;
             while (offset < buffer.Length)
             {
-                FindInformation entry = FindInformation.ReadEntry(buffer, ref offset, informationLevel, isUnicode, returnResumeKeys);
+                FindInformation entry = FindInformation.ReadEntry(buffer, offset, informationLevel, isUnicode, returnResumeKeys);
                 this.Add(entry);
+                offset += (int)entry.NextEntryOffset;
             }
         }
 
         public byte[] GetBytes(bool isUnicode)
         {
-            for(int index = 0; index < this.Count; index++)
+            for(int index = 0; index < this.Count - 1; index++)
             {
-                if (index < this.Count - 1)
-                {
-                    FindInformation entry = this[index];
-                    int entryLength = entry.GetLength(isUnicode);
-                    if (entry is FindFileBothDirectoryInfo)
-                    {
-                        ((FindFileBothDirectoryInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                    else if (entry is FindFileDirectoryInfo)
-                    {
-                        ((FindFileDirectoryInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                    else if (entry is FindFileFullDirectoryInfo)
-                    {
-                        ((FindFileFullDirectoryInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                    else if (entry is FindFileNamesInfo)
-                    {
-                        ((FindFileNamesInfo)entry).NextEntryOffset = (uint)entryLength;
-                    }
-                }
+                FindInformation entry = this[index];
+                int entryLength = entry.GetLength(isUnicode);
+                entry.NextEntryOffset = (uint)entryLength;
+
             }
             int length = GetLength(isUnicode);
             byte[] buffer = new byte[length];

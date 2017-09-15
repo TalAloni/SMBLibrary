@@ -18,7 +18,7 @@ namespace SMBLibrary.SMB1
     {
         public const int FixedLength = 104;
 
-        public uint NextEntryOffset;
+        // uint NextEntryOffset;
         public uint FileIndex; // SHOULD be set to zero when sent in a response and SHOULD be ignored when received by the client
         public DateTime? CreationTime;
         public DateTime? LastAccessTime;
@@ -40,11 +40,11 @@ namespace SMBLibrary.SMB1
         // Will, in some rare but repeatable cases, cause issues with Windows XP SP3 as a client
         // (the client will display an error message that the folder "refers to a location that is unavailable"...)
 
-        public FindFileIDBothDirectoryInfo() : base(false)
+        public FindFileIDBothDirectoryInfo() : base()
         {
         }
 
-        public FindFileIDBothDirectoryInfo(byte[] buffer, ref int offset, bool isUnicode) : base(false)
+        public FindFileIDBothDirectoryInfo(byte[] buffer, int offset, bool isUnicode) : base()
         {
             NextEntryOffset = LittleEndianReader.ReadUInt32(buffer, ref offset);
             FileIndex = LittleEndianReader.ReadUInt32(buffer, ref offset);
