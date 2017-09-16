@@ -277,5 +277,11 @@ Revision History:
         NTStatus: Added STATUS_DELETE_PENDING, STATUS_BAD_DEVICE_TYPE and STATUS_BAD_NETWORK_NAME.
         SocketUtils: Improved ReleaseSocket implementation.
         Logging and documentation improvements.
-        SMB1 Client: Added Login implementation using NTLM authentication.
+        SMB1Client: Added Login implementation using NTLM authentication.
         SMB1Client: Additional client functions implemented.
+
+1.2.8 - SMB1: Improved FindInformation implementation and corrected reading of FindInformation entries from buffer.
+        SMB1: Added ParametersLength definition to several Transaction2Subcommands.
+        SMB1: Transaction2SetFileInformationRequest: SetInformation method will now set InformationLevel.
+        Client: ServerServiceHelper: ListShares: Added support for NetrShareEnumResponse spanning more than one RPC PDU and improved error handling.
+        Client: SMB1FileStore: Added native QueryDirectory, GetFileInformation, GetFileSystemInformation and SetFileInformation implementations.
