@@ -58,6 +58,7 @@ namespace SMBLibrary.SMB1
 
         public void SetInformation(SetInformation information)
         {
+            InformationLevel = information.InformationLevel;
             InformationBytes = information.GetBytes();
         }
 
