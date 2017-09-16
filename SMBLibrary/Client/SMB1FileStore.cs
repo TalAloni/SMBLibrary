@@ -219,7 +219,7 @@ namespace SMBLibrary.Client
             request.TransData = subcommand.GetData(true);
             request.TotalDataCount = (ushort)request.TransData.Length;
             request.TotalParameterCount = (ushort)request.TransParameters.Length;
-            request.MaxParameterCount = Transaction2QueryFileInformationRequest.ParametersLength;
+            request.MaxParameterCount = Transaction2QueryFileInformationResponse.ParametersLength;
             request.MaxDataCount = (ushort)maxOutputLength;
 
             TrySendMessage(request);
@@ -242,9 +242,65 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
+        public NTStatus SetFileInformation(object handle, SetInformation information)
+        {
+            int maxOutputLength = 4096;
+            Transaction2SetFileInformationRequest subcommand = new Transaction2SetFileInformationRequest();
+            subcommand.FID = (ushort)handle;
+            subcommand.SetInformation(information);
+
+            Transaction2Request request = new Transaction2Request();
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = subcommand.GetParameters(true);
+            request.TransData = subcommand.GetData(true);
+            request.TotalDataCount = (ushort)request.TransData.Length;
+            request.TotalParameterCount = (ushort)request.TransParameters.Length;
+            request.MaxParameterCount = Transaction2SetFileInformationResponse.ParametersLength;
+            request.MaxDataCount = (ushort)maxOutputLength;
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+            if (reply != null)
+            {
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
+        }
+
         public NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass)
         {
             throw new NotImplementedException();
+        }
+
+        public NTStatus GetFileSystemInformation(out QueryFSInformation result, QueryFSInformationLevel informationLevel)
+        {
+            result = null;
+            int maxOutputLength = 4096;
+            Transaction2QueryFSInformationRequest subcommand = new Transaction2QueryFSInformationRequest();
+            subcommand.InformationLevel = informationLevel;
+
+            Transaction2Request request = new Transaction2Request();
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = subcommand.GetParameters(true);
+            request.TransData = subcommand.GetData(true);
+            request.TotalDataCount = (ushort)request.TransData.Length;
+            request.TotalParameterCount = (ushort)request.TransParameters.Length;
+            request.MaxParameterCount = Transaction2QueryFSInformationResponse.ParametersLength;
+            request.MaxDataCount = (ushort)maxOutputLength;
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+            if (reply != null)
+            {
+                if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
+                {
+                    Transaction2Response response = (Transaction2Response)reply.Commands[0];
+                    Transaction2QueryFSInformationResponse subcommandResponse = new Transaction2QueryFSInformationResponse(response.TransParameters, response.TransData, true);
+                    result = subcommandResponse.GetQueryFSInformation(informationLevel, true);
+                }
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
