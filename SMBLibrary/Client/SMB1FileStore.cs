@@ -205,6 +205,38 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
+        public NTStatus GetFileInformation(out QueryInformation result, object handle, QueryInformationLevel informationLevel)
+        {
+            result = null;
+            int maxOutputLength = 4096;
+            Transaction2QueryFileInformationRequest subcommand = new Transaction2QueryFileInformationRequest();
+            subcommand.FID = (ushort)handle;
+            subcommand.InformationLevel = informationLevel;
+
+            Transaction2Request request = new Transaction2Request();
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = subcommand.GetParameters(true);
+            request.TransData = subcommand.GetData(true);
+            request.TotalDataCount = (ushort)request.TransData.Length;
+            request.TotalParameterCount = (ushort)request.TransParameters.Length;
+            request.MaxParameterCount = Transaction2QueryFileInformationRequest.ParametersLength;
+            request.MaxDataCount = (ushort)maxOutputLength;
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+            if (reply != null)
+            {
+                if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
+                {
+                    Transaction2Response response = (Transaction2Response)reply.Commands[0];
+                    Transaction2QueryFileInformationResponse subcommandResponse = new Transaction2QueryFileInformationResponse(response.TransParameters, response.TransData, true);
+                    result = subcommandResponse.GetQueryInformation(informationLevel);
+                }
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
+        }
+
         public NTStatus SetFileInformation(object handle, FileInformation information)
         {
             throw new NotImplementedException();
