@@ -16,12 +16,12 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2SetFileInformationResponse : Transaction2Subcommand
     {
+        public const int ParametersLength = 2;
         // Parameters:
         public ushort EaErrorOffset; // Meaningful only when the request's InformationLevel is set to SMB_INFO_SET_EAS
 
         public Transaction2SetFileInformationResponse() : base()
         {
-
         }
 
         public Transaction2SetFileInformationResponse(byte[] parameters, byte[] data, bool isUnicode) : base()

@@ -16,6 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary
     public class Transaction2QueryFileInformationResponse : Transaction2Subcommand
     {
+        public const int ParametersLength = 2;
         // Parameters:
         public ushort EaErrorOffset; // Meaningful only when request's InformationLevel is SMB_INFO_QUERY_EAS_FROM_LIST
         // Data:
@@ -23,7 +24,6 @@ namespace SMBLibrary.SMB1
 
         public Transaction2QueryFileInformationResponse() : base()
         {
-
         }
 
         public Transaction2QueryFileInformationResponse(byte[] parameters, byte[] data, bool isUnicode) : base()

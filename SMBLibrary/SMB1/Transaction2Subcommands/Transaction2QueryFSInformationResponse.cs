@@ -16,12 +16,12 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2QueryFSInformationResponse : Transaction2Subcommand
     {
+        public const int ParametersLength = 0;
         // Data:
         private byte[] QueryFSInformationBytes;
 
         public Transaction2QueryFSInformationResponse() : base()
         {
-
         }
 
         public Transaction2QueryFSInformationResponse(byte[] parameters, byte[] data, bool isUnicode) : base()
