@@ -17,42 +17,8 @@ namespace SMBLibrary.Server.SMB1
     {
         public static NTStatus SetFileInformation(INTFileStore fileStore, object handle, SetInformation information)
         {
-            if (information is SetFileBasicInfo)
-            {
-                SetFileBasicInfo basicInfo = (SetFileBasicInfo)information;
-                FileBasicInformation fileBasicInfo = new FileBasicInformation();
-                fileBasicInfo.CreationTime = basicInfo.CreationTime;
-                fileBasicInfo.LastAccessTime = basicInfo.LastAccessTime;
-                fileBasicInfo.LastWriteTime = basicInfo.LastWriteTime;
-                fileBasicInfo.ChangeTime = basicInfo.LastChangeTime;
-                fileBasicInfo.FileAttributes = (FileAttributes)basicInfo.ExtFileAttributes;
-                fileBasicInfo.Reserved = basicInfo.Reserved;
-                return fileStore.SetFileInformation(handle, fileBasicInfo);
-            }
-            else if (information is SetFileDispositionInfo)
-            {
-                FileDispositionInformation fileDispositionInfo = new FileDispositionInformation();
-                fileDispositionInfo.DeletePending = ((SetFileDispositionInfo)information).DeletePending;
-                return fileStore.SetFileInformation(handle, fileDispositionInfo);
-            }
-            else if (information is SetFileAllocationInfo)
-            {
-                // This information level is used to set the file length in bytes.
-                // Note: the input will NOT be a multiple of the cluster size / bytes per sector.
-                FileAllocationInformation fileAllocationInfo = new FileAllocationInformation();
-                fileAllocationInfo.AllocationSize = ((SetFileAllocationInfo)information).AllocationSize;
-                return fileStore.SetFileInformation(handle, fileAllocationInfo);
-            }
-            else if (information is SetFileEndOfFileInfo)
-            {
-                FileEndOfFileInformation fileEndOfFileInfo = new FileEndOfFileInformation();
-                fileEndOfFileInfo.EndOfFile = ((SetFileEndOfFileInfo)information).EndOfFile;
-                return fileStore.SetFileInformation(handle, fileEndOfFileInfo);
-            }
-            else
-            {
-                return NTStatus.STATUS_NOT_IMPLEMENTED;
-            }
+            FileInformation fileInformation = SetInformationHelper.ToFileInformation(information);
+            return fileStore.SetFileInformation(handle, fileInformation);
         }
     }
 }

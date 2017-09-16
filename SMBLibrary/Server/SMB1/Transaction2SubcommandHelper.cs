@@ -28,7 +28,7 @@ namespace SMBLibrary.Server.SMB1
             FileInformationClass informationClass;
             try
             {
-                informationClass = GetFileInformationClass(subcommand.InformationLevel);
+                informationClass = FindInformationHelper.ToFileInformationClass(subcommand.InformationLevel);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -61,7 +61,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList;
             try
             {
-                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, maxLength);
+                findInformationList = FindInformationHelper.GetFindInformationList(segment, header.UnicodeFlag, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -112,7 +112,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList;
             try
             {
-                findInformationList = SMB1FileStoreHelper.GetFindInformationList(segment, subcommand.InformationLevel, header.UnicodeFlag, maxLength);
+                findInformationList = FindInformationHelper.GetFindInformationList(segment, header.UnicodeFlag, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -276,27 +276,6 @@ namespace SMBLibrary.Server.SMB1
             state.LogToServer(Severity.Information, "SetFileInformation on '{0}{1}' succeeded. Information level: {2}", share.Name, openFile.Path, subcommand.InformationLevel);
             Transaction2SetFileInformationResponse response = new Transaction2SetFileInformationResponse();
             return response;
-        }
-
-        private static FileInformationClass GetFileInformationClass(FindInformationLevel informationLevel)
-        {
-            switch (informationLevel)
-            {
-                case FindInformationLevel.SMB_FIND_FILE_DIRECTORY_INFO:
-                    return FileInformationClass.FileDirectoryInformation;
-                case FindInformationLevel.SMB_FIND_FILE_FULL_DIRECTORY_INFO:
-                    return FileInformationClass.FileFullDirectoryInformation;
-                case FindInformationLevel.SMB_FIND_FILE_NAMES_INFO:
-                    return FileInformationClass.FileNamesInformation;
-                case FindInformationLevel.SMB_FIND_FILE_BOTH_DIRECTORY_INFO:
-                    return FileInformationClass.FileBothDirectoryInformation;
-                case FindInformationLevel.SMB_FIND_FILE_ID_FULL_DIRECTORY_INFO:
-                    return FileInformationClass.FileIdFullDirectoryInformation;
-                case FindInformationLevel.SMB_FIND_FILE_ID_BOTH_DIRECTORY_INFO:
-                    return FileInformationClass.FileIdBothDirectoryInformation;
-                default:
-                    throw new UnsupportedInformationLevelException();
-            }
         }
     }
 }

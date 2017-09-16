@@ -292,6 +292,10 @@
     <Compile Include="Services\WorkstationService\Structures\WorkstationInfo101.cs" />
     <Compile Include="Services\WorkstationService\Structures\WorkstationInfoLevel.cs" />
     <Compile Include="Services\WorkstationService\WorkstationService.cs" />
+    <Compile Include="SMB1FileStore\Helpers\FindInformationHelper.cs" />
+    <Compile Include="SMB1FileStore\Helpers\QueryFSInformationHelper.cs" />
+    <Compile Include="SMB1FileStore\Helpers\QueryInformationHelper.cs" />
+    <Compile Include="SMB1FileStore\Helpers\SetInformationHelper.cs" />
     <Compile Include="SMB1FileStore\Structures\FindInformation\FindFileIDBothDirectoryInfo.cs" />
     <Compile Include="SMB1FileStore\Structures\FindInformation\FindFileIDFullDirectoryInfo.cs" />
     <Compile Include="SMB1\Commands\CheckDirectoryRequest.cs" />

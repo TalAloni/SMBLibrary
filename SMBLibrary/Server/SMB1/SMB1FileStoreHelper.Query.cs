@@ -32,167 +32,25 @@ namespace SMBLibrary.Server.SMB1
         public static NTStatus GetFileInformation(out QueryInformation result, INTFileStore fileStore, object handle, QueryInformationLevel informationLevel)
         {
             result = null;
-            FileInformation fileInfo;
-            switch (informationLevel)
+            FileInformationClass informationClass;
+            try
             {
-                case QueryInformationLevel.SMB_INFO_QUERY_ALL_EAS:
-                    {
-                        result = null;
-                        return NTStatus.STATUS_NOT_IMPLEMENTED;
-                    }
-                case QueryInformationLevel.SMB_INFO_IS_NAME_VALID:
-                    {
-                        result = null;
-                        return NTStatus.STATUS_NOT_IMPLEMENTED;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_BASIC_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileBasicInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileBasicInformation fileBasicInfo = (FileBasicInformation)fileInfo;
-
-                        QueryFileBasicInfo information = new QueryFileBasicInfo();
-                        information.CreationTime = fileBasicInfo.CreationTime;
-                        information.LastAccessTime = fileBasicInfo.LastAccessTime;
-                        information.LastWriteTime = fileBasicInfo.LastWriteTime;
-                        information.LastChangeTime = fileBasicInfo.LastWriteTime;
-                        information.ExtFileAttributes = (ExtendedFileAttributes)fileBasicInfo.FileAttributes;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_STANDARD_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileStandardInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileStandardInformation fileStandardInfo = (FileStandardInformation)fileInfo;
-
-                        QueryFileStandardInfo information = new QueryFileStandardInfo();
-                        information.AllocationSize = fileStandardInfo.AllocationSize;
-                        information.EndOfFile = fileStandardInfo.EndOfFile;
-                        information.DeletePending = fileStandardInfo.DeletePending;
-                        information.Directory = fileStandardInfo.Directory;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_EA_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileEaInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileEaInformation fileEAInfo = (FileEaInformation)fileInfo;
-
-                        QueryFileExtendedAttributeInfo information = new QueryFileExtendedAttributeInfo();
-                        information.EASize = fileEAInfo.EaSize;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_NAME_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileNameInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileNameInformation fileNameInfo = (FileNameInformation)fileInfo;
-
-                        QueryFileNameInfo information = new QueryFileNameInfo();
-                        information.FileName = fileNameInfo.FileName;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_ALL_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileAllInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileAllInformation fileAllInfo = (FileAllInformation)fileInfo;
-
-                        QueryFileAllInfo information = new QueryFileAllInfo();
-                        information.CreationDateTime = fileAllInfo.BasicInformation.CreationTime;
-                        information.LastAccessDateTime = fileAllInfo.BasicInformation.LastAccessTime;
-                        information.LastWriteDateTime = fileAllInfo.BasicInformation.LastWriteTime;
-                        information.LastChangeTime = fileAllInfo.BasicInformation.LastWriteTime;
-                        information.ExtFileAttributes = (ExtendedFileAttributes)fileAllInfo.BasicInformation.FileAttributes;
-                        information.AllocationSize = fileAllInfo.StandardInformation.AllocationSize;
-                        information.EndOfFile = fileAllInfo.StandardInformation.EndOfFile;
-                        information.DeletePending = fileAllInfo.StandardInformation.DeletePending;
-                        information.Directory = fileAllInfo.StandardInformation.Directory;
-                        information.EASize = fileAllInfo.EaInformation.EaSize;
-                        information.FileName = fileAllInfo.NameInformation.FileName;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_ALT_NAME_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileAlternateNameInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileAlternateNameInformation fileAltNameInfo = (FileAlternateNameInformation)fileInfo;
-
-                        QueryFileAltNameInfo information = new QueryFileAltNameInfo();
-                        information.FileName = fileAltNameInfo.FileName;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_STREAM_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileStreamInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileStreamInformation fileStreamInfo = (FileStreamInformation)fileInfo;
-
-                        QueryFileStreamInfo information = new QueryFileStreamInfo();
-                        information.Entries.AddRange(fileStreamInfo.Entries);
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                case QueryInformationLevel.SMB_QUERY_FILE_COMPRESSION_INFO:
-                    {
-                        NTStatus status = fileStore.GetFileInformation(out fileInfo, handle, FileInformationClass.FileCompressionInformation);
-                        if (status != NTStatus.STATUS_SUCCESS)
-                        {
-                            return status;
-                        }
-
-                        FileCompressionInformation fileCompressionInfo = (FileCompressionInformation)fileInfo;
-
-                        QueryFileCompressionInfo information = new QueryFileCompressionInfo();
-                        information.CompressedFileSize = fileCompressionInfo.CompressedFileSize;
-                        information.CompressionFormat = fileCompressionInfo.CompressionFormat;
-                        information.CompressionUnitShift = fileCompressionInfo.CompressionUnitShift;
-                        information.ChunkShift = fileCompressionInfo.ChunkShift;
-                        information.ClusterShift = fileCompressionInfo.ClusterShift;
-                        information.Reserved = fileCompressionInfo.Reserved;
-                        result = information;
-                        return NTStatus.STATUS_SUCCESS;
-                    }
-                default:
-                    {
-                        result = null;
-                        return NTStatus.STATUS_OS2_INVALID_LEVEL;
-                    }
+                informationClass = QueryInformationHelper.ToFileInformationClass(informationLevel);
             }
+            catch (UnsupportedInformationLevelException)
+            {
+                return NTStatus.STATUS_OS2_INVALID_LEVEL;
+            }
+
+            FileInformation fileInformation;
+            NTStatus status = fileStore.GetFileInformation(out fileInformation, handle, informationClass);
+            if (status != NTStatus.STATUS_SUCCESS)
+            {
+                return status;
+            }
+
+            result = QueryInformationHelper.FromFileInformation(fileInformation);
+            return NTStatus.STATUS_SUCCESS;
         }
     }
 }
