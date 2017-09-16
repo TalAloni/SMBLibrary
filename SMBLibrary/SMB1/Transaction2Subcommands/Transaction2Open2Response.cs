@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2Open2Response : Transaction2Subcommand
     {
-        public int ParametersLength = 30;
+        public const int ParametersLength = 30;
         // Parameters
         public ushort FID;
         public SMBFileAttributes FileAttributes;

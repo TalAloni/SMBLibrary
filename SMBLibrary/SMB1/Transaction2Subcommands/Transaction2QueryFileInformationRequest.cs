@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2QueryFileInformationRequest : Transaction2Subcommand
     {
-        public int ParametersLength = 4;
+        public const int ParametersLength = 4;
         // Parameters:
         public ushort FID;
         public QueryInformationLevel InformationLevel;

@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2QueryFSInformationRequest : Transaction2Subcommand
     {
-        public int ParametersLength = 2;
+        public const int ParametersLength = 2;
 
         public QueryFSInformationLevel InformationLevel;
 
