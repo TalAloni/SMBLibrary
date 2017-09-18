@@ -42,17 +42,17 @@ namespace SMBLibrary.Server.SMB2
                 }
                 catch (UnsupportedInformationLevelException)
                 {
-                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: STATUS_INVALID_INFO_CLASS", share.Name, openFile.Path, request.FileInformationClass);
+                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: STATUS_INVALID_INFO_CLASS.", share.Name, openFile.Path, request.FileInformationClass);
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_INFO_CLASS);
                 }
                 catch (NotImplementedException)
                 {
-                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: STATUS_NOT_SUPPORTED", share.Name, openFile.Path, request.FileInformationClass);
+                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: STATUS_NOT_SUPPORTED.", share.Name, openFile.Path, request.FileInformationClass);
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
                 }
                 catch (Exception)
                 {
-                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: STATUS_INVALID_PARAMETER", share.Name, openFile.Path, request.FileInformationClass);
+                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: STATUS_INVALID_PARAMETER.", share.Name, openFile.Path, request.FileInformationClass);
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
                 }
 
@@ -73,10 +73,24 @@ namespace SMBLibrary.Server.SMB2
                 NTStatus status = share.FileStore.SetFileInformation(openFile.Handle, information);
                 if (status != NTStatus.STATUS_SUCCESS)
                 {
-                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: {3}", share.Name, openFile.Path, request.FileInformationClass, status);
+                    state.LogToServer(Severity.Verbose, "SetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: {3}. (FileId: {4})", share.Name, openFile.Path, request.FileInformationClass, status, request.FileId.Volatile);
                     return new ErrorResponse(request.CommandName, status);
                 }
-                state.LogToServer(Severity.Information, "SetFileInformation on '{0}{1}' succeeded. Information class: {2}", share.Name, openFile.Path, request.FileInformationClass);
+
+                if (information is FileRenameInformationType2)
+                {
+                    string newFileName = ((FileRenameInformationType2)information).FileName;
+                    if (!newFileName.StartsWith(@"\"))
+                    {
+                        newFileName = @"\" + newFileName;
+                    }
+                    state.LogToServer(Severity.Verbose, "SetFileInformation: Rename '{0}{1}' to '{0}{2}' succeeded. (FileId: {3})", share.Name, openFile.Path, newFileName, request.FileId.Volatile);
+                    openFile.Path = newFileName;
+                }
+                else
+                {
+                    state.LogToServer(Severity.Information, "SetFileInformation on '{0}{1}' succeeded. Information class: {2}. (FileId: {3})", share.Name, openFile.Path, request.FileInformationClass, request.FileId.Volatile);
+                }
                 return new SetInfoResponse();
             }
             return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);

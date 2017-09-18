@@ -39,11 +39,11 @@ namespace SMBLibrary.Server.SMB2
                 NTStatus queryStatus = share.FileStore.GetFileInformation(out fileInformation, openFile.Handle, request.FileInformationClass);
                 if (queryStatus != NTStatus.STATUS_SUCCESS)
                 {
-                    state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: {3}", share.Name, openFile.Path, request.FileInformationClass, queryStatus);
+                    state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: {3}. (FileId: {4})", share.Name, openFile.Path, request.FileInformationClass, queryStatus, request.FileId.Volatile);
                     return new ErrorResponse(request.CommandName, queryStatus);
                 }
 
-                state.LogToServer(Severity.Information, "GetFileInformation on '{0}{1}' succeeded. Information class: {2}", share.Name, openFile.Path, request.FileInformationClass);
+                state.LogToServer(Severity.Information, "GetFileInformation on '{0}{1}' succeeded. Information class: {2}. (FileId: {3})", share.Name, openFile.Path, request.FileInformationClass, request.FileId.Volatile);
                 QueryInfoResponse response = new QueryInfoResponse();
                 response.SetFileInformation(fileInformation);
                 return response;
