@@ -68,6 +68,7 @@ namespace SMBLibrary.Client
                 {
                     port = NetBiosOverTCPPort;
                 }
+
                 try
                 {
                     m_clientSocket.Connect(serverAddress, port);
@@ -79,7 +80,7 @@ namespace SMBLibrary.Client
 
                 ConnectionState state = new ConnectionState();
                 NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
-                m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnServerSocketReceive), state);
+                m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
                 bool supportsCIFS = NegotiateNTLanManagerDialect(m_forceExtendedSecurity);
                 if (!supportsCIFS)
                 {
@@ -292,7 +293,7 @@ namespace SMBLibrary.Client
             return null;
         }
 
-        private void OnServerSocketReceive(IAsyncResult ar)
+        private void OnClientSocketReceive(IAsyncResult ar)
         {
             if (ar != m_currentAsyncResult)
             {
@@ -336,7 +337,7 @@ namespace SMBLibrary.Client
 
                 try
                 {
-                    m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnServerSocketReceive), state);
+                    m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -465,11 +466,11 @@ namespace SMBLibrary.Client
             TrySendPacket(socket, packet);
         }
 
-        public static void TrySendPacket(Socket socket, SessionPacket response)
+        public static void TrySendPacket(Socket socket, SessionPacket packet)
         {
             try
             {
-                socket.Send(response.GetBytes());
+                socket.Send(packet.GetBytes());
             }
             catch (SocketException)
             {
