@@ -180,7 +180,7 @@ namespace SMBLibrary.Client
             // https://msdn.microsoft.com/en-us/library/cc236676.aspx
             if ((challengeMessage.NegotiateFlags & NegotiateFlags.KeyExchange) > 0)
             {
-                sessionKey = new byte[8];
+                sessionKey = new byte[16];
                 new Random().NextBytes(sessionKey);
                 authenticateMessage.EncryptedRandomSessionKey = RC4.Encrypt(keyExchangeKey, sessionKey);
             }
