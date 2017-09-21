@@ -60,6 +60,7 @@
     <Compile Include="Client\Helpers\ServerServiceHelper.cs" />
     <Compile Include="Client\SMB1Client.cs" />
     <Compile Include="Client\SMB1FileStore.cs" />
+    <Compile Include="Client\SMB2Client.cs" />
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />
     <Compile Include="Enums\Win32Error.cs" />
