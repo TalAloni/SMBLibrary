@@ -384,6 +384,18 @@ namespace SMBLibrary.Client
             return NTStatus.STATUS_INVALID_SMB;
         }
 
+        public NTStatus Disconnect()
+        {
+            TreeDisconnectRequest request = new TreeDisconnectRequest();
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TREE_DISCONNECT);
+            if (reply != null)
+            {
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
+        }
+
         private static ExtendedFileAttributes ToExtendedFileAttributes(FileAttributes fileAttributes)
         {
             // We only return flags that can be used with NtCreateFile

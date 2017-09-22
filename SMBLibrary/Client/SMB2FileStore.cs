@@ -177,6 +177,19 @@ namespace SMBLibrary.Client
             return NTStatus.STATUS_INVALID_SMB;
         }
 
+        public NTStatus Disconnect()
+        {
+            TreeDisconnectRequest request = new TreeDisconnectRequest();
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.TreeDisconnect);
+            if (response != null)
+            {
+                return response.Header.Status;
+            }
+
+            return NTStatus.STATUS_INVALID_SMB;
+        }
+
         private void TrySendCommand(SMB2Command request)
         {
             request.Header.TreeID = m_treeID;
