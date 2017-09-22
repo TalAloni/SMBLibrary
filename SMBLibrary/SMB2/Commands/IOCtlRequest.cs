@@ -68,7 +68,7 @@ namespace SMBLibrary.SMB2
             }
             if (Output.Length > 0)
             {
-                OutputOffset = InputOffset + (uint)Input.Length;
+                OutputOffset = SMB2Header.Length + FixedLength + (uint)Input.Length;
             }
             LittleEndianWriter.WriteUInt16(buffer, offset + 0, StructureSize);
             LittleEndianWriter.WriteUInt16(buffer, offset + 2, Reserved);
