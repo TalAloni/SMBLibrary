@@ -187,7 +187,9 @@ namespace SMBLibrary.Client
                 return null;
             }
 
-            return ServerServiceHelper.ListShares(namedPipeShare, SMBLibrary.Services.ShareType.DiskDrive, out status);
+            List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, SMBLibrary.Services.ShareType.DiskDrive, out status);
+            namedPipeShare.Disconnect();
+            return shares;
         }
 
         public SMB2FileStore TreeConnect(string shareName, out NTStatus status)

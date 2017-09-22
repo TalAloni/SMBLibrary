@@ -255,14 +255,15 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A login session must be successfully established before retrieving share list");
             }
 
-
             SMB1FileStore namedPipeShare = TreeConnect("IPC$", ServiceName.NamedPipe, out status);
             if (namedPipeShare == null)
             {
                 return null;
             }
 
-            return ServerServiceHelper.ListShares(namedPipeShare, ShareType.DiskDrive, out status);
+            List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, ShareType.DiskDrive, out status);
+            namedPipeShare.Disconnect();
+            return shares;
         }
 
         public SMB1FileStore TreeConnect(string shareName, ServiceName serviceName, out NTStatus status)
