@@ -174,6 +174,50 @@ namespace SMBLibrary.Client
             return NTStatus.STATUS_INVALID_SMB;
         }
 
+        public List<string> ListShares(out NTStatus status)
+        {
+            if (!m_isConnected || !m_isLoggedIn)
+            {
+                throw new InvalidOperationException("A login session must be successfully established before retrieving share list");
+            }
+
+            SMB2FileStore namedPipeShare = TreeConnect("IPC$", out status);
+            if (namedPipeShare == null)
+            {
+                return null;
+            }
+
+            return ServerServiceHelper.ListShares(namedPipeShare, SMBLibrary.Services.ShareType.DiskDrive, out status);
+        }
+
+        public SMB2FileStore TreeConnect(string shareName, out NTStatus status)
+        {
+            if (!m_isConnected || !m_isLoggedIn)
+            {
+                throw new InvalidOperationException("A login session must be successfully established before connecting to a share");
+            }
+
+            IPAddress serverIPAddress = ((IPEndPoint)m_clientSocket.RemoteEndPoint).Address;
+            string sharePath = String.Format(@"\\{0}\{1}", serverIPAddress.ToString(), shareName);
+            TreeConnectRequest request = new TreeConnectRequest();
+            request.Path = sharePath;
+            TrySendCommand(request);
+            SMB2Command response = WaitForCommand(SMB2CommandName.TreeConnect);
+            if (response != null)
+            {
+                status = response.Header.Status;
+                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is TreeConnectResponse)
+                {
+                    return new SMB2FileStore(this, response.Header.TreeID);
+                }
+            }
+            else
+            {
+                status = NTStatus.STATUS_INVALID_SMB;
+            }
+            return null;
+        }
+
         private void OnClientSocketReceive(IAsyncResult ar)
         {
             if (ar != m_currentAsyncResult)
