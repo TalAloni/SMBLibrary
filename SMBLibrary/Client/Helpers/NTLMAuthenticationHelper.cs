@@ -67,7 +67,7 @@ namespace SMBLibrary.Client
                 outputToken.MechanismTypeList = new List<byte[]>();
                 outputToken.MechanismTypeList.Add(GSSProvider.NTLMSSPIdentifier);
                 outputToken.MechanismToken = negotiateMessage.GetBytes();
-                return outputToken.GetBytes();
+                return SimpleProtectedNegotiationToken.GetTokenBytes(outputToken);
             }
             else
             {
