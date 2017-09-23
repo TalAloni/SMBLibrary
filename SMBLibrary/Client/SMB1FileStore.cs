@@ -11,7 +11,7 @@ using Utilities;
 
 namespace SMBLibrary.Client
 {
-    public class SMB1FileStore : INTFileStore
+    public class SMB1FileStore : ISMBFileStore
     {
         private SMB1Client m_client;
         private ushort m_treeID;
