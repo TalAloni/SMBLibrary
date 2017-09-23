@@ -28,8 +28,12 @@ namespace SMBLibrary.Authentication.GSSAPI
             byte tag = ByteReader.ReadByte(tokenBytes, ref offset);
             if (tag == ApplicationTag)
             {
+                // https://msdn.microsoft.com/en-us/library/ms995330.aspx
                 // when an InitToken is sent, it is prepended by an Application Constructed Object specifier (0x60),
-                // and the OID for SPNEGO (see value in OID table above). This is the generic GSSAPI header.
+                // and the OID for SPNEGO. This is the generic GSSAPI header.
+
+                // [RFC 2743] The use of the Mechanism-Independent Token Format is required for initial context
+                // establishment tokens, use in non-initial tokens is optional.
                 int tokenLength = DerEncodingHelper.ReadLength(tokenBytes, ref offset);
                 tag = ByteReader.ReadByte(tokenBytes, ref offset);
                 if (tag == (byte)DerEncodingTag.ObjectIdentifier)
@@ -42,6 +46,10 @@ namespace SMBLibrary.Authentication.GSSAPI
                         if (tag == SimpleProtectedNegotiationTokenInit.NegTokenInitTag)
                         {
                             return new SimpleProtectedNegotiationTokenInit(tokenBytes, offset);
+                        }
+                        else if (tag == SimpleProtectedNegotiationTokenResponse.NegTokenRespTag)
+                        {
+                            return new SimpleProtectedNegotiationTokenResponse(tokenBytes, offset);
                         }
                     }
                 }
