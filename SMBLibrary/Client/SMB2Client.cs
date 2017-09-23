@@ -18,7 +18,7 @@ using Utilities;
 
 namespace SMBLibrary.Client
 {
-    public class SMB2Client
+    public class SMB2Client : ISMBClient
     {
         public const int NetBiosOverTCPPort = 139;
         public const int DirectTCPPort = 445;
@@ -74,8 +74,8 @@ namespace SMBLibrary.Client
                 ConnectionState state = new ConnectionState();
                 NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
                 m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
-                bool supportsSMB2 = NegotiateDialect();
-                if (!supportsSMB2)
+                bool supportsDialect = NegotiateDialect();
+                if (!supportsDialect)
                 {
                     m_clientSocket.Close();
                 }
@@ -181,7 +181,7 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A login session must be successfully established before retrieving share list");
             }
 
-            SMB2FileStore namedPipeShare = TreeConnect("IPC$", out status);
+            ISMBFileStore namedPipeShare = TreeConnect("IPC$", out status);
             if (namedPipeShare == null)
             {
                 return null;
@@ -192,7 +192,7 @@ namespace SMBLibrary.Client
             return shares;
         }
 
-        public SMB2FileStore TreeConnect(string shareName, out NTStatus status)
+        public ISMBFileStore TreeConnect(string shareName, out NTStatus status)
         {
             if (!m_isConnected || !m_isLoggedIn)
             {

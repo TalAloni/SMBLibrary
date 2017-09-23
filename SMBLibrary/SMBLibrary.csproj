@@ -58,6 +58,7 @@
     <Compile Include="Client\Enums\AuthenticationMethod.cs" />
     <Compile Include="Client\Helpers\NTLMAuthenticationHelper.cs" />
     <Compile Include="Client\Helpers\ServerServiceHelper.cs" />
+    <Compile Include="Client\ISMBClient.cs" />
     <Compile Include="Client\ISMBFileStore.cs" />
     <Compile Include="Client\SMB1Client.cs" />
     <Compile Include="Client\SMB1FileStore.cs" />

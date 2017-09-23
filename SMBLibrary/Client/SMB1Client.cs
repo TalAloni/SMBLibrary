@@ -18,7 +18,7 @@ using Utilities;
 
 namespace SMBLibrary.Client
 {
-    public class SMB1Client
+    public class SMB1Client : ISMBClient
     {
         public const int NetBiosOverTCPPort = 139;
         public const int DirectTCPPort = 445;
@@ -81,8 +81,8 @@ namespace SMBLibrary.Client
                 ConnectionState state = new ConnectionState();
                 NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
                 m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
-                bool supportsCIFS = NegotiateNTLanManagerDialect(m_forceExtendedSecurity);
-                if (!supportsCIFS)
+                bool supportsDialect = NegotiateDialect(m_forceExtendedSecurity);
+                if (!supportsDialect)
                 {
                     m_clientSocket.Close();
                 }
@@ -103,7 +103,7 @@ namespace SMBLibrary.Client
             }
         }
 
-        private bool NegotiateNTLanManagerDialect(bool forceExtendedSecurity)
+        private bool NegotiateDialect(bool forceExtendedSecurity)
         {
             if (m_transport == SMBTransportType.NetBiosOverTCP)
             {
@@ -264,6 +264,11 @@ namespace SMBLibrary.Client
             List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, ShareType.DiskDrive, out status);
             namedPipeShare.Disconnect();
             return shares;
+        }
+
+        public ISMBFileStore TreeConnect(string shareName, out NTStatus status)
+        {
+            return TreeConnect(shareName, ServiceName.AnyType, out status);
         }
 
         public SMB1FileStore TreeConnect(string shareName, ServiceName serviceName, out NTStatus status)
