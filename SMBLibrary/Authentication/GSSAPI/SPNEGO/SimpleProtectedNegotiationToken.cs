@@ -19,6 +19,32 @@ namespace SMBLibrary.Authentication.GSSAPI
 
         public abstract byte[] GetBytes();
 
+        /// <param name="includeHeader">Prepend the generic GSSAPI header. Required for negTokenInit, optional for negTokenResp.</param>
+        public byte[] GetBytes(bool includeHeader)
+        {
+            byte[] tokenBytes = this.GetBytes();
+            if (includeHeader)
+            {
+                int objectIdentifierFieldSize = DerEncodingHelper.GetLengthFieldSize(SPNEGOIdentifier.Length);
+                int tokenLength = 1 + objectIdentifierFieldSize + SPNEGOIdentifier.Length + tokenBytes.Length;
+                int tokenLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(tokenLength);
+                int headerLength = 1 + tokenLengthFieldSize + 1 + objectIdentifierFieldSize + SPNEGOIdentifier.Length;
+                byte[] buffer = new byte[headerLength + tokenBytes.Length];
+                int offset = 0;
+                ByteWriter.WriteByte(buffer, ref offset, ApplicationTag);
+                DerEncodingHelper.WriteLength(buffer, ref offset, tokenLength);
+                ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ObjectIdentifier);
+                DerEncodingHelper.WriteLength(buffer, ref offset, SPNEGOIdentifier.Length);
+                ByteWriter.WriteBytes(buffer, ref offset, SPNEGOIdentifier);
+                ByteWriter.WriteBytes(buffer, ref offset, tokenBytes);
+                return buffer;
+            }
+            else
+            {
+                return tokenBytes;
+            }
+        }
+
         /// <summary>
         /// https://tools.ietf.org/html/rfc2743
         /// </summary>
@@ -59,34 +85,6 @@ namespace SMBLibrary.Authentication.GSSAPI
                 return new SimpleProtectedNegotiationTokenResponse(tokenBytes, offset);
             }
             return null;
-        }
-
-        /// <summary>
-        /// Will append the generic GSSAPI header.
-        /// </summary>
-        public static byte[] GetTokenBytes(SimpleProtectedNegotiationToken token)
-        {
-            if (token is SimpleProtectedNegotiationTokenInit)
-            {
-                byte[] tokenBytes = token.GetBytes();
-                int objectIdentifierFieldSize = DerEncodingHelper.GetLengthFieldSize(SPNEGOIdentifier.Length);
-                int tokenLength = 1 + objectIdentifierFieldSize + SPNEGOIdentifier.Length + tokenBytes.Length;
-                int tokenLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(tokenLength);
-                int headerLength = 1 + tokenLengthFieldSize + 1 + objectIdentifierFieldSize + SPNEGOIdentifier.Length;
-                byte[] buffer = new byte[headerLength + tokenBytes.Length];
-                int offset = 0;
-                ByteWriter.WriteByte(buffer, ref offset, ApplicationTag);
-                DerEncodingHelper.WriteLength(buffer, ref offset, tokenLength);
-                ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ObjectIdentifier);
-                DerEncodingHelper.WriteLength(buffer, ref offset, SPNEGOIdentifier.Length);
-                ByteWriter.WriteBytes(buffer, ref offset, SPNEGOIdentifier);
-                ByteWriter.WriteBytes(buffer, ref offset, tokenBytes);
-                return buffer;
-            }
-            else
-            {
-                return token.GetBytes();
-            }
         }
     }
 }

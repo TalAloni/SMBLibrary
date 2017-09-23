@@ -48,7 +48,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             {
                 token.MechanismTypeList.Add(mechanism.Identifier);
             }
-            return SimpleProtectedNegotiationToken.GetTokenBytes(token);
+            return token.GetBytes(true);
         }
 
         public virtual NTStatus AcceptSecurityContext(ref GSSContext context, byte[] inputToken, out byte[] outputToken)
