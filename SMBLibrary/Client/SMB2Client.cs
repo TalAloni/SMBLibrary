@@ -162,6 +162,11 @@ namespace SMBLibrary.Client
 
         public NTStatus Logoff()
         {
+            if (!m_isConnected)
+            {
+                throw new InvalidOperationException("A login session must be successfully established before attempting logoff");
+            }
+
             LogoffRequest request = new LogoffRequest();
             TrySendCommand(request);
 
