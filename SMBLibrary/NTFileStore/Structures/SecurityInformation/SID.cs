@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary
@@ -16,15 +15,21 @@ namespace SMBLibrary
     /// </summary>
     public class SID
     {
+        public static readonly byte[] WORLD_SID_AUTHORITY = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
+        public static readonly byte[] LOCAL_SID_AUTHORITY = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x02 };
+        public static readonly byte[] CREATOR_SID_AUTHORITY = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x02 };
+        public static readonly byte[] SECURITY_NT_AUTHORITY = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x05 };
+
+        public const int FixedLength = 8;
+
         public byte Revision;
-        //byte SubAuthorityCount;
-        public byte[] IdentifierAuthority;
+        // byte SubAuthorityCount;
+        public byte[] IdentifierAuthority; // 6 bytes
         public List<uint> SubAuthority = new List<uint>();
 
         public SID()
         {
             Revision = 0x01;
-            IdentifierAuthority = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x05 };
         }
 
         public SID(byte[] buffer, int offset)
@@ -55,7 +60,29 @@ namespace SMBLibrary
         {
             get
             {
-                return 8 + SubAuthority.Count * 4;
+                return FixedLength + SubAuthority.Count * 4;
+            }
+        }
+
+        public static SID Everyone
+        {
+            get
+            {
+                SID sid = new SID();
+                sid.IdentifierAuthority = WORLD_SID_AUTHORITY;
+                sid.SubAuthority.Add(0);
+                return sid;
+            }
+        }
+
+        public static SID LocalSystem
+        {
+            get
+            {
+                SID sid = new SID();
+                sid.IdentifierAuthority = SECURITY_NT_AUTHORITY;
+                sid.SubAuthority.Add(18);
+                return sid;
             }
         }
     }

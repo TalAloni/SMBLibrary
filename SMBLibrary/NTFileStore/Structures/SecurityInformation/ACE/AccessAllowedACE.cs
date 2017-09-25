@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary
@@ -16,6 +15,8 @@ namespace SMBLibrary
     /// </summary>
     public class AccessAllowedACE : ACE
     {
+        public const int FixedLength = 8;
+
         public AceHeader Header;
         public AccessMask Mask;
         public SID Sid;
@@ -33,11 +34,19 @@ namespace SMBLibrary
             Sid = new SID(buffer, offset + 8);
         }
 
+        public override void WriteBytes(byte[] buffer, ref int offset)
+        {
+            Header.AceSize = (ushort)this.Length;
+            Header.WriteBytes(buffer, ref offset);
+            LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)Mask);
+            Sid.WriteBytes(buffer, ref offset);
+        }
+
         public override int Length
         {
             get
             {
-                return 8 + Sid.Length;
+                return FixedLength + Sid.Length;
             }
         }
     }

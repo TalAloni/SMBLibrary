@@ -176,6 +176,7 @@
     <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\Enums\AceFlags.cs" />
     <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\Enums\AceType.cs" />
     <Compile Include="NTFileStore\Structures\SecurityInformation\ACL.cs" />
+    <Compile Include="NTFileStore\Structures\SecurityInformation\Enums\SecurityDescriptorControl.cs" />
     <Compile Include="NTFileStore\Structures\SecurityInformation\SecurityDescriptor.cs" />
     <Compile Include="NTFileStore\Structures\SecurityInformation\SID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

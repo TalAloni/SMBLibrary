@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary
@@ -25,11 +24,19 @@ namespace SMBLibrary
         public AceHeader()
         {
         }
+
         public AceHeader(byte[] buffer, int offset)
         {
             AceType = (AceType)ByteReader.ReadByte(buffer, offset + 0);
             AceFlags = (AceFlags)ByteReader.ReadByte(buffer, offset + 1);
             AceSize = LittleEndianConverter.ToUInt16(buffer, offset + 2);
+        }
+
+        public void WriteBytes(byte[] buffer, ref int offset)
+        {
+            ByteWriter.WriteByte(buffer, ref offset, (byte)AceType);
+            ByteWriter.WriteByte(buffer, ref offset, (byte)AceFlags);
+            LittleEndianWriter.WriteUInt16(buffer, ref offset, AceSize);
         }
     }
 }
