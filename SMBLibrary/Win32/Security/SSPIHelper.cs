@@ -220,7 +220,7 @@ namespace SMBLibrary.Win32.Security
             }
             if (result != SEC_E_OK)
             {
-                throw new Exception("AcquireCredentialsHandle failed, Error code 0x" + result.ToString("X"));
+                throw new Exception("AcquireCredentialsHandle failed, Error code 0x" + result.ToString("X8"));
             }
 
             return credential;
@@ -253,7 +253,7 @@ namespace SMBLibrary.Win32.Security
                 }
                 else
                 {
-                    throw new Exception("InitializeSecurityContext failed, Error code 0x" + result.ToString("X"));
+                    throw new Exception("InitializeSecurityContext failed, Error code 0x" + result.ToString("X8"));
                 }
             }
             FreeCredentialsHandle(ref credentialsHandle);
@@ -290,7 +290,7 @@ namespace SMBLibrary.Win32.Security
                 }
                 else
                 {
-                    throw new Exception("InitializeSecurityContext failed, Error code 0x" + result.ToString("X"));
+                    throw new Exception("InitializeSecurityContext failed, Error code 0x" + result.ToString("X8"));
                 }
             }
             byte[] messageBytes = output.GetBufferBytes(0);
@@ -329,7 +329,7 @@ namespace SMBLibrary.Win32.Security
                 }
                 else
                 {
-                    throw new Exception("AcceptSecurityContext failed, Error code 0x" + result.ToString("X"));
+                    throw new Exception("AcceptSecurityContext failed, Error code 0x" + result.ToString("X8"));
                 }
             }
             FreeCredentialsHandle(ref credentialsHandle);
@@ -394,7 +394,7 @@ namespace SMBLibrary.Win32.Security
                 }
                 else
                 {
-                    throw new Exception("AcceptSecurityContext failed, Error code 0x" + result.ToString("X"));
+                    throw new Exception("AcceptSecurityContext failed, Error code 0x" + result.ToString("X8"));
                 }
             }
         }

@@ -64,8 +64,8 @@ namespace SMBLibrary.SMB2
 
         public static SMB2Command ReadRequest(byte[] buffer, int offset)
         {
-            SMB2CommandName command = (SMB2CommandName)LittleEndianConverter.ToUInt16(buffer, offset + 12);
-            switch (command)
+            SMB2CommandName commandName = (SMB2CommandName)LittleEndianConverter.ToUInt16(buffer, offset + 12);
+            switch (commandName)
             {
                 case SMB2CommandName.Negotiate:
                     return new NegotiateRequest(buffer, offset);
@@ -104,7 +104,7 @@ namespace SMBLibrary.SMB2
                 case SMB2CommandName.SetInfo:
                     return new SetInfoRequest(buffer, offset);
                 default:
-                    throw new InvalidDataException("Invalid SMB2 command in buffer");
+                    throw new InvalidDataException("Invalid SMB2 command 0x" + commandName.ToString("X4"));
             }
         }
 
@@ -178,9 +178,9 @@ namespace SMBLibrary.SMB2
 
         public static SMB2Command ReadResponse(byte[] buffer, int offset)
         {
-            SMB2CommandName command = (SMB2CommandName)LittleEndianConverter.ToUInt16(buffer, offset + 12);
+            SMB2CommandName commandName = (SMB2CommandName)LittleEndianConverter.ToUInt16(buffer, offset + 12);
             ushort structureSize = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 0);
-            switch (command)
+            switch (commandName)
             {
                 case SMB2CommandName.Negotiate:
                     {
@@ -471,7 +471,7 @@ namespace SMBLibrary.SMB2
                         }
                     }
                 default:
-                    throw new InvalidDataException("Invalid SMB2 command in buffer");
+                    throw new InvalidDataException("Invalid SMB2 command 0x" + commandName.ToString("X4"));
             }
         }
 
