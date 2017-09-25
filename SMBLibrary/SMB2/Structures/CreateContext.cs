@@ -15,7 +15,7 @@ namespace SMBLibrary.SMB2
     /// </summary>
     public class CreateContext
     {
-        public int FixedLength = 16;
+        public const int FixedLength = 16;
 
         /// <summary>
         /// The offset from the beginning of this Create Context to the beginning of a subsequent 8-byte aligned Create Context.
