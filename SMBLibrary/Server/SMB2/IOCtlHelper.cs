@@ -17,7 +17,7 @@ namespace SMBLibrary.Server.SMB2
         internal static SMB2Command GetIOCtlResponse(IOCtlRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
-            string ctlCode = Enum.IsDefined(typeof(IoControlCode), request.CtlCode) ? ((IoControlCode)request.CtlCode).ToString() : ("0x" + request.CtlCode.ToString("x"));
+            string ctlCode = Enum.IsDefined(typeof(IoControlCode), request.CtlCode) ? ((IoControlCode)request.CtlCode).ToString() : ("0x" + request.CtlCode.ToString("X8"));
             if (!request.IsFSCtl)
             {
                 // [MS-SMB2] If the Flags field of the request is not SMB2_0_IOCTL_IS_FSCTL the server MUST fail the request with STATUS_NOT_SUPPORTED.
