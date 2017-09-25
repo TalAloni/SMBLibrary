@@ -12,15 +12,15 @@ using Utilities;
 namespace SMBLibrary.SMB1
 {
     /// <summary>
-    /// NTTransactQuerySecurityDescription Response
+    /// NT_TRANSACT_QUERY_SECURITY_DESC Response
     /// </summary>
     public class NTTransactQuerySecurityDescriptorResponse : NTTransactSubcommand
     {
         public const uint ParametersLength = 4;
         // Parameters:
-        public uint LengthNeeded; // We might return STATUS_BUFFER_OVERFLOW without the SecurityDescriptor field
+        public uint LengthNeeded;
         // Data
-        public SecurityDescriptor SecurityDescriptor;
+        public SecurityDescriptor SecurityDescriptor; // We might return STATUS_BUFFER_TOO_SMALL without the SecurityDescriptor field
 
         public NTTransactQuerySecurityDescriptorResponse()
         {
@@ -33,6 +33,25 @@ namespace SMBLibrary.SMB1
             if (data.Length == LengthNeeded)
             {
                 SecurityDescriptor = new SecurityDescriptor(data, 0);
+            }
+        }
+
+        public override byte[] GetParameters(bool isUnicode)
+        {
+            byte[] parameters = new byte[ParametersLength];
+            LittleEndianWriter.WriteUInt32(parameters, 0, LengthNeeded);
+            return parameters;
+        }
+
+        public override byte[] GetData()
+        {
+            if (SecurityDescriptor != null)
+            {
+                return SecurityDescriptor.GetBytes();
+            }
+            else
+            {
+                return new byte[0];
             }
         }
 
