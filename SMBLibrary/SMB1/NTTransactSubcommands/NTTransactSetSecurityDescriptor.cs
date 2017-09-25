@@ -20,7 +20,7 @@ namespace SMBLibrary.SMB1
         // Parameters:
         public ushort FID;
         public ushort Reserved;
-        public SecurityInfoFields SecurityInfoFields;
+        public SecurityInformation SecurityInformation;
         // Data:
         public SecurityDescriptor SecurityDescriptor;
 
@@ -32,7 +32,7 @@ namespace SMBLibrary.SMB1
         {
             FID = LittleEndianConverter.ToUInt16(parameters, 0);
             Reserved = LittleEndianConverter.ToUInt16(parameters, 2);
-            SecurityInfoFields = (SecurityInfoFields)LittleEndianConverter.ToUInt32(parameters, 4);
+            SecurityInformation = (SecurityInformation)LittleEndianConverter.ToUInt32(parameters, 4);
 
             SecurityDescriptor = new SecurityDescriptor(data, 0);
         }
@@ -42,7 +42,7 @@ namespace SMBLibrary.SMB1
             byte[] parameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(parameters, 0, FID);
             LittleEndianWriter.WriteUInt16(parameters, 2, Reserved);
-            LittleEndianWriter.WriteUInt32(parameters, 4, (uint)SecurityInfoFields);
+            LittleEndianWriter.WriteUInt32(parameters, 4, (uint)SecurityInformation);
             return parameters;
         }
 

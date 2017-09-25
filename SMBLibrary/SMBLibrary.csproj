@@ -118,6 +118,7 @@
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateOptions.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\FileStatus.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\ShareAccess.cs" />
+    <Compile Include="NTFileStore\Enums\SecurityInformation\SecurityInformation.cs" />
     <Compile Include="NTFileStore\INTFileStore.cs" />
     <Compile Include="NTFileStore\NamedPipeStore.cs" />
     <Compile Include="NTFileStore\NTFileStoreHelper.cs" />
@@ -402,7 +403,6 @@
     <Compile Include="SMB1\EnumStructures\NamedPipeStatus.cs" />
     <Compile Include="SMB1\EnumStructures\OpenResults.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\Enums\NTTransactSubcommandName.cs" />
-    <Compile Include="SMB1\NTTransactSubcommands\Enums\SecurityInfoFields.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactCreateRequest.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactIOCTLRequest.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactIOCTLResponse.cs" />
