@@ -414,7 +414,8 @@
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactNotifyChangeResponse.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactQuerySecurityDescriptorRequest.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactQuerySecurityDescriptorResponse.cs" />
-    <Compile Include="SMB1\NTTransactSubcommands\NTTransactSetSecurityDescriptor.cs" />
+    <Compile Include="SMB1\NTTransactSubcommands\NTTransactSetSecurityDescriptorRequest.cs" />
+    <Compile Include="SMB1\NTTransactSubcommands\NTTransactSetSecurityDescriptorResponse.cs" />
     <Compile Include="SMB1\NTTransactSubcommands\NTTransactSubcommand.cs" />
     <Compile Include="SMB1\ServiceNameHelper.cs" />
     <Compile Include="SMB1\SMB1Header.cs" />

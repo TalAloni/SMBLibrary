@@ -46,7 +46,7 @@ namespace SMBLibrary.SMB1
                 case NTTransactSubcommandName.NT_TRANSACT_IOCTL:
                     return new NTTransactIOCTLRequest(setup, data);
                 case NTTransactSubcommandName.NT_TRANSACT_SET_SECURITY_DESC:
-                    return new NTTransactSetSecurityDescriptor(parameters, data);
+                    return new NTTransactSetSecurityDescriptorRequest(parameters, data);
                 case NTTransactSubcommandName.NT_TRANSACT_NOTIFY_CHANGE:
                     return new NTTransactNotifyChangeRequest(setup);
                 case NTTransactSubcommandName.NT_TRANSACT_QUERY_SECURITY_DESC:

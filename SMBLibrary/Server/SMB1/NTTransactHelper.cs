@@ -96,7 +96,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 subcommandResponse = GetSubcommandResponse(header, maxDataCount, (NTTransactIOCTLRequest)subcommand, share, state);
             }
-            else if (subcommand is NTTransactSetSecurityDescriptor)
+            else if (subcommand is NTTransactSetSecurityDescriptorRequest)
             {
                 header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
             }
