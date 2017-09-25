@@ -17,9 +17,10 @@ namespace SMBLibrary.Server.SMB2
         internal static SMB2Command GetSetInfoResponse(SetInfoRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
-            if (request.InfoType == InfoType.File)
+            OpenFileObject openFile = null;
+            if (request.InfoType == InfoType.File || request.InfoType == InfoType.Security)
             {
-                OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
+                openFile = session.GetOpenFileObject(request.FileId);
                 if (openFile == null)
                 {
                     state.LogToServer(Severity.Verbose, "SetFileInformation failed. Invalid FileId. (SessionID: {0}, TreeID: {1}, FileId: {2})", request.Header.SessionID, request.Header.TreeID, request.FileId.Volatile);
@@ -34,7 +35,10 @@ namespace SMBLibrary.Server.SMB2
                         return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
                     }
                 }
+            }
 
+            if (request.InfoType == InfoType.File)
+            {
                 FileInformation information;
                 try
                 {
@@ -91,6 +95,29 @@ namespace SMBLibrary.Server.SMB2
                 {
                     state.LogToServer(Severity.Information, "SetFileInformation on '{0}{1}' succeeded. Information class: {2}. (FileId: {3})", share.Name, openFile.Path, request.FileInformationClass, request.FileId.Volatile);
                 }
+                return new SetInfoResponse();
+            }
+            else if (request.InfoType == InfoType.Security)
+            {
+                SecurityDescriptor securityDescriptor;
+                try
+                {
+                    securityDescriptor = new SecurityDescriptor(request.Buffer, 0);
+                }
+                catch
+                {
+                    state.LogToServer(Severity.Verbose, "SetSecurityInformation on '{0}{1}' failed. NTStatus: STATUS_INVALID_PARAMETER.", share.Name, openFile.Path);
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
+                }
+
+                NTStatus status = share.FileStore.SetSecurityInformation(openFile, request.SecurityInformation, securityDescriptor);
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    state.LogToServer(Severity.Verbose, "SetSecurityInformation on '{0}{1}' failed. Security information: 0x{2}, NTStatus: {3}. (FileId: {4})", share.Name, openFile.Path, request.SecurityInformation.ToString("X"), status, request.FileId.Volatile);
+                    return new ErrorResponse(request.CommandName, status);
+                }
+
+                state.LogToServer(Severity.Information, "SetSecurityInformation on '{0}{1}' succeeded. Security information: 0x{2}. (FileId: {3})", share.Name, openFile.Path, request.SecurityInformation.ToString("X"), request.FileId.Volatile);
                 return new SetInfoResponse();
             }
             return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);

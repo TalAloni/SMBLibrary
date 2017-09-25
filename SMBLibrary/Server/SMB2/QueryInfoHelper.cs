@@ -72,6 +72,44 @@ namespace SMBLibrary.Server.SMB2
                     return response;
                 }
             }
+            else if (request.InfoType == InfoType.Security)
+            {
+                OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
+                if (openFile == null)
+                {
+                    state.LogToServer(Severity.Verbose, "GetSecurityInformation failed. Invalid FileId. (SessionID: {0}, TreeID: {1}, FileId: {2})", request.Header.SessionID, request.Header.TreeID, request.FileId.Volatile);
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_FILE_CLOSED);
+                }
+
+                if (share is FileSystemShare)
+                {
+                    if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, openFile.Path))
+                    {
+                        state.LogToServer(Severity.Verbose, "GetSecurityInformation on '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
+                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                    }
+                }
+
+                SecurityDescriptor securityDescriptor;
+                NTStatus queryStatus = share.FileStore.GetSecurityInformation(out securityDescriptor, openFile.Handle, request.SecurityInformation);
+                if (queryStatus != NTStatus.STATUS_SUCCESS)
+                {
+                    state.LogToServer(Severity.Verbose, "GetSecurityInformation on '{0}{1}' failed. Security information: 0x{2}, NTStatus: {3}. (FileId: {4})", share.Name, openFile.Path, request.SecurityInformation.ToString("X"), queryStatus, request.FileId.Volatile);
+                    return new ErrorResponse(request.CommandName, queryStatus);
+                }
+
+                if (securityDescriptor.Length > request.OutputBufferLength)
+                {
+                    state.LogToServer(Severity.Information, "GetSecurityInformation on '{0}{1}' failed. Security information: 0x{2}, NTStatus: STATUS_BUFFER_TOO_SMALL. (FileId: {3})", share.Name, openFile.Path, request.SecurityInformation.ToString("X"), request.FileId.Volatile);
+                    byte[] errorData = LittleEndianConverter.GetBytes((uint)securityDescriptor.Length);
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_BUFFER_TOO_SMALL, errorData);
+                }
+
+                state.LogToServer(Severity.Information, "GetSecurityInformation on '{0}{1}' succeeded. Security information: 0x{2}. (FileId: {3})", share.Name, openFile.Path, request.SecurityInformation.ToString("X"), request.FileId.Volatile);
+                QueryInfoResponse response = new QueryInfoResponse();
+                response.SetSecurityInformation(securityDescriptor);
+                return response;
+            }
             return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_SUPPORTED);
         }
     }

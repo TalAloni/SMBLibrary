@@ -98,7 +98,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is NTTransactSetSecurityDescriptorRequest)
             {
-                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                subcommandResponse = GetSubcommandResponse(header, (NTTransactSetSecurityDescriptorRequest)subcommand, share, state);
             }
             else if (subcommand is NTTransactNotifyChangeRequest)
             {
@@ -110,7 +110,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is NTTransactQuerySecurityDescriptorRequest)
             {
-                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                subcommandResponse = GetSubcommandResponse(header, maxDataCount, (NTTransactQuerySecurityDescriptorRequest)subcommand, share, state);
             }
             else
             {
@@ -161,6 +161,64 @@ namespace SMBLibrary.Server.SMB1
             state.LogToServer(Severity.Verbose, "IOCTL succeeded. CTL Code: {0}. (FID: {1})", ctlCode, subcommand.FID);
             NTTransactIOCTLResponse response = new NTTransactIOCTLResponse();
             response.Data = output;
+            return response;
+        }
+
+        private static NTTransactSetSecurityDescriptorResponse GetSubcommandResponse(SMB1Header header, NTTransactSetSecurityDescriptorRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        {
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
+            if (openFile == null)
+            {
+                state.LogToServer(Severity.Verbose, "SetSecurityInformation failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, subcommand.FID);
+                header.Status = NTStatus.STATUS_INVALID_HANDLE;
+                return null;
+            }
+
+            header.Status = share.FileStore.SetSecurityInformation(openFile.Handle, subcommand.SecurityInformation, subcommand.SecurityDescriptor);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                state.LogToServer(Severity.Verbose, "SetSecurityInformation on '{0}{1}' failed. Security information: 0x{2}, NTStatus: {3}. (FID: {4})", share.Name, openFile.Path, subcommand.SecurityInformation.ToString("X"), header.Status, subcommand.FID);
+                return null;
+            }
+
+            state.LogToServer(Severity.Verbose, "SetSecurityInformation on '{0}{1}' succeeded. Security information: 0x{2}. (FID: {3})", share.Name, openFile.Path, subcommand.SecurityInformation.ToString("X"), subcommand.FID);
+            NTTransactSetSecurityDescriptorResponse response = new NTTransactSetSecurityDescriptorResponse();
+            return response;
+        }
+
+        private static NTTransactQuerySecurityDescriptorResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, NTTransactQuerySecurityDescriptorRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        {
+            SMB1Session session = state.GetSession(header.UID);
+            OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);
+            if (openFile == null)
+            {
+                state.LogToServer(Severity.Verbose, "GetSecurityInformation failed. Invalid FID. (UID: {0}, TID: {1}, FID: {2})", header.UID, header.TID, subcommand.FID);
+                header.Status = NTStatus.STATUS_INVALID_HANDLE;
+                return null;
+            }
+
+            int maxOutputLength = (int)maxDataCount;
+            SecurityDescriptor securityDescriptor;
+            header.Status = share.FileStore.GetSecurityInformation(out securityDescriptor, openFile.Handle, subcommand.SecurityInfoFields);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                state.LogToServer(Severity.Verbose, "GetSecurityInformation on '{0}{1}' failed. Security information: 0x{2}, NTStatus: {3}. (FID: {4})", share.Name, openFile.Path, subcommand.SecurityInfoFields.ToString("X"), header.Status, subcommand.FID);
+                return null;
+            }
+
+            NTTransactQuerySecurityDescriptorResponse response = new NTTransactQuerySecurityDescriptorResponse();
+            response.LengthNeeded = (uint)securityDescriptor.Length;
+            if (response.LengthNeeded <= maxDataCount)
+            {
+                state.LogToServer(Severity.Verbose, "GetSecurityInformation on '{0}{1}' succeeded. Security information: 0x{2}. (FID: {3})", share.Name, openFile.Path, subcommand.SecurityInfoFields.ToString("X"), subcommand.FID);
+                response.SecurityDescriptor = securityDescriptor;
+            }
+            else
+            {
+                state.LogToServer(Severity.Verbose, "GetSecurityInformation on '{0}{1}' failed. Security information: 0x{2}, NTStatus: STATUS_BUFFER_TOO_SMALL. (FID: {3})", share.Name, openFile.Path, subcommand.SecurityInfoFields.ToString("X"), subcommand.FID);
+                header.Status = NTStatus.STATUS_BUFFER_TOO_SMALL;
+            }
             return response;
         }
 
