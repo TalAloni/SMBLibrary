@@ -42,7 +42,7 @@ namespace SMBLibrary.Server.SMB1
             header.Status = share.FileStore.ReadFile(out data, openFile.Handle, request.ReadOffsetInBytes, request.CountOfBytesToRead);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "Read from '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
+                state.LogToServer(Severity.Verbose, "Read from '{0}{1}' failed. NTStatus: {2}. (FID: {3})", share.Name, openFile.Path, header.Status, request.FID);
                 return new ErrorResponse(request.CommandName);
             }
 
@@ -67,7 +67,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasReadAccess(session.SecurityContext, openFile.Path))
                 {
-                    state.LogToServer(Severity.Verbose, "ReadAndX from '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
+                    state.LogToServer(Severity.Verbose, "Read from '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -89,7 +89,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "Read from '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
+                state.LogToServer(Severity.Verbose, "Read from '{0}{1}' failed. NTStatus: {2}. (FID: {3})", share.Name, openFile.Path, header.Status, request.FID);
                 return new ErrorResponse(request.CommandName);
             }
 
@@ -128,7 +128,7 @@ namespace SMBLibrary.Server.SMB1
             header.Status = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, request.WriteOffsetInBytes, request.Data);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "Write to '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
+                state.LogToServer(Severity.Verbose, "Write to '{0}{1}' failed. NTStatus: {2}. (FID: {3})", share.Name, openFile.Path, header.Status, request.FID);
                 return new ErrorResponse(request.CommandName);
             }
             WriteResponse response = new WriteResponse();
@@ -151,7 +151,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, openFile.Path))
                 {
-                    state.LogToServer(Severity.Verbose, "WriteAndX to '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
+                    state.LogToServer(Severity.Verbose, "Write to '{0}{1}' failed. User '{2}' was denied access.", share.Name, openFile.Path, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
                     return new ErrorResponse(request.CommandName);
                 }
@@ -161,7 +161,7 @@ namespace SMBLibrary.Server.SMB1
             header.Status = share.FileStore.WriteFile(out numberOfBytesWritten, openFile.Handle, (long)request.Offset, request.Data);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "Write to '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
+                state.LogToServer(Severity.Verbose, "Write to '{0}{1}' failed. NTStatus: {2}. (FID: {3})", share.Name, openFile.Path, header.Status, request.FID);
                 return new ErrorResponse(request.CommandName);
             }
             WriteAndXResponse response = new WriteAndXResponse();
@@ -195,7 +195,7 @@ namespace SMBLibrary.Server.SMB1
             header.Status = share.FileStore.FlushFileBuffers(openFile.Handle);
             if (header.Status != NTStatus.STATUS_SUCCESS)
             {
-                state.LogToServer(Severity.Verbose, "Flush '{0}{1}' failed. NTStatus: {2}.", share.Name, openFile.Path, header.Status);
+                state.LogToServer(Severity.Verbose, "Flush '{0}{1}' failed. NTStatus: {2}. (FID: {3})", share.Name, openFile.Path, header.Status, request.FID);
                 return new ErrorResponse(request.CommandName);
             }
             return new FlushResponse();
