@@ -95,6 +95,18 @@ namespace SMBLibrary.SMB2
             }
         }
 
+        public SecurityInformation SecurityInformation
+        {
+            get
+            {
+                return (SecurityInformation)AdditionalInformation;
+            }
+            set
+            {
+                AdditionalInformation = (uint)value;
+            }
+        }
+
         public void SetFileInformation(FileInformation fileInformation)
         {
             InputBuffer = fileInformation.GetBytes();

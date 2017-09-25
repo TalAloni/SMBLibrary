@@ -61,6 +61,11 @@ namespace SMBLibrary.SMB2
             OutputBuffer = fileSystemInformation.GetBytes();
         }
 
+        public void SetSecurityInformation(SecurityDescriptor securityDescriptor)
+        {
+            OutputBuffer = securityDescriptor.GetBytes();
+        }
+
         public override int CommandLength
         {
             get
