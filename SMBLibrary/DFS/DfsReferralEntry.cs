@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using Utilities;
 
-namespace SMBLibrary.SMB1
+namespace SMBLibrary
 {
     public abstract class DfsReferralEntry
     {

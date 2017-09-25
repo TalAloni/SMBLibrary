@@ -64,6 +64,9 @@
     <Compile Include="Client\SMB1FileStore.cs" />
     <Compile Include="Client\SMB2Client.cs" />
     <Compile Include="Client\SMB2FileStore.cs" />
+    <Compile Include="DFS\DfsReferralEntry.cs" />
+    <Compile Include="DFS\RequestGetDfsReferral.cs" />
+    <Compile Include="DFS\ResponseGetDfsReferral.cs" />
     <Compile Include="Enums\NTStatus.cs" />
     <Compile Include="Enums\SMBTransportType.cs" />
     <Compile Include="Enums\Win32Error.cs" />
@@ -423,9 +426,6 @@
     <Compile Include="SMB1\Transaction2Subcommands\EnumStructures\AccessModeOptions.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\EnumStructures\ActionTaken.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\EnumStructures\OpenMode.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\DFSReferral\DfsReferralEntry.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\DFSReferral\RequestGetDfsReferral.cs" />
-    <Compile Include="SMB1\Transaction2Subcommands\Structures\DFSReferral\ResponseGetDfsReferral.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2CreateDirectoryRequest.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2CreateDirectoryResponse.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2FindFirst2Request.cs" />
