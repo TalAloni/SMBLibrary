@@ -33,8 +33,16 @@ namespace SMBLibrary.SMB2
         public ErrorResponse(SMB2CommandName commandName, NTStatus status) : base(commandName)
         {
             Header.IsResponse = true;
-            Header.Status = status;
             StructureSize = DeclaredSize;
+            Header.Status = status;
+        }
+
+        public ErrorResponse(SMB2CommandName commandName, NTStatus status, byte[] errorData) : base(commandName)
+        {
+            Header.IsResponse = true;
+            StructureSize = DeclaredSize;
+            Header.Status = status;
+            ErrorData = errorData;
         }
 
         public ErrorResponse(byte[] buffer, int offset) : base(buffer, offset)
