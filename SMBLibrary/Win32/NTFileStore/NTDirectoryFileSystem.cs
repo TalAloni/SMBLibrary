@@ -362,6 +362,18 @@ namespace SMBLibrary.Win32
             return status;
         }
 
+        public NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation)
+        {
+            result = null;
+            return NTStatus.STATUS_INVALID_DEVICE_REQUEST;
+        }
+
+        public NTStatus SetSecurityInformation(object handle, SecurityInformation securityInformation, SecurityDescriptor securityDescriptor)
+        {
+            // [MS-FSA] If the object store does not implement security, the operation MUST be failed with STATUS_INVALID_DEVICE_REQUEST.
+            return NTStatus.STATUS_INVALID_DEVICE_REQUEST;
+        }
+
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
         {
             byte[] buffer = new byte[outputBufferSize];

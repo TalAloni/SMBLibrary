@@ -209,6 +209,17 @@ namespace SMBLibrary
             return NTStatus.STATUS_NOT_SUPPORTED;
         }
 
+        public NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation)
+        {
+            result = null;
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
+        public NTStatus SetSecurityInformation(object handle, SecurityInformation securityInformation, SecurityDescriptor securityDescriptor)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
         {
             ioRequest = null;

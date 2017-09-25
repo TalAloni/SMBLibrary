@@ -40,6 +40,10 @@ namespace SMBLibrary
 
         NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass);
 
+        NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation);
+
+        NTStatus SetSecurityInformation(object handle, SecurityInformation securityInformation, SecurityDescriptor securityDescriptor);
+
         /// <summary>
         /// Monitor the contents of a directory (and its subdirectories) by using change notifications.
         /// When something changes within the directory being watched this operation is completed.
