@@ -102,6 +102,15 @@ namespace SMBLibrary.Win32
         private static extern NTStatus NtQueryVolumeInformationFile(IntPtr handle, out IO_STATUS_BLOCK ioStatusBlock, byte[] fsInformation, uint length, uint fsInformationClass);
 
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
+        private static extern NTStatus NtSetVolumeInformationFile(IntPtr handle, out IO_STATUS_BLOCK ioStatusBlock, byte[] fsInformation, uint length, uint fsInformationClass);
+
+        [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
+        private static extern NTStatus NtQuerySecurityObject(IntPtr handle, SecurityInformation securityInformation, byte[] securityDescriptor, uint length, out uint lengthNeeded);
+
+        [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
+        private static extern NTStatus NtSetSecurityObject(IntPtr handle, SecurityInformation securityInformation, byte[] securityDescriptor);
+
+        [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
         private static extern NTStatus NtNotifyChangeDirectoryFile(IntPtr handle, IntPtr evt, IntPtr apcRoutine, IntPtr apcContext, out IO_STATUS_BLOCK ioStatusBlock, byte[] buffer, uint bufferSize, NotifyChangeFilter completionFilter, bool watchTree);
 
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
