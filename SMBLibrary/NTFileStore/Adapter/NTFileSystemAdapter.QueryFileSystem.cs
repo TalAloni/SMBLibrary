@@ -97,5 +97,10 @@ namespace SMBLibrary
                     }
             }
         }
+
+        public NTStatus SetFileSystemInformation(FileSystemInformation information)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
     }
 }

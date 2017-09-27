@@ -209,6 +209,11 @@ namespace SMBLibrary
             return NTStatus.STATUS_NOT_SUPPORTED;
         }
 
+        public NTStatus SetFileSystemInformation(FileSystemInformation information)
+        {
+            return NTStatus.STATUS_NOT_SUPPORTED;
+        }
+
         public NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation)
         {
             result = null;

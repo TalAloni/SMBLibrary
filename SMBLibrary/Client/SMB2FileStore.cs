@@ -144,6 +144,11 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
+        public NTStatus SetFileSystemInformation(FileSystemInformation information)
+        {
+            throw new NotImplementedException();
+        }
+
         public NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation)
         {
             result = null;

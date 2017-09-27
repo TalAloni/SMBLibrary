@@ -40,6 +40,8 @@ namespace SMBLibrary
 
         NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass);
 
+        NTStatus SetFileSystemInformation(FileSystemInformation information);
+
         NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation);
 
         NTStatus SetSecurityInformation(object handle, SecurityInformation securityInformation, SecurityDescriptor securityDescriptor);

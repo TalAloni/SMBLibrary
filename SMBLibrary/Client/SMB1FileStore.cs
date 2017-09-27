@@ -272,6 +272,11 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
+        public NTStatus SetFileSystemInformation(FileSystemInformation information)
+        {
+            throw new NotImplementedException();
+        }
+
         public NTStatus GetFileSystemInformation(out QueryFSInformation result, QueryFSInformationLevel informationLevel)
         {
             result = null;
