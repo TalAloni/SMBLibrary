@@ -115,11 +115,10 @@ namespace SMBLibrary.Server
 
             // Windows will set the TCP keepalive timeout to 120 seconds for an SMB connection
             SocketUtils.SetKeepAlive(clientSocket, TimeSpan.FromMinutes(2));
-            ConnectionState state = new ConnectionState(Log);
             // Disable the Nagle Algorithm for this tcp socket:
             clientSocket.NoDelay = true;
-            state.ClientSocket = clientSocket;
-            state.ClientEndPoint = clientSocket.RemoteEndPoint as IPEndPoint;
+            IPEndPoint clientEndPoint = (IPEndPoint)clientSocket.RemoteEndPoint;
+            ConnectionState state = new ConnectionState(clientSocket, clientEndPoint, Log);
             state.LogToServer(Severity.Verbose, "New connection request");
             Thread senderThread = new Thread(delegate()
             {

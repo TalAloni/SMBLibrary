@@ -18,28 +18,30 @@ namespace SMBLibrary.Server
 
     internal class ConnectionState
     {
-        public Socket ClientSocket;
-        public IPEndPoint ClientEndPoint;
-        public NBTConnectionReceiveBuffer ReceiveBuffer;
-        public BlockingQueue<SessionPacket> SendQueue;
-        protected LogDelegate LogToServerHandler;
+        private Socket m_clientSocket;
+        private IPEndPoint m_clientEndPoint;
+        private NBTConnectionReceiveBuffer m_receiveBuffer;
+        private BlockingQueue<SessionPacket> m_sendQueue;
+        private LogDelegate LogToServerHandler;
         public SMBDialect Dialect;
         public GSSContext AuthenticationContext;
 
-        public ConnectionState(LogDelegate logToServerHandler)
+        public ConnectionState(Socket clientSocket, IPEndPoint clientEndPoint, LogDelegate logToServerHandler)
         {
-            ReceiveBuffer = new NBTConnectionReceiveBuffer();
-            SendQueue = new BlockingQueue<SessionPacket>();
+            m_clientSocket = clientSocket;
+            m_clientEndPoint = clientEndPoint;
+            m_receiveBuffer = new NBTConnectionReceiveBuffer();
+            m_sendQueue = new BlockingQueue<SessionPacket>();
             LogToServerHandler = logToServerHandler;
             Dialect = SMBDialect.NotSet;
         }
 
         public ConnectionState(ConnectionState state)
         {
-            ClientSocket = state.ClientSocket;
-            ClientEndPoint = state.ClientEndPoint;
-            ReceiveBuffer = state.ReceiveBuffer;
-            SendQueue = state.SendQueue;
+            m_clientSocket = state.ClientSocket;
+            m_clientEndPoint = state.ClientEndPoint;
+            m_receiveBuffer = state.ReceiveBuffer;
+            m_sendQueue = state.SendQueue;
             LogToServerHandler = state.LogToServerHandler;
             Dialect = state.Dialect;
         }
@@ -68,6 +70,38 @@ namespace SMBLibrary.Server
         public void LogToServer(Severity severity, string message, params object[] args)
         {
             LogToServer(severity, String.Format(message, args));
+        }
+
+        public Socket ClientSocket
+        {
+            get
+            {
+                return m_clientSocket;
+            }
+        }
+
+        public IPEndPoint ClientEndPoint
+        {
+            get
+            {
+                return m_clientEndPoint;
+            }
+        }
+
+        public NBTConnectionReceiveBuffer ReceiveBuffer
+        {
+            get
+            {
+                return m_receiveBuffer;
+            }
+        }
+
+        public BlockingQueue<SessionPacket> SendQueue
+        {
+            get
+            {
+                return m_sendQueue;
+            }
         }
 
         public string ConnectionIdentifier
