@@ -7,23 +7,68 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace SMBLibrary.Server
 {
     internal class OpenFileObject
     {
-        public uint TreeID;
-        public string ShareName;
-        public string Path;
-        public object Handle;
+        private uint m_treeID;
+        private string m_shareName;
+        private string m_path;
+        private object m_handle;
+        private DateTime m_openedDT;
 
         public OpenFileObject(uint treeID, string shareName, string path, object handle)
         {
-            TreeID = treeID;
-            ShareName = shareName;
-            Path = path;
-            Handle = handle;
+            m_treeID = treeID;
+            m_shareName = shareName;
+            m_path = path;
+            m_handle = handle;
+            m_openedDT = DateTime.Now;
+        }
+
+        public uint TreeID
+        {
+            get
+            {
+                return m_treeID;
+            }
+        }
+
+        public string ShareName
+        {
+            get
+            {
+                return m_shareName;
+            }
+        }
+
+        public string Path
+        {
+            get
+            {
+                return m_path;
+            }
+            set
+            {
+                m_path = value;
+            }
+        }
+
+        public object Handle
+        {
+            get
+            {
+                return m_handle;
+            }
+        }
+
+        public DateTime OpenedDT
+        {
+            get
+            {
+                return m_openedDT;
+            }
         }
     }
 }
