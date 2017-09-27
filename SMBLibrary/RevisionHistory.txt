@@ -285,3 +285,37 @@ Revision History:
         SMB1: Transaction2SetFileInformationRequest: SetInformation method will now set InformationLevel.
         Client: ServerServiceHelper: ListShares: Added support for NetrShareEnumResponse spanning more than one RPC PDU and improved error handling.
         Client: SMB1FileStore: Added native QueryDirectory, GetFileInformation, GetFileSystemInformation and SetFileInformation implementations.
+
+1.2.9 - NTFileStore: Added SecurityInformation enum.
+        NTFileStore: SecurityDescriptor: Added Length property.
+        NTFileStore: Completed implementation of SECURITY_DESCRIPTOR.
+        INTFileStore: Added SetFileSystemInformation, GetSecurityInformation and SetSecurityInformation methods.
+        NTDirectoryFileSystem: Added NtSetVolumeInformationFile, NtQuerySecurityObject and NtSetSecurityObject external method declarations.
+        SMBServer: Pass GetSecurityInformation and SetSecurityInformation requests to the underlying object store.
+        SMBServer: Logging improvement.
+        SMB1: Improved implementation of TRANS2_GET_DFS_REFERRAL request and response.
+        SMB1: Improved NT_TRANSACT_QUERY_SECURITY_DESC response implementation.
+        SMB1: Added NT_TRANSACT_SET_SECURITY_DESC response implementation.
+        SMB1: Improved implementation of TRANS2_QUERY_FILE_INFORMATION and TRANS2_QUERY_PATH_INFORMATION.
+        SMB1: NTTransactSubcommandName: Added NT_TRANSACT_QUERY_QUOTA and NT_TRANSACT_SET_QUOTA.
+        SMB1: Transaction2SubcommandName: Added TRANS2_SET_FS_INFORMATION.
+        SMB1: Added implementation of TRANS2_SET_FS_INFORMATION request and response.
+        SMB2: WriteRequest: DataOffset field was set incorrectly in some cases.
+        SMB2: IOCtlRequest: OutputOffset field was set incorrectly in some cases.
+        SMB2: Improved implementation of QUERY_INFO request and response.
+        SMB2: Improved implementation of SMB2_CREATE_CONTEXT.
+        SMB2: Improved implementation of SET_INFO Request.
+        SMB2: Improved ERROR response implementation.
+        SPNEGO: Bugfix: negTokenResp is allowed to have a generic GSSAPI header.
+        SPNEGO: Minor code refactoring.
+        NTStatus: Added STATUS_INVALID_DEVICE_REQUEST.
+        Improved exception messages.
+        Client: Preliminary SMB2 client implementation.
+        Client: NTLMAuthenticationHelper: Corrected sessionKey computation.
+        Client: SMB1FileStore, SMB2FileStore: Added Disconnect method.
+        Client: Bugfix: The tree connection to the named pipe share that was created in the ListShares method was not being terminated.
+        Client: ISMBFileStore interface added.
+        Client: ISMBClient interface added.
+        Client: NTLMAuthenticationHelper: Bugfix: The generic GSSAPI header was not appended to negTokenInit.
+        Client: Throw Exception if attemping to logoff when the client is not connected.
+        SMB1Client: Minor code refactoring.
