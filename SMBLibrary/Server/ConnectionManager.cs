@@ -6,6 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Utilities;
 
 namespace SMBLibrary.Server
@@ -44,6 +45,15 @@ namespace SMBLibrary.Server
             RemoveConnection(connection);
         }
 
+        public void ReleaseConnection(IPEndPoint clientEndPoint)
+        {
+            ConnectionState connection = FindConnection(clientEndPoint);
+            if (connection != null)
+            {
+                ReleaseConnection(connection);
+            }
+        }
+
         public void ReleaseAllConnections()
         {
             List<ConnectionState> connections = new List<ConnectionState>(m_activeConnections);
@@ -51,6 +61,21 @@ namespace SMBLibrary.Server
             {
                 ReleaseConnection(connection);
             }
+        }
+
+        private ConnectionState FindConnection(IPEndPoint clientEndPoint)
+        {
+            lock (m_activeConnections)
+            {
+                for (int index = 0; index < m_activeConnections.Count; index++)
+                {
+                    if (m_activeConnections[index].ClientEndPoint.Equals(clientEndPoint))
+                    {
+                        return m_activeConnections[index];
+                    }
+                }
+            }
+            return null;
         }
 
         public List<SessionInformation> GetSessionsInformation()

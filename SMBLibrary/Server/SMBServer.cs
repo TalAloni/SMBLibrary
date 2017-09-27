@@ -357,13 +357,15 @@ namespace SMBLibrary.Server
                 catch (SocketException ex)
                 {
                     state.LogToServer(Severity.Debug, "Failed to send packet. SocketException: {0}", ex.Message);
-                    m_connectionManager.ReleaseConnection(state);
+                    // Note: m_connectionManager contains SMB1ConnectionState or SMB2ConnectionState instances that were constructed from the initial
+                    // ConnectionState instance given to this method. for this reason, we must use state.ClientEndPoint to find and release the connection.
+                    m_connectionManager.ReleaseConnection(state.ClientEndPoint);
                     return;
                 }
                 catch (ObjectDisposedException)
                 {
                     state.LogToServer(Severity.Debug, "Failed to send packet. ObjectDisposedException.");
-                    m_connectionManager.ReleaseConnection(state);
+                    m_connectionManager.ReleaseConnection(state.ClientEndPoint);
                     return;
                 }
             }
