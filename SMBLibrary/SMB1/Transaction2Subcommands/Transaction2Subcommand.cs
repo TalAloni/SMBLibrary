@@ -52,6 +52,8 @@ namespace SMBLibrary.SMB1
                         return new Transaction2FindNext2Request(parameters, data, isUnicode);
                     case Transaction2SubcommandName.TRANS2_QUERY_FS_INFORMATION:
                         return new Transaction2QueryFSInformationRequest(parameters, data, isUnicode);
+                    case Transaction2SubcommandName.TRANS2_SET_FS_INFORMATION:
+                        return new Transaction2SetFSInformationRequest(parameters, data, isUnicode);
                     case Transaction2SubcommandName.TRANS2_QUERY_PATH_INFORMATION:
                         return new Transaction2QueryPathInformationRequest(parameters, data, isUnicode);
                     case Transaction2SubcommandName.TRANS2_SET_PATH_INFORMATION:

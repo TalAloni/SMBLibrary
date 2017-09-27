@@ -446,6 +446,8 @@
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2QueryPathInformationResponse.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2SetFileInformationRequest.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2SetFileInformationResponse.cs" />
+    <Compile Include="SMB1\Transaction2Subcommands\Transaction2SetFSInformationRequest.cs" />
+    <Compile Include="SMB1\Transaction2Subcommands\Transaction2SetFSInformationResponse.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2SetPathInformationRequest.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2SetPathInformationResponse.cs" />
     <Compile Include="SMB1\Transaction2Subcommands\Transaction2Subcommand.cs" />

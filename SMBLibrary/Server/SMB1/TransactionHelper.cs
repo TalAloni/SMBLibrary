@@ -208,6 +208,10 @@ namespace SMBLibrary.Server.SMB1
             {
                 subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFSInformationRequest)subcommand, share, state);
             }
+            else if (subcommand is Transaction2SetFSInformationRequest)
+            {
+                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+            }
             else if (subcommand is Transaction2QueryPathInformationRequest)
             {
                 subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryPathInformationRequest)subcommand, share, state);
