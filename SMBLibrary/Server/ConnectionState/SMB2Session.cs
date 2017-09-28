@@ -91,7 +91,7 @@ namespace SMBLibrary.Server
                 lock (m_openFiles)
                 {
                     List<ulong> fileIDList = new List<ulong>(m_openFiles.Keys);
-                    foreach (ushort fileID in fileIDList)
+                    foreach (ulong fileID in fileIDList)
                     {
                         OpenFileObject openFile = m_openFiles[fileID];
                         if (openFile.TreeID == treeID)
