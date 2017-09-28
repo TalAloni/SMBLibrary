@@ -62,24 +62,22 @@ namespace SMBLibrary.Server
 
         public uint? AddConnectedTree(ISMBShare share)
         {
-            uint? treeID = AllocateTreeID();
-            if (treeID.HasValue)
+            lock (m_connectedTrees)
             {
-                m_connectedTrees.Add(treeID.Value, share);
+                uint? treeID = AllocateTreeID();
+                if (treeID.HasValue)
+                {
+                    m_connectedTrees.Add(treeID.Value, share);
+                }
+                return treeID;
             }
-            return treeID;
         }
 
         public ISMBShare GetConnectedTree(uint treeID)
         {
-            if (m_connectedTrees.ContainsKey(treeID))
-            {
-                return m_connectedTrees[treeID];
-            }
-            else
-            {
-                return null;
-            }
+            ISMBShare result;
+            m_connectedTrees.TryGetValue(treeID, out result);
+            return result;
         }
 
         public void DisconnectTree(uint treeID)
@@ -101,7 +99,10 @@ namespace SMBLibrary.Server
                         }
                     }
                 }
-                m_connectedTrees.Remove(treeID);
+                lock (m_connectedTrees)
+                {
+                    m_connectedTrees.Remove(treeID);
+                }
             }
         }
 
@@ -131,19 +132,19 @@ namespace SMBLibrary.Server
 
         public FileID? AddOpenFile(uint treeID, string shareName, string relativePath, object handle)
         {
-            ulong? volatileFileID = AllocateVolatileFileID();
-            if (volatileFileID.HasValue)
+            lock (m_openFiles)
             {
-                FileID fileID = new FileID();
-                fileID.Volatile = volatileFileID.Value;
-                // [MS-SMB2] FileId.Persistent MUST be set to Open.DurableFileId.
-                // Note: We don't support durable handles so we use volatileFileID.
-                fileID.Persistent = volatileFileID.Value;
-                lock (m_openFiles)
+                ulong? volatileFileID = AllocateVolatileFileID();
+                if (volatileFileID.HasValue)
                 {
+                    FileID fileID = new FileID();
+                    fileID.Volatile = volatileFileID.Value;
+                    // [MS-SMB2] FileId.Persistent MUST be set to Open.DurableFileId.
+                    // Note: We don't support durable handles so we use volatileFileID.
+                    fileID.Persistent = volatileFileID.Value;
                     m_openFiles.Add(volatileFileID.Value, new OpenFileObject(treeID, shareName, relativePath, handle));
+                    return fileID;
                 }
-                return fileID;
             }
             return null;
         }

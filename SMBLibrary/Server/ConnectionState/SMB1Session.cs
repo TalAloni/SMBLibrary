@@ -42,12 +42,15 @@ namespace SMBLibrary.Server
 
         public ushort? AddConnectedTree(ISMBShare share)
         {
-            ushort? treeID = m_connection.AllocateTreeID();
-            if (treeID.HasValue)
+            lock (m_connection)
             {
-                m_connectedTrees.Add(treeID.Value, share);
+                ushort? treeID = m_connection.AllocateTreeID();
+                if (treeID.HasValue)
+                {
+                    m_connectedTrees.Add(treeID.Value, share);
+                }
+                return treeID;
             }
-            return treeID;
         }
 
         public ISMBShare GetConnectedTree(ushort treeID)
@@ -63,7 +66,7 @@ namespace SMBLibrary.Server
             m_connectedTrees.TryGetValue(treeID, out share);
             if (share != null)
             {
-                lock (m_openFiles)
+                lock (m_connection)
                 {
                     List<ushort> fileIDList = new List<ushort>(m_openFiles.Keys);
                     foreach (ushort fileID in fileIDList)
@@ -75,8 +78,8 @@ namespace SMBLibrary.Server
                             m_openFiles.Remove(fileID);
                         }
                     }
+                    m_connectedTrees.Remove(treeID);
                 }
-                m_connectedTrees.Remove(treeID);
             }
         }
 
@@ -94,15 +97,15 @@ namespace SMBLibrary.Server
 
         public ushort? AddOpenFile(ushort treeID, string shareName, string relativePath, object handle)
         {
-            ushort? fileID = m_connection.AllocateFileID();
-            if (fileID.HasValue)
+            lock (m_connection)
             {
-                lock (m_openFiles)
+                ushort? fileID = m_connection.AllocateFileID();
+                if (fileID.HasValue)
                 {
                     m_openFiles.Add(fileID.Value, new OpenFileObject(treeID, shareName, relativePath, handle));
                 }
+                return fileID;
             }
-            return fileID;
         }
 
         public OpenFileObject GetOpenFileObject(ushort fileID)
@@ -114,7 +117,7 @@ namespace SMBLibrary.Server
 
         public void RemoveOpenFile(ushort fileID)
         {
-            lock (m_openFiles)
+            lock (m_connection)
             {
                 m_openFiles.Remove(fileID);
             }
@@ -123,7 +126,7 @@ namespace SMBLibrary.Server
         public List<string> ListOpenFiles()
         {
             List<string> result = new List<string>();
-            lock (m_openFiles)
+            lock (m_connection)
             {
                 foreach (OpenFileObject openFile in m_openFiles.Values)
                 {
