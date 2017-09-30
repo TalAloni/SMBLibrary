@@ -51,6 +51,21 @@ namespace SMBLibrary.SMB2
             ByteWriter.WriteBytes(buffer, offset + FixedSize, OutputBuffer);
         }
 
+        public FileInformation GetFileInformation(FileInformationClass informationClass)
+        {
+            return FileInformation.GetFileInformation(OutputBuffer, 0, informationClass);
+        }
+
+        public FileSystemInformation GetFileSystemInformation(FileSystemInformationClass informationClass)
+        {
+            return FileSystemInformation.GetFileSystemInformation(OutputBuffer, 0, informationClass);
+        }
+
+        public SecurityDescriptor GetSecurityInformation()
+        {
+            return new SecurityDescriptor(OutputBuffer, 0);
+        }
+
         public void SetFileInformation(FileInformation fileInformation)
         {
             OutputBuffer = fileInformation.GetBytes();
