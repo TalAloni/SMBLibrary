@@ -31,9 +31,9 @@ namespace SMBLibrary.SMB2
         public CreateOptions CreateOptions;
         private ushort NameOffset;
         private ushort NameLength;
-        public string Name;
-        private uint CreateContextsOffsets;
+        private uint CreateContextsOffset; // 8-byte aligned
         private uint CreateContextsLength;
+        public string Name;
         public List<CreateContext> CreateContexts = new List<CreateContext>();
 
         public CreateRequest() : base(SMB2CommandName.Create)
@@ -56,12 +56,12 @@ namespace SMBLibrary.SMB2
             CreateOptions = (CreateOptions)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 40);
             NameOffset = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 44);
             NameLength = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 46);
-            CreateContextsOffsets = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 48);
+            CreateContextsOffset = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 48);
             CreateContextsLength = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 52);
             Name = ByteReader.ReadUTF16String(buffer, offset + NameOffset, NameLength / 2);
             if (CreateContextsLength > 0)
             {
-                CreateContexts = CreateContext.ReadCreateContextList(buffer, (int)CreateContextsOffsets);
+                CreateContexts = CreateContext.ReadCreateContextList(buffer, (int)CreateContextsOffset);
             }
         }
 
@@ -73,12 +73,12 @@ namespace SMBLibrary.SMB2
             {
                 NameOffset = SMB2Header.Length + FixedLength;
             }
-            CreateContextsOffsets = 0;
+            CreateContextsOffset = 0;
             CreateContextsLength = 0;
             int paddedNameLength = (int)Math.Ceiling((double)(Name.Length * 2) / 8) * 8;
             if (CreateContexts.Count > 0)
             {
-                CreateContextsOffsets = (uint)(SMB2Header.Length + 56 + paddedNameLength);
+                CreateContextsOffset = (uint)(SMB2Header.Length + 56 + paddedNameLength);
                 CreateContextsLength = (uint)CreateContext.GetCreateContextListLength(CreateContexts);
             }
             LittleEndianWriter.WriteUInt16(buffer, offset + 0, StructureSize);
@@ -94,7 +94,7 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt32(buffer, offset + 40, (uint)CreateOptions);
             LittleEndianWriter.WriteUInt16(buffer, offset + 44, NameOffset);
             LittleEndianWriter.WriteUInt16(buffer, offset + 46, NameLength);
-            LittleEndianWriter.WriteUInt32(buffer, offset + 48, CreateContextsOffsets);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 48, CreateContextsOffset);
             LittleEndianWriter.WriteUInt32(buffer, offset + 52, CreateContextsLength);
             ByteWriter.WriteUTF16String(buffer, offset + 56, Name);
             CreateContext.WriteCreateContextList(buffer, offset + 56 + paddedNameLength, CreateContexts);
@@ -104,15 +104,18 @@ namespace SMBLibrary.SMB2
         {
             get
             {
+                int bufferLength;
                 if (CreateContexts.Count == 0)
                 {
-                    return FixedLength + Name.Length * 2;
+                    bufferLength = Name.Length * 2;
                 }
                 else
                 {
                     int paddedNameLength = (int)Math.Ceiling((double)(Name.Length * 2) / 8) * 8;
-                    return FixedLength + paddedNameLength + CreateContext.GetCreateContextListLength(CreateContexts);
+                    bufferLength = paddedNameLength + CreateContext.GetCreateContextListLength(CreateContexts);
                 }
+                // [MS-SMB2] The Buffer field MUST be at least one byte in length.
+                return FixedLength + Math.Max(bufferLength, 1);
             }
         }
     }
