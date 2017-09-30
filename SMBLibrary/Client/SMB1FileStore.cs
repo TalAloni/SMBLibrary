@@ -202,7 +202,41 @@ namespace SMBLibrary.Client
 
         public NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass)
         {
-            throw new NotImplementedException();
+            if (m_client.InfoLevelPassthrough)
+            {
+                result = null;
+                int maxOutputLength = 4096;
+                Transaction2QueryFileInformationRequest subcommand = new Transaction2QueryFileInformationRequest();
+                subcommand.FID = (ushort)handle;
+                subcommand.FileInformationClass = informationClass;
+
+                Transaction2Request request = new Transaction2Request();
+                request.Setup = subcommand.GetSetup();
+                request.TransParameters = subcommand.GetParameters(m_client.Unicode);
+                request.TransData = subcommand.GetData(m_client.Unicode);
+                request.TotalDataCount = (ushort)request.TransData.Length;
+                request.TotalParameterCount = (ushort)request.TransParameters.Length;
+                request.MaxParameterCount = Transaction2QueryFileInformationResponse.ParametersLength;
+                request.MaxDataCount = (ushort)maxOutputLength;
+
+                TrySendMessage(request);
+                SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+                if (reply != null)
+                {
+                    if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
+                    {
+                        Transaction2Response response = (Transaction2Response)reply.Commands[0];
+                        Transaction2QueryFileInformationResponse subcommandResponse = new Transaction2QueryFileInformationResponse(response.TransParameters, response.TransData, reply.Header.UnicodeFlag);
+                        result = subcommandResponse.GetFileInformation(informationClass);
+                    }
+                    return reply.Header.Status;
+                }
+                return NTStatus.STATUS_INVALID_SMB;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public NTStatus GetFileInformation(out QueryInformation result, object handle, QueryInformationLevel informationLevel)
@@ -269,7 +303,40 @@ namespace SMBLibrary.Client
 
         public NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass)
         {
-            throw new NotImplementedException();
+            if (m_client.InfoLevelPassthrough)
+            {
+                result = null;
+                int maxOutputLength = 4096;
+                Transaction2QueryFSInformationRequest subcommand = new Transaction2QueryFSInformationRequest();
+                subcommand.FileSystemInformationClass = informationClass;
+
+                Transaction2Request request = new Transaction2Request();
+                request.Setup = subcommand.GetSetup();
+                request.TransParameters = subcommand.GetParameters(m_client.Unicode);
+                request.TransData = subcommand.GetData(m_client.Unicode);
+                request.TotalDataCount = (ushort)request.TransData.Length;
+                request.TotalParameterCount = (ushort)request.TransParameters.Length;
+                request.MaxParameterCount = Transaction2QueryFSInformationResponse.ParametersLength;
+                request.MaxDataCount = (ushort)maxOutputLength;
+
+                TrySendMessage(request);
+                SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+                if (reply != null)
+                {
+                    if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
+                    {
+                        Transaction2Response response = (Transaction2Response)reply.Commands[0];
+                        Transaction2QueryFSInformationResponse subcommandResponse = new Transaction2QueryFSInformationResponse(response.TransParameters, response.TransData, reply.Header.UnicodeFlag);
+                        result = subcommandResponse.GetFileSystemInformation(informationClass);
+                    }
+                    return reply.Header.Status;
+                }
+                return NTStatus.STATUS_INVALID_SMB;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public NTStatus GetFileSystemInformation(out QueryFSInformation result, QueryFSInformationLevel informationLevel)
