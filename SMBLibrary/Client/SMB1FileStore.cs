@@ -211,7 +211,7 @@ namespace SMBLibrary.Client
             int maxOutputLength = 4096;
             Transaction2QueryFileInformationRequest subcommand = new Transaction2QueryFileInformationRequest();
             subcommand.FID = (ushort)handle;
-            subcommand.InformationLevel = informationLevel;
+            subcommand.QueryInformationLevel = informationLevel;
 
             Transaction2Request request = new Transaction2Request();
             request.Setup = subcommand.GetSetup();
@@ -282,7 +282,7 @@ namespace SMBLibrary.Client
             result = null;
             int maxOutputLength = 4096;
             Transaction2QueryFSInformationRequest subcommand = new Transaction2QueryFSInformationRequest();
-            subcommand.InformationLevel = informationLevel;
+            subcommand.QueryFSInformationLevel = informationLevel;
 
             Transaction2Request request = new Transaction2Request();
             request.Setup = subcommand.GetSetup();

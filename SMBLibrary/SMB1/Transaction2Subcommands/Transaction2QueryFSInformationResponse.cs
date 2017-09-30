@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.SMB1
@@ -18,7 +17,7 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 0;
         // Data:
-        private byte[] QueryFSInformationBytes;
+        public byte[] InformationBytes;
 
         public Transaction2QueryFSInformationResponse() : base()
         {
@@ -26,22 +25,38 @@ namespace SMBLibrary.SMB1
 
         public Transaction2QueryFSInformationResponse(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
-            QueryFSInformationBytes = data;
+            InformationBytes = data;
         }
 
         public override byte[] GetData(bool isUnicode)
         {
-            return QueryFSInformationBytes;
+            return InformationBytes;
         }
 
         public QueryFSInformation GetQueryFSInformation(QueryFSInformationLevel informationLevel, bool isUnicode)
         {
-            return QueryFSInformation.GetQueryFSInformation(QueryFSInformationBytes, informationLevel, isUnicode);
+            return QueryFSInformation.GetQueryFSInformation(InformationBytes, informationLevel, isUnicode);
         }
 
         public void SetQueryFSInformation(QueryFSInformation queryFSInformation, bool isUnicode)
         {
-            QueryFSInformationBytes = queryFSInformation.GetBytes(isUnicode);
+            InformationBytes = queryFSInformation.GetBytes(isUnicode);
+        }
+
+        /// <remarks>
+        /// Support for pass-through Information Levels must be enabled.
+        /// </remarks>
+        public FileSystemInformation GetFileSystemInformation(FileSystemInformationClass informationClass)
+        {
+            return FileSystemInformation.GetFileSystemInformation(InformationBytes, 0, informationClass);
+        }
+
+        /// <remarks>
+        /// Support for pass-through Information Levels must be enabled.
+        /// </remarks>
+        public void SetFileSystemInformation(FileSystemInformation information)
+        {
+            InformationBytes = information.GetBytes();
         }
 
         public override Transaction2SubcommandName SubcommandName

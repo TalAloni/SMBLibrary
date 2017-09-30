@@ -15,10 +15,11 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2QueryFileInformationRequest : Transaction2Subcommand
     {
+        private const ushort SMB_INFO_PASSTHROUGH = 0x03E8;
         public const int ParametersLength = 4;
         // Parameters:
         public ushort FID;
-        public QueryInformationLevel InformationLevel;
+        public ushort InformationLevel;
         // Data:
         public FullExtendedAttributeList GetExtendedAttributeList; // Used with QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST
 
@@ -30,9 +31,9 @@ namespace SMBLibrary.SMB1
         public Transaction2QueryFileInformationRequest(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
             FID = LittleEndianConverter.ToUInt16(parameters, 0);
-            InformationLevel = (QueryInformationLevel)LittleEndianConverter.ToUInt16(parameters, 2);
+            InformationLevel = LittleEndianConverter.ToUInt16(parameters, 2);
 
-            if (InformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
+            if (!IsPassthroughInformationLevel && QueryInformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
             {
                 GetExtendedAttributeList = new FullExtendedAttributeList(data, 0);
             }
@@ -47,19 +48,51 @@ namespace SMBLibrary.SMB1
         {
             byte[] parameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(parameters, 0, FID);
-            LittleEndianWriter.WriteUInt16(parameters, 2, (ushort)InformationLevel);
+            LittleEndianWriter.WriteUInt16(parameters, 2, InformationLevel);
             return parameters;
         }
 
         public override byte[] GetData(bool isUnicode)
         {
-            if (InformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
+            if (!IsPassthroughInformationLevel && QueryInformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
             {
                 return GetExtendedAttributeList.GetBytes();
             }
             else
             {
                 return new byte[0];
+            }
+        }
+
+        public bool IsPassthroughInformationLevel
+        {
+            get
+            {
+                return (InformationLevel >= SMB_INFO_PASSTHROUGH);
+            }
+        }
+
+        public QueryInformationLevel QueryInformationLevel
+        {
+            get
+            {
+                return (QueryInformationLevel)InformationLevel;
+            }
+            set
+            {
+                InformationLevel = (ushort)value;
+            }
+        }
+
+        public FileInformationClass FileInformationClass
+        {
+            get
+            {
+                return (FileInformationClass)(InformationLevel - SMB_INFO_PASSTHROUGH);
+            }
+            set
+            {
+                InformationLevel = (ushort)((ushort)value + SMB_INFO_PASSTHROUGH);
             }
         }
 

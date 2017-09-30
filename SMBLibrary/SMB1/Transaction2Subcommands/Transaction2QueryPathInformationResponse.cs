@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.SMB1
@@ -19,17 +18,16 @@ namespace SMBLibrary.SMB1
         // Parameters:
         public ushort EaErrorOffset; // Meaningful only when request's InformationLevel is SMB_INFO_QUERY_EAS_FROM_LIST
         // Data:
-        private byte[] QueryInformationBytes;
+        public byte[] InformationBytes;
 
         public Transaction2QueryPathInformationResponse() : base()
         {
-
         }
 
         public Transaction2QueryPathInformationResponse(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
             EaErrorOffset = LittleEndianConverter.ToUInt16(parameters, 0);
-            QueryInformationBytes = data;
+            InformationBytes = data;
         }
 
         public override byte[] GetParameters(bool isUnicode)
@@ -39,17 +37,33 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetData(bool isUnicode)
         {
-            return QueryInformationBytes;
+            return InformationBytes;
         }
 
         public QueryInformation GetQueryInformation(QueryInformationLevel queryInformationLevel)
         {
-            return QueryInformation.GetQueryInformation(QueryInformationBytes, queryInformationLevel);
+            return QueryInformation.GetQueryInformation(InformationBytes, queryInformationLevel);
         }
 
         public void SetQueryInformation(QueryInformation queryInformation)
         {
-            QueryInformationBytes = queryInformation.GetBytes();
+            InformationBytes = queryInformation.GetBytes();
+        }
+
+        /// <remarks>
+        /// Support for pass-through Information Levels must be enabled.
+        /// </remarks>
+        public FileInformation GetFileInformation(FileInformationClass informationClass)
+        {
+            return FileInformation.GetFileInformation(InformationBytes, 0, informationClass);
+        }
+
+        /// <remarks>
+        /// Support for pass-through Information Levels must be enabled.
+        /// </remarks>
+        public void SetFileInformation(FileInformation information)
+        {
+            InformationBytes = information.GetBytes();
         }
 
         public override Transaction2SubcommandName SubcommandName

@@ -15,6 +15,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2SetFSInformationRequest : Transaction2Subcommand
     {
+        private const ushort SMB_INFO_PASSTHROUGH = 0x03E8;
         public const int ParametersLength = 4;
         // Parameters:
         public ushort FID;
@@ -50,6 +51,35 @@ namespace SMBLibrary.SMB1
         public override byte[] GetData(bool isUnicode)
         {
             return InformationBytes;
+        }
+
+        public bool IsPassthroughInformationLevel
+        {
+            get
+            {
+                return (InformationLevel >= SMB_INFO_PASSTHROUGH);
+            }
+        }
+
+        public FileSystemInformationClass FileSystemInformationClass
+        {
+            get
+            {
+                return (FileSystemInformationClass)(InformationLevel - SMB_INFO_PASSTHROUGH);
+            }
+            set
+            {
+                InformationLevel = (ushort)((ushort)value + SMB_INFO_PASSTHROUGH);
+            }
+        }
+
+        /// <remarks>
+        /// Support for pass-through Information Levels must be enabled.
+        /// </remarks>
+        public void SetFileSystemInformation(FileSystemInformation information)
+        {
+            FileSystemInformationClass = information.FileSystemInformationClass;
+            InformationBytes = information.GetBytes();
         }
 
         public override Transaction2SubcommandName SubcommandName

@@ -15,8 +15,10 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2QueryPathInformationRequest : Transaction2Subcommand
     {
+        private const ushort SMB_INFO_PASSTHROUGH = 0x03E8;
+        public const int ParametersFixedLength = 6;
         // Parameters:
-        public QueryInformationLevel InformationLevel;
+        public ushort InformationLevel;
         public uint Reserved;
         public string FileName; // SMB_STRING
         // Data:
@@ -29,11 +31,11 @@ namespace SMBLibrary.SMB1
 
         public Transaction2QueryPathInformationRequest(byte[] parameters, byte[] data, bool isUnicode) : base()
         {
-            InformationLevel = (QueryInformationLevel)LittleEndianConverter.ToUInt16(parameters, 0);
+            InformationLevel = LittleEndianConverter.ToUInt16(parameters, 0);
             Reserved = LittleEndianConverter.ToUInt32(parameters, 4);
             FileName = SMB1Helper.ReadSMBString(parameters, 6, isUnicode);
 
-            if (InformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
+            if (!IsPassthroughInformationLevel && QueryInformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
             {
                 GetExtendedAttributeList = new FullExtendedAttributeList(data, 0);
             }
@@ -46,7 +48,7 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetParameters(bool isUnicode)
         {
-            int length = 6;
+            int length = ParametersFixedLength;
             if (isUnicode)
             {
                 length += FileName.Length * 2 + 2;
@@ -56,7 +58,7 @@ namespace SMBLibrary.SMB1
                 length += FileName.Length + 1;
             }
             byte[] parameters = new byte[length];
-            LittleEndianWriter.WriteUInt16(parameters, 0, (ushort)InformationLevel);
+            LittleEndianWriter.WriteUInt16(parameters, 0, InformationLevel);
             LittleEndianWriter.WriteUInt32(parameters, 2, Reserved);
             SMB1Helper.WriteSMBString(parameters, 6, isUnicode, FileName);
             return parameters;
@@ -64,13 +66,45 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetData(bool isUnicode)
         {
-            if (InformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
+            if (!IsPassthroughInformationLevel && QueryInformationLevel == QueryInformationLevel.SMB_INFO_QUERY_EAS_FROM_LIST)
             {
                 return GetExtendedAttributeList.GetBytes();
             }
             else
             {
                 return new byte[0];
+            }
+        }
+
+        public bool IsPassthroughInformationLevel
+        {
+            get
+            {
+                return (InformationLevel >= SMB_INFO_PASSTHROUGH);
+            }
+        }
+
+        public QueryInformationLevel QueryInformationLevel
+        {
+            get
+            {
+                return (QueryInformationLevel)InformationLevel;
+            }
+            set
+            {
+                InformationLevel = (ushort)value;
+            }
+        }
+
+        public FileInformationClass FileInformationClass
+        {
+            get
+            {
+                return (FileInformationClass)(InformationLevel - SMB_INFO_PASSTHROUGH);
+            }
+            set
+            {
+                InformationLevel = (ushort)((ushort)value + SMB_INFO_PASSTHROUGH);
             }
         }
 
