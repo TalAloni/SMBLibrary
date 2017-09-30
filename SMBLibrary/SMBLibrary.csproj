@@ -121,6 +121,7 @@
     <Compile Include="NTFileStore\Enums\NtCreateFile\CreateOptions.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\FileStatus.cs" />
     <Compile Include="NTFileStore\Enums\NtCreateFile\ShareAccess.cs" />
+    <Compile Include="NTFileStore\Enums\SecurityInformation\ImpersonationLevel.cs" />
     <Compile Include="NTFileStore\Enums\SecurityInformation\SecurityInformation.cs" />
     <Compile Include="NTFileStore\INTFileStore.cs" />
     <Compile Include="NTFileStore\NamedPipeStore.cs" />
@@ -389,7 +390,6 @@
     <Compile Include="SMB1\Enums\Negotiate\Capabilities.cs" />
     <Compile Include="SMB1\Enums\Negotiate\SecurityMode.cs" />
     <Compile Include="SMB1\Enums\NTCreate\FileStatusFlags.cs" />
-    <Compile Include="SMB1\Enums\NTCreate\ImpersonationLevel.cs" />
     <Compile Include="SMB1\Enums\NTCreate\NTCreateFlags.cs" />
     <Compile Include="SMB1\Enums\NTCreate\OpLockLevel.cs" />
     <Compile Include="SMB1\Enums\NTCreate\SecurityFlags.cs" />
@@ -551,7 +551,6 @@
     <Compile Include="SMB2\Enums\Close\CloseFlags.cs" />
     <Compile Include="SMB2\Enums\Create\CreateAction.cs" />
     <Compile Include="SMB2\Enums\Create\CreateResponseFlags.cs" />
-    <Compile Include="SMB2\Enums\Create\ImpersonationLevel.cs" />
     <Compile Include="SMB2\Enums\Create\OplockLevel.cs" />
     <Compile Include="SMB2\Enums\InfoType.cs" />
     <Compile Include="SMB2\Enums\IOCtl\IOCtlRequestFlags.cs" />

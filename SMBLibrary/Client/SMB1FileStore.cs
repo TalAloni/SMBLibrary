@@ -33,7 +33,7 @@ namespace SMBLibrary.Client
             request.ShareAccess = shareAccess;
             request.CreateDisposition = createDisposition;
             request.CreateOptions = createOptions;
-            request.ImpersonationLevel = ImpersonationLevel.SEC_IMPERSONATE;
+            request.ImpersonationLevel = ImpersonationLevel.Impersonation;
 
             TrySendMessage(request);
             SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_NT_CREATE_ANDX);
