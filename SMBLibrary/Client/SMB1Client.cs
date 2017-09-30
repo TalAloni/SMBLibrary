@@ -33,6 +33,11 @@ namespace SMBLibrary.Client
         private Socket m_clientSocket;
         private IAsyncResult m_currentAsyncResult;
         private bool m_forceExtendedSecurity;
+        private bool m_unicode;
+        private bool m_largeFiles;
+        private bool m_infoLevelPassthrough;
+        private bool m_largeRead;
+        private bool m_largeWrite;
 
         private object m_incomingQueueLock = new object();
         private List<SMB1Message> m_incomingQueue = new List<SMB1Message>();
@@ -125,14 +130,30 @@ namespace SMBLibrary.Client
             if (reply.Commands[0] is NegotiateResponse && !forceExtendedSecurity)
             {
                 NegotiateResponse response = (NegotiateResponse)reply.Commands[0];
+                m_unicode = ((response.Capabilities & Capabilities.Unicode) > 0);
+                m_largeFiles = ((response.Capabilities & Capabilities.LargeFiles) > 0);
+                bool ntSMB = ((response.Capabilities & Capabilities.NTSMB) > 0);
+                bool rpc = ((response.Capabilities & Capabilities.RpcRemoteApi) > 0);
+                bool ntStatusCode = ((response.Capabilities & Capabilities.NTStatusCode) > 0);
+                m_infoLevelPassthrough = ((response.Capabilities & Capabilities.InfoLevelPassthrough) > 0);
+                m_largeRead = ((response.Capabilities & Capabilities.LargeRead) > 0);
+                m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
                 m_serverChallenge = response.Challenge;
-                return true;
+                return ntSMB && rpc && ntStatusCode;
             }
             else if (reply.Commands[0] is NegotiateResponseExtended)
             {
                 NegotiateResponseExtended response = (NegotiateResponseExtended)reply.Commands[0];
+                m_unicode = ((response.Capabilities & Capabilities.Unicode) > 0);
+                m_largeFiles = ((response.Capabilities & Capabilities.LargeFiles) > 0);
+                bool ntSMB = ((response.Capabilities & Capabilities.NTSMB) > 0);
+                bool rpc = ((response.Capabilities & Capabilities.RpcRemoteApi) > 0);
+                bool ntStatusCode = ((response.Capabilities & Capabilities.NTStatusCode) > 0);
+                m_infoLevelPassthrough = ((response.Capabilities & Capabilities.InfoLevelPassthrough) > 0);
+                m_largeRead = ((response.Capabilities & Capabilities.LargeRead) > 0);
+                m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
                 m_securityBlob = response.SecurityBlob;
-                return true;
+                return ntSMB && rpc && ntStatusCode;
             }
             else
             {
@@ -152,12 +173,26 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A connection must be successfully established before attempting login");
             }
 
+            Capabilities clientCapabilities = Capabilities.NTSMB | Capabilities.RpcRemoteApi | Capabilities.NTStatusCode | Capabilities.NTFind;
+            if (m_unicode)
+            {
+                clientCapabilities |= Capabilities.Unicode;
+            }
+            if (m_largeFiles)
+            {
+                clientCapabilities |= Capabilities.LargeFiles;
+            }
+            if (m_largeRead)
+            {
+                clientCapabilities |= Capabilities.LargeRead;
+            }
+
             if (m_serverChallenge != null)
             {
                 SessionSetupAndXRequest request = new SessionSetupAndXRequest();
                 request.MaxBufferSize = MaxBufferSize;
                 request.MaxMpxCount = MaxMpxCount;
-                request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode;
+                request.Capabilities = clientCapabilities;
                 request.AccountName = userName;
                 request.PrimaryDomain = domainName;
                 byte[] clientChallenge = new byte[8];
@@ -199,7 +234,7 @@ namespace SMBLibrary.Client
                 SessionSetupAndXRequestExtended request = new SessionSetupAndXRequestExtended();
                 request.MaxBufferSize = MaxBufferSize;
                 request.MaxMpxCount = MaxMpxCount;
-                request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode | Capabilities.LargeRead | Capabilities.LargeWrite;
+                request.Capabilities = clientCapabilities;
                 request.SecurityBlob = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
                 TrySendMessage(request);
                 
@@ -213,7 +248,7 @@ namespace SMBLibrary.Client
                         request = new SessionSetupAndXRequestExtended();
                         request.MaxBufferSize = MaxBufferSize;
                         request.MaxMpxCount = MaxMpxCount;
-                        request.Capabilities = Capabilities.Unicode | Capabilities.NTStatusCode | Capabilities.LargeRead | Capabilities.LargeWrite | Capabilities.ExtendedSecurity;
+                        request.Capabilities = clientCapabilities;
 
                         request.SecurityBlob = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
                         TrySendMessage(request);
@@ -461,13 +496,53 @@ namespace SMBLibrary.Client
         internal void TrySendMessage(SMB1Command request, ushort treeID)
         {
             SMB1Message message = new SMB1Message();
-            message.Header.UnicodeFlag = true;
+            message.Header.UnicodeFlag = m_unicode;
             message.Header.ExtendedSecurityFlag = m_forceExtendedSecurity;
             message.Header.Flags2 |= HeaderFlags2.LongNamesAllowed | HeaderFlags2.LongNameUsed | HeaderFlags2.NTStatusCode;
             message.Header.UID = m_userID;
             message.Header.TID = treeID;
             message.Commands.Add(request);
             TrySendMessage(m_clientSocket, message);
+        }
+
+        public bool Unicode
+        {
+            get
+            {
+                return m_unicode;
+            }
+        }
+
+        public bool LargeFiles
+        {
+            get
+            {
+                return m_largeFiles;
+            }
+        }
+
+        public bool InfoLevelPassthrough
+        {
+            get
+            {
+                return m_infoLevelPassthrough;
+            }
+        }
+
+        public bool LargeRead
+        {
+            get
+            {
+                return m_largeRead;
+            }
+        }
+
+        public bool LargeWrite
+        {
+            get
+            {
+                return m_largeWrite;
+            }
         }
 
         public static void TrySendMessage(Socket socket, SMB1Message message)
