@@ -131,7 +131,25 @@ namespace SMBLibrary.Client
 
         public NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass)
         {
-            throw new NotImplementedException();
+            result = null;
+            QueryInfoRequest request = new QueryInfoRequest();
+            request.InfoType = InfoType.File;
+            request.FileInformationClass = informationClass;
+            request.OutputBufferLength = 4096;
+            request.FileId = (FileID)handle;
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryInfo);
+            if (response != null)
+            {
+                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryInfoResponse)
+                {
+                    result = ((QueryInfoResponse)response).GetFileInformation(informationClass);
+                }
+                return response.Header.Status;
+            }
+
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus SetFileInformation(object handle, FileInformation information)
@@ -141,7 +159,41 @@ namespace SMBLibrary.Client
 
         public NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass)
         {
-            throw new NotImplementedException();
+            result = null;
+            object fileHandle;
+            FileStatus fileStatus;
+            NTStatus status = CreateFile(out fileHandle, out fileStatus, String.Empty, (AccessMask)DirectoryAccessMask.FILE_LIST_DIRECTORY | (AccessMask)DirectoryAccessMask.FILE_READ_ATTRIBUTES | AccessMask.SYNCHRONIZE, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE | ShareAccess.FILE_SHARE_DELETE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_SYNCHRONOUS_IO_NONALERT | CreateOptions.FILE_DIRECTORY_FILE, null);
+            if (status != NTStatus.STATUS_SUCCESS)
+            {
+                return status;
+            }
+
+            status = GetFileSystemInformation(out result, fileHandle, informationClass);
+            CloseFile(fileHandle);
+            return status;
+        }
+
+        public NTStatus GetFileSystemInformation(out FileSystemInformation result, object handle, FileSystemInformationClass informationClass)
+        {
+            result = null;
+            QueryInfoRequest request = new QueryInfoRequest();
+            request.InfoType = InfoType.FileSystem;
+            request.FileSystemInformationClass = informationClass;
+            request.OutputBufferLength = 4096;
+            request.FileId = (FileID)handle;
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryInfo);
+            if (response != null)
+            {
+                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryInfoResponse)
+                {
+                    result = ((QueryInfoResponse)response).GetFileSystemInformation(informationClass);
+                }
+                return response.Header.Status;
+            }
+
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus SetFileSystemInformation(FileSystemInformation information)
