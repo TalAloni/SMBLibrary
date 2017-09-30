@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using SMBLibrary.SMB1;
 using Utilities;
 
@@ -61,7 +60,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList;
             try
             {
-                findInformationList = FindInformationHelper.GetFindInformationList(segment, header.UnicodeFlag, maxLength);
+                findInformationList = FindInformationHelper.ToFindInformationList(segment, header.UnicodeFlag, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
@@ -112,7 +111,7 @@ namespace SMBLibrary.Server.SMB1
             FindInformationList findInformationList;
             try
             {
-                findInformationList = FindInformationHelper.GetFindInformationList(segment, header.UnicodeFlag, maxLength);
+                findInformationList = FindInformationHelper.ToFindInformationList(segment, header.UnicodeFlag, maxLength);
             }
             catch (UnsupportedInformationLevelException)
             {
