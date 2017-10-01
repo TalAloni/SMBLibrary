@@ -36,6 +36,17 @@ namespace SMBLibrary.Server.SMB2
                     }
                 }
             }
+            else if (request.InfoType == InfoType.FileSystem)
+            {
+                if (share is FileSystemShare)
+                {
+                    if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, @"\"))
+                    {
+                        state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. User '{1}' was denied access.", share.Name, session.UserName);
+                        return new ErrorResponse(request.CommandName, NTStatus.STATUS_ACCESS_DENIED);
+                    }
+                }
+            }
 
             if (request.InfoType == InfoType.File)
             {
@@ -95,6 +106,34 @@ namespace SMBLibrary.Server.SMB2
                 {
                     state.LogToServer(Severity.Information, "SetFileInformation on '{0}{1}' succeeded. Information class: {2}. (FileId: {3})", share.Name, openFile.Path, request.FileInformationClass, request.FileId.Volatile);
                 }
+                return new SetInfoResponse();
+            }
+            else if (request.InfoType == InfoType.FileSystem)
+            {
+                FileSystemInformation fileSystemInformation;
+                try
+                {
+                    fileSystemInformation = FileSystemInformation.GetFileSystemInformation(request.Buffer, 0, request.FileSystemInformationClass);
+                }
+                catch (UnsupportedInformationLevelException)
+                {
+                    state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. Information class: {1}, NTStatus: STATUS_INVALID_INFO_CLASS.", share.Name, request.FileSystemInformationClass);
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_INFO_CLASS);
+                }
+                catch (Exception)
+                {
+                    state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. Information class: {1}, NTStatus: STATUS_INVALID_PARAMETER.", share.Name, request.FileSystemInformationClass);
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_PARAMETER);
+                }
+
+                NTStatus status = share.FileStore.SetFileSystemInformation(fileSystemInformation);
+                if (status != NTStatus.STATUS_SUCCESS)
+                {
+                    state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. Information class: {1}, NTStatus: {2}.", share.Name, request.FileSystemInformationClass, status);
+                    return new ErrorResponse(request.CommandName, status);
+                }
+
+                state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' succeeded. Information class: {1}.", share.Name, request.FileSystemInformationClass);
                 return new SetInfoResponse();
             }
             else if (request.InfoType == InfoType.Security)

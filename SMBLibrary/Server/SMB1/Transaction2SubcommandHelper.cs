@@ -174,6 +174,56 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
+        internal static Transaction2SetFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2SetFSInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        {
+            SMB1Session session = state.GetSession(header.UID);
+            if (share is FileSystemShare)
+            {
+                if (!((FileSystemShare)share).HasWriteAccess(session.SecurityContext, @"\"))
+                {
+                    state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. User '{1}' was denied access.", share.Name, session.UserName);
+                    header.Status = NTStatus.STATUS_ACCESS_DENIED;
+                    return null;
+                }
+            }
+
+            if (!subcommand.IsPassthroughInformationLevel)
+            {
+                state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. Not a pass-through information level.", share.Name);
+                header.Status = NTStatus.STATUS_NOT_SUPPORTED;
+                return null;
+            }
+
+            FileSystemInformation fileSystemInfo;
+            try
+            {
+                fileSystemInfo = FileSystemInformation.GetFileSystemInformation(subcommand.InformationBytes, 0, subcommand.FileSystemInformationClass);
+            }
+            catch (UnsupportedInformationLevelException)
+            {
+                state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. Information class: {1}, NTStatus: STATUS_OS2_INVALID_LEVEL.", share.Name, subcommand.FileSystemInformationClass);
+                header.Status = NTStatus.STATUS_OS2_INVALID_LEVEL;
+                return null;
+            }
+            catch (Exception)
+            {
+                state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. Information class: {1}, NTStatus: STATUS_INVALID_PARAMETER.", share.Name, subcommand.FileSystemInformationClass);
+                header.Status = NTStatus.STATUS_INVALID_PARAMETER;
+                return null;
+            }
+
+            NTStatus status = share.FileStore.SetFileSystemInformation(fileSystemInfo);
+            if (status != NTStatus.STATUS_SUCCESS)
+            {
+                state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' failed. Information class: {1}, NTStatus: {2}.", share.Name, subcommand.FileSystemInformationClass, status);
+                header.Status = status;
+                return null;
+            }
+
+            state.LogToServer(Severity.Verbose, "SetFileSystemInformation on '{0}' succeeded. Information class: {1}.", share.Name, subcommand.FileSystemInformationClass);
+            return new Transaction2SetFSInformationResponse();
+        }
+
         internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryPathInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);

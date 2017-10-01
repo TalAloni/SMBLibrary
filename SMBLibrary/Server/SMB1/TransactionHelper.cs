@@ -210,7 +210,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is Transaction2SetFSInformationRequest)
             {
-                header.Status = NTStatus.STATUS_NOT_IMPLEMENTED;
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2SetFSInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2QueryPathInformationRequest)
             {
