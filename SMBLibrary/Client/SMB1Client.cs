@@ -24,8 +24,8 @@ namespace SMBLibrary.Client
         public const int DirectTCPPort = 445;
         public const string NTLanManagerDialect = "NT LM 0.12";
         
-        public const int MaxBufferSize = 65535; // Valid range: 512 - 65535
-        public const int MaxMpxCount = 1;
+        public const ushort ClientMaxBufferSize = 65535; // Valid range: 512 - 65535
+        public const ushort ClientMaxMpxCount = 1;
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -38,6 +38,8 @@ namespace SMBLibrary.Client
         private bool m_infoLevelPassthrough;
         private bool m_largeRead;
         private bool m_largeWrite;
+        private uint m_serverMaxBufferSize;
+        private ushort m_maxMpxCount;
 
         private object m_incomingQueueLock = new object();
         private List<SMB1Message> m_incomingQueue = new List<SMB1Message>();
@@ -138,6 +140,8 @@ namespace SMBLibrary.Client
                 m_infoLevelPassthrough = ((response.Capabilities & Capabilities.InfoLevelPassthrough) > 0);
                 m_largeRead = ((response.Capabilities & Capabilities.LargeRead) > 0);
                 m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
+                m_serverMaxBufferSize = response.MaxBufferSize;
+                m_maxMpxCount = Math.Min(response.MaxMpxCount, ClientMaxMpxCount);
                 m_serverChallenge = response.Challenge;
                 return ntSMB && rpc && ntStatusCode;
             }
@@ -152,6 +156,8 @@ namespace SMBLibrary.Client
                 m_infoLevelPassthrough = ((response.Capabilities & Capabilities.InfoLevelPassthrough) > 0);
                 m_largeRead = ((response.Capabilities & Capabilities.LargeRead) > 0);
                 m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
+                m_serverMaxBufferSize = response.MaxBufferSize;
+                m_maxMpxCount = Math.Min(response.MaxMpxCount, ClientMaxMpxCount);
                 m_securityBlob = response.SecurityBlob;
                 return ntSMB && rpc && ntStatusCode;
             }
@@ -190,8 +196,8 @@ namespace SMBLibrary.Client
             if (m_serverChallenge != null)
             {
                 SessionSetupAndXRequest request = new SessionSetupAndXRequest();
-                request.MaxBufferSize = MaxBufferSize;
-                request.MaxMpxCount = MaxMpxCount;
+                request.MaxBufferSize = ClientMaxBufferSize;
+                request.MaxMpxCount = m_maxMpxCount;
                 request.Capabilities = clientCapabilities;
                 request.AccountName = userName;
                 request.PrimaryDomain = domainName;
@@ -232,8 +238,8 @@ namespace SMBLibrary.Client
             else // m_securityBlob != null
             {
                 SessionSetupAndXRequestExtended request = new SessionSetupAndXRequestExtended();
-                request.MaxBufferSize = MaxBufferSize;
-                request.MaxMpxCount = MaxMpxCount;
+                request.MaxBufferSize = ClientMaxBufferSize;
+                request.MaxMpxCount = m_maxMpxCount;
                 request.Capabilities = clientCapabilities;
                 request.SecurityBlob = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
                 TrySendMessage(request);
@@ -246,8 +252,8 @@ namespace SMBLibrary.Client
                         SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
                         m_userID = reply.Header.UID;
                         request = new SessionSetupAndXRequestExtended();
-                        request.MaxBufferSize = MaxBufferSize;
-                        request.MaxMpxCount = MaxMpxCount;
+                        request.MaxBufferSize = ClientMaxBufferSize;
+                        request.MaxMpxCount = m_maxMpxCount;
                         request.Capabilities = clientCapabilities;
 
                         request.SecurityBlob = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
@@ -542,6 +548,22 @@ namespace SMBLibrary.Client
             get
             {
                 return m_largeWrite;
+            }
+        }
+
+        public uint ServerMaxBufferSize
+        {
+            get
+            {
+                return m_serverMaxBufferSize;
+            }
+        }
+
+        public int MaxMpxCount
+        {
+            get
+            {
+                return m_maxMpxCount;
             }
         }
 
