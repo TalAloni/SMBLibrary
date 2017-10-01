@@ -126,7 +126,30 @@ namespace SMBLibrary.Client
 
         public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
         {
-            throw new NotImplementedException();
+            result = new List<QueryDirectoryFileInformation>();
+            QueryDirectoryRequest request = new QueryDirectoryRequest();
+            request.FileInformationClass = informationClass;
+            request.Reopen = true;
+            request.FileId = (FileID)handle;
+            request.OutputBufferLength = m_client.MaxTransactSize;
+            request.FileName = fileName;
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryDirectory);
+            if (response != null)
+            {
+                while (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryDirectoryResponse)
+                {
+                    List<QueryDirectoryFileInformation> page = ((QueryDirectoryResponse)response).GetFileInformationList(informationClass);
+                    result.AddRange(page);
+                    request.Reopen = false;
+                    TrySendCommand(request);
+                    response = m_client.WaitForCommand(SMB2CommandName.QueryDirectory);
+                }
+                return response.Header.Status;
+            }
+
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass)
