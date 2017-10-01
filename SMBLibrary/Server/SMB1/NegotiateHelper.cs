@@ -32,6 +32,7 @@ namespace SMBLibrary.Server.SMB1
             response.Capabilities = Capabilities.Unicode |
                                     Capabilities.LargeFiles |
                                     Capabilities.NTSMB |
+                                    Capabilities.RpcRemoteApi |
                                     Capabilities.NTStatusCode |
                                     Capabilities.NTFind |
                                     Capabilities.LargeRead |
@@ -63,6 +64,7 @@ namespace SMBLibrary.Server.SMB1
             response.Capabilities = Capabilities.Unicode |
                                     Capabilities.LargeFiles |
                                     Capabilities.NTSMB |
+                                    Capabilities.RpcRemoteApi |
                                     Capabilities.NTStatusCode |
                                     Capabilities.NTFind |
                                     Capabilities.LargeRead |
