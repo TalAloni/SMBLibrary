@@ -35,6 +35,7 @@ namespace SMBLibrary.Server.SMB1
                                     Capabilities.RpcRemoteApi |
                                     Capabilities.NTStatusCode |
                                     Capabilities.NTFind |
+                                    Capabilities.InfoLevelPassthrough |
                                     Capabilities.LargeRead |
                                     Capabilities.LargeWrite;
             response.SystemTime = DateTime.UtcNow;
@@ -67,6 +68,7 @@ namespace SMBLibrary.Server.SMB1
                                     Capabilities.RpcRemoteApi |
                                     Capabilities.NTStatusCode |
                                     Capabilities.NTFind |
+                                    Capabilities.InfoLevelPassthrough |
                                     Capabilities.LargeRead |
                                     Capabilities.LargeWrite |
                                     Capabilities.ExtendedSecurity;

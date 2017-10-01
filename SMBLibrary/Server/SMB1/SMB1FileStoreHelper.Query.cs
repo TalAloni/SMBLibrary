@@ -29,6 +29,21 @@ namespace SMBLibrary.Server.SMB1
             return returnStatus;
         }
 
+        public static NTStatus GetFileInformation(out FileInformation result, INTFileStore fileStore, string path, FileInformationClass informationClass, SecurityContext securityContext)
+        {
+            object handle;
+            FileStatus fileStatus;
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
+            if (openStatus != NTStatus.STATUS_SUCCESS)
+            {
+                result = null;
+                return openStatus;
+            }
+            NTStatus returnStatus = fileStore.GetFileInformation(out result, handle, informationClass);
+            fileStore.CloseFile(handle);
+            return returnStatus;
+        }
+
         public static NTStatus GetFileInformation(out QueryInformation result, INTFileStore fileStore, object handle, QueryInformationLevel informationLevel)
         {
             result = null;
