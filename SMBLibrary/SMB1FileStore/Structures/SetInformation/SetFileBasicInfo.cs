@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.SMB1
@@ -35,10 +34,10 @@ namespace SMBLibrary.SMB1
 
         public SetFileBasicInfo(byte[] buffer, int offset)
         {
-            CreationTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 0);
-            LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 8);
-            LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 16);
-            LastChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 24);
+            CreationTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 0);
+            LastAccessTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 8);
+            LastWriteTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 16);
+            LastChangeTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 24);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 32);
             Reserved = LittleEndianConverter.ToUInt32(buffer, offset + 36);
         }

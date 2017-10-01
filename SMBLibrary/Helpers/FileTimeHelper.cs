@@ -83,5 +83,25 @@ namespace SMBLibrary
             WriteFileTime(buffer, offset, time);
             offset += 8;
         }
+
+        /// <summary>
+        /// When setting file attributes, a value of -1 indicates to the server that it MUST NOT change this attribute for all subsequent operations on the same file handle.
+        /// </summary>
+        public static DateTime? ReadSetFileTime(byte[] buffer, int offset)
+        {
+            long span = LittleEndianConverter.ToInt64(buffer, offset);
+            if (span > 0)
+            {
+                return DateTime.FromFileTimeUtc(span);
+            }
+            else if (span == 0 || span == -1)
+            {
+                return null;
+            }
+            else
+            {
+                throw new System.IO.InvalidDataException("Set FILETIME cannot be set to a value less than -1");
+            }
+        }
     }
 }

@@ -30,10 +30,10 @@ namespace SMBLibrary
 
         public FileBasicInformation(byte[] buffer, int offset)
         {
-            CreationTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 0);
-            LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 8);
-            LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 16);
-            ChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, offset + 24);
+            CreationTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 0);
+            LastAccessTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 8);
+            LastWriteTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 16);
+            ChangeTime = FileTimeHelper.ReadSetFileTime(buffer, offset + 24);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 32);
             Reserved = LittleEndianConverter.ToUInt32(buffer, offset + 36);
         }
