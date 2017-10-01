@@ -383,6 +383,30 @@ namespace SMBLibrary.Client
             m_messageID++;
         }
 
+        public uint MaxTransactSize
+        {
+            get
+            {
+                return m_maxTransactSize;
+            }
+        }
+
+        public uint MaxReadSize
+        {
+            get
+            {
+                return m_maxReadSize;
+            }
+        }
+
+        public uint MaxWriteSize
+        {
+            get
+            {
+                return m_maxWriteSize;
+            }
+        }
+
         public static void TrySendCommand(Socket socket, SMB2Command request)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
