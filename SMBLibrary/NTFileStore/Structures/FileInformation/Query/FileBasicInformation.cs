@@ -17,10 +17,10 @@ namespace SMBLibrary
     {
         public const int FixedLength = 40;
 
-        public DateTime? CreationTime;
-        public DateTime? LastAccessTime;
-        public DateTime? LastWriteTime;
-        public DateTime? ChangeTime;
+        public SetFileTime CreationTime;
+        public SetFileTime LastAccessTime;
+        public SetFileTime LastWriteTime;
+        public SetFileTime ChangeTime;
         public FileAttributes FileAttributes;
         public uint Reserved;
 
@@ -40,10 +40,10 @@ namespace SMBLibrary
 
         public override void WriteBytes(byte[] buffer, int offset)
         {
-            FileTimeHelper.WriteFileTime(buffer, offset + 0, CreationTime);
-            FileTimeHelper.WriteFileTime(buffer, offset + 8, LastAccessTime);
-            FileTimeHelper.WriteFileTime(buffer, offset + 16, LastWriteTime);
-            FileTimeHelper.WriteFileTime(buffer, offset + 24, ChangeTime);
+            FileTimeHelper.WriteSetFileTime(buffer, offset + 0, CreationTime);
+            FileTimeHelper.WriteSetFileTime(buffer, offset + 8, LastAccessTime);
+            FileTimeHelper.WriteSetFileTime(buffer, offset + 16, LastWriteTime);
+            FileTimeHelper.WriteSetFileTime(buffer, offset + 24, ChangeTime);
             LittleEndianWriter.WriteUInt32(buffer, offset + 32, (uint)FileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, offset + 36, Reserved);
         }

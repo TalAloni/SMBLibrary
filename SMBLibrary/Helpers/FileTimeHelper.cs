@@ -12,7 +12,7 @@ namespace SMBLibrary
 {
     public class FileTimeHelper
     {
-        public static readonly DateTime MinFileTimeValue = new DateTime(1601, 1, 1);
+        public static readonly DateTime MinFileTimeValue = new DateTime(1601, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public static DateTime ReadFileTime(byte[] buffer, int offset)
         {
@@ -87,21 +87,19 @@ namespace SMBLibrary
         /// <summary>
         /// When setting file attributes, a value of -1 indicates to the server that it MUST NOT change this attribute for all subsequent operations on the same file handle.
         /// </summary>
-        public static DateTime? ReadSetFileTime(byte[] buffer, int offset)
+        public static SetFileTime ReadSetFileTime(byte[] buffer, int offset)
         {
             long span = LittleEndianConverter.ToInt64(buffer, offset);
-            if (span > 0)
-            {
-                return DateTime.FromFileTimeUtc(span);
-            }
-            else if (span == 0 || span == -1)
-            {
-                return null;
-            }
-            else
-            {
-                throw new System.IO.InvalidDataException("Set FILETIME cannot be set to a value less than -1");
-            }
+            return SetFileTime.FromFileTimeUtc(span);
+        }
+
+        /// <summary>
+        /// When setting file attributes, a value of -1 indicates to the server that it MUST NOT change this attribute for all subsequent operations on the same file handle.
+        /// </summary>
+        public static void WriteSetFileTime(byte[] buffer, int offset, SetFileTime time)
+        {
+            long span = time.ToFileTimeUtc();
+            LittleEndianWriter.WriteInt64(buffer, offset, span);
         }
     }
 }
