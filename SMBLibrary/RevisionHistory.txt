@@ -319,3 +319,20 @@ Revision History:
         Client: NTLMAuthenticationHelper: Bugfix: The generic GSSAPI header was not appended to negTokenInit.
         Client: Throw Exception if attemping to logoff when the client is not connected.
         SMB1Client: Minor code refactoring.
+
+1.3.0 - NTFileStore: FileBasicInformation, SMB_SET_FILE_BASIC_INFO: Bugfix: Correctly handle FILETIME value of -1.
+        Server: Bugfix: Some connection resources were not released after send error in some cases.
+        Server: SMB2: SMB2Session: Fixed KeyNotFoundException when calling the DisconnectTree method.
+        Server: Corrected synchronization of SMB1Session and SMB2Session TreeID and FileID allocation methods.
+        Server: SMB1: Set CAP_RPC_REMOTE_APIS flag.
+        Server: SMB1: Added support for pass-through Information Levels.
+        Server: Pass SetFileSystemInformation requests to the underlying object store.
+        SMB1: Transaction2 subcommands: Added support for pass-through Information Levels.
+        SMB2: Added helper methods to QUERY_INFO response implementation.
+        SMB2: Corrected CREATE request implementation.
+        SMB1Client: Store and expose server capabilities.
+        SMB2Client: Added MaxTransactSize, MaxReadSize and MaxWriteSize properties.
+        SMB2Client: Implemented QueryDirectory method.
+        SMB1FileStore: Use the SMB1Client.Unicode property and SMB_FLAGS2_UNICODE flag instead of assuming the server supports Unicode.
+        SMB1FileStore: Added GetFileInformation and GetFileSystemInformation for servers that supports pass-through Information Levels.
+        SMB2FileStore: Implemented GetFileInformation and GetFileSystemInformation methods.
