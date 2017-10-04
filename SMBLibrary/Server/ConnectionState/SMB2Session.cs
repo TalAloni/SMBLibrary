@@ -130,7 +130,7 @@ namespace SMBLibrary.Server
             return null;
         }
 
-        public FileID? AddOpenFile(uint treeID, string shareName, string relativePath, object handle)
+        public FileID? AddOpenFile(uint treeID, string shareName, string relativePath, object handle, FileAccess fileAccess)
         {
             lock (m_openFiles)
             {
@@ -142,7 +142,7 @@ namespace SMBLibrary.Server
                     // [MS-SMB2] FileId.Persistent MUST be set to Open.DurableFileId.
                     // Note: We don't support durable handles so we use volatileFileID.
                     fileID.Persistent = volatileFileID.Value;
-                    m_openFiles.Add(volatileFileID.Value, new OpenFileObject(treeID, shareName, relativePath, handle));
+                    m_openFiles.Add(volatileFileID.Value, new OpenFileObject(treeID, shareName, relativePath, handle, fileAccess));
                     return fileID;
                 }
             }

@@ -63,7 +63,8 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
-            ushort? fileID = session.AddOpenFile(header.TID, share.Name, path, handle);
+            FileAccess fileAccess = ToFileAccess(request.AccessMode.AccessMode);
+            ushort? fileID = session.AddOpenFile(header.TID, share.Name, path, handle, fileAccess);
             if (!fileID.HasValue)
             {
                 share.FileStore.CloseFile(handle);

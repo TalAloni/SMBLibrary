@@ -44,7 +44,8 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, createStatus);
             }
 
-            FileID? fileID = session.AddOpenFile(request.Header.TreeID, share.Name, path, handle);
+            FileAccess fileAccess = NTFileStoreHelper.ToFileAccess(desiredAccess);
+            FileID? fileID = session.AddOpenFile(request.Header.TreeID, share.Name, path, handle, fileAccess);
             if (fileID == null)
             {
                 share.FileStore.CloseFile(handle);
