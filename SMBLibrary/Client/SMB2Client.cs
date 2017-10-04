@@ -23,6 +23,10 @@ namespace SMBLibrary.Client
         public const int NetBiosOverTCPPort = 139;
         public const int DirectTCPPort = 445;
 
+        public const uint ClientMaxTransactSize = 65536;
+        public const uint ClientMaxReadSize = 65536;
+        public const uint ClientMaxWriteSize = 65536;
+
         private SMBTransportType m_transport;
         private bool m_isConnected;
         private bool m_isLoggedIn;
@@ -110,9 +114,9 @@ namespace SMBLibrary.Client
             if (response != null && response.Header.Status == NTStatus.STATUS_SUCCESS)
             {
                 m_dialect = response.DialectRevision;
-                m_maxTransactSize = response.MaxTransactSize;
-                m_maxReadSize = response.MaxReadSize;
-                m_maxWriteSize = response.MaxWriteSize;
+                m_maxTransactSize = Math.Min(response.MaxTransactSize, ClientMaxTransactSize);
+                m_maxReadSize = Math.Min(response.MaxReadSize, ClientMaxReadSize);
+                m_maxWriteSize = Math.Min(response.MaxWriteSize, ClientMaxWriteSize);
                 m_securityBlob = response.SecurityBuffer;
                 return true;
             }
