@@ -46,8 +46,15 @@ namespace SMBLibrary
                 result |= FileAccess.Write;
             }
 
+            // Technically, FILE_OPEN_IF should only require Write access if the file does not exist,
+            // However, It's uncommon for a client to open a file with FILE_OPEN_IF
+            // without requesting any kind of write access in the access mask.
+            // (because [if the file does not exist] an empty file will be created without the ability to write data to the file). 
             if (createDisposition == CreateDisposition.FILE_CREATE ||
-                createDisposition == CreateDisposition.FILE_SUPERSEDE)
+                createDisposition == CreateDisposition.FILE_SUPERSEDE ||
+                createDisposition == CreateDisposition.FILE_OPEN_IF ||
+                createDisposition == CreateDisposition.FILE_OVERWRITE ||
+                createDisposition == CreateDisposition.FILE_OVERWRITE_IF)
             {
                 result |= FileAccess.Write;
             }

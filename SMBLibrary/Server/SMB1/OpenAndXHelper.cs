@@ -43,10 +43,10 @@ namespace SMBLibrary.Server.SMB1
             }
             CreateOptions createOptions = ToCreateOptions(request.AccessMode);
 
-            FileAccess fileAccess = ToFileAccess(request.AccessMode.AccessMode);
+            FileAccess createAccess = NTFileStoreHelper.ToCreateFileAccess(desiredAccess, createDisposition);
             if (share is FileSystemShare)
             {
-                if (!((FileSystemShare)share).HasAccess(session.SecurityContext, path, fileAccess))
+                if (!((FileSystemShare)share).HasAccess(session.SecurityContext, path, createAccess))
                 {
                     state.LogToServer(Severity.Verbose, "OpenAndX: Opening '{0}{1}' failed. User '{2}' was denied access.", share.Name, request.FileName, session.UserName);
                     header.Status = NTStatus.STATUS_ACCESS_DENIED;
