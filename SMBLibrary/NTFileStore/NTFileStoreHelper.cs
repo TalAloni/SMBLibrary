@@ -55,6 +55,17 @@ namespace SMBLibrary
             return result;
         }
 
+        /// <summary>
+        /// Will return desired FileAccess rights to the file data.
+        /// </summary>
+        public static FileAccess ToFileAccess(AccessMask desiredAccess)
+        {
+            return ToFileAccess((FileAccessMask)desiredAccess);
+        }
+
+        /// <summary>
+        /// Will return desired FileAccess rights to the file data.
+        /// </summary>
         public static FileAccess ToFileAccess(FileAccessMask desiredAccess)
         {
             FileAccess result = 0;
