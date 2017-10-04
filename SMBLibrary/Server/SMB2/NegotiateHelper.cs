@@ -19,6 +19,9 @@ namespace SMBLibrary.Server.SMB2
     {
         public const string SMB2002Dialect = "SMB 2.002";
         public const string SMB2xxxDialect = "SMB 2.???";
+        public const uint ServerMaxTransactSize = 65536;
+        public const uint ServerMaxReadSize = 65536;
+        public const uint ServerMaxWriteSize = 65536;
 
         // Special case - SMB2 client initially connecting using SMB1
         internal static SMB2Command GetNegotiateResponse(List<string> smb2Dialects, GSSProvider securityProvider, ConnectionState state, Guid serverGuid, DateTime serverStartTime)
@@ -41,9 +44,9 @@ namespace SMBLibrary.Server.SMB2
             }
             response.SecurityMode = SecurityMode.SigningEnabled;
             response.ServerGuid = serverGuid;
-            response.MaxTransactSize = 65536;
-            response.MaxReadSize = 65536;
-            response.MaxWriteSize = 65536;
+            response.MaxTransactSize = ServerMaxTransactSize;
+            response.MaxReadSize = ServerMaxReadSize;
+            response.MaxWriteSize = ServerMaxWriteSize;
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = serverStartTime;
             response.SecurityBuffer = securityProvider.GetSPNEGOTokenInitBytes();
@@ -70,9 +73,9 @@ namespace SMBLibrary.Server.SMB2
             }
             response.SecurityMode = SecurityMode.SigningEnabled;
             response.ServerGuid = serverGuid;
-            response.MaxTransactSize = 65536;
-            response.MaxReadSize = 65536;
-            response.MaxWriteSize = 65536;
+            response.MaxTransactSize = ServerMaxTransactSize;
+            response.MaxReadSize = ServerMaxReadSize;
+            response.MaxWriteSize = ServerMaxWriteSize;
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = serverStartTime;
             response.SecurityBuffer = securityProvider.GetSPNEGOTokenInitBytes();
