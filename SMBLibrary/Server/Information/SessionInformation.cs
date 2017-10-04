@@ -16,10 +16,10 @@ namespace SMBLibrary.Server
         public SMBDialect Dialect;
         public string UserName;
         public string MachineName;
-        public List<string> OpenFiles;
+        public List<OpenFileInformation> OpenFiles;
         public DateTime CreationDT;
 
-        public SessionInformation(IPEndPoint clientEndPoint, SMBDialect dialect, string userName, string machineName, List<string> openFiles, DateTime creationDT)
+        public SessionInformation(IPEndPoint clientEndPoint, SMBDialect dialect, string userName, string machineName, List<OpenFileInformation> openFiles, DateTime creationDT)
         {
             ClientEndPoint = clientEndPoint;
             Dialect = dialect;

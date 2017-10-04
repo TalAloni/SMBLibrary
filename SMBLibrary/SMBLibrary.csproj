@@ -222,6 +222,7 @@
     <Compile Include="Server\ConnectionState\SMB2Session.cs" />
     <Compile Include="Server\Enums\SMBDialect.cs" />
     <Compile Include="Server\Helpers\ServerPathUtils.cs" />
+    <Compile Include="Server\Information\OpenFileInformation.cs" />
     <Compile Include="Server\Information\SessionInformation.cs" />
     <Compile Include="Server\NameServer.cs" />
     <Compile Include="Server\Shares\AccessRequestArgs.cs" />

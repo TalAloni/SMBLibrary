@@ -165,14 +165,14 @@ namespace SMBLibrary.Server
             m_openSearches.Remove(fileID.Volatile);
         }
 
-        public List<string> ListOpenFiles()
+        public List<OpenFileInformation> GetOpenFilesInformation()
         {
-            List<string> result = new List<string>();
+            List<OpenFileInformation> result = new List<OpenFileInformation>();
             lock (m_openFiles)
             {
                 foreach (OpenFileObject openFile in m_openFiles.Values)
                 {
-                    result.Add(@"\" + openFile.ShareName + openFile.Path);
+                    result.Add(new OpenFileInformation(openFile.ShareName, openFile.Path, openFile.FileAccess, openFile.OpenedDT));
                 }
             }
             return result;
