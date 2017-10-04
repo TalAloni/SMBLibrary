@@ -19,16 +19,21 @@ namespace SMBLibrary.Server.SMB1
     /// </summary>
     internal class NegotiateHelper
     {
+        public const ushort ServerMaxMpxCount = 50;
+        public const ushort ServerNumberVcs = 1;
+        public const ushort ServerMaxBufferSize = 65535;
+        public const uint ServerMaxRawSize = 65536;
+
         internal static NegotiateResponse GetNegotiateResponse(SMB1Header header, NegotiateRequest request, GSSProvider securityProvider, ConnectionState state)
         {
             NegotiateResponse response = new NegotiateResponse();
 
             response.DialectIndex = (ushort)request.Dialects.IndexOf(SMBServer.NTLanManagerDialect);
             response.SecurityMode = SecurityMode.UserSecurityMode | SecurityMode.EncryptPasswords;
-            response.MaxMpxCount = 50;
-            response.MaxNumberVcs = 1;
-            response.MaxBufferSize = 16644;
-            response.MaxRawSize = 65536;
+            response.MaxMpxCount = ServerMaxMpxCount;
+            response.MaxNumberVcs = ServerNumberVcs;
+            response.MaxBufferSize = ServerMaxBufferSize;
+            response.MaxRawSize = ServerMaxRawSize;
             response.Capabilities = Capabilities.Unicode |
                                     Capabilities.LargeFiles |
                                     Capabilities.NTSMB |
@@ -58,10 +63,10 @@ namespace SMBLibrary.Server.SMB1
             NegotiateResponseExtended response = new NegotiateResponseExtended();
             response.DialectIndex = (ushort)request.Dialects.IndexOf(SMBServer.NTLanManagerDialect);
             response.SecurityMode = SecurityMode.UserSecurityMode | SecurityMode.EncryptPasswords;
-            response.MaxMpxCount = 50;
-            response.MaxNumberVcs = 1;
-            response.MaxBufferSize = 16644;
-            response.MaxRawSize = 65536;
+            response.MaxMpxCount = ServerMaxMpxCount;
+            response.MaxNumberVcs = ServerNumberVcs;
+            response.MaxBufferSize = ServerMaxBufferSize;
+            response.MaxRawSize = ServerMaxRawSize;
             response.Capabilities = Capabilities.Unicode |
                                     Capabilities.LargeFiles |
                                     Capabilities.NTSMB |
