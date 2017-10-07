@@ -567,6 +567,27 @@ namespace SMBLibrary.Client
             }
         }
 
+        public uint MaxReadSize
+        {
+            get
+            {
+                return ClientMaxBufferSize - (SMB1Header.Length + 3 + ReadAndXResponse.ParametersLength);
+            }
+        }
+
+        public uint MaxWriteSize
+        {
+            get
+            {
+                uint result = ServerMaxBufferSize - (SMB1Header.Length + 3 + WriteAndXRequest.ParametersFixedLength + 4);
+                if (m_unicode)
+                {
+                    result--;
+                }
+                return result;
+            }
+        }
+
         public static void TrySendMessage(Socket socket, SMB1Message message)
         {
             SessionMessagePacket packet = new SessionMessagePacket();

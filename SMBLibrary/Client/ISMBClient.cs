@@ -25,5 +25,15 @@ namespace SMBLibrary.Client
         List<string> ListShares(out NTStatus status);
 
         ISMBFileStore TreeConnect(string shareName, out NTStatus status);
+
+        uint MaxReadSize
+        {
+            get;
+        }
+
+        uint MaxWriteSize
+        {
+            get;
+        }
     }
 }
