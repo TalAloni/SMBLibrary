@@ -479,6 +479,27 @@ namespace SMBLibrary.Client
             return NTStatus.STATUS_INVALID_SMB;
         }
 
+        private void TrySendMessage(SMB1Command request)
+        {
+            m_client.TrySendMessage(request, m_treeID);
+        }
+
+        public uint MaxReadSize
+        {
+            get
+            {
+                return m_client.MaxReadSize;
+            }
+        }
+
+        public uint MaxWriteSize
+        {
+            get
+            {
+                return m_client.MaxWriteSize;
+            }
+        }
+
         private static ExtendedFileAttributes ToExtendedFileAttributes(FileAttributes fileAttributes)
         {
             // We only return flags that can be used with NtCreateFile
@@ -491,11 +512,6 @@ namespace SMBLibrary.Client
                                                             ExtendedFileAttributes.Offline |
                                                             ExtendedFileAttributes.Encrypted;
             return (extendedFileAttributes & (ExtendedFileAttributes)fileAttributes);
-        }
-
-        private void TrySendMessage(SMB1Command request)
-        {
-            m_client.TrySendMessage(request, m_treeID);
         }
 
         private static FileStatus ToFileStatus(CreateDisposition createDisposition)

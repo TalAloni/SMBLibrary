@@ -11,5 +11,15 @@ namespace SMBLibrary.Client
     public interface ISMBFileStore : INTFileStore
     {
         NTStatus Disconnect();
+
+        uint MaxReadSize
+        {
+            get;
+        }
+
+        uint MaxWriteSize
+        {
+            get;
+        }
     }
 }

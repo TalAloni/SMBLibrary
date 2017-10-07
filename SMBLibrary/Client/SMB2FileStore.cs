@@ -287,6 +287,22 @@ namespace SMBLibrary.Client
             m_client.TrySendCommand(request);
         }
 
+        public uint MaxReadSize
+        {
+            get
+            {
+                return m_client.MaxReadSize;
+            }
+        }
+
+        public uint MaxWriteSize
+        {
+            get
+            {
+                return m_client.MaxWriteSize;
+            }
+        }
+
         private static FileStatus ToFileStatus(CreateAction createAction)
         {
             switch (createAction)
