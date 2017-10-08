@@ -336,3 +336,16 @@ Revision History:
         SMB1FileStore: Use the SMB1Client.Unicode property and SMB_FLAGS2_UNICODE flag instead of assuming the server supports Unicode.
         SMB1FileStore: Added GetFileInformation and GetFileSystemInformation for servers that supports pass-through Information Levels.
         SMB2FileStore: Implemented GetFileInformation and GetFileSystemInformation methods.
+
+1.3.1 - Server: Prevent clients from creating files without sufficient permissions.
+        Server: SMB1: Increased MaxBufferSize to 65535 bytes.
+        Server: OpenFileObject: Added FileAccess property.
+        Server API: Added the OpenFileInformation class to provide more information about open files.
+        SMB1: QueryInformationHelper: Bugfix: LastChangeTime was not correctly set.
+        SMB1: QueryInformationHelper: Added ToFileInformationLevel and ToFileInformation methods.
+        SMB1: Renamed QueryFileExtendedAttributeInfo to QueryFileEaInfo.
+        SMB2Client: Limit the value of MaxTransactSize, MaxReadSize and MaxWriteSize to 64KB.
+        ISMBClient: Added MaxReadSize and MaxWriteSize properties.
+        ISMBFileStore: Added MaxReadSize and MaxWriteSize properties.
+        SMB1FileStore: Completed implementation of GetFileInformation.
+        Minor code refactoring and documentation improvements.
