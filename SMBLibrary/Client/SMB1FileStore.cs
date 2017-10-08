@@ -202,9 +202,9 @@ namespace SMBLibrary.Client
 
         public NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass)
         {
+            result = null;
             if (m_client.InfoLevelPassthrough)
             {
-                result = null;
                 int maxOutputLength = 4096;
                 Transaction2QueryFileInformationRequest subcommand = new Transaction2QueryFileInformationRequest();
                 subcommand.FID = (ushort)handle;
@@ -227,7 +227,16 @@ namespace SMBLibrary.Client
                     {
                         Transaction2Response response = (Transaction2Response)reply.Commands[0];
                         Transaction2QueryFileInformationResponse subcommandResponse = new Transaction2QueryFileInformationResponse(response.TransParameters, response.TransData, reply.Header.UnicodeFlag);
-                        result = subcommandResponse.GetFileInformation(informationClass);
+                        if (informationClass == FileInformationClass.FileAllInformation)
+                        {
+                            // Windows implementations return SMB_QUERY_FILE_ALL_INFO when a client specifies native NT passthrough level "FileAllInformation".
+                            QueryInformation queryFileAllInfo = subcommandResponse.GetQueryInformation(QueryInformationLevel.SMB_QUERY_FILE_ALL_INFO);
+                            result = QueryInformationHelper.ToFileInformation(queryFileAllInfo);
+                        }
+                        else
+                        {
+                            result = subcommandResponse.GetFileInformation(informationClass);
+                        }
                     }
                     return reply.Header.Status;
                 }
@@ -235,7 +244,14 @@ namespace SMBLibrary.Client
             }
             else
             {
-                throw new NotImplementedException();
+                QueryInformationLevel informationLevel = QueryInformationHelper.ToFileInformationLevel(informationClass);
+                QueryInformation queryInformation;
+                NTStatus status = GetFileInformation(out queryInformation, handle, informationLevel);
+                if (status == NTStatus.STATUS_SUCCESS)
+                {
+                    result = QueryInformationHelper.ToFileInformation(queryInformation);
+                }
+                return status;
             }
         }
 
