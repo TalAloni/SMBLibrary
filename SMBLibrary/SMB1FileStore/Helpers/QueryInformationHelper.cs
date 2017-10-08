@@ -80,16 +80,16 @@ namespace SMBLibrary.SMB1
             {
                 FileAllInformation fileAllInfo = (FileAllInformation)fileInformation;
                 QueryFileAllInfo result = new QueryFileAllInfo();
-                result.CreationDateTime = fileAllInfo.BasicInformation.CreationTime;
-                result.LastAccessDateTime = fileAllInfo.BasicInformation.LastAccessTime;
-                result.LastWriteDateTime = fileAllInfo.BasicInformation.LastWriteTime;
+                result.CreationTime = fileAllInfo.BasicInformation.CreationTime;
+                result.LastAccessTime = fileAllInfo.BasicInformation.LastAccessTime;
+                result.LastWriteTime = fileAllInfo.BasicInformation.LastWriteTime;
                 result.LastChangeTime = fileAllInfo.BasicInformation.ChangeTime;
                 result.ExtFileAttributes = (ExtendedFileAttributes)fileAllInfo.BasicInformation.FileAttributes;
                 result.AllocationSize = fileAllInfo.StandardInformation.AllocationSize;
                 result.EndOfFile = fileAllInfo.StandardInformation.EndOfFile;
                 result.DeletePending = fileAllInfo.StandardInformation.DeletePending;
                 result.Directory = fileAllInfo.StandardInformation.Directory;
-                result.EASize = fileAllInfo.EaInformation.EaSize;
+                result.EaSize = fileAllInfo.EaInformation.EaSize;
                 result.FileName = fileAllInfo.NameInformation.FileName;
                 return result;
             }

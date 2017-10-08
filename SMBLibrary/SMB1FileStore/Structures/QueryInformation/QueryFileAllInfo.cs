@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.SMB1
@@ -18,9 +17,9 @@ namespace SMBLibrary.SMB1
     {
         public const int FixedLength = 72;
 
-        public DateTime? CreationDateTime;
-        public DateTime? LastAccessDateTime;
-        public DateTime? LastWriteDateTime;
+        public DateTime? CreationTime;
+        public DateTime? LastAccessTime;
+        public DateTime? LastWriteTime;
         public DateTime? LastChangeTime;
         public ExtendedFileAttributes ExtFileAttributes;
         public uint Reserved1;
@@ -30,8 +29,8 @@ namespace SMBLibrary.SMB1
         public bool DeletePending;
         public bool Directory;
         public ushort Reserved2;
-        public uint EASize;
-        //uint FileNameLength; // In bytes
+        public uint EaSize;
+        // uint FileNameLength; // In bytes
         public string FileName; // Unicode
 
         public QueryFileAllInfo()
@@ -40,9 +39,9 @@ namespace SMBLibrary.SMB1
 
         public QueryFileAllInfo(byte[] buffer, int offset)
         {
-            CreationDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
-            LastAccessDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
-            LastWriteDateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            CreationTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
+            LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             LastChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, ref offset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(buffer, ref offset);
             Reserved1 = LittleEndianReader.ReadUInt32(buffer, ref offset);
@@ -52,7 +51,7 @@ namespace SMBLibrary.SMB1
             DeletePending = (ByteReader.ReadByte(buffer, ref offset) > 0);
             Directory = (ByteReader.ReadByte(buffer, ref offset) > 0);
             Reserved2 = LittleEndianReader.ReadUInt16(buffer, ref offset);
-            EASize = LittleEndianReader.ReadUInt32(buffer, ref offset);
+            EaSize = LittleEndianReader.ReadUInt32(buffer, ref offset);
             uint fileNameLength = LittleEndianReader.ReadUInt32(buffer, ref offset);
             FileName = ByteReader.ReadUTF16String(buffer, ref offset, (int)(fileNameLength / 2));
         }
@@ -62,9 +61,9 @@ namespace SMBLibrary.SMB1
             uint fileNameLength = (uint)(FileName.Length * 2);
             byte[] buffer = new byte[FixedLength + fileNameLength];
             int offset = 0;
-            FileTimeHelper.WriteFileTime(buffer, ref offset, CreationDateTime);
-            FileTimeHelper.WriteFileTime(buffer, ref offset, LastAccessDateTime);
-            FileTimeHelper.WriteFileTime(buffer, ref offset, LastWriteDateTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, CreationTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, LastAccessTime);
+            FileTimeHelper.WriteFileTime(buffer, ref offset, LastWriteTime);
             FileTimeHelper.WriteFileTime(buffer, ref offset, LastChangeTime);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, (uint)ExtFileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, Reserved1); 
@@ -74,7 +73,7 @@ namespace SMBLibrary.SMB1
             ByteWriter.WriteByte(buffer, ref offset, Convert.ToByte(DeletePending));
             ByteWriter.WriteByte(buffer, ref offset, Convert.ToByte(Directory));
             LittleEndianWriter.WriteUInt16(buffer, ref offset, Reserved2);
-            LittleEndianWriter.WriteUInt32(buffer, ref offset, EASize);
+            LittleEndianWriter.WriteUInt32(buffer, ref offset, EaSize);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, fileNameLength);
             ByteWriter.WriteUTF16String(buffer, ref offset, FileName);
             return buffer;
