@@ -48,7 +48,7 @@ namespace SMBLibrary.SMB1
                 result.CreationTime = fileBasicInfo.CreationTime;
                 result.LastAccessTime = fileBasicInfo.LastAccessTime;
                 result.LastWriteTime = fileBasicInfo.LastWriteTime;
-                result.LastChangeTime = fileBasicInfo.LastWriteTime;
+                result.LastChangeTime = fileBasicInfo.ChangeTime;
                 result.ExtFileAttributes = (ExtendedFileAttributes)fileBasicInfo.FileAttributes;
                 return result;
             }
@@ -83,7 +83,7 @@ namespace SMBLibrary.SMB1
                 result.CreationDateTime = fileAllInfo.BasicInformation.CreationTime;
                 result.LastAccessDateTime = fileAllInfo.BasicInformation.LastAccessTime;
                 result.LastWriteDateTime = fileAllInfo.BasicInformation.LastWriteTime;
-                result.LastChangeTime = fileAllInfo.BasicInformation.LastWriteTime;
+                result.LastChangeTime = fileAllInfo.BasicInformation.ChangeTime;
                 result.ExtFileAttributes = (ExtendedFileAttributes)fileAllInfo.BasicInformation.FileAttributes;
                 result.AllocationSize = fileAllInfo.StandardInformation.AllocationSize;
                 result.EndOfFile = fileAllInfo.StandardInformation.EndOfFile;
