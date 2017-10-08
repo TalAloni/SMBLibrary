@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.SMB1
@@ -14,22 +13,22 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// SMB_QUERY_FILE_EA_INFO
     /// </summary>
-    public class QueryFileExtendedAttributeInfo : QueryInformation
+    public class QueryFileEaInfo : QueryInformation
     {
-        public uint EASize;
+        public uint EaSize;
 
-        public QueryFileExtendedAttributeInfo()
+        public QueryFileEaInfo()
         {
         }
 
-        public QueryFileExtendedAttributeInfo(byte[] buffer, int offset)
+        public QueryFileEaInfo(byte[] buffer, int offset)
         {
-            EASize = LittleEndianConverter.ToUInt32(buffer, offset);
+            EaSize = LittleEndianConverter.ToUInt32(buffer, offset);
         }
 
         public override byte[] GetBytes()
         {
-            return LittleEndianConverter.GetBytes(EASize);
+            return LittleEndianConverter.GetBytes(EaSize);
         }
 
         public override QueryInformationLevel InformationLevel

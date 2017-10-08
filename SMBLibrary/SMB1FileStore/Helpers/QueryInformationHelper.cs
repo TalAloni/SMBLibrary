@@ -65,8 +65,8 @@ namespace SMBLibrary.SMB1
             else if (fileInformation is FileEaInformation)
             {
                 FileEaInformation fileEAInfo = (FileEaInformation)fileInformation;
-                QueryFileExtendedAttributeInfo result = new QueryFileExtendedAttributeInfo();
-                result.EASize = fileEAInfo.EaSize;
+                QueryFileEaInfo result = new QueryFileEaInfo();
+                result.EaSize = fileEAInfo.EaSize;
                 return result;
             }
             else if (fileInformation is FileNameInformation)

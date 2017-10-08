@@ -502,7 +502,7 @@
     <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileAltNameInfo.cs" />
     <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileBasicInfo.cs" />
     <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileCompressionInfo.cs" />
-    <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileExtendedAttributeInfo.cs" />
+    <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileEaInfo.cs" />
     <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileNameInfo.cs" />
     <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileStandardInfo.cs" />
     <Compile Include="SMB1FileStore\Structures\QueryInformation\QueryFileStreamInfo.cs" />

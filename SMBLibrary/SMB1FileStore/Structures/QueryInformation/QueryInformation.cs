@@ -29,7 +29,7 @@ namespace SMBLibrary.SMB1
                 case QueryInformationLevel.SMB_QUERY_FILE_STANDARD_INFO:
                     return new QueryFileStandardInfo(buffer, 0);
                 case QueryInformationLevel.SMB_QUERY_FILE_EA_INFO:
-                    return new QueryFileExtendedAttributeInfo(buffer, 0);
+                    return new QueryFileEaInfo(buffer, 0);
                 case QueryInformationLevel.SMB_QUERY_FILE_NAME_INFO:
                     return new QueryFileNameInfo(buffer, 0);
                 case QueryInformationLevel.SMB_QUERY_FILE_ALL_INFO:
