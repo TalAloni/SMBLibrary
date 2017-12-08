@@ -37,7 +37,7 @@ namespace SMBLibrary.Server
             m_userID = userID;
             m_sessionKey = sessionKey;
             m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
-            m_creationDT = DateTime.Now;
+            m_creationDT = DateTime.UtcNow;
         }
 
         public ushort? AddConnectedTree(ISMBShare share)

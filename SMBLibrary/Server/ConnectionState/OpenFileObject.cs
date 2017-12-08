@@ -26,7 +26,7 @@ namespace SMBLibrary.Server
             m_path = path;
             m_handle = handle;
             m_fileAccess = fileAccess;
-            m_openedDT = DateTime.Now;
+            m_openedDT = DateTime.UtcNow;
         }
 
         public uint TreeID

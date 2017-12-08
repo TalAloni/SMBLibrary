@@ -38,7 +38,7 @@ namespace SMBLibrary.Server
             m_sessionID = sessionID;
             m_sessionKey = sessionKey;
             m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
-            m_creationDT = DateTime.Now;
+            m_creationDT = DateTime.UtcNow;
             m_signingRequired = signingRequired;
         }
 
