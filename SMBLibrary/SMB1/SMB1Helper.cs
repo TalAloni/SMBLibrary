@@ -27,7 +27,7 @@ namespace SMBLibrary.SMB1
             else
             {
                 // Tick = 100ns
-                return DateTime.Now.Subtract(TimeSpan.FromTicks(span));
+                return DateTime.UtcNow.Subtract(TimeSpan.FromTicks(span));
             }
         }
 
