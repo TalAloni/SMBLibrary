@@ -25,6 +25,12 @@ namespace SMBLibrary.SMB1
         public SMB1Command(byte[] buffer, int offset, bool isUnicode)
         {
             byte wordCount = ByteReader.ReadByte(buffer, ref offset);
+            if (CommandName == CommandName.SMB_COM_NT_CREATE_ANDX && wordCount == NTCreateAndXResponseExtended.DeclaredParametersLength / 2)
+            {
+                // [MS-SMB] Section 2.2.4.9.2 and Note <49>:
+                // Windows-based SMB servers send 50 (0x32) words in the extended response although they set the WordCount field to 0x2A.
+                wordCount = NTCreateAndXResponseExtended.ParametersLength / 2;
+            }
             SMBParameters = ByteReader.ReadBytes(buffer, ref offset, wordCount * 2);
             ushort byteCount = LittleEndianReader.ReadUInt16(buffer, ref offset);
             SMBData = ByteReader.ReadBytes(buffer, ref offset, byteCount);
@@ -46,11 +52,10 @@ namespace SMBLibrary.SMB1
             byte wordCount = (byte)(SMBParameters.Length / 2);
             if (this is NTCreateAndXResponseExtended)
             {
-                // [MS-SMB] Section 2.2.4.9.2 and Note <51>:
-                // Windows-based SMB servers send 50 (0x32) words in the extended response
-                // although they set the WordCount field to 0x2A
-                // wordCount SHOULD be 0x2A
-                wordCount = 0x2A;
+                // [MS-SMB] Section 2.2.4.9.2 and Note <49>:
+                // Windows-based SMB servers send 50 (0x32) words in the extended response although they set the WordCount field to 0x2A.
+                // WordCount SHOULD be set to 0x2A.
+                wordCount = NTCreateAndXResponseExtended.DeclaredParametersLength / 2;
             }
             ushort byteCount = (ushort)SMBData.Length;
 
@@ -454,6 +459,11 @@ namespace SMBLibrary.SMB1
                         if (wordCount * 2 == NTCreateAndXResponse.ParametersLength)
                         {
                             return new NTCreateAndXResponse(buffer, offset);
+                        }
+                        else if (wordCount * 2 == NTCreateAndXResponseExtended.ParametersLength ||
+                                 wordCount * 2 == NTCreateAndXResponseExtended.DeclaredParametersLength)
+                        {
+                            return new NTCreateAndXResponseExtended(buffer, offset);
                         }
                         else if (wordCount == 0)
                         {

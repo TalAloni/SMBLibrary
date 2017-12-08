@@ -17,6 +17,9 @@ namespace SMBLibrary.SMB1
     public class NTCreateAndXResponseExtended : SMBAndXCommand
     {
         public const int ParametersLength = 100;
+        // [MS-SMB] Section 2.2.4.9.2 and Note <49>:
+        // Windows-based SMB servers send 50 (0x32) words in the extended response although they set the WordCount field to 0x2A.
+        public const int DeclaredParametersLength = 84;
         // Parameters:
         // CommandName AndXCommand;
         // byte AndXReserved;
@@ -49,13 +52,13 @@ namespace SMBLibrary.SMB1
             OpLockLevel = (OpLockLevel)ByteReader.ReadByte(this.SMBParameters, ref parametersOffset);
             FID = LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             CreateDisposition = (CreateDisposition)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
-            CreateTime = FileTimeHelper.ReadNullableFileTime(buffer, ref parametersOffset);
-            LastAccessTime = FileTimeHelper.ReadNullableFileTime(buffer, ref parametersOffset);
-            LastWriteTime = FileTimeHelper.ReadNullableFileTime(buffer, ref parametersOffset);
-            LastChangeTime = FileTimeHelper.ReadNullableFileTime(buffer, ref parametersOffset);
+            CreateTime = FileTimeHelper.ReadNullableFileTime(this.SMBParameters, ref parametersOffset);
+            LastAccessTime = FileTimeHelper.ReadNullableFileTime(this.SMBParameters, ref parametersOffset);
+            LastWriteTime = FileTimeHelper.ReadNullableFileTime(this.SMBParameters, ref parametersOffset);
+            LastChangeTime = FileTimeHelper.ReadNullableFileTime(this.SMBParameters, ref parametersOffset);
             ExtFileAttributes = (ExtendedFileAttributes)LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
-            AllocationSize = LittleEndianReader.ReadInt64(buffer, ref parametersOffset);
-            EndOfFile = LittleEndianReader.ReadInt64(buffer, ref parametersOffset);
+            AllocationSize = LittleEndianReader.ReadInt64(this.SMBParameters, ref parametersOffset);
+            EndOfFile = LittleEndianReader.ReadInt64(this.SMBParameters, ref parametersOffset);
             ResourceType = (ResourceType)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             NMPipeStatus_or_FileStatusFlags = LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
             Directory = (ByteReader.ReadByte(this.SMBParameters, ref parametersOffset) > 0);
