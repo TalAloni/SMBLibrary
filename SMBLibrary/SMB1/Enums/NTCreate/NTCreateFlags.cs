@@ -8,13 +8,13 @@ namespace SMBLibrary.SMB1
         /// <summary>
         /// If set, the client requests an exclusive OpLock.
         /// </summary>
-        NT_CREATE_REQUEST_OPLOCK = 0x0002,
+        NT_CREATE_REQUEST_OPLOCK = 0x00000002,
         
         /// <summary>
         /// If set, the client requests an exclusive batch OpLock.
         /// </summary>
-        NT_CREATE_REQUEST_OPBATCH = 0x0004,
-        NT_CREATE_OPEN_TARGET_DIR = 0x0008,
-        NT_CREATE_REQUEST_EXTENDED_RESPONSE = 0x0010, // SMB 1.0 addition
+        NT_CREATE_REQUEST_OPBATCH = 0x00000004,
+        NT_CREATE_OPEN_TARGET_DIR = 0x00000008,
+        NT_CREATE_REQUEST_EXTENDED_RESPONSE = 0x00000010, // SMB 1.0 addition
     }
 }
