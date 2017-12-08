@@ -73,9 +73,6 @@ namespace SMBLibrary.SMB1
                 nameLength *= 2;
             }
             this.SMBParameters = new byte[ParametersLength];
-            ByteWriter.WriteByte(this.SMBParameters, 0, (byte)AndXCommand);
-            ByteWriter.WriteByte(this.SMBParameters, 1, AndXReserved);
-            LittleEndianWriter.WriteUInt16(this.SMBParameters, 2, AndXOffset);
             ByteWriter.WriteByte(this.SMBParameters, 4, Reserved);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, 5, nameLength);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, 7, (uint)Flags);
