@@ -46,7 +46,8 @@ namespace SMBLibrary.SMB1
             int year = ((value & 0xFE00) >> 9) + 1980;
             int month = ((value & 0x01E0) >> 5);
             int day = (value & 0x001F);
-            return new DateTime(year, month, day);
+            // SMB_DATE & SMB_TIME are represented in the local time zone of the server
+            return new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Local);
         }
 
         public static void WriteSMBDate(byte[] buffer, int offset, DateTime date)

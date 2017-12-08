@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class UTimeHelper
     {
-        public static readonly DateTime MinUTimeValue = new DateTime(1970, 1, 1);
+        public static readonly DateTime MinUTimeValue = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Local);
 
         public static DateTime ReadUTime(byte[] buffer, int offset)
         {
