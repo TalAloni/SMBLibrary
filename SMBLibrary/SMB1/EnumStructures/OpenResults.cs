@@ -26,14 +26,14 @@ namespace SMBLibrary.SMB1
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            buffer[0] = (byte)OpenResult;
+            buffer[offset + 0] = (byte)OpenResult;
             if (OpLockGranted)
             {
-                buffer[1] = 0x80;
+                buffer[offset + 1] = 0x80;
             }
             else
             {
-                buffer[1] = 0x00;
+                buffer[offset + 1] = 0x00;
             }
         }
 

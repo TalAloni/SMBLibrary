@@ -82,6 +82,12 @@ namespace SMBLibrary.SMB1
             buffer[offset + 1] |= (byte)(((byte)WriteThroughMode << 6) & 0x40);
         }
 
+        public void WriteBytes(byte[] buffer, ref int offset)
+        {
+            WriteBytes(buffer, offset);
+            offset += Length;
+        }
+
         public static AccessModeOptions Read(byte[] buffer, ref int offset)
         {
             offset += Length;

@@ -38,8 +38,14 @@ namespace SMBLibrary.SMB1
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            buffer[0] = (byte)FileExistsOpts;
-            buffer[0] |= (byte)((byte)CreateFile << 4);
+            buffer[offset + 0] = (byte)FileExistsOpts;
+            buffer[offset + 0] |= (byte)((byte)CreateFile << 4);
+        }
+
+        public void WriteBytes(byte[] buffer, ref int offset)
+        {
+            WriteBytes(buffer, offset);
+            offset += Length;
         }
 
         public static OpenMode Read(byte[] buffer, ref int offset)
