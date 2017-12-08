@@ -31,6 +31,7 @@ namespace SMBLibrary.Server
         private Guid m_serverGuid;
 
         private ConnectionManager m_connectionManager;
+        private Thread m_monitorInactiveConnectionsThread;
 
         private IPAddress m_serverAddress;
         private SMBTransportType m_transport;
@@ -56,8 +57,18 @@ namespace SMBLibrary.Server
             Start(serverAddress, transport, true, true);
         }
 
-        /// <exception cref="System.Net.Sockets.SocketException"></exception>
         public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
+        {
+            Start(serverAddress, transport, enableSMB1, enableSMB2, null);
+        }
+
+        /// <param name="connectionInactivityTimeout">
+        /// The duration after which a connection will be closed if no data has been received.
+        /// Some broken NATs will reply to TCP KeepAlive even after the client initiating the connection has long gone,
+        /// to prevent such connections from hanging around indefinitely, this parameter can be used to disconnect any connection that has not received data in a long while.
+        /// </param>
+        /// <exception cref="System.Net.Sockets.SocketException"></exception>
+        public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, TimeSpan? connectionInactivityTimeout)
         {
             if (!m_listening)
             {
@@ -74,6 +85,22 @@ namespace SMBLibrary.Server
                 m_listenerSocket.Bind(new IPEndPoint(m_serverAddress, port));
                 m_listenerSocket.Listen((int)SocketOptionName.MaxConnections);
                 m_listenerSocket.BeginAccept(ConnectRequestCallback, m_listenerSocket);
+
+                if (connectionInactivityTimeout.HasValue)
+                {
+                    const int InactivityMonitoringInterval = 10000; // Check every 10 seconds
+
+                    m_monitorInactiveConnectionsThread = new Thread(delegate()
+                    {
+                        while (m_listening)
+                        {
+                            Thread.Sleep(InactivityMonitoringInterval);
+                            m_connectionManager.ReleaseInactiveConnections(connectionInactivityTimeout.Value);
+                        }
+                    });
+                    m_monitorInactiveConnectionsThread.IsBackground = true;
+                    m_monitorInactiveConnectionsThread.Start();
+                }
             }
         }
 
@@ -81,6 +108,10 @@ namespace SMBLibrary.Server
         {
             Log(Severity.Information, "Stopping server");
             m_listening = false;
+            if (m_monitorInactiveConnectionsThread != null)
+            {
+                m_monitorInactiveConnectionsThread.Abort();
+            }
             SocketUtils.ReleaseSocket(m_listenerSocket);
             m_connectionManager.ReleaseAllConnections();
         }

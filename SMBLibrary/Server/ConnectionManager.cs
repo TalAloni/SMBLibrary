@@ -54,6 +54,18 @@ namespace SMBLibrary.Server
             }
         }
 
+        public void ReleaseInactiveConnections(TimeSpan inactivityDuration)
+        {
+            List<ConnectionState> connections = new List<ConnectionState>(m_activeConnections);
+            foreach (ConnectionState connection in connections)
+            {
+                if (connection.LastReceiveDT.Add(inactivityDuration) < DateTime.UtcNow)
+                {
+                    ReleaseConnection(connection);
+                }
+            }
+        }
+
         public void ReleaseAllConnections()
         {
             List<ConnectionState> connections = new List<ConnectionState>(m_activeConnections);
