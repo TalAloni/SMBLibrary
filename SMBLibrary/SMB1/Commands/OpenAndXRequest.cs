@@ -18,9 +18,9 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 30;
         // Parameters:
-        //CommandName AndXCommand;
-        //byte AndXReserved;
-        //ushort AndXOffset;
+        // CommandName AndXCommand;
+        // byte AndXReserved;
+        // ushort AndXOffset;
         public OpenFlags Flags;
         public AccessModeOptions AccessMode;
         public SMBFileAttributes SearchAttrs;
@@ -60,7 +60,31 @@ namespace SMBLibrary.SMB1
 
         public override byte[] GetBytes(bool isUnicode)
         {
-            throw new NotImplementedException();
+            this.SMBParameters = new byte[ParametersLength];
+            int parametersOffset = 4;
+            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)Flags);
+            AccessMode.WriteBytes(this.SMBParameters, ref parametersOffset);
+            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)SearchAttrs);
+            LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)FileAttrs);
+            UTimeHelper.WriteUTime(this.SMBParameters, ref parametersOffset, CreationTime);
+            OpenMode.WriteBytes(this.SMBParameters, ref parametersOffset);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, AllocationSize);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, Timeout);
+            LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, Reserved);
+
+            int padding = 0;
+            if (isUnicode)
+            {
+                padding = 1;
+                this.SMBData = new byte[padding + FileName.Length * 2 + 2];
+            }
+            else
+            {
+                this.SMBData = new byte[FileName.Length + 1];
+            }
+            SMB1Helper.WriteSMBString(this.SMBData, padding, isUnicode, FileName);
+
+            return base.GetBytes(isUnicode);
         }
 
         public override CommandName CommandName

@@ -305,11 +305,11 @@ namespace SMBLibrary.SMB1
                     {
                         if (wordCount * 2 == OpenAndXResponse.ParametersLength)
                         {
-                            throw new NotImplementedException();
+                            return new OpenAndXResponse(buffer, offset);
                         }
                         else if (wordCount * 2 == OpenAndXResponseExtended.ParametersLength)
                         {
-                            throw new NotImplementedException();
+                            return new OpenAndXResponseExtended(buffer, offset);
                         }
                         else if (wordCount == 0)
                         {

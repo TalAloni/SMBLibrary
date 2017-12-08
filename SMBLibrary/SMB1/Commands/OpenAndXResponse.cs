@@ -18,9 +18,9 @@ namespace SMBLibrary.SMB1
     {
         public const int ParametersLength = 30;
         // Parameters:
-        //CommandName AndXCommand;
-        //byte AndXReserved;
-        //ushort AndXOffset;
+        // CommandName AndXCommand;
+        // byte AndXReserved;
+        // ushort AndXOffset;
         public ushort FID;
         public SMBFileAttributes FileAttrs;
         public DateTime? LastWriteTime; // UTime
@@ -38,7 +38,16 @@ namespace SMBLibrary.SMB1
 
         public OpenAndXResponse(byte[] buffer, int offset) : base(buffer, offset, false)
         {
-            throw new NotImplementedException();
+            int parametersOffset = 4;
+            FID = LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
+            FileAttrs = (SMBFileAttributes)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
+            LastWriteTime = UTimeHelper.ReadNullableUTime(this.SMBParameters, ref parametersOffset);
+            FileDataSize = LittleEndianReader.ReadUInt32(this.SMBParameters, ref parametersOffset);
+            AccessRights = (AccessRights)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
+            ResourceType = (ResourceType)LittleEndianReader.ReadUInt16(this.SMBParameters, ref parametersOffset);
+            NMPipeStatus = NamedPipeStatus.Read(this.SMBParameters, ref parametersOffset);
+            OpenResults = OpenResults.Read(this.SMBParameters, ref parametersOffset);
+            Reserved = ByteReader.ReadBytes(this.SMBParameters, ref parametersOffset, 6);
         }
 
         public override byte[] GetBytes(bool isUnicode)
