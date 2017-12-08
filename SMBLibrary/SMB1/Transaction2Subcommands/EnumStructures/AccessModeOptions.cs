@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2016 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -56,6 +56,8 @@ namespace SMBLibrary.SMB1
 
     public struct AccessModeOptions // 2 bytes
     {
+        public const int Length = 2;
+
         public AccessMode AccessMode;
         public SharingMode SharingMode;
         public ReferenceLocality ReferenceLocality;
@@ -64,8 +66,8 @@ namespace SMBLibrary.SMB1
 
         public AccessModeOptions(byte[] buffer, int offset)
         {
-            AccessMode = (AccessMode)(buffer[offset] & 0x07);
-            SharingMode = (SharingMode)((buffer[offset] & 0x70) >> 4);
+            AccessMode = (AccessMode)(buffer[offset + 0] & 0x07);
+            SharingMode = (SharingMode)((buffer[offset + 0] & 0x70) >> 4);
             ReferenceLocality = (ReferenceLocality)(buffer[offset + 1] & 0x07);
             CachedMode = (CachedMode)((buffer[offset + 1] & 0x10) >> 4);
             WriteThroughMode = (WriteThroughMode)((buffer[offset + 1] & 0x40) >> 6);
@@ -82,8 +84,8 @@ namespace SMBLibrary.SMB1
 
         public static AccessModeOptions Read(byte[] buffer, ref int offset)
         {
-            offset += 2;
-            return new AccessModeOptions(buffer, offset - 2);
+            offset += Length;
+            return new AccessModeOptions(buffer, offset - Length);
         }
     }
 }

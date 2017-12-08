@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -25,13 +25,15 @@ namespace SMBLibrary.SMB1
 
     public struct OpenMode // 2 bytes
     {
+        public const int Length = 2;
+
         public FileExistsOpts FileExistsOpts;
         public CreateFile CreateFile;
 
         public OpenMode(byte[] buffer, int offset)
         {
-            FileExistsOpts = (FileExistsOpts)(buffer[offset] & 0x3);
-            CreateFile = (CreateFile)((buffer[offset] & 0x10) >> 4);
+            FileExistsOpts = (FileExistsOpts)(buffer[offset + 0] & 0x3);
+            CreateFile = (CreateFile)((buffer[offset + 0] & 0x10) >> 4);
         }
 
         public void WriteBytes(byte[] buffer, int offset)
@@ -42,8 +44,8 @@ namespace SMBLibrary.SMB1
 
         public static OpenMode Read(byte[] buffer, ref int offset)
         {
-            offset += 2;
-            return new OpenMode(buffer, offset - 2);
+            offset += Length;
+            return new OpenMode(buffer, offset - Length);
         }
     }
 }

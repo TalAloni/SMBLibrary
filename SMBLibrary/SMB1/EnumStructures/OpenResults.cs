@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -13,12 +13,14 @@ namespace SMBLibrary.SMB1
 {
     public struct OpenResults // 2 bytes
     {
+        public const int Length = 2;
+
         public OpenResult OpenResult;
         public bool OpLockGranted;
 
         public OpenResults(byte[] buffer, int offset)
         {
-            OpenResult = (OpenResult)(buffer[offset] & 0x3);
+            OpenResult = (OpenResult)(buffer[offset + 0] & 0x3);
             OpLockGranted = (buffer[offset + 1] & 0x80) > 0;
         }
 
@@ -38,13 +40,13 @@ namespace SMBLibrary.SMB1
         public void WriteBytes(byte[] buffer, ref int offset)
         {
             WriteBytes(buffer, offset);
-            offset += 2;
+            offset += Length;
         }
 
         public static OpenResults Read(byte[] buffer, ref int offset)
         {
-            offset += 2;
-            return new OpenResults(buffer, offset - 2);
+            offset += Length;
+            return new OpenResults(buffer, offset - Length);
         }
     }
 }

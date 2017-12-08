@@ -37,6 +37,8 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public struct NamedPipeStatus // ushort
     {
+        public const int Length = 2;
+
         public byte ICount;
         public ReadMode ReadMode;
         public NamedPipeType NamedPipeType;
@@ -45,7 +47,7 @@ namespace SMBLibrary.SMB1
 
         public NamedPipeStatus(byte[] buffer, int offset)
         {
-            ICount = buffer[offset];
+            ICount = buffer[offset + 0];
             ReadMode = (ReadMode)(buffer[offset + 1] & 0x03);
             NamedPipeType = (NamedPipeType)((buffer[offset + 1] & 0x0C) >> 2);
             Endpoint = (Endpoint)((buffer[offset + 1] & 0x40) >> 6);
@@ -73,7 +75,7 @@ namespace SMBLibrary.SMB1
         public void WriteBytes(byte[] buffer, ref int offset)
         {
             WriteBytes(buffer, offset);
-            offset += 2;
+            offset += Length;
         }
 
         public ushort ToUInt16()
@@ -88,7 +90,7 @@ namespace SMBLibrary.SMB1
 
         public static NamedPipeStatus Read(byte[] buffer, ref int offset)
         {
-            offset += 2;
+            offset += Length;
             return new NamedPipeStatus(buffer, offset - 2);
         }
     }
