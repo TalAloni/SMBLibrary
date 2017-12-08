@@ -186,6 +186,7 @@ namespace SMBLibrary.Server
                 return;
             }
 
+            state.LastReceiveDT = DateTime.UtcNow;
             NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
             receiveBuffer.SetNumberOfBytesReceived(numberOfBytesReceived);
             ProcessConnectionBuffer(ref state);

@@ -22,6 +22,8 @@ namespace SMBLibrary.Server
         private IPEndPoint m_clientEndPoint;
         private NBTConnectionReceiveBuffer m_receiveBuffer;
         private BlockingQueue<SessionPacket> m_sendQueue;
+        private DateTime m_creationDT;
+        private DateTime m_lastReceiveDT;
         private LogDelegate LogToServerHandler;
         public SMBDialect Dialect;
         public GSSContext AuthenticationContext;
@@ -32,6 +34,8 @@ namespace SMBLibrary.Server
             m_clientEndPoint = clientEndPoint;
             m_receiveBuffer = new NBTConnectionReceiveBuffer();
             m_sendQueue = new BlockingQueue<SessionPacket>();
+            m_creationDT = DateTime.UtcNow;
+            m_lastReceiveDT = DateTime.UtcNow;
             LogToServerHandler = logToServerHandler;
             Dialect = SMBDialect.NotSet;
         }
@@ -42,6 +46,8 @@ namespace SMBLibrary.Server
             m_clientEndPoint = state.ClientEndPoint;
             m_receiveBuffer = state.ReceiveBuffer;
             m_sendQueue = state.SendQueue;
+            m_creationDT = state.CreationDT;
+            m_lastReceiveDT = state.LastReceiveDT;
             LogToServerHandler = state.LogToServerHandler;
             Dialect = state.Dialect;
         }
@@ -101,6 +107,26 @@ namespace SMBLibrary.Server
             get
             {
                 return m_sendQueue;
+            }
+        }
+
+        public DateTime CreationDT
+        {
+            get
+            {
+                return m_creationDT;
+            }
+        }
+
+        public DateTime LastReceiveDT
+        {
+            get
+            {
+                return m_lastReceiveDT;
+            }
+            set
+            {
+                m_lastReceiveDT = value;
             }
         }
 
