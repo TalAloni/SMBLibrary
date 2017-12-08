@@ -40,7 +40,7 @@ namespace SMBLibrary.Authentication
                 LoginEntry entry;
                 if (m_loginEntries.TryGetValue(userID, out entry))
                 {
-                    if (entry.LoginWindowStartDT.Add(m_loginWindowDuration) >= DateTime.Now)
+                    if (entry.LoginWindowStartDT.Add(m_loginWindowDuration) >= DateTime.UtcNow)
                     {
                         // Existing login Window
                         if (incrementCount)
@@ -55,7 +55,7 @@ namespace SMBLibrary.Authentication
                         {
                             return true;
                         }
-                        entry.LoginWindowStartDT = DateTime.Now;
+                        entry.LoginWindowStartDT = DateTime.UtcNow;
                         entry.NumberOfAttempts = 1;
                     }
                 }
@@ -66,7 +66,7 @@ namespace SMBLibrary.Authentication
                         return true;
                     }
                     entry = new LoginEntry();
-                    entry.LoginWindowStartDT = DateTime.Now;
+                    entry.LoginWindowStartDT = DateTime.UtcNow;
                     entry.NumberOfAttempts = 1;
                     m_loginEntries.Add(userID, entry);
                 }
