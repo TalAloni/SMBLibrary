@@ -81,7 +81,7 @@ namespace SMBLibrary.NetBios
                 case SessionPacketTypeName.SessionKeepAlive:
                     return new SessionKeepAlivePacket(buffer, offset);
                 default:
-                    throw new InvalidDataException("Invalid NetBIOS session packet type: 0x" + type.ToString("X2"));
+                    throw new InvalidDataException("Invalid NetBIOS session packet type: 0x" + ((byte)type).ToString("X2"));
             }
         }
     }

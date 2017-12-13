@@ -163,7 +163,7 @@ namespace SMBLibrary.SMB1
                 case CommandName.SMB_COM_NT_CANCEL:
                     return new NTCancelRequest(buffer, offset);
                 default:
-                    throw new InvalidDataException("Invalid SMB command 0x" + commandName.ToString("X2"));
+                    throw new InvalidDataException("Invalid SMB command 0x" + ((byte)commandName).ToString("X2"));
             }
         }
 
@@ -475,7 +475,7 @@ namespace SMBLibrary.SMB1
                         }
                     }
                 default:
-                    throw new InvalidDataException("Invalid SMB command 0x" + commandName.ToString("X2"));
+                    throw new InvalidDataException("Invalid SMB command 0x" + ((byte)commandName).ToString("X2"));
             }
         }
 

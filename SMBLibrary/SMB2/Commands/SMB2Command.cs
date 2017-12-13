@@ -104,7 +104,7 @@ namespace SMBLibrary.SMB2
                 case SMB2CommandName.SetInfo:
                     return new SetInfoRequest(buffer, offset);
                 default:
-                    throw new InvalidDataException("Invalid SMB2 command 0x" + commandName.ToString("X4"));
+                    throw new InvalidDataException("Invalid SMB2 command 0x" + ((ushort)commandName).ToString("X4"));
             }
         }
 
@@ -471,7 +471,7 @@ namespace SMBLibrary.SMB2
                         }
                     }
                 default:
-                    throw new InvalidDataException("Invalid SMB2 command 0x" + commandName.ToString("X4"));
+                    throw new InvalidDataException("Invalid SMB2 command 0x" + ((ushort)commandName).ToString("X4"));
             }
         }
 
