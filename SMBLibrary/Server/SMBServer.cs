@@ -408,6 +408,11 @@ namespace SMBLibrary.Server
             return m_connectionManager.GetSessionsInformation();
         }
 
+        public void TerminateConnection(IPEndPoint clientEndPoint)
+        {
+            m_connectionManager.ReleaseConnection(clientEndPoint);
+        }
+
         private void Log(Severity severity, string message)
         {
             // To be thread-safe we must capture the delegate reference first
