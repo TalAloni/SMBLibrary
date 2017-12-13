@@ -124,10 +124,11 @@ namespace SMBLibrary.Server
             {
                 return m_lastReceiveDT;
             }
-            set
-            {
-                m_lastReceiveDT = value;
-            }
+        }
+
+        public void UpdateLastReceiveDT()
+        {
+            m_lastReceiveDT = DateTime.UtcNow;
         }
 
         public string ConnectionIdentifier

@@ -24,6 +24,7 @@ namespace SMBLibrary.Server
         public const int DirectTCPPort = 445;
         public const string NTLanManagerDialect = "NT LM 0.12";
         public const bool EnableExtendedSecurity = true;
+        private const int InactivityMonitoringInterval = 30000; // Check every 30 seconds
 
         private SMBShareCollection m_shares; // e.g. Shared folders
         private GSSProvider m_securityProvider;
@@ -88,8 +89,6 @@ namespace SMBLibrary.Server
 
                 if (connectionInactivityTimeout.HasValue)
                 {
-                    const int InactivityMonitoringInterval = 10000; // Check every 10 seconds
-
                     m_monitorInactiveConnectionsThread = new Thread(delegate()
                     {
                         while (m_listening)
@@ -217,7 +216,7 @@ namespace SMBLibrary.Server
                 return;
             }
 
-            state.LastReceiveDT = DateTime.UtcNow;
+            state.UpdateLastReceiveDT();
             NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
             receiveBuffer.SetNumberOfBytesReceived(numberOfBytesReceived);
             ProcessConnectionBuffer(ref state);
