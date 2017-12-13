@@ -456,10 +456,17 @@ namespace SMBLibrary.Client
                     return;
                 }
 
-                lock (m_incomingQueueLock)
+                // [MS-CIFS] 3.2.5.1 - If the MID value is the reserved value 0xFFFF, the message can be an OpLock break
+                // sent by the server. Otherwise, if the PID and MID values of the received message are not found in the
+                // Client.Connection.PIDMIDList, the message MUST be discarded.
+                if ((message.Header.MID == 0xFFFF && message.Header.Command == CommandName.SMB_COM_LOCKING_ANDX) ||
+                    (message.Header.PID == 0 && message.Header.MID == 0))
                 {
-                    m_incomingQueue.Add(message);
-                    m_incomingQueueEventHandle.Set();
+                    lock (m_incomingQueueLock)
+                    {
+                        m_incomingQueue.Add(message);
+                        m_incomingQueueEventHandle.Set();
+                    }
                 }
             }
         }

@@ -340,10 +340,17 @@ namespace SMBLibrary.Client
                     return;
                 }
 
-                lock (m_incomingQueueLock)
+                // [MS-SMB2] 3.2.5.1.2 - If the MessageId is 0xFFFFFFFFFFFFFFFF, this is not a reply to a previous request,
+                // and the client MUST NOT attempt to locate the request, but instead process it as follows:
+                // If the command field in the SMB2 header is SMB2 OPLOCK_BREAK, it MUST be processed as specified in 3.2.5.19.
+                // Otherwise, the response MUST be discarded as invalid.
+                if (command.Header.MessageID != 0xFFFFFFFFFFFFFFFF || command.Header.Command == SMB2CommandName.OplockBreak)
                 {
-                    m_incomingQueue.Add(command);
-                    m_incomingQueueEventHandle.Set();
+                    lock (m_incomingQueueLock)
+                    {
+                        m_incomingQueue.Add(command);
+                        m_incomingQueueEventHandle.Set();
+                    }
                 }
             }
         }
