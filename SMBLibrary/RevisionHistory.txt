@@ -360,3 +360,9 @@ Revision History:
         Server: Use UTC instead of local time for DateTime values returned by the API.
         Server: Maintain connection creation time and last receive time.
         Server: Added an optional mechanism to disconnect connections after a specified duration of inactivity.
+
+1.3.3 - Server: Maintain connection last send time.
+        Server: Added API to terminate a specific connection.
+        Server: Added an optional dead connection detection mechanism instead of simply disconnecting them after a specified duration of inactivity.
+        Client: Discard all unsolicited responses except OpLock break.
+        Bugfix: FormatException was thrown upon InvalidDataException in some cases.
