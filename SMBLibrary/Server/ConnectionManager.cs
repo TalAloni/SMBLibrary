@@ -54,14 +54,30 @@ namespace SMBLibrary.Server
             }
         }
 
-        public void ReleaseInactiveConnections(TimeSpan inactivityDuration)
+        /// <summary>
+        /// Some broken NATs will reply to TCP KeepAlive even after the client initiating the connection has long gone,
+        /// This methods prevent such connections from hanging around indefinitely by sending an unsolicited ECHO response to make sure the connection is still alive.
+        /// </summary>
+        public void SendSMBKeepAlive(TimeSpan inactivityDuration)
         {
             List<ConnectionState> connections = new List<ConnectionState>(m_activeConnections);
             foreach (ConnectionState connection in connections)
             {
-                if (connection.LastReceiveDT.Add(inactivityDuration) < DateTime.UtcNow)
+                if (connection.LastReceiveDT.Add(inactivityDuration) < DateTime.UtcNow &&
+                    connection.LastSendDT.Add(inactivityDuration) < DateTime.UtcNow)
                 {
-                    ReleaseConnection(connection);
+                    if (connection is SMB1ConnectionState)
+                    {
+                        // [MS-CIFS] Clients SHOULD, at minimum, send an SMB_COM_ECHO to the server every few minutes.
+                        // This means that an unsolicited SMB_COM_ECHO reply is not likely to be sent on a connection that is alive.
+                        SMBLibrary.SMB1.SMB1Message echoReply = SMB1.EchoHelper.GetUnsolicitedEchoReply();
+                        SMBServer.EnqueueMessage(connection, echoReply);
+                    }
+                    else if (connection is SMB2ConnectionState)
+                    {
+                        SMBLibrary.SMB2.EchoResponse echoResponse = SMB2.EchoHelper.GetUnsolicitedEchoResponse();
+                        SMBServer.EnqueueResponse(connection, echoResponse);
+                    }
                 }
             }
         }

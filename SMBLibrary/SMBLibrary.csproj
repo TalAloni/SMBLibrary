@@ -256,6 +256,7 @@
     <Compile Include="Server\SMB2\ChangeNotifyHelper.cs" />
     <Compile Include="Server\SMB2\CloseHelper.cs" />
     <Compile Include="Server\SMB2\CreateHelper.cs" />
+    <Compile Include="Server\SMB2\EchoHelper.cs" />
     <Compile Include="Server\SMB2\IOCtlHelper.cs" />
     <Compile Include="Server\SMB2\LockHelper.cs" />
     <Compile Include="Server\SMB2\NegotiateHelper.cs" />

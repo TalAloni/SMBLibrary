@@ -24,5 +24,28 @@ namespace SMBLibrary.Server.SMB1
             }
             return response;
         }
+
+        internal static SMB1Message GetUnsolicitedEchoReply()
+        {
+            // [MS-CIFS] 3.2.5.1 - If the PID and MID values of the received message are not found in the
+            // Client.Connection.PIDMIDList, the message MUST be discarded.
+            SMB1Header header = new SMB1Header();
+            header.Command = CommandName.SMB_COM_ECHO;
+            header.Status = NTStatus.STATUS_SUCCESS;
+            header.Flags = HeaderFlags.CaseInsensitive | HeaderFlags.CanonicalizedPaths | HeaderFlags.Reply;
+            // [MS-CIFS] SMB_FLAGS2_LONG_NAMES SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
+            // [MS-CIFS] SMB_FLAGS2_UNICODE SHOULD be set to 1 when the negotiated dialect is NT LANMAN.
+            header.Flags2 = HeaderFlags2.LongNamesAllowed | HeaderFlags2.NTStatusCode | HeaderFlags2.Unicode;
+            header.UID = 0xFFFF;
+            header.TID = 0xFFFF;
+            header.PID = 0xFFFFFFFF;
+            header.MID = 0xFFFF;
+
+            EchoResponse response = new EchoResponse();
+            SMB1Message reply = new SMB1Message();
+            reply.Header = header;
+            reply.Commands.Add(response);
+            return reply;
+        }
     }
 }
