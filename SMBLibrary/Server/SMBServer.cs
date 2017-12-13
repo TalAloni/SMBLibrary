@@ -399,6 +399,7 @@ namespace SMBLibrary.Server
                     m_connectionManager.ReleaseConnection(state.ClientEndPoint);
                     return;
                 }
+                state.UpdateLastSendDT();
             }
         }
 

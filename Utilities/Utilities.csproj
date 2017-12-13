@@ -46,6 +46,7 @@
     <Compile Include="Generics\BlockingQueue.cs" />
     <Compile Include="Generics\KeyValuePairList.cs" />
     <Compile Include="Generics\Map.cs" />
+    <Compile Include="Generics\Reference.cs" />
     <Compile Include="Generics\SortedList.cs" />
     <Compile Include="IFileSystem\FileSystem.cs" />
     <Compile Include="IFileSystem\FileSystemEntry.cs" />
