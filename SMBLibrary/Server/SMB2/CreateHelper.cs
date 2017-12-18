@@ -53,7 +53,9 @@ namespace SMBLibrary.Server.SMB2
                 return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_OPENED_FILES);
             }
 
-            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}'. (SessionID: {2}, TreeID: {3}, FileId: {4})", share.Name, path, request.Header.SessionID, request.Header.TreeID, fileID.Value.Volatile);
+            string fileAccessString = fileAccess.ToString().Replace(", ", "|");
+            string shareAccessString = request.ShareAccess.ToString().Replace(", ", "|");
+            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}', FileAccess: {2}, ShareAccess: {3}. (SessionID: {4}, TreeID: {5}, FileId: {6})", share.Name, path, fileAccessString, shareAccessString, request.Header.SessionID, request.Header.TreeID, fileID.Value.Volatile);
             if (share is NamedPipeShare)
             {
                 return CreateResponseForNamedPipe(fileID.Value, FileStatus.FILE_OPENED);

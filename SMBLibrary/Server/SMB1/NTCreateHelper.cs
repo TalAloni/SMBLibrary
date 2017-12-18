@@ -60,7 +60,9 @@ namespace SMBLibrary.Server.SMB1
                 return new ErrorResponse(request.CommandName);
             }
 
-            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}'. (UID: {2}, TID: {3}, FID: {4})", share.Name, path, header.UID, header.TID, fileID.Value);
+            string fileAccessString = fileAccess.ToString().Replace(", ", "|");
+            string shareAccessString = request.ShareAccess.ToString().Replace(", ", "|");
+            state.LogToServer(Severity.Verbose, "Create: Opened '{0}{1}', FileAccess: {2}, ShareAccess: {3}. (UID: {4}, TID: {5}, FID: {6})", share.Name, path, fileAccessString, shareAccessString, header.UID, header.TID, fileID.Value);
             if (share is NamedPipeShare)
             {
                 if (isExtended)
