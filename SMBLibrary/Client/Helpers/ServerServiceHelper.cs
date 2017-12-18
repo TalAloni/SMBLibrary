@@ -18,7 +18,7 @@ namespace SMBLibrary.Client
         {
             object pipeHandle;
             FileStatus fileStatus;
-            status = namedPipeShare.CreateFile(out pipeHandle, out fileStatus, ServerService.ServicePipeName, (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA), 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, null);
+            status = namedPipeShare.CreateFile(out pipeHandle, out fileStatus, ServerService.ServicePipeName, (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA), 0, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, 0, null);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return null;

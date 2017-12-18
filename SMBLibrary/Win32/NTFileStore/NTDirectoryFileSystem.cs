@@ -354,7 +354,7 @@ namespace SMBLibrary.Win32
             IntPtr volumeHandle;
             FileStatus fileStatus;
             string nativePath = @"\??\" + m_directory.FullName.Substring(0, 3);
-            NTStatus status = CreateFile(out volumeHandle, out fileStatus, nativePath, AccessMask.GENERIC_READ, 0, (FileAttributes)0, ShareAccess.FILE_SHARE_READ, CreateDisposition.FILE_OPEN, (CreateOptions)0);
+            NTStatus status = CreateFile(out volumeHandle, out fileStatus, nativePath, AccessMask.GENERIC_READ, 0, (FileAttributes)0, ShareAccess.Read, CreateDisposition.FILE_OPEN, (CreateOptions)0);
             result = null;
             if (status != NTStatus.STATUS_SUCCESS)
             {

@@ -99,17 +99,17 @@ namespace SMBLibrary
         public static FileShare ToFileShare(ShareAccess shareAccess)
         {
             FileShare result = FileShare.None;
-            if ((shareAccess & ShareAccess.FILE_SHARE_READ) > 0)
+            if ((shareAccess & ShareAccess.Read) > 0)
             {
                 result |= FileShare.Read;
             }
 
-            if ((shareAccess & ShareAccess.FILE_SHARE_WRITE) > 0)
+            if ((shareAccess & ShareAccess.Write) > 0)
             {
                 result |= FileShare.Write;
             }
 
-            if ((shareAccess & ShareAccess.FILE_SHARE_DELETE) > 0)
+            if ((shareAccess & ShareAccess.Delete) > 0)
             {
                 result |= FileShare.Delete;
             }
@@ -121,7 +121,7 @@ namespace SMBLibrary
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES, 0, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, 0, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return null;

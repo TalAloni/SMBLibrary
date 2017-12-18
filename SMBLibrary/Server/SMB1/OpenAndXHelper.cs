@@ -144,7 +144,7 @@ namespace SMBLibrary.Server.SMB1
         {
             if (sharingMode == SharingMode.Compatibility)
             {
-                return ShareAccess.FILE_SHARE_READ;
+                return ShareAccess.Read;
             }
             else if (sharingMode == SharingMode.DenyReadWriteExecute)
             {
@@ -152,15 +152,15 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (sharingMode == SharingMode.DenyWrite)
             {
-                return ShareAccess.FILE_SHARE_READ;
+                return ShareAccess.Read;
             }
             else if (sharingMode == SharingMode.DenyReadExecute)
             {
-                return ShareAccess.FILE_SHARE_WRITE;
+                return ShareAccess.Write;
             }
             else if (sharingMode == SharingMode.DenyNothing)
             {
-                return ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE;
+                return ShareAccess.Read | ShareAccess.Write;
             }
             else if (sharingMode == (SharingMode)0xFF)
             {

@@ -18,7 +18,7 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus createStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)DirectoryAccessMask.FILE_ADD_SUBDIRECTORY, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_CREATE, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
+            NTStatus createStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)DirectoryAccessMask.FILE_ADD_SUBDIRECTORY, 0, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_CREATE, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
             if (createStatus != NTStatus.STATUS_SUCCESS)
             {
                 return createStatus;
@@ -41,7 +41,7 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            ShareAccess shareAccess = ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE | ShareAccess.FILE_SHARE_DELETE;
+            ShareAccess shareAccess = ShareAccess.Read | ShareAccess.Write | ShareAccess.Delete;
             NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, AccessMask.DELETE, 0, shareAccess, CreateDisposition.FILE_OPEN, createOptions, securityContext);
             if (status != NTStatus.STATUS_SUCCESS)
             {
@@ -65,7 +65,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 createOptions = CreateOptions.FILE_NON_DIRECTORY_FILE;
             }
-            ShareAccess shareAccess = ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE | ShareAccess.FILE_SHARE_DELETE;
+            ShareAccess shareAccess = ShareAccess.Read | ShareAccess.Write | ShareAccess.Delete;
             NTStatus status = fileStore.CreateFile(out handle, out fileStatus, oldName, AccessMask.DELETE, 0, shareAccess, CreateDisposition.FILE_OPEN, createOptions, securityContext);
             if (status != NTStatus.STATUS_SUCCESS)
             {
@@ -83,7 +83,7 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)0, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)0, 0, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 return openStatus;
@@ -97,7 +97,7 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES, 0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
+            NTStatus openStatus = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_READ_ATTRIBUTES, 0, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, 0, securityContext);
             if (openStatus != NTStatus.STATUS_SUCCESS)
             {
                 fileInfo = null;
@@ -113,7 +113,7 @@ namespace SMBLibrary.Server.SMB1
         {
             object handle;
             FileStatus fileStatus;
-            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_WRITE_ATTRIBUTES, (FileAttributes)0, ShareAccess.FILE_SHARE_READ | ShareAccess.FILE_SHARE_WRITE, CreateDisposition.FILE_OPEN, 0, securityContext);
+            NTStatus status = fileStore.CreateFile(out handle, out fileStatus, path, (AccessMask)FileAccessMask.FILE_WRITE_ATTRIBUTES, (FileAttributes)0, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, 0, securityContext);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return status;
