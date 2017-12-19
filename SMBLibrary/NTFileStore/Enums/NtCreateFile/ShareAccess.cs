@@ -8,8 +8,9 @@ namespace SMBLibrary
     [Flags]
     public enum ShareAccess : uint
     {
-        Read = 0x0001,   // FILE_SHARE_READ
-        Write = 0x0002,  // FILE_SHARE_WRITE
-        Delete = 0x0004, // FILE_SHARE_DELETE
+        None = 0x00000000,   // FILE_SHARE_NONE
+        Read = 0x00000001,   // FILE_SHARE_READ
+        Write = 0x00000002,  // FILE_SHARE_WRITE
+        Delete = 0x00000004, // FILE_SHARE_DELETE
     }
 }
