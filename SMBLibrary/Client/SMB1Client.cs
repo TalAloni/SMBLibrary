@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -237,11 +237,17 @@ namespace SMBLibrary.Client
             }
             else // m_securityBlob != null
             {
+                byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
+                if (negotiateMessage == null)
+                {
+                    return NTStatus.SEC_E_INVALID_TOKEN;
+                }
+
                 SessionSetupAndXRequestExtended request = new SessionSetupAndXRequestExtended();
                 request.MaxBufferSize = ClientMaxBufferSize;
                 request.MaxMpxCount = m_maxMpxCount;
                 request.Capabilities = clientCapabilities;
-                request.SecurityBlob = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
+                request.SecurityBlob = negotiateMessage;
                 TrySendMessage(request);
                 
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
@@ -250,13 +256,18 @@ namespace SMBLibrary.Client
                     if (reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                     {
                         SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
+                        byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
+                        if (authenticateMessage == null)
+                        {
+                            return NTStatus.SEC_E_INVALID_TOKEN;
+                        }
+
                         m_userID = reply.Header.UID;
                         request = new SessionSetupAndXRequestExtended();
                         request.MaxBufferSize = ClientMaxBufferSize;
                         request.MaxMpxCount = m_maxMpxCount;
                         request.Capabilities = clientCapabilities;
-
-                        request.SecurityBlob = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
+                        request.SecurityBlob = authenticateMessage;
                         TrySendMessage(request);
 
                         reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);

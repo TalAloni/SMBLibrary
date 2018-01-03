@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -135,19 +135,31 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A connection must be successfully established before attempting login");
             }
 
+            byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
+            if (negotiateMessage == null)
+            {
+                return NTStatus.SEC_E_INVALID_TOKEN;
+            }
+
             SessionSetupRequest request = new SessionSetupRequest();
             request.SecurityMode = SecurityMode.SigningEnabled;
-            request.SecurityBuffer = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
+            request.SecurityBuffer = negotiateMessage;
             TrySendCommand(request);
             SMB2Command response = WaitForCommand(SMB2CommandName.SessionSetup);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && response is SessionSetupResponse)
                 {
+                    byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(((SessionSetupResponse)response).SecurityBuffer, domainName, userName, password, authenticationMethod, out m_sessionKey);
+                    if (authenticateMessage == null)
+                    {
+                        return NTStatus.SEC_E_INVALID_TOKEN;
+                    }
+
                     m_sessionID = response.Header.SessionID;
                     request = new SessionSetupRequest();
                     request.SecurityMode = SecurityMode.SigningEnabled;
-                    request.SecurityBuffer = NTLMAuthenticationHelper.GetAuthenticateMessage(((SessionSetupResponse)response).SecurityBuffer, domainName, userName, password, authenticationMethod, out m_sessionKey);
+                    request.SecurityBuffer = authenticateMessage;
                     TrySendCommand(request);
                     response = WaitForCommand(SMB2CommandName.SessionSetup);
                     if (response != null)
