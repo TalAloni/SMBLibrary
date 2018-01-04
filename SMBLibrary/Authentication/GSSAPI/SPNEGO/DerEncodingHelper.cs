@@ -6,15 +6,17 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Utilities;
 
 namespace SMBLibrary.Authentication.GSSAPI
 {
     public enum DerEncodingTag : byte
     {
-        ByteArray = 0x04,
+        ByteArray = 0x04,        // Octet String
         ObjectIdentifier = 0x06,
         Enum = 0x0A,
+        GeneralString = 0x1B,
         Sequence = 0x30,
     }
 
@@ -77,6 +79,18 @@ namespace SMBLibrary.Authentication.GSSAPI
             {
                 return 1;
             }
+        }
+
+        public static byte[] EncodeGeneralString(string value)
+        {
+            // We do not support character-set designation escape sequences
+            return ASCIIEncoding.ASCII.GetBytes(value);
+        }
+
+        public static string DecodeGeneralString(byte[] bytes)
+        {
+            // We do not support character-set designation escape sequences
+            return ASCIIEncoding.ASCII.GetString(bytes);
         }
     }
 }
