@@ -100,30 +100,38 @@ namespace SMBLibrary.Authentication.GSSAPI
             return buffer;
         }
 
-        private int GetTokenFieldsLength()
+        protected virtual int GetTokenFieldsLength()
         {
             int result = 0;
             if (MechanismTypeList != null)
             {
-                int typeListSequenceLength = GetSequenceLength(MechanismTypeList);
+                int typeListSequenceLength = GetMechanismTypeListSequenceLength(MechanismTypeList);
                 int typeListSequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListSequenceLength);
                 int typeListConstructionLength = 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
                 int typeListConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListConstructionLength);
-                int typeListLength = 1 + typeListConstructionLengthFieldSize + 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
-                result += typeListLength;
+                int entryLength = 1 + typeListConstructionLengthFieldSize + 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
+                result += entryLength;
             }
             if (MechanismToken != null)
             {
-                int mechanismTokenBytesFieldSize = DerEncodingHelper.GetLengthFieldSize(MechanismToken.Length);
-                int mechanismTokenConstructionLength = 1 + mechanismTokenBytesFieldSize + MechanismToken.Length;
+                int mechanismTokenLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(MechanismToken.Length);
+                int mechanismTokenConstructionLength = 1 + mechanismTokenLengthFieldSize + MechanismToken.Length;
                 int mechanismTokenConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismTokenConstructionLength);
-                int tokenLength = 1 + mechanismTokenConstructionLengthFieldSize + 1 + mechanismTokenBytesFieldSize + MechanismToken.Length;
-                result += tokenLength;
+                int entryLength = 1 + mechanismTokenConstructionLengthFieldSize + 1 + mechanismTokenLengthFieldSize + MechanismToken.Length;;
+                result += entryLength;
+            }
+            if (MechanismListMIC != null)
+            {
+                int mechanismListMICLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(MechanismListMIC.Length);
+                int mechanismListMICConstructionLength = 1 + mechanismListMICLengthFieldSize + MechanismListMIC.Length;
+                int mechanismListMICConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismListMICConstructionLength);
+                int entryLength = 1 + mechanismListMICConstructionLengthFieldSize + 1 + mechanismListMICLengthFieldSize + MechanismListMIC.Length;
+                result += entryLength;
             }
             return result;
         }
 
-        private static List<byte[]> ReadMechanismTypeList(byte[] buffer, ref int offset)
+        protected static List<byte[]> ReadMechanismTypeList(byte[] buffer, ref int offset)
         {
             List<byte[]> result = new List<byte[]>();
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
@@ -148,7 +156,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             return result;
         }
 
-        private static byte[] ReadMechanismToken(byte[] buffer, ref int offset)
+        protected static byte[] ReadMechanismToken(byte[] buffer, ref int offset)
         {
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
             byte tag = ByteReader.ReadByte(buffer, ref offset);
@@ -161,7 +169,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             return token;
         }
 
-        private static byte[] ReadMechanismListMIC(byte[] buffer, ref int offset)
+        protected static byte[] ReadMechanismListMIC(byte[] buffer, ref int offset)
         {
             int constructionLength = DerEncodingHelper.ReadLength(buffer, ref offset);
             byte tag = ByteReader.ReadByte(buffer, ref offset);
@@ -173,7 +181,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             return ByteReader.ReadBytes(buffer, ref offset, length);
         }
 
-        private static int GetSequenceLength(List<byte[]> mechanismTypeList)
+        protected static int GetMechanismTypeListSequenceLength(List<byte[]> mechanismTypeList)
         {
             int sequenceLength = 0;
             foreach (byte[] mechanismType in mechanismTypeList)
@@ -185,9 +193,9 @@ namespace SMBLibrary.Authentication.GSSAPI
             return sequenceLength;
         }
 
-        private static void WriteMechanismTypeList(byte[] buffer, ref int offset, List<byte[]> mechanismTypeList)
+        protected static void WriteMechanismTypeList(byte[] buffer, ref int offset, List<byte[]> mechanismTypeList)
         {
-            int sequenceLength = GetSequenceLength(mechanismTypeList);
+            int sequenceLength = GetMechanismTypeListSequenceLength(mechanismTypeList);
             int sequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(sequenceLength);
             int constructionLength = 1 + sequenceLengthFieldSize + sequenceLength;
             ByteWriter.WriteByte(buffer, ref offset, MechanismTypeListTag);
@@ -202,7 +210,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             }
         }
 
-        private static void WriteMechanismToken(byte[] buffer, ref int offset, byte[] mechanismToken)
+        protected static void WriteMechanismToken(byte[] buffer, ref int offset, byte[] mechanismToken)
         {
             int constructionLength = 1 + DerEncodingHelper.GetLengthFieldSize(mechanismToken.Length) + mechanismToken.Length;
             ByteWriter.WriteByte(buffer, ref offset, MechanismTokenTag);
@@ -212,7 +220,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             ByteWriter.WriteBytes(buffer, ref offset, mechanismToken);
         }
 
-        private static void WriteMechanismListMIC(byte[] buffer, ref int offset, byte[] mechanismListMIC)
+        protected static void WriteMechanismListMIC(byte[] buffer, ref int offset, byte[] mechanismListMIC)
         {
             int mechanismListMICLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismListMIC.Length);
             ByteWriter.WriteByte(buffer, ref offset, MechanismListMICTag);
