@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -67,18 +67,16 @@ namespace SMBLibrary.SMB2
 
         public override void WriteCommandBytes(byte[] buffer, int offset)
         {
-            NameOffset = 0;
+            // [MS-SMB2] The NameOffset field SHOULD be set to the offset of the Buffer field from the beginning of the SMB2 header.
+            // Note: Windows 8.1 / 10 will return STATUS_INVALID_PARAMETER if NameOffset is set to 0.
+            NameOffset = SMB2Header.Length + FixedLength;
             NameLength = (ushort)(Name.Length * 2);
-            if (Name.Length > 0)
-            {
-                NameOffset = SMB2Header.Length + FixedLength;
-            }
             CreateContextsOffset = 0;
             CreateContextsLength = 0;
             int paddedNameLength = (int)Math.Ceiling((double)(Name.Length * 2) / 8) * 8;
             if (CreateContexts.Count > 0)
             {
-                CreateContextsOffset = (uint)(SMB2Header.Length + 56 + paddedNameLength);
+                CreateContextsOffset = (uint)(SMB2Header.Length + FixedLength + paddedNameLength);
                 CreateContextsLength = (uint)CreateContext.GetCreateContextListLength(CreateContexts);
             }
             LittleEndianWriter.WriteUInt16(buffer, offset + 0, StructureSize);
