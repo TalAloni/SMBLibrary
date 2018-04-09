@@ -177,7 +177,20 @@ namespace SMBLibrary.Client
 
         public NTStatus SetFileInformation(object handle, FileInformation information)
         {
-            throw new NotImplementedException();
+            SetInfoRequest request = new SetInfoRequest();
+            request.InfoType = InfoType.File;
+            request.FileInformationClass = information.FileInformationClass;
+            request.FileId = (FileID)handle;
+            request.SetFileInformation(information);
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.SetInfo);
+            if (response != null)
+            {
+                return response.Header.Status;
+            }
+
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass)
