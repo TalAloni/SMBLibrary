@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -55,21 +55,23 @@ namespace SMBLibrary.Services
                 m_maxTransmitFragmentSize = bindAckPDU.MaxTransmitFragmentSize;
                 Append(bindAckPDU.GetBytes());
             }
-            else if (rpcRequest is RequestPDU)
+            else if (m_maxTransmitFragmentSize.HasValue && rpcRequest is RequestPDU) // if BindPDU was not received, we treat as protocol error
             {
-                // if BindPDU was not received, we ignore any subsequent RPC packets
-                if (m_maxTransmitFragmentSize.HasValue)
+                List<RPCPDU> responsePDUs = RemoteServiceHelper.GetRPCResponse((RequestPDU)rpcRequest, m_service, m_maxTransmitFragmentSize.Value);
+                foreach (RPCPDU responsePDU in responsePDUs)
                 {
-                    List<ResponsePDU> responsePDUs = RemoteServiceHelper.GetRPCResponse((RequestPDU)rpcRequest, m_service, m_maxTransmitFragmentSize.Value);
-                    foreach (ResponsePDU responsePDU in responsePDUs)
-                    {
-                        Append(responsePDU.GetBytes());
-                    }
+                    Append(responsePDU.GetBytes());
                 }
             }
             else
             {
-                throw new NotImplementedException("Unsupported RPC Packet Type");
+                FaultPDU faultPDU = new FaultPDU();
+                faultPDU.Flags = PacketFlags.FirstFragment | PacketFlags.LastFragment;
+                faultPDU.DataRepresentation = new DataRepresentationFormat(CharacterFormat.ASCII, ByteOrder.LittleEndian, FloatingPointRepresentation.IEEE);
+                faultPDU.CallID = 0;
+                faultPDU.AllocationHint = RPCPDU.CommonFieldsLength + FaultPDU.FaultFieldsLength;
+                faultPDU.Status = FaultStatus.ProtocolError;
+                Append(faultPDU.GetBytes());
             }
         }
 

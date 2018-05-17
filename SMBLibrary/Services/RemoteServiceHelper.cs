@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -107,11 +107,28 @@ namespace SMBLibrary.Services
             return -1;
         }
 
-        public static List<ResponsePDU> GetRPCResponse(RequestPDU requestPDU, RemoteService service, int maxTransmitFragmentSize)
+        public static List<RPCPDU> GetRPCResponse(RequestPDU requestPDU, RemoteService service, int maxTransmitFragmentSize)
         {
-            byte[] responseBytes = service.GetResponseBytes(requestPDU.OpNum, requestPDU.Data);
+            List<RPCPDU> result = new List<RPCPDU>();
+            byte[] responseBytes;
+            try
+            {
+                responseBytes = service.GetResponseBytes(requestPDU.OpNum, requestPDU.Data);
+            }
+            catch (UnsupportedOpNumException)
+            {
+                FaultPDU faultPDU = new FaultPDU();
+                faultPDU.Flags = PacketFlags.FirstFragment | PacketFlags.LastFragment | PacketFlags.DidNotExecute;
+                faultPDU.DataRepresentation = requestPDU.DataRepresentation;
+                faultPDU.CallID = requestPDU.CallID;
+                faultPDU.AllocationHint = RPCPDU.CommonFieldsLength + FaultPDU.FaultFieldsLength;
+                // Windows will return either nca_s_fault_ndr or nca_op_rng_error.
+                faultPDU.Status = FaultStatus.OpRangeError;
+                result.Add(faultPDU);
+                return result;
+            }
+
             int offset = 0;
-            List<ResponsePDU> result = new List<ResponsePDU>();
             int maxPDUDataLength = maxTransmitFragmentSize - RPCPDU.CommonFieldsLength - ResponsePDU.ResponseFieldsLength;
             do
             {
