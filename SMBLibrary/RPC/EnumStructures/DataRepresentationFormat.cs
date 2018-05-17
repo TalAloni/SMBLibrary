@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -34,6 +34,13 @@ namespace SMBLibrary.RPC
         public CharacterFormat CharacterFormat;
         public ByteOrder ByteOrder;
         public FloatingPointRepresentation FloatingPointRepresentation;
+
+        public DataRepresentationFormat(CharacterFormat characterFormat, ByteOrder byteOrder, FloatingPointRepresentation floatingPointRepresentation)
+        {
+            CharacterFormat = characterFormat;
+            ByteOrder = byteOrder;
+            FloatingPointRepresentation = floatingPointRepresentation;
+        }
 
         public DataRepresentationFormat(byte[] buffer, int offset)
         {
