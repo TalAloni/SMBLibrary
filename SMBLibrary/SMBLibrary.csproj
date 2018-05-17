@@ -271,6 +271,7 @@
     <Compile Include="Server\SMBServer.SMB1.cs" />
     <Compile Include="Server\SMBServer.SMB2.cs" />
     <Compile Include="Services\Enums\PlatformName.cs" />
+    <Compile Include="Services\Exceptions\UnsupportedOpNumException.cs" />
     <Compile Include="Services\RemoteService.cs" />
     <Compile Include="Services\RemoteServiceHelper.cs" />
     <Compile Include="Services\RPCPipeStream.cs" />
