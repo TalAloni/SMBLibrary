@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using SMBLibrary.RPC;
 using Utilities;
 
@@ -59,7 +58,6 @@ namespace SMBLibrary.Services
                 default:
                     throw new NotImplementedException();
             }
-            ;
             parser.EndStructure(); // SHARE_INFO Union
         }
 
