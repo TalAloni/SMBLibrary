@@ -21,7 +21,7 @@ namespace SMBLibrary.Server
     public partial class SMBServer
     {
         public const int NetBiosOverTCPPort = 139;
-        public const int DirectTCPPort = 445;
+        public virtual int DirectTCPPort => 445;
         public const string NTLanManagerDialect = "NT LM 0.12";
         public const bool EnableExtendedSecurity = true;
         private const int InactivityMonitoringInterval = 30000; // Check every 30 seconds
