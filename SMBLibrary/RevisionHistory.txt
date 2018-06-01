@@ -366,3 +366,19 @@ Revision History:
         Server: Added an optional dead connection detection mechanism instead of simply disconnecting them after a specified duration of inactivity.
         Client: Discard all unsolicited responses except OpLock break.
         Bugfix: FormatException was thrown upon InvalidDataException in some cases.
+
+1.3.4 - ShareAccess: Renamed enum members and added ShareAccess.None enum value.
+        Minor logging improvements.
+        SPNEGO: Minor improvements to SimpleProtectedNegotiationTokenInit implementation.
+        SPNEGO: Added NegTokenInit2 implementation.
+        Client: Login will now return SEC_E_INVALID_TOKEN if an invalid token is returned from the server instead of throwing NullReferenceException.
+        Client: Fixed compatibility issue with Windows 8.1 / 10.
+        Client: SMB2FileStore: SetFileInformation implementation.
+        Win32Error: Added ERROR_NOT_SUPPORTED and ERROR_INVALID_LEVEL.
+        RPC: FaultPDU parameterless constructor will now set Data to an empty byte array.
+        RPC: RPCPDU PacketType variable is now protected.
+        RPC: FaultPDU is now using FaultStatus enum.
+        RPC: DataRepresentationFormat: Added constructor.
+        Services: Minor improvements to ServerService and WorkstationService structures.
+        Services: Added UnsupportedOpNumException.
+        Services: ServerService, WorkstationService: Unsupported OpNums and Levels are now reported back to the client instead of NotImplementedException.
