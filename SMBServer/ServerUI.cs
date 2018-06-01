@@ -100,6 +100,8 @@ namespace SMBServer
             GSSProvider securityProvider = new GSSProvider(authenticationMechanism);
             m_server = new SMBLibrary.Server.SMBServer(shares, securityProvider);
             m_logWriter = new LogWriter();
+            // The provided logging mechanism will synchronously write to the disk during server activity.
+            // To maximize server performance, you can disable logging by commenting out the following line.
             m_server.LogEntryAdded += new EventHandler<LogEntry>(m_logWriter.OnLogEntryAdded);
 
             try
