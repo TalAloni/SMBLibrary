@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,11 +20,11 @@ namespace SMBLibrary.Server
 {
     public partial class SMBServer
     {
-        public const int NetBiosOverTCPPort = 139;
-        public const int DirectTCPPort = 445;
+        public static readonly int NetBiosOverTCPPort = 139;
+        public static readonly int DirectTCPPort = 445;
         public const string NTLanManagerDialect = "NT LM 0.12";
-        public const bool EnableExtendedSecurity = true;
-        private const int InactivityMonitoringInterval = 30000; // Check every 30 seconds
+        public static readonly bool EnableExtendedSecurity = true;
+        private static readonly int InactivityMonitoringInterval = 30000; // Check every 30 seconds
 
         private SMBShareCollection m_shares; // e.g. Shared folders
         private GSSProvider m_securityProvider;

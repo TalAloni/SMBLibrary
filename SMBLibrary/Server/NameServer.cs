@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,8 +20,8 @@ namespace SMBLibrary.Server
     /// </summary>
     public class NameServer
     {
-        public const int NetBiosNameServicePort = 137;
-        public const string WorkgroupName = "WORKGROUP";
+        public static readonly int NetBiosNameServicePort = 137;
+        public static readonly string WorkgroupName = "WORKGROUP";
 
         private IPAddress m_serverAddress;
         private IPAddress m_broadcastAddress;
