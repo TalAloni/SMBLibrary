@@ -35,6 +35,36 @@ namespace Utilities
             return m_reverse.ContainsKey(value);
         }
 
+        public bool TryGetKey(T2 value, out T1 key)
+        {
+            return m_reverse.TryGetValue(value, out key);
+        }
+
+        public bool TryGetValue(T1 key, out T2 value)
+        {
+            return m_forward.TryGetValue(key, out value);
+        }
+
+        public void RemoveKey(T1 key)
+        {
+            T2 value;
+            if (m_forward.TryGetValue(key, out value))
+            {
+                m_forward.Remove(key);
+                m_reverse.Remove(value);
+            }
+        }
+
+        public void RemoveValue(T2 value)
+        {
+            T1 key;
+            if (m_reverse.TryGetValue(value, out key))
+            {
+                m_forward.Remove(key);
+                m_reverse.Remove(value);
+            }
+        }
+
         public T2 this[T1 key]
         {
             get

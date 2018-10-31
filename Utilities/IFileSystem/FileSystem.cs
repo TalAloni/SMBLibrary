@@ -74,6 +74,11 @@ namespace Utilities
             get;
         }
 
+        public abstract bool SupportsNamedStreams
+        {
+            get;
+        }
+
         public static string GetParentDirectory(string path)
         {
             if (path == String.Empty)

@@ -134,9 +134,21 @@ namespace Utilities
             }
         }
 
+        public static void WriteUTF8String(Stream stream, string value)
+        {
+            byte[] bytes = UnicodeEncoding.UTF8.GetBytes(value);
+            stream.Write(bytes, 0, bytes.Length);
+        }
+
         public static void WriteUTF16String(Stream stream, string value)
         {
             byte[] bytes = UnicodeEncoding.Unicode.GetBytes(value);
+            stream.Write(bytes, 0, bytes.Length);
+        }
+
+        public static void WriteUTF16BEString(Stream stream, string value)
+        {
+            byte[] bytes = UnicodeEncoding.BigEndianUnicode.GetBytes(value);
             stream.Write(bytes, 0, bytes.Length);
         }
     }

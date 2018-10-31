@@ -105,15 +105,25 @@ namespace Utilities
 
         public static int FirstIndexOf(List<T> list, Comparer<T> comparer, T item)
         {
-            int insertIndex = FindIndexForSortedInsert(list, comparer, item);
+            return FirstIndexOf(list, comparer.Compare, item);
+        }
+
+        public static int FindIndexForSortedInsert(List<T> list, Comparer<T> comparer, T item)
+        {
+            return FindIndexForSortedInsert(list, comparer.Compare, item);
+        }
+
+        public static int FirstIndexOf(List<T> list, Comparison<T> compare, T item)
+        {
+            int insertIndex = FindIndexForSortedInsert(list, compare, item);
             if (insertIndex == list.Count)
             {
                 return -1;
             }
-            if (comparer.Compare(item, list[insertIndex]) == 0)
+            if (compare(item, list[insertIndex]) == 0)
             {
                 int index = insertIndex;
-                while (index > 0 && comparer.Compare(item, list[index - 1]) == 0)
+                while (index > 0 && compare(item, list[index - 1]) == 0)
                 {
                     index--;
                 }
@@ -122,7 +132,7 @@ namespace Utilities
             return -1;
         }
 
-        public static int FindIndexForSortedInsert(List<T> list, Comparer<T> comparer, T item)
+        public static int FindIndexForSortedInsert(List<T> list, Comparison<T> compare, T item)
         {
             if (list.Count == 0)
             {
@@ -136,7 +146,7 @@ namespace Utilities
             {
                 int middleIndex = (lowerIndex + upperIndex) / 2;
                 T middle = list[middleIndex];
-                comparisonResult = comparer.Compare(middle, item);
+                comparisonResult = compare(middle, item);
                 if (comparisonResult == 0)
                 {
                     return middleIndex;
@@ -154,7 +164,7 @@ namespace Utilities
             // At this point any entry following 'middle' is greater than 'item',
             // and any entry preceding 'middle' is lesser than 'item'.
             // So we either put 'item' before or after 'middle'.
-            comparisonResult = comparer.Compare(list[lowerIndex], item);
+            comparisonResult = compare(list[lowerIndex], item);
             if (comparisonResult < 0) // middle < item
             {
                 return lowerIndex + 1;

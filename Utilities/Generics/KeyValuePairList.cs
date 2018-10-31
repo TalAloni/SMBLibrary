@@ -6,6 +6,14 @@ namespace Utilities
 {
     public partial class KeyValuePairList<TKey, TValue> : List<KeyValuePair<TKey, TValue>>
     {
+        public KeyValuePairList()
+        {
+        }
+
+        public KeyValuePairList(List<KeyValuePair<TKey, TValue>> collection) : base(collection)
+        {
+        }
+
         public bool ContainsKey(TKey key)
         {
             return (this.IndexOfKey(key) != -1);
@@ -96,6 +104,11 @@ namespace Utilities
             {
                 return comparer.Compare(a.Key, b.Key);
             });
+        }
+
+        public new KeyValuePairList<TKey, TValue> GetRange(int index, int count)
+        {
+            return new KeyValuePairList<TKey, TValue>(base.GetRange(index, count));
         }
     }
 }

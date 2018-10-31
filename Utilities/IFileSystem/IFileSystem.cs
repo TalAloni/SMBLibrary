@@ -78,5 +78,14 @@ namespace Utilities
         {
             get;
         }
+
+        /// <summary>
+        /// Indicates support for opening named streams (alternate data streams).
+        /// Named streams are opened using the filename:stream syntax.
+        /// </summary>
+        bool SupportsNamedStreams
+        {
+            get;
+        }
     }
 }
