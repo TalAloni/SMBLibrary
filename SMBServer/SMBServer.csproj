@@ -50,6 +50,8 @@
       <SubType>Designer</SubType>
       <DependentUpon>ServerUI.cs</DependentUpon>
     </EmbeddedResource>
+    <Compile Include="SettingsHelper.cs" />
+    <Compile Include="ShareSettings.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserCollection.cs" />
   </ItemGroup>

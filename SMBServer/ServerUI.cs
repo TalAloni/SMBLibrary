@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -7,15 +7,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Text;
 using System.Windows.Forms;
-using System.Xml;
 using SMBLibrary;
 using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.Authentication.NTLM;
@@ -28,7 +24,6 @@ namespace SMBServer
 {
     public partial class ServerUI : Form
     {
-        public const string SettingsFileName = "Settings.xml";
         private SMBLibrary.Server.SMBServer m_server;
         private SMBLibrary.Server.NameServer m_nameServer;
         private LogWriter m_logWriter;
@@ -75,26 +70,33 @@ namespace SMBServer
                 UserCollection users;
                 try
                 {
-                    users = ReadUserSettings();
+                    users = SettingsHelper.ReadUserSettings();
                 }
                 catch
                 {
-                    MessageBox.Show("Cannot read " + SettingsFileName, "Error");
+                    MessageBox.Show("Cannot read " + SettingsHelper.SettingsFileName, "Error");
                     return;
                 }
 
                 authenticationMechanism = new IndependentNTLMAuthenticationProvider(users.GetUserPassword);
             }
 
-            SMBShareCollection shares;
+            List<ShareSettings> sharesSettings;
             try
             {
-                shares = ReadShareSettings();
+                sharesSettings = SettingsHelper.ReadSharesSettings();
             }
             catch (Exception)
             {
-                MessageBox.Show("Cannot read " + SettingsFileName, "Error");
+                MessageBox.Show("Cannot read " + SettingsHelper.SettingsFileName, "Error");
                 return;
+            }
+
+            SMBShareCollection shares = new SMBShareCollection();
+            foreach (ShareSettings shareSettings in sharesSettings)
+            {
+                FileSystemShare share = InitializeShare(shareSettings);
+                shares.Add(share);
             }
 
             GSSProvider securityProvider = new GSSProvider(authenticationMechanism);
@@ -133,85 +135,6 @@ namespace SMBServer
             chkIntegratedWindowsAuthentication.Enabled = false;
         }
 
-        private XmlDocument GetSettingsXML()
-        {
-            string executableDirectory = Path.GetDirectoryName(Application.ExecutablePath) + "\\";
-            XmlDocument document = GetXmlDocument(executableDirectory + SettingsFileName);
-            return document;
-        }
-
-        private UserCollection ReadUserSettings()
-        {
-            UserCollection users = new UserCollection();
-            XmlDocument document = GetSettingsXML();
-            XmlNode usersNode = document.SelectSingleNode("Settings/Users");
-
-            foreach (XmlNode userNode in usersNode.ChildNodes)
-            {
-                string accountName = userNode.Attributes["AccountName"].Value;
-                string password = userNode.Attributes["Password"].Value;
-                users.Add(accountName, password);
-            }
-            return users;
-        }
-
-        private SMBShareCollection ReadShareSettings()
-        {
-            SMBShareCollection shares = new SMBShareCollection();
-            XmlDocument document = GetSettingsXML();
-            XmlNode sharesNode = document.SelectSingleNode("Settings/Shares");
-
-            foreach (XmlNode shareNode in sharesNode.ChildNodes)
-            {
-                string shareName = shareNode.Attributes["Name"].Value;
-                string sharePath = shareNode.Attributes["Path"].Value;
-
-                XmlNode readAccessNode = shareNode.SelectSingleNode("ReadAccess");
-                List<string> readAccess = ReadAccessList(readAccessNode);
-                XmlNode writeAccessNode = shareNode.SelectSingleNode("WriteAccess");
-                List<string> writeAccess = ReadAccessList(writeAccessNode);
-                FileSystemShare share = new FileSystemShare(shareName, new NTDirectoryFileSystem(sharePath));
-                share.AccessRequested += delegate(object sender, AccessRequestArgs args)
-                {
-                    bool hasReadAccess = Contains(readAccess, "Users") || Contains(readAccess, args.UserName);
-                    bool hasWriteAccess = Contains(writeAccess, "Users") || Contains(writeAccess, args.UserName);
-                    if (args.RequestedAccess == FileAccess.Read)
-                    {
-                        args.Allow = hasReadAccess;
-                    }
-                    else if (args.RequestedAccess == FileAccess.Write)
-                    {
-                        args.Allow = hasWriteAccess;
-                    }
-                    else // FileAccess.ReadWrite
-                    {
-                        args.Allow = hasReadAccess && hasWriteAccess;
-                    }
-                };
-                shares.Add(share);
-            }
-            return shares;
-        }
-
-        private List<string> ReadAccessList(XmlNode node)
-        {
-            List<string> result = new List<string>();
-            if (node != null)
-            {
-                string accounts = node.Attributes["Accounts"].Value;
-                if (accounts == "*")
-                {
-                    result.Add("Users");
-                }
-                else
-                {
-                    string[] splitted = accounts.Split(',');
-                    result.AddRange(splitted);
-                }
-            }
-            return result;
-        }
-
         private void btnStop_Click(object sender, EventArgs e)
         {
             m_server.Stop();
@@ -247,11 +170,31 @@ namespace SMBServer
             }
         }
 
-        public static XmlDocument GetXmlDocument(string path)
+        public static FileSystemShare InitializeShare(ShareSettings shareSettings)
         {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path);
-            return doc;
+            string shareName = shareSettings.ShareName;
+            string sharePath = shareSettings.SharePath;
+            List<string> readAccess = shareSettings.ReadAccess;
+            List<string> writeAccess = shareSettings.WriteAccess;
+            FileSystemShare share = new FileSystemShare(shareName, new NTDirectoryFileSystem(sharePath));
+            share.AccessRequested += delegate(object sender, AccessRequestArgs args)
+            {
+                bool hasReadAccess = Contains(readAccess, "Users") || Contains(readAccess, args.UserName);
+                bool hasWriteAccess = Contains(writeAccess, "Users") || Contains(writeAccess, args.UserName);
+                if (args.RequestedAccess == FileAccess.Read)
+                {
+                    args.Allow = hasReadAccess;
+                }
+                else if (args.RequestedAccess == FileAccess.Write)
+                {
+                    args.Allow = hasWriteAccess;
+                }
+                else // FileAccess.ReadWrite
+                {
+                    args.Allow = hasReadAccess && hasWriteAccess;
+                }
+            };
+            return share;
         }
 
         public static bool Contains(List<string> list, string value)
