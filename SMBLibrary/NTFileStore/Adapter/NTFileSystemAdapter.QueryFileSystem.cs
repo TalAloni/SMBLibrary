@@ -45,7 +45,7 @@ namespace SMBLibrary
                 case FileSystemInformationClass.FileFsAttributeInformation:
                     {
                         FileFsAttributeInformation information = new FileFsAttributeInformation();
-                        information.FileSystemAttributes = FileSystemAttributes.UnicodeOnDisk;
+                        information.FileSystemAttributes = FileSystemAttributes.CasePreservedNamed | FileSystemAttributes.UnicodeOnDisk;
                         information.MaximumComponentNameLength = 255;
                         information.FileSystemName = m_fileSystem.Name;
                         result = information;
