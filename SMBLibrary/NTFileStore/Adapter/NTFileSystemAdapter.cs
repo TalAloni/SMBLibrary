@@ -555,29 +555,5 @@ namespace SMBLibrary
         {
             return (ulong)Math.Ceiling((double)size / ClusterSize) * ClusterSize;
         }
-
-        public static string GetShortName(string fileName)
-        {
-            string fileNameWithoutExt = System.IO.Path.GetFileNameWithoutExtension(fileName);
-            string extension = System.IO.Path.GetExtension(fileName);
-            if (fileNameWithoutExt.Length > 8 || extension.Length > 4)
-            {
-                if (fileNameWithoutExt.Length > 8)
-                {
-                    fileNameWithoutExt = fileNameWithoutExt.Substring(0, 8);
-                }
-
-                if (extension.Length > 4)
-                {
-                    extension = extension.Substring(0, 4);
-                }
-
-                return fileNameWithoutExt + extension;
-            }
-            else
-            {
-                return fileName;
-            }
-        }
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -183,7 +183,6 @@ namespace SMBLibrary
                         result.AllocationSize = (long)GetAllocationSize(entry.Size);
                         result.FileAttributes = GetFileAttributes(entry);
                         result.EaSize = 0;
-                        result.ShortName = GetShortName(entry.Name);
                         result.FileName = entry.Name;
                         return result;
                     }
@@ -225,7 +224,6 @@ namespace SMBLibrary
                         result.AllocationSize = (long)GetAllocationSize(entry.Size);
                         result.FileAttributes = GetFileAttributes(entry);
                         result.EaSize = 0;
-                        result.ShortName = GetShortName(entry.Name);
                         result.FileId = 0;
                         result.FileName = entry.Name;
                         return result;
