@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -51,6 +51,19 @@ namespace SMBLibrary
             get
             {
                 return FixedLength + StreamName.Length * 2;
+            }
+        }
+
+        /// <summary>
+        /// [MS-FSCC] When multiple FILE_STREAM_INFORMATION data elements are present in the buffer, each MUST be aligned on an 8-byte boundary
+        /// </summary>
+        public int PaddedLength
+        {
+            get
+            {
+                int length = this.Length;
+                int padding = (8 - (length % 8)) % 8;
+                return length + padding;
             }
         }
     }

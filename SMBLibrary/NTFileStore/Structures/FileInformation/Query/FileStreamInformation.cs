@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -41,15 +41,10 @@ namespace SMBLibrary
             for (int index = 0; index < m_entries.Count; index++)
             {
                 FileStreamEntry entry = m_entries[index];
+                int entryLength = entry.PaddedLength;
+                entry.NextEntryOffset = (index < m_entries.Count - 1) ? (uint)entryLength : 0;
                 entry.WriteBytes(buffer, offset);
-                int entryLength = entry.Length;
                 offset += entryLength;
-                if (index < m_entries.Count - 1)
-                {
-                    // [MS-FSCC] When multiple FILE_STREAM_INFORMATION data elements are present in the buffer, each MUST be aligned on an 8-byte boundary
-                    int padding = (8 - (entryLength % 8)) % 8;
-                    offset += padding;
-                }
             }
         }
 
@@ -77,14 +72,8 @@ namespace SMBLibrary
                 for (int index = 0; index < m_entries.Count; index++)
                 {
                     FileStreamEntry entry = m_entries[index];
-                    int entryLength = entry.Length;
+                    int entryLength = (index < m_entries.Count - 1) ? entry.PaddedLength : entry.Length;
                     length += entryLength;
-                    if (index < m_entries.Count - 1)
-                    {
-                        // [MS-FSCC] When multiple FILE_STREAM_INFORMATION data elements are present in the buffer, each MUST be aligned on an 8-byte boundary
-                        int padding = (8 - (entryLength % 8)) % 8;
-                        length += padding;
-                    }
                 }
                 return length;
             }
