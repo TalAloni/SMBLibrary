@@ -59,10 +59,16 @@ namespace SMBLibrary
             else
             {
                 path = FileSystem.GetDirectoryPath(path);
-                FileSystemEntry entry = m_fileSystem.GetEntry(path + fileName);
-                if (entry == null)
+                FileSystemEntry entry;
+                try
                 {
-                    return NTStatus.STATUS_NO_SUCH_FILE;
+                    entry = m_fileSystem.GetEntry(path + fileName);
+                }
+                catch (Exception ex)
+                {
+                    NTStatus status = ToNTStatus(ex);
+                    Log(Severity.Verbose, "QueryDirectory: Error querying '{0}'. {1}.", path, status);
+                    return status;
                 }
                 entries = new List<FileSystemEntry>();
                 entries.Add(entry);

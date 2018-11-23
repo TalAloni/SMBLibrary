@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -62,7 +62,7 @@ namespace SMBLibrary
                 // Note: it's possible that we just want to upcase / downcase a filename letter.
                 try
                 {
-                    if (renameInformation.ReplaceIfExists && (m_fileSystem.GetEntry(newFileName) != null))
+                    if (renameInformation.ReplaceIfExists && (IsFileExists(newFileName)))
                     {
                         m_fileSystem.Delete(newFileName);
                     }
@@ -136,6 +136,24 @@ namespace SMBLibrary
             {
                 return NTStatus.STATUS_NOT_IMPLEMENTED;
             }
+        }
+
+        private bool IsFileExists(string path)
+        {
+            try
+            {
+                m_fileSystem.GetEntry(path);
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

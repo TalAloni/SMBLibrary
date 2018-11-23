@@ -50,10 +50,16 @@ namespace SMBLibrary
                 return NTStatus.STATUS_NO_SUCH_FILE;
             }
 
-            FileSystemEntry entry;
+            FileSystemEntry entry = null;
             try
             {
                 entry = m_fileSystem.GetEntry(path);
+            }
+            catch (FileNotFoundException)
+            {
+            }
+            catch (DirectoryNotFoundException)
+            {
             }
             catch (Exception ex)
             {

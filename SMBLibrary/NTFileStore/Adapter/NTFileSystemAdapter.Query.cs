@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -28,12 +28,6 @@ namespace SMBLibrary
                 Log(Severity.Verbose, "GetFileInformation on '{0}' failed. {1}", path, status);
                 result = null;
                 return status;
-            }
-
-            if (entry == null)
-            {
-                result = null;
-                return NTStatus.STATUS_NO_SUCH_FILE;
             }
 
             switch (informationClass)
