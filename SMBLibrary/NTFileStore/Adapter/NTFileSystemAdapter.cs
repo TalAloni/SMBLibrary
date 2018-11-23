@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -466,6 +466,10 @@ namespace SMBLibrary
                     // If a user tries to rename folder1 to folder2 when folder2 already exists, Windows 7 will offer to merge folder1 into folder2.
                     // In such case, Windows 7 will delete folder 1 and will expect STATUS_DIRECTORY_NOT_EMPTY if there are files to merge.
                     return NTStatus.STATUS_DIRECTORY_NOT_EMPTY;
+                }
+                else if (errorCode == (ushort)Win32Error.ERROR_BAD_PATHNAME)
+                {
+                    return NTStatus.STATUS_OBJECT_PATH_INVALID;
                 }
                 else if (errorCode == (ushort)Win32Error.ERROR_ALREADY_EXISTS)
                 {
