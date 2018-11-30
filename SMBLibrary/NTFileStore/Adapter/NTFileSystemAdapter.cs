@@ -44,7 +44,7 @@ namespace SMBLibrary
             }
 
             // Windows will try to access named streams (alternate data streams) regardless of the FILE_NAMED_STREAMS flag, we need to prevent this behaviour.
-            if (path.Contains(":"))
+            if (!m_fileSystem.SupportsNamedStreams && path.Contains(":"))
             {
                 // Windows Server 2003 will return STATUS_OBJECT_NAME_NOT_FOUND
                 return NTStatus.STATUS_NO_SUCH_FILE;
