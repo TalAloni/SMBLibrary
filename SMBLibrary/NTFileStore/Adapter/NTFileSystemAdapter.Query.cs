@@ -116,8 +116,9 @@ namespace SMBLibrary
                     }
                 case FileInformationClass.FileAlternateNameInformation:
                     {
+                        // If there is no alternate name Windows will return STATUS_OBJECT_NAME_NOT_FOUND
                         result = null;
-                        return NTStatus.STATUS_NOT_IMPLEMENTED;
+                        return NTStatus.STATUS_OBJECT_NAME_NOT_FOUND;
                     }
                 case FileInformationClass.FileStreamInformation:
                     {
