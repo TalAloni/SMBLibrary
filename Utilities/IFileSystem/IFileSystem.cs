@@ -7,6 +7,8 @@ namespace Utilities
     public interface IFileSystem
     {
         /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="System.IO.FileNotFoundException"></exception>
         /// <exception cref="System.IO.IOException"></exception>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         FileSystemEntry GetEntry(string path);
@@ -42,6 +44,13 @@ namespace Utilities
         /// <exception cref="System.IO.IOException"></exception>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
         List<FileSystemEntry> ListEntriesInDirectory(string path);
+
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="System.IO.FileNotFoundException"></exception>
+        /// <exception cref="System.IO.IOException"></exception>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        List<KeyValuePair<string, ulong>> ListDataStreams(string path);
 
         /// <exception cref="System.ArgumentException"></exception>
         /// <exception cref="System.IO.DirectoryNotFoundException"></exception>

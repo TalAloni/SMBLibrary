@@ -22,6 +22,17 @@ namespace Utilities
             return ListEntriesInDirectory(@"\");
         }
 
+        public virtual List<KeyValuePair<string, ulong>> ListDataStreams(string path)
+        {
+            FileSystemEntry entry = GetEntry(path);
+            List<KeyValuePair<string, ulong>> result = new List<KeyValuePair<string, ulong>>();
+            if (!entry.IsDirectory)
+            {
+                result.Add(new KeyValuePair<string, ulong>("::$DATA", entry.Size));
+            }
+            return result;
+        }
+
         public Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
         {
             return OpenFile(path, mode, access, share, FileOptions.None);
@@ -57,6 +68,24 @@ namespace Utilities
             }
             sourceStream.Close();
             destinationStream.Close();
+        }
+
+        public virtual bool Exists(string path)
+        {
+            try
+            {
+                GetEntry(path);
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public abstract string Name
