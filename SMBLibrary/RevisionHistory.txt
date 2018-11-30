@@ -382,3 +382,11 @@ Revision History:
         Services: Minor improvements to ServerService and WorkstationService structures.
         Services: Added UnsupportedOpNumException.
         Services: ServerService, WorkstationService: Unsupported OpNums and Levels are now reported back to the client instead of NotImplementedException.
+
+1.3.5 - FileStreamInformation: WriteBytes: Set the value NextEntryOffset for each FileStreamEntry.
+        NTFileSystemAdapter: Set CasePreservedNamed flag when querying FileFsAttributeInformation.
+        NTFileSystemAdapter: ToNTStatus: Return STATUS_OBJECT_PATH_INVALID when Win32 error code is ERROR_BAD_PATHNAME.
+        NTFileSystemAdapter: Bugfix: Do not make up a short name.
+        NTFileSystemAdapter: Assume FileNotFoundException or DirectoryNotFoundException will be thrown if file does not exists.
+        NTFileSystemAdapter: When querying FileAlternateNameInformation return STATUS_OBJECT_NAME_NOT_FOUND.
+        NTFileSystemAdapter: Added support for alternate data streams.
