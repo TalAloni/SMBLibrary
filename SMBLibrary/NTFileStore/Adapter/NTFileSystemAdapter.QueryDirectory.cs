@@ -6,7 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using Utilities;
 
 namespace SMBLibrary
@@ -66,9 +66,16 @@ namespace SMBLibrary
                 }
                 catch (Exception ex)
                 {
-                    NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "QueryDirectory: Error querying '{0}'. {1}.", path, status);
-                    return status;
+                    if (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        NTStatus status = ToNTStatus(ex);
+                        Log(Severity.Verbose, "QueryDirectory: Error querying '{0}'. {1}.", path, status);
+                        return status;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 entries = new List<FileSystemEntry>();
                 entries.Add(entry);

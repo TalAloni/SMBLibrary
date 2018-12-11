@@ -28,9 +28,16 @@ namespace SMBLibrary
                 }
                 catch (Exception ex)
                 {
-                    NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "SetFileInformation: Failed to set file attributes on '{0}'. {1}.", fileHandle.Path, status);
-                    return status;
+                    if (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        NTStatus status = ToNTStatus(ex);
+                        Log(Severity.Verbose, "SetFileInformation: Failed to set file attributes on '{0}'. {1}.", fileHandle.Path, status);
+                        return status;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
 
                 try
@@ -39,9 +46,16 @@ namespace SMBLibrary
                 }
                 catch (Exception ex)
                 {
-                    NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "SetFileInformation: Failed to set file dates on '{0}'. {1}.", fileHandle.Path, status);
-                    return status;
+                    if (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        NTStatus status = ToNTStatus(ex);
+                        Log(Severity.Verbose, "SetFileInformation: Failed to set file dates on '{0}'. {1}.", fileHandle.Path, status);
+                        return status;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 return NTStatus.STATUS_SUCCESS;
             }
@@ -71,9 +85,16 @@ namespace SMBLibrary
                 }
                 catch (Exception ex)
                 {
-                    NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "SetFileInformation: Cannot rename '{0}' to '{1}'. {2}.", fileHandle.Path, newFileName, status);
-                    return status;
+                    if (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        NTStatus status = ToNTStatus(ex);
+                        Log(Severity.Verbose, "SetFileInformation: Cannot rename '{0}' to '{1}'. {2}.", fileHandle.Path, newFileName, status);
+                        return status;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 fileHandle.Path = newFileName;
                 return NTStatus.STATUS_SUCCESS;
@@ -95,9 +116,16 @@ namespace SMBLibrary
                     }
                     catch (Exception ex)
                     {
-                        NTStatus status = ToNTStatus(ex);
-                        Log(Severity.Information, "SetFileInformation: Error deleting '{0}'. {1}.", fileHandle.Path, status);
-                        return status;
+                        if (ex is IOException || ex is UnauthorizedAccessException)
+                        {
+                            NTStatus status = ToNTStatus(ex);
+                            Log(Severity.Information, "SetFileInformation: Error deleting '{0}'. {1}.", fileHandle.Path, status);
+                            return status;
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
                 }
                 return NTStatus.STATUS_SUCCESS;
@@ -111,9 +139,16 @@ namespace SMBLibrary
                 }
                 catch (Exception ex)
                 {
-                    NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "SetFileInformation: Cannot set allocation for '{0}'. {1}.", fileHandle.Path, status);
-                    return status;
+                    if (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        NTStatus status = ToNTStatus(ex);
+                        Log(Severity.Verbose, "SetFileInformation: Cannot set allocation for '{0}'. {1}.", fileHandle.Path, status);
+                        return status;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 return NTStatus.STATUS_SUCCESS;
             }
@@ -126,9 +161,16 @@ namespace SMBLibrary
                 }
                 catch (Exception ex)
                 {
-                    NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "SetFileInformation: Cannot set end of file for '{0}'. {1}.", fileHandle.Path, status);
-                    return status;
+                    if (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        NTStatus status = ToNTStatus(ex);
+                        Log(Severity.Verbose, "SetFileInformation: Cannot set end of file for '{0}'. {1}.", fileHandle.Path, status);
+                        return status;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 return NTStatus.STATUS_SUCCESS;
             }

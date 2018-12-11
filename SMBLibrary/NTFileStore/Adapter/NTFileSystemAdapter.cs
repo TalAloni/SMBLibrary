@@ -63,9 +63,16 @@ namespace SMBLibrary
             }
             catch (Exception ex)
             {
-                NTStatus status = ToNTStatus(ex);
-                Log(Severity.Verbose, "CreateFile: Error retrieving '{0}'. {1}.", path, status);
-                return status;
+                if (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    NTStatus status = ToNTStatus(ex);
+                    Log(Severity.Verbose, "CreateFile: Error retrieving '{0}'. {1}.", path, status);
+                    return status;
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             if (createDisposition == CreateDisposition.FILE_OPEN)
@@ -116,9 +123,16 @@ namespace SMBLibrary
                 }
                 catch (Exception ex)
                 {
-                    NTStatus status = ToNTStatus(ex);
-                    Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
-                    return status;
+                    if (ex is IOException || ex is UnauthorizedAccessException)
+                    {
+                        NTStatus status = ToNTStatus(ex);
+                        Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                        return status;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 fileStatus = FileStatus.FILE_CREATED;
             }
@@ -154,9 +168,16 @@ namespace SMBLibrary
                     }
                     catch (Exception ex)
                     {
-                        NTStatus status = ToNTStatus(ex);
-                        Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
-                        return status;
+                        if (ex is IOException || ex is UnauthorizedAccessException)
+                        {
+                            NTStatus status = ToNTStatus(ex);
+                            Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                            return status;
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
                     fileStatus = FileStatus.FILE_CREATED;
                 }
@@ -193,9 +214,16 @@ namespace SMBLibrary
                             }
                             catch (Exception ex)
                             {
-                                NTStatus status = ToNTStatus(ex);
-                                Log(Severity.Verbose, "CreateFile: Error truncating '{0}'. {1}.", path, status);
-                                return status;
+                                if (ex is IOException || ex is UnauthorizedAccessException)
+                                {
+                                    NTStatus status = ToNTStatus(ex);
+                                    Log(Severity.Verbose, "CreateFile: Error truncating '{0}'. {1}.", path, status);
+                                    return status;
+                                }
+                                else
+                                {
+                                    throw;
+                                }
                             }
                             fileStatus = FileStatus.FILE_OVERWRITTEN;
                         }
@@ -208,9 +236,16 @@ namespace SMBLibrary
                             }
                             catch (Exception ex)
                             {
-                                NTStatus status = ToNTStatus(ex);
-                                Log(Severity.Verbose, "CreateFile: Error deleting '{0}'. {1}.", path, status);
-                                return status;
+                                if (ex is IOException || ex is UnauthorizedAccessException)
+                                {
+                                    NTStatus status = ToNTStatus(ex);
+                                    Log(Severity.Verbose, "CreateFile: Error deleting '{0}'. {1}.", path, status);
+                                    return status;
+                                }
+                                else
+                                {
+                                    throw;
+                                }
                             }
 
                             try
@@ -228,9 +263,16 @@ namespace SMBLibrary
                             }
                             catch (Exception ex)
                             {
-                                NTStatus status = ToNTStatus(ex);
-                                Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
-                                return status;
+                                if (ex is IOException || ex is UnauthorizedAccessException)
+                                {
+                                    NTStatus status = ToNTStatus(ex);
+                                    Log(Severity.Verbose, "CreateFile: Error creating '{0}'. {1}.", path, status);
+                                    return status;
+                                }
+                                else
+                                {
+                                    throw;
+                                }
                             }
                             fileStatus = FileStatus.FILE_SUPERSEDED;
                         }
@@ -282,9 +324,16 @@ namespace SMBLibrary
             }
             catch (Exception ex)
             {
-                NTStatus status = ToNTStatus(ex);
-                Log(Severity.Verbose, "OpenFile: Cannot open '{0}', Access={1}, Share={2}. NTStatus: {3}.", path, fileAccess, fileShareString, status);
-                return status;
+                if (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    NTStatus status = ToNTStatus(ex);
+                    Log(Severity.Verbose, "OpenFile: Cannot open '{0}', Access={1}, Share={2}. NTStatus: {3}.", path, fileAccess, fileShareString, status);
+                    return status;
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             Log(Severity.Information, "OpenFileStream: Opened '{0}', Access={1}, Share={2}, FileOptions={3}", path, fileAccess, fileShareString, fileOptionsString);
@@ -338,9 +387,16 @@ namespace SMBLibrary
             }
             catch (Exception ex)
             {
-                NTStatus status = ToNTStatus(ex);
-                Log(Severity.Verbose, "ReadFile: Cannot read '{0}'. {1}.", path, status);
-                return status;
+                if (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    NTStatus status = ToNTStatus(ex);
+                    Log(Severity.Verbose, "ReadFile: Cannot read '{0}'. {1}.", path, status);
+                    return status;
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             if (bytesRead < maxCount)
@@ -370,9 +426,16 @@ namespace SMBLibrary
             }
             catch (Exception ex)
             {
-                NTStatus status = ToNTStatus(ex);
-                Log(Severity.Verbose, "WriteFile: Cannot write '{0}'. {1}.", path, status);
-                return status;
+                if (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    NTStatus status = ToNTStatus(ex);
+                    Log(Severity.Verbose, "WriteFile: Cannot write '{0}'. {1}.", path, status);
+                    return status;
+                }
+                else
+                {
+                    throw;
+                }
             }
             numberOfBytesWritten = data.Length;
             return NTStatus.STATUS_SUCCESS;
@@ -444,11 +507,7 @@ namespace SMBLibrary
         /// <param name="exception">IFileSystem exception</param>
         private static NTStatus ToNTStatus(Exception exception)
         {
-            if (exception is ArgumentException)
-            {
-                return NTStatus.STATUS_OBJECT_PATH_SYNTAX_BAD;
-            }
-            else if (exception is DirectoryNotFoundException)
+            if (exception is DirectoryNotFoundException)
             {
                 return NTStatus.STATUS_OBJECT_PATH_NOT_FOUND;
             }

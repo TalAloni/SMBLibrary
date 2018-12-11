@@ -24,10 +24,17 @@ namespace SMBLibrary
             }
             catch (Exception ex)
             {
-                NTStatus status = ToNTStatus(ex);
-                Log(Severity.Verbose, "GetFileInformation on '{0}' failed. {1}", path, status);
-                result = null;
-                return status;
+                if (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    NTStatus status = ToNTStatus(ex);
+                    Log(Severity.Verbose, "GetFileInformation on '{0}' failed. {1}", path, status);
+                    result = null;
+                    return status;
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             switch (informationClass)
