@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -57,7 +57,7 @@ namespace SMBLibrary.Authentication.GSSAPI
             SimpleProtectedNegotiationToken spnegoToken = null;
             try
             {
-                spnegoToken = SimpleProtectedNegotiationToken.ReadToken(inputToken, 0);
+                spnegoToken = SimpleProtectedNegotiationToken.ReadToken(inputToken, 0, false);
             }
             catch
             {

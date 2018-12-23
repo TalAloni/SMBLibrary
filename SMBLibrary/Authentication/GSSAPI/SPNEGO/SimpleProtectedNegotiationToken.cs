@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,7 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.Authentication.GSSAPI
@@ -49,7 +48,7 @@ namespace SMBLibrary.Authentication.GSSAPI
         /// https://tools.ietf.org/html/rfc2743
         /// </summary>
         /// <exception cref="System.IO.InvalidDataException"></exception>
-        public static SimpleProtectedNegotiationToken ReadToken(byte[] tokenBytes, int offset)
+        public static SimpleProtectedNegotiationToken ReadToken(byte[] tokenBytes, int offset, bool serverInitiatedNegotiation)
         {
             byte tag = ByteReader.ReadByte(tokenBytes, ref offset);
             if (tag == ApplicationTag)
@@ -71,7 +70,17 @@ namespace SMBLibrary.Authentication.GSSAPI
                         tag = ByteReader.ReadByte(tokenBytes, ref offset);
                         if (tag == SimpleProtectedNegotiationTokenInit.NegTokenInitTag)
                         {
-                            return new SimpleProtectedNegotiationTokenInit(tokenBytes, offset);
+                            if (serverInitiatedNegotiation)
+                            {
+                                // [MS-SPNG] Standard GSS has a strict notion of client (initiator) and server (acceptor).
+                                // If the client has not sent a negTokenInit ([RFC4178] section 4.2.1) message, no context establishment token is expected from the server.
+                                // The [NegTokenInit2] SPNEGO extension allows the server to generate a context establishment token message [..] and send it to the client.
+                                return new SimpleProtectedNegotiationTokenInit2(tokenBytes, offset);
+                            }
+                            else
+                            {
+                                return new SimpleProtectedNegotiationTokenInit(tokenBytes, offset);
+                            }
                         }
                         else if (tag == SimpleProtectedNegotiationTokenResponse.NegTokenRespTag)
                         {

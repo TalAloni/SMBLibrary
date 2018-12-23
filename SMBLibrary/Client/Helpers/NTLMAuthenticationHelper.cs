@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -23,7 +23,7 @@ namespace SMBLibrary.Client
                 SimpleProtectedNegotiationTokenInit inputToken = null;
                 try
                 {
-                    inputToken = SimpleProtectedNegotiationToken.ReadToken(securityBlob, 0) as SimpleProtectedNegotiationTokenInit;
+                    inputToken = SimpleProtectedNegotiationToken.ReadToken(securityBlob, 0, true) as SimpleProtectedNegotiationTokenInit;
                 }
                 catch
                 {
@@ -82,7 +82,7 @@ namespace SMBLibrary.Client
             SimpleProtectedNegotiationTokenResponse inputToken = null;
             try
             {
-                inputToken = SimpleProtectedNegotiationToken.ReadToken(securityBlob, 0) as SimpleProtectedNegotiationTokenResponse;
+                inputToken = SimpleProtectedNegotiationToken.ReadToken(securityBlob, 0, false) as SimpleProtectedNegotiationTokenResponse;
             }
             catch
             {
