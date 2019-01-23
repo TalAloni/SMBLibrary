@@ -15,6 +15,8 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class NTTransactSetSecurityDescriptorResponse : NTTransactSubcommand
     {
+        public const int ParametersLength = 0;
+
         public NTTransactSetSecurityDescriptorResponse()
         {
         }
