@@ -14,7 +14,7 @@ namespace SMBLibrary.SMB1
     /// <summary>
     /// NT_TRANSACT_QUERY_SECURITY_DESC Request
     /// </summary>
-    public class NTTransactQuerySecurityDescriptorRequest :NTTransactSubcommand
+    public class NTTransactQuerySecurityDescriptorRequest : NTTransactSubcommand
     {
         public const int ParametersLength = 8;
         // Parameters:
