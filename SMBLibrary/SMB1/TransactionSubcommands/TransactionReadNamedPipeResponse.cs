@@ -16,6 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class TransactionReadNamedPipeResponse : TransactionSubcommand
     {
+        public const int ParametersLength = 0;
         // Data:
         public byte[] ReadData;
 
