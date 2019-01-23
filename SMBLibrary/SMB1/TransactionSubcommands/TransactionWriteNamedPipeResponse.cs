@@ -16,6 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class TransactionWriteNamedPipeResponse : TransactionSubcommand
     {
+        public const int ParametersLength = 2;
         // Parameters;
         public ushort BytesWritten;
 
