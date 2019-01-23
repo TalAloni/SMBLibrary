@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -240,7 +240,24 @@ namespace SMBLibrary.Client
         public NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation)
         {
             result = null;
-            return NTStatus.STATUS_NOT_SUPPORTED;
+            QueryInfoRequest request = new QueryInfoRequest();
+            request.InfoType = InfoType.Security;
+            request.SecurityInformation = securityInformation;
+            request.OutputBufferLength = 4096;
+            request.FileId = (FileID)handle;
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryInfo);
+            if (response != null)
+            {
+                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryInfoResponse)
+                {
+                    result = ((QueryInfoResponse)response).GetSecurityInformation();
+                }
+                return response.Header.Status;
+            }
+
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus SetSecurityInformation(object handle, SecurityInformation securityInformation, SecurityDescriptor securityDescriptor)
