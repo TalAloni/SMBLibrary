@@ -34,7 +34,7 @@ namespace SMBLibrary.SMB1
             return new byte[0];
         }
 
-        public override byte[] GetParameters(bool isUnicode)
+        public override byte[] GetParameters()
         {
             byte[] parameters = new byte[2];
             NMPipeStatus.WriteBytes(parameters, 0);

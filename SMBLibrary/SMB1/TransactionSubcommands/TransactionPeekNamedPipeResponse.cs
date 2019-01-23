@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -36,7 +36,7 @@ namespace SMBLibrary.SMB1
             ReadData = data;
         }
 
-        public override byte[] GetParameters(bool isUnicode)
+        public override byte[] GetParameters()
         {
             byte[] parameters = new byte[ParametersLength];
             LittleEndianWriter.WriteUInt16(parameters, 0, ReadDataAvailable);
@@ -45,7 +45,7 @@ namespace SMBLibrary.SMB1
             return parameters;
         }
 
-        public override byte[] GetData()
+        public override byte[] GetData(bool isUnicode)
         {
             return ReadData;
         }

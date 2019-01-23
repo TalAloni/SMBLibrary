@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,7 +16,8 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class TransactionQueryNamedPipeInfoResponse : TransactionSubcommand
     {
-        // Parameters:
+        public const int ParametersLength = 0;
+        // Data:
         public ushort OutputBufferSize;
         public ushort InputBufferSize;
         public byte MaximumInstances;
@@ -27,18 +28,18 @@ namespace SMBLibrary.SMB1
         public TransactionQueryNamedPipeInfoResponse() : base()
         {}
 
-        public TransactionQueryNamedPipeInfoResponse(byte[] parameters, bool isUnicode) : base()
+        public TransactionQueryNamedPipeInfoResponse(byte[] data, bool isUnicode) : base()
         {
-            OutputBufferSize = LittleEndianConverter.ToUInt16(parameters, 0);
-            InputBufferSize = LittleEndianConverter.ToUInt16(parameters, 2);
-            MaximumInstances = ByteReader.ReadByte(parameters, 4);
-            CurrentInstances = ByteReader.ReadByte(parameters, 5);
-            PipeNameLength = ByteReader.ReadByte(parameters, 6);
+            OutputBufferSize = LittleEndianConverter.ToUInt16(data, 0);
+            InputBufferSize = LittleEndianConverter.ToUInt16(data, 2);
+            MaximumInstances = ByteReader.ReadByte(data, 4);
+            CurrentInstances = ByteReader.ReadByte(data, 5);
+            PipeNameLength = ByteReader.ReadByte(data, 6);
             // Note: Trans_Parameters is aligned to 4 byte boundary
-            PipeName = SMB1Helper.ReadSMBString(parameters, 8, isUnicode);
+            PipeName = SMB1Helper.ReadSMBString(data, 8, isUnicode);
         }
 
-        public override byte[] GetParameters(bool isUnicode)
+        public override byte[] GetData(bool isUnicode)
         {
             int length = 8;
             if (isUnicode)
@@ -49,14 +50,14 @@ namespace SMBLibrary.SMB1
             {
                 length += PipeName.Length + 1;
             }
-            byte[] parameters = new byte[length];
-            LittleEndianWriter.WriteUInt16(parameters, 0, OutputBufferSize);
-            LittleEndianWriter.WriteUInt16(parameters, 2, InputBufferSize);
-            ByteWriter.WriteByte(parameters, 4, MaximumInstances);
-            ByteWriter.WriteByte(parameters, 5, CurrentInstances);
-            ByteWriter.WriteByte(parameters, 6, PipeNameLength);
-            SMB1Helper.WriteSMBString(parameters, 8, isUnicode, PipeName);
-            return parameters; ;
+            byte[] data = new byte[length];
+            LittleEndianWriter.WriteUInt16(data, 0, OutputBufferSize);
+            LittleEndianWriter.WriteUInt16(data, 2, InputBufferSize);
+            ByteWriter.WriteByte(data, 4, MaximumInstances);
+            ByteWriter.WriteByte(data, 5, CurrentInstances);
+            ByteWriter.WriteByte(data, 6, PipeNameLength);
+            SMB1Helper.WriteSMBString(data, 8, isUnicode, PipeName);
+            return data;
         }
 
         public override TransactionSubcommandName SubcommandName

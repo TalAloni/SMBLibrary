@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -460,8 +460,8 @@ namespace SMBLibrary.Client
 
             TransactionRequest request = new TransactionRequest();
             request.Setup = subcommand.GetSetup();
-            request.TransParameters = subcommand.GetParameters(m_client.Unicode);
-            request.TransData = subcommand.GetData();
+            request.TransParameters = subcommand.GetParameters();
+            request.TransData = subcommand.GetData(m_client.Unicode);
             request.TotalDataCount = (ushort)request.TransData.Length;
             request.TotalParameterCount = (ushort)request.TransParameters.Length;
             request.MaxParameterCount = 0;
