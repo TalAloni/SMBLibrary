@@ -394,7 +394,34 @@ namespace SMBLibrary.Client
         public NTStatus GetSecurityInformation(out SecurityDescriptor result, object handle, SecurityInformation securityInformation)
         {
             result = null;
-            return NTStatus.STATUS_NOT_SUPPORTED;
+            int maxOutputLength = 4096;
+            NTTransactQuerySecurityDescriptorRequest subcommand = new NTTransactQuerySecurityDescriptorRequest();
+            subcommand.FID = (ushort)handle;
+            subcommand.SecurityInfoFields = securityInformation;
+
+            NTTransactRequest request = new NTTransactRequest();
+            request.Function = subcommand.SubcommandName;
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = subcommand.GetParameters(m_client.Unicode);
+            request.TransData = subcommand.GetData();
+            request.TotalDataCount = (uint)request.TransData.Length;
+            request.TotalParameterCount = (uint)request.TransParameters.Length;
+            request.MaxParameterCount = NTTransactQuerySecurityDescriptorResponse.ParametersLength;
+            request.MaxDataCount = (uint)maxOutputLength;
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_NT_TRANSACT);
+            if (reply != null)
+            {
+                if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is NTTransactResponse)
+                {
+                    NTTransactResponse response = (NTTransactResponse)reply.Commands[0];
+                    NTTransactQuerySecurityDescriptorResponse subcommandResponse = new NTTransactQuerySecurityDescriptorResponse(response.TransParameters, response.TransData);
+                    result = subcommandResponse.SecurityDescriptor;
+                }
+                return reply.Header.Status;
+            }
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus SetSecurityInformation(object handle, SecurityInformation securityInformation, SecurityDescriptor securityDescriptor)
