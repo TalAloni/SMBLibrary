@@ -12,7 +12,7 @@ using Utilities;
 namespace SMBLibrary.SMB1
 {
     /// <summary>
-    /// TRANS_RAW_READ_NMPIPE Request
+    /// TRANS_RAW_READ_NMPIPE Response
     /// </summary>
     public class TransactionRawReadNamedPipeResponse : TransactionSubcommand
     {
