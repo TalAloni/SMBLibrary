@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -19,6 +19,15 @@ namespace SMBLibrary.SMB1
         public const int ParametersLength = 2;
         // Parameters;
         public NamedPipeStatus NMPipeStatus;
+
+        public TransactionQueryNamedPipeStateResponse() : base()
+        {
+        }
+
+        public TransactionQueryNamedPipeStateResponse(byte[] parameters) : base()
+        {
+            NMPipeStatus = new NamedPipeStatus(LittleEndianConverter.ToUInt16(parameters, 0));
+        }
 
         public override byte[] GetSetup()
         {
