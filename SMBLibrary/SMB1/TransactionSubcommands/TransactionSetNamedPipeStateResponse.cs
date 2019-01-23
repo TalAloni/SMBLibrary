@@ -16,6 +16,8 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class TransactionSetNamedPipeStateResponse : TransactionSubcommand
     {
+        public const int ParametersLength = 0;
+
         public override TransactionSubcommandName SubcommandName
         {
             get
