@@ -16,11 +16,13 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class TransactionRawReadNamedPipeResponse : TransactionSubcommand
     {
+        public const int ParametersLength = 0;
         // Data:
         public byte[] BytesRead;
 
         public TransactionRawReadNamedPipeResponse() : base()
-        {}
+        {
+        }
 
         public TransactionRawReadNamedPipeResponse(byte[] data) : base()
         {
