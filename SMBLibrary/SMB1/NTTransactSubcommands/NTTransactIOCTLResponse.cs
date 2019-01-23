@@ -16,6 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class NTTransactIOCTLResponse : NTTransactSubcommand
     {
+        public const int ParametersLength = 0;
         public const int SetupLength = 2;
         // Setup:
         public ushort TransactionDataSize; // in bytes
