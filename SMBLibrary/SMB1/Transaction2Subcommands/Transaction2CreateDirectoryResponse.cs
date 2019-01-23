@@ -16,6 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2CreateDirectoryResponse : Transaction2Subcommand
     {
+        public const int ParametersLength = 2;
         // Parameters:
         public ushort EaErrorOffset;
 
