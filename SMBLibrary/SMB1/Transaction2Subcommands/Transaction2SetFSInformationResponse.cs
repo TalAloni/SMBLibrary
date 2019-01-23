@@ -15,6 +15,8 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2SetFSInformationResponse : Transaction2Subcommand
     {
+        public const int ParametersLength = 0;
+
         public Transaction2SetFSInformationResponse() : base()
         {
         }
