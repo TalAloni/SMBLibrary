@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class WriteRawFinalResponse : SMB1Command
     {
-        public const ushort ParametersLength = 2;
+        public const int ParametersLength = 2;
         // Parameters;
         public ushort Count;
 

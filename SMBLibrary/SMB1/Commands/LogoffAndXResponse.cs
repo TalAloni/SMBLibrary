@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class LogoffAndXResponse : SMBAndXCommand
     {
-        public const uint ParametersLength = 4;
+        public const int ParametersLength = 4;
 
         public LogoffAndXResponse() : base()
         {

@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class NTTransactQuerySecurityDescriptorResponse : NTTransactSubcommand
     {
-        public const uint ParametersLength = 4;
+        public const int ParametersLength = 4;
         // Parameters:
         public uint LengthNeeded;
         // Data
