@@ -15,6 +15,7 @@ namespace SMBLibrary.SMB1
     /// </summary>
     public class Transaction2QueryPathInformationResponse : Transaction2Subcommand
     {
+        public const int ParametersLength = 2;
         // Parameters:
         public ushort EaErrorOffset; // Meaningful only when request's InformationLevel is SMB_INFO_QUERY_EAS_FROM_LIST
         // Data:
