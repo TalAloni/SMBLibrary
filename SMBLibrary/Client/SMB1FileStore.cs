@@ -433,7 +433,7 @@ namespace SMBLibrary.Client
             request.TransData = subcommand.GetData();
             request.TotalDataCount = (uint)request.TransData.Length;
             request.TotalParameterCount = (uint)request.TransParameters.Length;
-            request.MaxParameterCount = 0;
+            request.MaxParameterCount = NTTransactIOCTLResponse.ParametersLength;
             request.MaxDataCount = (uint)maxOutputLength;
 
             TrySendMessage(request);
@@ -464,7 +464,7 @@ namespace SMBLibrary.Client
             request.TransData = subcommand.GetData(m_client.Unicode);
             request.TotalDataCount = (ushort)request.TransData.Length;
             request.TotalParameterCount = (ushort)request.TransParameters.Length;
-            request.MaxParameterCount = 0;
+            request.MaxParameterCount = TransactionTransactNamedPipeResponse.ParametersLength;
             request.MaxDataCount = (ushort)maxOutputLength;
             request.Name = @"\PIPE\";
 
