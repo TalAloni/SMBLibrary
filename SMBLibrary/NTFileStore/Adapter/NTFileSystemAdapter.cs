@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -525,6 +525,10 @@ namespace SMBLibrary
                 else if (errorCode == (ushort)Win32Error.ERROR_DISK_FULL)
                 {
                     return NTStatus.STATUS_DISK_FULL;
+                }
+                else if (errorCode == (ushort)Win32Error.ERROR_INVALID_NAME)
+                {
+                    return NTStatus.STATUS_OBJECT_NAME_INVALID;
                 }
                 else if (errorCode == (ushort)Win32Error.ERROR_DIR_NOT_EMPTY)
                 {
