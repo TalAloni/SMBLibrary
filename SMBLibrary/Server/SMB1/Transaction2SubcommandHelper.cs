@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -131,7 +131,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFSInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        internal static Transaction2QueryFSInformationResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, Transaction2QueryFSInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             if (share is FileSystemShare)
@@ -224,7 +224,7 @@ namespace SMBLibrary.Server.SMB1
             return new Transaction2SetFSInformationResponse();
         }
 
-        internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryPathInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        internal static Transaction2QueryPathInformationResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, Transaction2QueryPathInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             string path = subcommand.FileName;
@@ -278,7 +278,7 @@ namespace SMBLibrary.Server.SMB1
             return response;
         }
 
-        internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, Transaction2QueryFileInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
+        internal static Transaction2QueryFileInformationResponse GetSubcommandResponse(SMB1Header header, uint maxDataCount, Transaction2QueryFileInformationRequest subcommand, ISMBShare share, SMB1ConnectionState state)
         {
             SMB1Session session = state.GetSession(header.UID);
             OpenFileObject openFile = session.GetOpenFileObject(subcommand.FID);

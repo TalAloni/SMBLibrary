@@ -206,7 +206,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is Transaction2QueryFSInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFSInformationRequest)subcommand, share, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, maxDataCount, (Transaction2QueryFSInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2SetFSInformationRequest)
             {
@@ -214,7 +214,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is Transaction2QueryPathInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryPathInformationRequest)subcommand, share, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, maxDataCount, (Transaction2QueryPathInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2SetPathInformationRequest)
             {
@@ -222,7 +222,7 @@ namespace SMBLibrary.Server.SMB1
             }
             else if (subcommand is Transaction2QueryFileInformationRequest)
             {
-                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, (Transaction2QueryFileInformationRequest)subcommand, share, state);
+                subcommandResponse = Transaction2SubcommandHelper.GetSubcommandResponse(header, maxDataCount, (Transaction2QueryFileInformationRequest)subcommand, share, state);
             }
             else if (subcommand is Transaction2SetFileInformationRequest)
             {
