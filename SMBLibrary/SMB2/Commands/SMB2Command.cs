@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -441,7 +441,7 @@ namespace SMBLibrary.SMB2
                         if (structureSize == QueryInfoResponse.DeclaredSize)
                         {
                             NTStatus status = (NTStatus)LittleEndianConverter.ToUInt32(buffer, offset + 8);
-                            if (status == NTStatus.STATUS_SUCCESS)
+                            if (status == NTStatus.STATUS_SUCCESS || status == NTStatus.STATUS_BUFFER_OVERFLOW)
                             {
                                 return new QueryInfoResponse(buffer, offset);
                             }
