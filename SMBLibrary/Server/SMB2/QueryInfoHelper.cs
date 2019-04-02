@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -46,6 +46,11 @@ namespace SMBLibrary.Server.SMB2
                 state.LogToServer(Severity.Information, "GetFileInformation on '{0}{1}' succeeded. Information class: {2}. (FileId: {3})", share.Name, openFile.Path, request.FileInformationClass, request.FileId.Volatile);
                 QueryInfoResponse response = new QueryInfoResponse();
                 response.SetFileInformation(fileInformation);
+                if (response.OutputBuffer.Length > request.OutputBufferLength)
+                {
+                    response.Header.Status = NTStatus.STATUS_BUFFER_OVERFLOW;
+                    response.OutputBuffer = ByteReader.ReadBytes(response.OutputBuffer, 0, (int)request.OutputBufferLength);
+                }
                 return response;
             }
             else if (request.InfoType == InfoType.FileSystem)
@@ -69,6 +74,12 @@ namespace SMBLibrary.Server.SMB2
                     state.LogToServer(Severity.Information, "GetFileSystemInformation on '{0}' succeeded. Information class: {1}", share.Name, request.FileSystemInformationClass);
                     QueryInfoResponse response = new QueryInfoResponse();
                     response.SetFileSystemInformation(fileSystemInformation);
+                    if (response.OutputBuffer.Length > request.OutputBufferLength)
+                    {
+                        response.Header.Status = NTStatus.STATUS_BUFFER_OVERFLOW;
+                        response.OutputBuffer = ByteReader.ReadBytes(response.OutputBuffer, 0, (int)request.OutputBufferLength);
+                    }
+
                     return response;
                 }
             }

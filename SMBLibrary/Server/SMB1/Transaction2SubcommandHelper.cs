@@ -171,6 +171,12 @@ namespace SMBLibrary.Server.SMB1
                 state.LogToServer(Severity.Information, "GetFileSystemInformation on '{0}' succeeded. Information level: {1}", share.Name, subcommand.QueryFSInformationLevel);
                 response.SetQueryFSInformation(queryFSInformation, header.UnicodeFlag);
             }
+
+            if (response.InformationBytes.Length > maxDataCount)
+            {
+                header.Status = NTStatus.STATUS_BUFFER_OVERFLOW;
+                response.InformationBytes = ByteReader.ReadBytes(response.InformationBytes, 0, (int)maxDataCount);
+            }
             return response;
         }
 
@@ -275,6 +281,12 @@ namespace SMBLibrary.Server.SMB1
                 state.LogToServer(Severity.Information, "GetFileInformation on '{0}{1}' succeeded. Information level: {2}", share.Name, path, subcommand.QueryInformationLevel);
                 response.SetQueryInformation(queryInformation);
             }
+
+            if (response.InformationBytes.Length > maxDataCount)
+            {
+                header.Status = NTStatus.STATUS_BUFFER_OVERFLOW;
+                response.InformationBytes = ByteReader.ReadBytes(response.InformationBytes, 0, (int)maxDataCount);
+            }
             return response;
         }
 
@@ -330,6 +342,12 @@ namespace SMBLibrary.Server.SMB1
                 }
                 state.LogToServer(Severity.Information, "GetFileInformation on '{0}{1}' succeeded. Information level: {2}. (FID: {3})", share.Name, openFile.Path, subcommand.QueryInformationLevel, subcommand.FID);
                 response.SetQueryInformation(queryInformation);
+            }
+
+            if (response.InformationBytes.Length > maxDataCount)
+            {
+                header.Status = NTStatus.STATUS_BUFFER_OVERFLOW;
+                response.InformationBytes = ByteReader.ReadBytes(response.InformationBytes, 0, (int)maxDataCount);
             }
             return response;
         }
