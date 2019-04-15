@@ -1,6 +1,8 @@
+using System;
 
 namespace SMBLibrary.SMB2
 {
+    [Flags]
     public enum SecurityMode : ushort
     {
         SigningEnabled = 0x0001,  // SMB2_NEGOTIATE_SIGNING_ENABLED
