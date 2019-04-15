@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Threading;
 using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.NetBios;
@@ -39,6 +40,7 @@ namespace SMBLibrary.Client
 
         private uint m_messageID = 0;
         private SMB2Dialect m_dialect;
+        private bool m_signingRequired;
         private uint m_maxTransactSize;
         private uint m_maxReadSize;
         private uint m_maxWriteSize;
@@ -114,6 +116,7 @@ namespace SMBLibrary.Client
             if (response != null && response.Header.Status == NTStatus.STATUS_SUCCESS)
             {
                 m_dialect = response.DialectRevision;
+                m_signingRequired = (response.SecurityMode & SecurityMode.SigningRequired) > 0;
                 m_maxTransactSize = Math.Min(response.MaxTransactSize, ClientMaxTransactSize);
                 m_maxReadSize = Math.Min(response.MaxReadSize, ClientMaxReadSize);
                 m_maxWriteSize = Math.Min(response.MaxWriteSize, ClientMaxWriteSize);
@@ -402,6 +405,18 @@ namespace SMBLibrary.Client
             request.Header.Credits = 1;
             request.Header.MessageID = m_messageID;
             request.Header.SessionID = m_sessionID;
+            if (m_signingRequired)
+            {
+                request.Header.IsSigned = (m_sessionID != 0 && (request.CommandName == SMB2CommandName.TreeConnect || request.Header.TreeID != 0));
+                if (request.Header.IsSigned)
+                {
+                    request.Header.Signature = new byte[16]; // Request could be reused
+                    byte[] buffer = request.GetBytes();
+                    byte[] signature = new HMACSHA256(m_sessionKey).ComputeHash(buffer, 0, buffer.Length);
+                    // [MS-SMB2] The first 16 bytes of the hash MUST be copied into the 16-byte signature field of the SMB2 Header.
+                    request.Header.Signature = ByteReader.ReadBytes(signature, 0, 16);
+                }
+            }
             TrySendCommand(m_clientSocket, request);
             m_messageID++;
         }
