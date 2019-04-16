@@ -13,7 +13,7 @@ namespace SMBLibrary
     /// <summary>
     /// [MS-DTYP] ACCESS_ALLOWED_ACE
     /// </summary>
-    public class AccessAllowedACE : ACE
+    public class AceType1 : ACE
     {
         public const int FixedLength = 8;
 
@@ -21,13 +21,13 @@ namespace SMBLibrary
         public AccessMask Mask;
         public SID Sid;
 
-        public AccessAllowedACE()
+        public AceType1()
         {
             Header = new AceHeader();
             Header.AceType = AceType.ACCESS_ALLOWED_ACE_TYPE;
         }
 
-        public AccessAllowedACE(byte[] buffer, int offset)
+        public AceType1(byte[] buffer, int offset)
         {
             Header = new AceHeader(buffer, offset + 0);
             Mask = (AccessMask)LittleEndianConverter.ToUInt32(buffer, offset + 4);

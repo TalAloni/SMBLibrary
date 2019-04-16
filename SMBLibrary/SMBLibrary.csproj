@@ -173,7 +173,7 @@
     <Compile Include="NTFileStore\Structures\FileSystemInformation\FileSystemInformation.cs" />
     <Compile Include="NTFileStore\Structures\IOCtl\ObjectIDBufferType1.cs" />
     <Compile Include="NTFileStore\Structures\IOCtl\PipeWaitRequest.cs" />
-    <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\AccessAllowedACE.cs" />
+    <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\AceType1.cs" />
     <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\ACE.cs" />
     <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\AceHeader.cs" />
     <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\Enums\AceFlags.cs" />
