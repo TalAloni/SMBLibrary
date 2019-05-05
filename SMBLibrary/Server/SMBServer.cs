@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -42,6 +42,7 @@ namespace SMBLibrary.Server
         private bool m_listening;
         private DateTime m_serverStartTime;
 
+        public event EventHandler<ConnectionRequestEventArgs> ConnectionRequested;
         public event EventHandler<LogEntry> LogEntryAdded;
 
         public SMBServer(SMBShareCollection shares, GSSProvider securityProvider)
@@ -148,27 +149,45 @@ namespace SMBLibrary.Server
             // Disable the Nagle Algorithm for this tcp socket:
             clientSocket.NoDelay = true;
             IPEndPoint clientEndPoint = (IPEndPoint)clientSocket.RemoteEndPoint;
-            ConnectionState state = new ConnectionState(clientSocket, clientEndPoint, Log);
-            state.LogToServer(Severity.Verbose, "New connection request");
-            Thread senderThread = new Thread(delegate()
+            EventHandler<ConnectionRequestEventArgs> handler = ConnectionRequested;
+            bool acceptConnection = true;
+            if (handler != null)
             {
-                ProcessSendQueue(state);
-            });
-            senderThread.IsBackground = true;
-            senderThread.Start();
+                ConnectionRequestEventArgs connectionRequestArgs = new ConnectionRequestEventArgs(clientEndPoint);
+                handler(this, connectionRequestArgs);
+                acceptConnection = connectionRequestArgs.Accept;
+            }
 
-            try
+            if (acceptConnection)
             {
-                // Direct TCP transport packet is actually an NBT Session Message Packet,
-                // So in either case (NetBios over TCP or Direct TCP Transport) we will receive an NBT packet.
-                clientSocket.BeginReceive(state.ReceiveBuffer.Buffer, state.ReceiveBuffer.WriteOffset, state.ReceiveBuffer.AvailableLength, 0, ReceiveCallback, state);
+                ConnectionState state = new ConnectionState(clientSocket, clientEndPoint, Log);
+                state.LogToServer(Severity.Verbose, "New connection request accepted");
+                Thread senderThread = new Thread(delegate()
+                {
+                    ProcessSendQueue(state);
+                });
+                senderThread.IsBackground = true;
+                senderThread.Start();
+
+                try
+                {
+                    // Direct TCP transport packet is actually an NBT Session Message Packet,
+                    // So in either case (NetBios over TCP or Direct TCP Transport) we will receive an NBT packet.
+                    clientSocket.BeginReceive(state.ReceiveBuffer.Buffer, state.ReceiveBuffer.WriteOffset, state.ReceiveBuffer.AvailableLength, 0, ReceiveCallback, state);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+                catch (SocketException)
+                {
+                }
             }
-            catch (ObjectDisposedException)
+            else
             {
+                Log(Severity.Verbose, "[{0}:{1}] New connection request rejected", clientEndPoint.Address, clientEndPoint.Port);
+                clientSocket.Close();
             }
-            catch (SocketException)
-            {
-            }
+
             listenerSocket.BeginAccept(ConnectRequestCallback, listenerSocket);
         }
 

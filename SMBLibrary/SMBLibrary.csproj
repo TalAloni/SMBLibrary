@@ -211,6 +211,7 @@
     <Compile Include="RPC\Structures\Version.cs" />
     <Compile Include="RPC\Structures\VersionsSupported.cs" />
     <Compile Include="Server\ConnectionManager.cs" />
+    <Compile Include="Server\ConnectionRequestEventArgs.cs" />
     <Compile Include="Server\ConnectionState\SMB1AsyncContext.cs" />
     <Compile Include="Server\ConnectionState\SMB2AsyncContext.cs" />
     <Compile Include="Server\ConnectionState\ConnectionState.cs" />
