@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -121,7 +121,7 @@ namespace SMBLibrary.Win32
 
         // Available starting from Windows Vista.
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
-        private static extern NTStatus NtCancelSynchronousIoFile(IntPtr threadHandle, ref IO_STATUS_BLOCK ioRequestToCancel, out IO_STATUS_BLOCK ioStatusBlock);
+        private static extern NTStatus NtCancelSynchronousIoFile(IntPtr threadHandle, IntPtr ioRequestToCancel, out IO_STATUS_BLOCK ioStatusBlock);
 
         private DirectoryInfo m_directory;
         private PendingRequestCollection m_pendingRequests = new PendingRequestCollection();
@@ -463,7 +463,7 @@ namespace SMBLibrary.Win32
             if (Environment.OSVersion.Version.Major >= 6)
             {
                 IO_STATUS_BLOCK ioStatusBlock;
-                status = NtCancelSynchronousIoFile(threadHandle, ref request.IOStatusBlock, out ioStatusBlock);
+                status = NtCancelSynchronousIoFile(threadHandle, IntPtr.Zero, out ioStatusBlock);
             }
             else
             {
