@@ -50,7 +50,7 @@ namespace System.Security.Cryptography
     ///     </ol>         
     ///   </p>
     /// </remarks>
-    internal class MD4
+    public class MD4
     {
         // MD4 specific object variables
         //-----------------------------------------------------------------------

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "Utilities\Util
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMBLibrary.Win32", "SMBLibrary.Win32\SMBLibrary.Win32.csproj", "{8CE25496-A52B-4841-822F-74C469D10EE7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMBLibrary.Tests", "SMBLibrary.Tests\SMBLibrary.Tests.csproj", "{C79B06EB-32C1-44CA-B7E1-A891B8135658}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{8CE25496-A52B-4841-822F-74C469D10EE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CE25496-A52B-4841-822F-74C469D10EE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CE25496-A52B-4841-822F-74C469D10EE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C79B06EB-32C1-44CA-B7E1-A891B8135658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C79B06EB-32C1-44CA-B7E1-A891B8135658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C79B06EB-32C1-44CA-B7E1-A891B8135658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C79B06EB-32C1-44CA-B7E1-A891B8135658}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
