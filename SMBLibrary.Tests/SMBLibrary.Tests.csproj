@@ -36,6 +36,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NetBiosTests.cs" />
+    <Compile Include="NTFileStore\NTDirectoryFileSystemTests.cs" />
+    <Compile Include="NTFileStore\NTFileStoreTests.cs" />
     <Compile Include="NTLM\NTLMAuthenticationTests.cs" />
     <Compile Include="NTLM\NTLMSigningTests.cs" />
     <Compile Include="NTLM\RC4Tests.cs" />
