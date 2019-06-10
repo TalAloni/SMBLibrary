@@ -408,3 +408,9 @@ Revision History:
         Server: SMB1: TransactionHelper: Return Transaction2Response instead of ErrorResponse when status is set to STATUS_BUFFER_OVERFLOW.
         Server: Bugfix: Do not return more bytes than requested when querying FileInformation / FileSystemInformation, report STATUS_BUFFER_OVERFLOW.
         Client: SMB2Client: Sign commands when required.
+
+1.3.8 - Server: New connections can now be rejected using the ConnectionRequested event.
+        NTStatus: Added STATUS_NOT_FOUND.
+        NTDirectoryFileSystem: Bugfix: IO requests were not cancelled on Windows Vista and later.
+        Moved Win32 specific functionality to separate project.
+        Moved tests to separate project.
