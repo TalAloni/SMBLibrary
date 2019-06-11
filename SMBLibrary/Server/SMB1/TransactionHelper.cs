@@ -170,7 +170,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
             }
 
-            if (subcommandResponse == null)
+            if (header.Status != NTStatus.STATUS_SUCCESS && (header.Status != NTStatus.STATUS_BUFFER_OVERFLOW || subcommandResponse == null))
             {
                 return new ErrorResponse(CommandName.SMB_COM_TRANSACTION);
             }
@@ -241,7 +241,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
             }
 
-            if (header.Status != NTStatus.STATUS_SUCCESS && header.Status != NTStatus.STATUS_BUFFER_OVERFLOW)
+            if (header.Status != NTStatus.STATUS_SUCCESS && (header.Status != NTStatus.STATUS_BUFFER_OVERFLOW || subcommandResponse == null))
             {
                 return new ErrorResponse(CommandName.SMB_COM_TRANSACTION2);
             }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -118,7 +118,7 @@ namespace SMBLibrary.Server.SMB1
                 header.Status = NTStatus.STATUS_SMB_BAD_COMMAND;
             }
 
-            if (subcommandResponse == null)
+            if (header.Status != NTStatus.STATUS_SUCCESS && (header.Status != NTStatus.STATUS_BUFFER_OVERFLOW || subcommandResponse == null))
             {
                 return new ErrorResponse(CommandName.SMB_COM_NT_TRANSACT);
             }
