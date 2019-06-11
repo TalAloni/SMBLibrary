@@ -123,6 +123,10 @@ namespace SMBLibrary.Win32
         [DllImport("ntdll.dll", ExactSpelling = true, SetLastError = false)]
         private static extern NTStatus NtCancelSynchronousIoFile(IntPtr threadHandle, IntPtr ioRequestToCancel, out IO_STATUS_BLOCK ioStatusBlock);
 
+        private static readonly int QueryDirectoryBufferSize = 4096;
+        private static readonly int FileInformationBufferSize = 8192;
+        private static readonly int FileSystemInformationBufferSize = 4096;
+
         private DirectoryInfo m_directory;
         private PendingRequestCollection m_pendingRequests = new PendingRequestCollection();
 
@@ -258,7 +262,7 @@ namespace SMBLibrary.Win32
         public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
         {
             IO_STATUS_BLOCK ioStatusBlock;
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[QueryDirectoryBufferSize];
             UNICODE_STRING fileNameStructure = new UNICODE_STRING(fileName);
             result = new List<QueryDirectoryFileInformation>();
             bool restartScan = true;
@@ -285,7 +289,7 @@ namespace SMBLibrary.Win32
         public NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass)
         {
             IO_STATUS_BLOCK ioStatusBlock;
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[FileInformationBufferSize];
             NTStatus status = NtQueryInformationFile((IntPtr)handle, out ioStatusBlock, buffer, (uint)buffer.Length, (uint)informationClass);
             if (status == NTStatus.STATUS_SUCCESS)
             {
@@ -349,7 +353,7 @@ namespace SMBLibrary.Win32
         public NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass)
         {
             IO_STATUS_BLOCK ioStatusBlock;
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[FileSystemInformationBufferSize];
             IntPtr volumeHandle;
             FileStatus fileStatus;
             string nativePath = @"\??\" + m_directory.FullName.Substring(0, 3);
