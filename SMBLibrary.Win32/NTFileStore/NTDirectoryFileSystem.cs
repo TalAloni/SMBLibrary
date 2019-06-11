@@ -274,7 +274,6 @@ namespace SMBLibrary.Win32
                     return status;
                 }
                 int numberOfBytesWritten = (int)ioStatusBlock.Information;
-                buffer = ByteReader.ReadBytes(buffer, 0, numberOfBytesWritten);
                 List<QueryDirectoryFileInformation> page = QueryDirectoryFileInformation.ReadFileInformationList(buffer, 0, informationClass);
                 result.AddRange(page);
                 restartScan = false;
