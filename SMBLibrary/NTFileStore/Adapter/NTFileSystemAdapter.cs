@@ -378,6 +378,11 @@ namespace SMBLibrary
                 return NTStatus.STATUS_ACCESS_DENIED;
             }
 
+            if (offset >= stream.Length)
+            {
+                return NTStatus.STATUS_END_OF_FILE;
+            }
+
             int bytesRead;
             try
             {
