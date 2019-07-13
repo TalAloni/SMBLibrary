@@ -30,11 +30,24 @@ namespace SMBLibrary.Server.SMB2
                 {
                     state.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' started. AsyncID: {2}.", share.Name, openFile.Path, asyncContext.AsyncID);
                 }
-                // [MS-SMB2] If the underlying object store does not support change notifications, the server MUST fail this request with STATUS_NOT_SUPPORTED
+                else if (status == NTStatus.STATUS_NOT_SUPPORTED)
+                {
+                    // [MS-SMB2] If the underlying object store does not support change notifications, the server MUST fail this request with STATUS_NOT_SUPPORTED.
+                    // Unfortunately, Windows 7 / 8 / 10 will immediately retry sending another ChangeNotify request upon getting STATUS_NOT_SUPPORTED,
+                    // To prevent flooding, we must return a valid interim response (Status set to STATUS_PENDING and SMB2_FLAGS_ASYNC_COMMAND bit is set in Flags).
+                    status = NTStatus.STATUS_PENDING;
+                }
+                else
+                {
+                    state.RemoveAsyncContext(asyncContext);
+                }
+
                 ErrorResponse response = new ErrorResponse(request.CommandName, status);
-                // Windows 7 / 8 / 10 will infinitely retry sending ChangeNotify requests if the response does not have SMB2_FLAGS_ASYNC_COMMAND set.
-                response.Header.IsAsync = true;
-                response.Header.AsyncID = asyncContext.AsyncID;
+                if (status == NTStatus.STATUS_PENDING)
+                {
+                    response.Header.IsAsync = true;
+                    response.Header.AsyncID = asyncContext.AsyncID;
+                }
                 return response;
             }
         }

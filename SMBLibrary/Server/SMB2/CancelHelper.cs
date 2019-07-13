@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -28,7 +28,9 @@ namespace SMBLibrary.Server.SMB2
                     {
                         state.LogToServer(Severity.Information, "Cancel: Requested cancel on '{0}{1}'. NTStatus: {2}, AsyncID: {3}.", share.Name, openFile.Path, status, context.AsyncID);
                     }
-                    if (status == NTStatus.STATUS_SUCCESS || status == NTStatus.STATUS_CANCELLED)
+                    if (status == NTStatus.STATUS_SUCCESS ||
+                        status == NTStatus.STATUS_CANCELLED ||
+                        status == NTStatus.STATUS_NOT_SUPPORTED) // See ChangeNotifyHelper.cs
                     {
                         state.RemoveAsyncContext(context);
                         // [MS-SMB2] If the target request is successfully canceled, the target request MUST be failed by sending
@@ -39,6 +41,7 @@ namespace SMBLibrary.Server.SMB2
                         return response;
                     }
                     // [MS-SMB2] If the target request is not successfully canceled [..] no response is sent.
+                    // Note: Failing to respond might cause the client to disconnect the connection as per [MS-SMB2] 3.2.6.1 Request Expiration Timer Event
                     return null;
                 }
                 else
