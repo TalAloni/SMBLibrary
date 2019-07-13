@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -13,6 +13,9 @@ namespace SMBLibrary.Server.SMB2
 {
     internal class ChangeNotifyHelper
     {
+        /// <remarks>
+        /// 'NoRemoteChangeNotify' can be set in the registry to prevent the client from sending ChangeNotify requests altogether.
+        /// </remarks>
         internal static SMB2Command GetChangeNotifyInterimResponse(ChangeNotifyRequest request, ISMBShare share, SMB2ConnectionState state)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
@@ -30,7 +33,6 @@ namespace SMBLibrary.Server.SMB2
                 // [MS-SMB2] If the underlying object store does not support change notifications, the server MUST fail this request with STATUS_NOT_SUPPORTED
                 ErrorResponse response = new ErrorResponse(request.CommandName, status);
                 // Windows 7 / 8 / 10 will infinitely retry sending ChangeNotify requests if the response does not have SMB2_FLAGS_ASYNC_COMMAND set.
-                // Note: NoRemoteChangeNotify can be set in the registry to prevent the client from sending ChangeNotify requests altogether.
                 response.Header.IsAsync = true;
                 response.Header.AsyncID = asyncContext.AsyncID;
                 return response;
