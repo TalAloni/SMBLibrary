@@ -18,21 +18,21 @@ namespace SMBLibrary.Server.SMB2
             SMB2Session session = state.GetSession(request.Header.SessionID);
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             bool watchTree = (request.Flags & ChangeNotifyFlags.WatchTree) > 0;
-            SMB2AsyncContext context = state.CreateAsyncContext(request.FileId, state, request.Header.SessionID, request.Header.TreeID);
+            SMB2AsyncContext asyncContext = state.CreateAsyncContext(request.FileId, state, request.Header.SessionID, request.Header.TreeID);
             // We have to make sure that we don't send an interim response after the final response.
-            lock (context)
+            lock (asyncContext)
             {
-                NTStatus status = share.FileStore.NotifyChange(out context.IORequest, openFile.Handle, request.CompletionFilter, watchTree, (int)request.OutputBufferLength, OnNotifyChangeCompleted, context);
+                NTStatus status = share.FileStore.NotifyChange(out asyncContext.IORequest, openFile.Handle, request.CompletionFilter, watchTree, (int)request.OutputBufferLength, OnNotifyChangeCompleted, asyncContext);
                 if (status == NTStatus.STATUS_PENDING)
                 {
-                    state.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' started. AsyncID: {2}.", share.Name, openFile.Path, context.AsyncID);
+                    state.LogToServer(Severity.Verbose, "NotifyChange: Monitoring of '{0}{1}' started. AsyncID: {2}.", share.Name, openFile.Path, asyncContext.AsyncID);
                 }
                 // [MS-SMB2] If the underlying object store does not support change notifications, the server MUST fail this request with STATUS_NOT_SUPPORTED
                 ErrorResponse response = new ErrorResponse(request.CommandName, status);
                 // Windows 7 / 8 / 10 will infinitely retry sending ChangeNotify requests if the response does not have SMB2_FLAGS_ASYNC_COMMAND set.
                 // Note: NoRemoteChangeNotify can be set in the registry to prevent the client from sending ChangeNotify requests altogether.
                 response.Header.IsAsync = true;
-                response.Header.AsyncID = context.AsyncID;
+                response.Header.AsyncID = asyncContext.AsyncID;
                 return response;
             }
         }
