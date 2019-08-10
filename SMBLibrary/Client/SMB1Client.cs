@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -31,7 +31,6 @@ namespace SMBLibrary.Client
         private bool m_isConnected;
         private bool m_isLoggedIn;
         private Socket m_clientSocket;
-        private IAsyncResult m_currentAsyncResult;
         private bool m_forceExtendedSecurity;
         private bool m_unicode;
         private bool m_largeFiles;
@@ -87,7 +86,7 @@ namespace SMBLibrary.Client
 
                 ConnectionState state = new ConnectionState();
                 NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
-                m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+                m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
                 bool supportsDialect = NegotiateDialect(m_forceExtendedSecurity);
                 if (!supportsDialect)
                 {
@@ -358,13 +357,6 @@ namespace SMBLibrary.Client
 
         private void OnClientSocketReceive(IAsyncResult ar)
         {
-            if (ar != m_currentAsyncResult)
-            {
-                // We ignore calls for old sockets which we no longer use
-                // See: http://rajputyh.blogspot.co.il/2010/04/solve-exception-message-iasyncresult.html
-                return;
-            }
-
             ConnectionState state = (ConnectionState)ar.AsyncState;
 
             if (!m_clientSocket.Connected)
@@ -376,6 +368,10 @@ namespace SMBLibrary.Client
             try
             {
                 numberOfBytesReceived = m_clientSocket.EndReceive(ar);
+            }
+            catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
+            {
+                return;
             }
             catch (ObjectDisposedException)
             {
@@ -400,7 +396,7 @@ namespace SMBLibrary.Client
 
                 try
                 {
-                    m_currentAsyncResult = m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+                    m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
                 }
                 catch (ObjectDisposedException)
                 {
