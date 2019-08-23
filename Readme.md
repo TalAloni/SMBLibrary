@@ -22,7 +22,7 @@ By default, Windows already use ports 139 and 445. there are several techniques 
 ##### Method 1: Disable Windows File and Printer Sharing server completely:
 ###### Windows XP/2003:
 1. For every network adapter: Uncheck 'File and Printer Sharing for Microsoft Networks".
-2. Navigate to HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters and set SMBDeviceEnabled to '0' (this will free port 445).
+2. Navigate to 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters' and set 'SMBDeviceEnabled' to '0' (this will free port 445).
 3. Reboot.
 
 ###### Windows 7/8/2008/2012:
@@ -43,7 +43,7 @@ SMBLibrary offers a name service of its own.
   - You can install the 'Microsoft Loopback adapter' and use it for server-only communication with SMBLibrary.
 
 ###### Windows 7/8/2008/2012:
-* It's possible to patch srvnet.sys in order to prevent Windows from using port 445, however, driver signature enforcement must be circumvented as well on 64-bit versions of Windows.
+* It's possible to prevent Windows from using port 445 by removing all of the '\Device\Tcpip_{..}' and '\Device\Tcpip6_{..}' entries from the `Bind' registry key under 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Linkage'.  
 
 * if you want localhost access from Windows explorer to work as expected, you must specify the IP address that you selected (\\\\127.0.0.1 or \\\\localhost will not work as expected), in addition, I have observed that when connecting to the first IP address of a given adapter, Windows will only attempt to connect to port 445.
 
