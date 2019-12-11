@@ -44,7 +44,7 @@ namespace SMBLibrary.Server.SMB1
                                     Capabilities.LargeRead |
                                     Capabilities.LargeWrite;
             response.SystemTime = DateTime.UtcNow;
-            response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
+            response.ServerTimeZone = (short)-TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalMinutes;
             NegotiateMessage negotiateMessage = CreateNegotiateMessage();
             ChallengeMessage challengeMessage;
             NTStatus status = securityProvider.GetNTLMChallengeMessage(out state.AuthenticationContext, negotiateMessage, out challengeMessage);
@@ -78,7 +78,7 @@ namespace SMBLibrary.Server.SMB1
                                     Capabilities.LargeWrite |
                                     Capabilities.ExtendedSecurity;
             response.SystemTime = DateTime.UtcNow;
-            response.ServerTimeZone = (short)-TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).TotalMinutes;
+            response.ServerTimeZone = (short)-TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalMinutes;
             response.ServerGuid = serverGuid;
 
             return response;
