@@ -56,7 +56,7 @@ namespace SMBLibrary.NetBios
             return stream.ToArray();
         }
 
-        public byte[] GetData()
+        private byte[] GetData()
         {
             byte[] data = new byte[EntryLength * Addresses.Count];
             int offset = 0;

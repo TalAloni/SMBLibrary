@@ -60,7 +60,7 @@ namespace SMBLibrary.NetBios
             return stream.ToArray();
         }
 
-        public byte[] GetData()
+        private byte[] GetData()
         {
             MemoryStream stream = new MemoryStream();
             stream.WriteByte((byte)Names.Count);

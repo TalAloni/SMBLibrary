@@ -55,7 +55,7 @@ namespace SMBLibrary.NetBios
             return stream.ToArray();
         }
 
-        public byte[] GetData()
+        private byte[] GetData()
         {
             byte[] data = new byte[DataLength];
             BigEndianWriter.WriteUInt16(data, 0, (ushort)NameFlags);
