@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -18,17 +18,29 @@ namespace SMBLibrary.NetBios
     public class ResourceRecord
     {
         public string Name;
-        public NameRecordType Type = NameRecordType.NB; // NB
-        public ushort Class = 0x0001; // IN
+        public NameRecordType Type;
+        public ResourceRecordClass Class;
         public uint TTL;
         // ushort DataLength
         public byte[] Data;
 
-        public ResourceRecord()
+        public ResourceRecord(NameRecordType type)
         {
             Name = String.Empty;
+            Type = type;
+            Class = ResourceRecordClass.In;
             TTL = (uint)new TimeSpan(7, 0, 0, 0).TotalSeconds;
             Data = new byte[0];
+        }
+
+        public ResourceRecord(byte[] buffer, ref int offset)
+        {
+            Name = NetBiosUtils.DecodeName(buffer, ref offset);
+            Type = (NameRecordType)BigEndianReader.ReadUInt16(buffer, ref offset);
+            Class = (ResourceRecordClass)BigEndianReader.ReadUInt16(buffer, ref offset);
+            TTL = BigEndianReader.ReadUInt32(buffer, ref offset);
+            ushort dataLength = BigEndianReader.ReadUInt16(buffer, ref offset);
+            Data = ByteReader.ReadBytes(buffer, ref offset, dataLength);
         }
 
         public void WriteBytes(Stream stream)
@@ -48,7 +60,7 @@ namespace SMBLibrary.NetBios
                 ByteWriter.WriteBytes(stream, encodedName);
             }
             BigEndianWriter.WriteUInt16(stream, (ushort)Type);
-            BigEndianWriter.WriteUInt16(stream, Class);
+            BigEndianWriter.WriteUInt16(stream, (ushort)Class);
             BigEndianWriter.WriteUInt32(stream, TTL);
             BigEndianWriter.WriteUInt16(stream, (ushort)Data.Length);
             ByteWriter.WriteBytes(stream, Data);

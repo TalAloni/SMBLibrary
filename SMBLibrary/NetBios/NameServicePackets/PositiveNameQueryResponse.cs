@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -29,7 +29,7 @@ namespace SMBLibrary.NetBios
             Header.Flags = OperationFlags.AuthoritativeAnswer | OperationFlags.RecursionDesired;
             Header.OpCode = NameServiceOperation.QueryResponse;
             Header.ANCount = 1;
-            Resource = new ResourceRecord();
+            Resource = new ResourceRecord(NameRecordType.NB);
         }
 
         public byte[] GetBytes()
