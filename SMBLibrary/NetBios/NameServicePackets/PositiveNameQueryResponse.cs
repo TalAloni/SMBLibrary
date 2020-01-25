@@ -21,6 +21,7 @@ namespace SMBLibrary.NetBios
 
         public NameServicePacketHeader Header;
         public ResourceRecord Resource;
+        // Resource Data:
         public KeyValuePairList<byte[], NameFlags> Addresses = new KeyValuePairList<byte[], NameFlags>();
 
         public PositiveNameQueryResponse()
@@ -30,6 +31,19 @@ namespace SMBLibrary.NetBios
             Header.OpCode = NameServiceOperation.QueryResponse;
             Header.ANCount = 1;
             Resource = new ResourceRecord(NameRecordType.NB);
+        }
+
+        public PositiveNameQueryResponse(byte[] buffer, int offset)
+        {
+            Header = new NameServicePacketHeader(buffer, ref offset);
+            Resource = new ResourceRecord(buffer, ref offset);
+            int position = 0;
+            while (position < Resource.Data.Length)
+            {
+                NameFlags nameFlags = (NameFlags)BigEndianReader.ReadUInt16(Resource.Data, ref position);
+                byte[] address = ByteReader.ReadBytes(Resource.Data, ref position, 4);
+                Addresses.Add(address, nameFlags);
+            }
         }
 
         public byte[] GetBytes()
