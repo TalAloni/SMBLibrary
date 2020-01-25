@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -33,6 +33,14 @@ namespace SMBLibrary.NetBios
                 value |= 0x8000;
             }
             return value;
+        }
+
+        public static explicit operator NameFlags(ushort value)
+        {
+            NameFlags result = new NameFlags();
+            result.NodeType = (OwnerNodeType)((value >> 13) & 0x3);
+            result.WorkGroup = (value & 0x8000) > 0;
+            return result;
         }
     }
 }
