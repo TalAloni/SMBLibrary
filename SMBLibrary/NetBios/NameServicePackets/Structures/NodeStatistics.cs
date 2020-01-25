@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -39,6 +39,30 @@ namespace SMBLibrary.NetBios
         public NodeStatistics()
         {
             UnitID = new byte[6];
+        }
+
+        public NodeStatistics(byte[] buffer, ref int offset)
+        {
+            UnitID = ByteReader.ReadBytes(buffer, ref offset, 6);
+            Jumpers = ByteReader.ReadByte(buffer, ref offset);
+            TestResult = ByteReader.ReadByte(buffer, ref offset);
+            VersionNumber = BigEndianReader.ReadUInt16(buffer, ref offset);
+            PeriodOfStatistics = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfCRCs = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfAlignmentErrors = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfCollisions = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfSendAborts = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfGoodSends = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfGoodReceives = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfRetransmits = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfNoResourceConditions = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfFreeCommandBlocks = BigEndianReader.ReadUInt16(buffer, ref offset);
+            TotalNumberOfCommandBlocks = BigEndianReader.ReadUInt16(buffer, ref offset);
+            MaxTotalNumberOfCommandBlocks = BigEndianReader.ReadUInt16(buffer, ref offset);
+            NumberOfPendingSessions = BigEndianReader.ReadUInt16(buffer, ref offset);
+            MaxNumberOfPendingSessions = BigEndianReader.ReadUInt16(buffer, ref offset);
+            MaxTotalsSessionsPossible = BigEndianReader.ReadUInt16(buffer, ref offset);
+            SessionDataPacketSize = BigEndianReader.ReadUInt16(buffer, ref offset);
         }
 
         public void WriteBytes(byte[] buffer, int offset)
