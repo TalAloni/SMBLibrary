@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -18,8 +18,8 @@ namespace SMBLibrary.NetBios
     public class QuestionSection
     {
         public string Name;
-        public NameRecordType Type = NameRecordType.NB; // NB
-        public ushort Class = 0x0001; // IN
+        public NameRecordType Type;
+        public QuestionClass Class;
 
         public QuestionSection()
         {
@@ -29,7 +29,7 @@ namespace SMBLibrary.NetBios
         {
             Name = NetBiosUtils.DecodeName(buffer, ref offset);
             Type = (NameRecordType)BigEndianReader.ReadUInt16(buffer, ref offset);
-            Class = BigEndianReader.ReadUInt16(buffer, ref offset);
+            Class = (QuestionClass)BigEndianReader.ReadUInt16(buffer, ref offset);
         }
 
         public void WriteBytes(Stream stream)
@@ -37,7 +37,7 @@ namespace SMBLibrary.NetBios
             byte[] encodedName = NetBiosUtils.EncodeName(Name, String.Empty);
             ByteWriter.WriteBytes(stream, encodedName);
             BigEndianWriter.WriteUInt16(stream, (ushort)Type);
-            BigEndianWriter.WriteUInt16(stream, Class);
+            BigEndianWriter.WriteUInt16(stream, (ushort)Class);
         }
     }
 }
