@@ -13,23 +13,22 @@ using Utilities;
 namespace SMBLibrary.NetBios
 {
     /// <summary>
-    /// [RFC 1002] 4.2.12. NAME QUERY REQUEST
+    /// [RFC 1002] 4.2.17. NODE STATUS REQUEST
     /// </summary>
-    public class NameQueryRequest
+    public class NodeStatusRequest
     {
         public NameServicePacketHeader Header;
         public QuestionSection Question;
 
-        public NameQueryRequest()
+        public NodeStatusRequest()
         {
             Header = new NameServicePacketHeader();
             Header.OpCode = NameServiceOperation.QueryRequest;
-            Header.Flags = OperationFlags.RecursionDesired;
             Question = new QuestionSection();
-            Question.Type = NameRecordType.NB;
+            Question.Type = NameRecordType.NBStat;
         }
 
-        public NameQueryRequest(byte[] buffer, int offset)
+        public NodeStatusRequest(byte[] buffer, int offset)
         {
             Header = new NameServicePacketHeader(buffer, ref offset);
             Question = new QuestionSection(buffer, ref offset);

@@ -83,6 +83,7 @@
     <Compile Include="NetBios\NameServicePackets\NameQueryRequest.cs" />
     <Compile Include="NetBios\NameServicePackets\NameRegistrationRequest.cs" />
     <Compile Include="NetBios\NameServicePackets\NameServicePacketHeader.cs" />
+    <Compile Include="NetBios\NameServicePackets\NodeStatusRequest.cs" />
     <Compile Include="NetBios\NameServicePackets\NodeStatusResponse.cs" />
     <Compile Include="NetBios\NameServicePackets\PositiveNameQueryResponse.cs" />
     <Compile Include="NetBios\NameServicePackets\Structures\NodeStatistics.cs" />

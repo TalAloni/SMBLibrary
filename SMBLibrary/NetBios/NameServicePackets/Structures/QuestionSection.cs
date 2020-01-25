@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.NetBios
@@ -23,6 +22,7 @@ namespace SMBLibrary.NetBios
 
         public QuestionSection()
         {
+            Class = QuestionClass.In;
         }
 
         public QuestionSection(byte[] buffer, ref int offset)
