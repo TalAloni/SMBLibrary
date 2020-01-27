@@ -92,7 +92,7 @@ namespace SMBLibrary.Client
                     SessionPacket sessionResponsePacket = WaitForSessionResponsePacket();
                     if (!(sessionResponsePacket is PositiveSessionResponsePacket))
                     {
-                        m_clientSocket.Close();
+                        m_clientSocket.Disconnect(false);
                         if (!ConnectSocket(serverAddress, port))
                         {
                             return false;
@@ -142,7 +142,7 @@ namespace SMBLibrary.Client
                 return false;
             }
 
-            ConnectionState state = new ConnectionState();
+            ConnectionState state = new ConnectionState(m_clientSocket);
             NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
             m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
             return true;
@@ -399,8 +399,9 @@ namespace SMBLibrary.Client
         private void OnClientSocketReceive(IAsyncResult ar)
         {
             ConnectionState state = (ConnectionState)ar.AsyncState;
+            Socket clientSocket = state.ClientSocket;
 
-            if (!m_clientSocket.Connected)
+            if (!clientSocket.Connected)
             {
                 return;
             }
@@ -408,7 +409,7 @@ namespace SMBLibrary.Client
             int numberOfBytesReceived = 0;
             try
             {
-                numberOfBytesReceived = m_clientSocket.EndReceive(ar);
+                numberOfBytesReceived = clientSocket.EndReceive(ar);
             }
             catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
             {
@@ -437,7 +438,7 @@ namespace SMBLibrary.Client
 
                 try
                 {
-                    m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+                    clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -464,7 +465,7 @@ namespace SMBLibrary.Client
                 }
                 catch (Exception)
                 {
-                    m_clientSocket.Close();
+                    state.ClientSocket.Close();
                     break;
                 }
 
@@ -496,7 +497,7 @@ namespace SMBLibrary.Client
                 catch (Exception ex)
                 {
                     Log("Invalid SMB1 message: " + ex.Message);
-                    m_clientSocket.Close();
+                    state.ClientSocket.Close();
                     m_isConnected = false;
                     return;
                 }

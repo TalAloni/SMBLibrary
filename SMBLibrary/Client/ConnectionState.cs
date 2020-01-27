@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,6 +16,29 @@ namespace SMBLibrary.Client
 {
     public class ConnectionState
     {
-        public NBTConnectionReceiveBuffer ReceiveBuffer = new NBTConnectionReceiveBuffer();
+        private Socket m_clientSocket;
+        private NBTConnectionReceiveBuffer m_receiveBuffer;
+
+        public ConnectionState(Socket clientSocket)
+        {
+            m_clientSocket = clientSocket;
+            m_receiveBuffer = new NBTConnectionReceiveBuffer();
+        }
+
+        public Socket ClientSocket
+        {
+            get
+            {
+                return m_clientSocket;
+            }
+        }
+
+        public NBTConnectionReceiveBuffer ReceiveBuffer
+        {
+            get
+            {
+                return m_receiveBuffer;
+            }
+        }
     }
 }
