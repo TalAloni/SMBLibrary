@@ -285,16 +285,7 @@ namespace SMBLibrary.Server
 
         private void ProcessPacket(SessionPacket packet, ref ConnectionState state)
         {
-            if (packet is SessionRequestPacket && m_transport == SMBTransportType.NetBiosOverTCP)
-            {
-                PositiveSessionResponsePacket response = new PositiveSessionResponsePacket();
-                state.SendQueue.Enqueue(response);
-            }
-            else if (packet is SessionKeepAlivePacket && m_transport == SMBTransportType.NetBiosOverTCP)
-            {
-                // [RFC 1001] NetBIOS session keep alives do not require a response from the NetBIOS peer
-            }
-            else if (packet is SessionMessagePacket)
+            if (packet is SessionMessagePacket)
             {
                 // Note: To be compatible with SMB2 specifications, we must accept SMB_COM_NEGOTIATE.
                 // We will disconnect the connection if m_enableSMB1 == false and the client does not support SMB2.
@@ -379,6 +370,15 @@ namespace SMBLibrary.Server
                     state.LogToServer(Severity.Warning, "Invalid SMB message");
                     state.ClientSocket.Close();
                 }
+            }
+            else if (packet is SessionRequestPacket && m_transport == SMBTransportType.NetBiosOverTCP)
+            {
+                PositiveSessionResponsePacket response = new PositiveSessionResponsePacket();
+                state.SendQueue.Enqueue(response);
+            }
+            else if (packet is SessionKeepAlivePacket && m_transport == SMBTransportType.NetBiosOverTCP)
+            {
+                // [RFC 1001] NetBIOS session keep alives do not require a response from the NetBIOS peer
             }
             else
             {

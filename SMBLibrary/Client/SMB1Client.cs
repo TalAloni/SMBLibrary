@@ -478,16 +478,7 @@ namespace SMBLibrary.Client
 
         private void ProcessPacket(SessionPacket packet, ConnectionState state)
         {
-            if (packet is SessionKeepAlivePacket && m_transport == SMBTransportType.NetBiosOverTCP)
-            {
-                // [RFC 1001] NetBIOS session keep alives do not require a response from the NetBIOS peer
-            }
-            else if ((packet is PositiveSessionResponsePacket || packet is NegativeSessionResponsePacket) && m_transport == SMBTransportType.NetBiosOverTCP)
-            {
-                m_sessionResponsePacket = packet;
-                m_sessionResponseEventHandle.Set();
-            }
-            else if (packet is SessionMessagePacket)
+            if (packet is SessionMessagePacket)
             {
                 SMB1Message message;
                 try
@@ -514,6 +505,15 @@ namespace SMBLibrary.Client
                         m_incomingQueueEventHandle.Set();
                     }
                 }
+            }
+            else if ((packet is PositiveSessionResponsePacket || packet is NegativeSessionResponsePacket) && m_transport == SMBTransportType.NetBiosOverTCP)
+            {
+                m_sessionResponsePacket = packet;
+                m_sessionResponseEventHandle.Set();
+            }
+            else if (packet is SessionKeepAlivePacket && m_transport == SMBTransportType.NetBiosOverTCP)
+            {
+                // [RFC 1001] NetBIOS session keep alives do not require a response from the NetBIOS peer
             }
         }
 
