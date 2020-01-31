@@ -63,6 +63,13 @@ namespace SMBLibrary.NetBios
             }
         }
 
+        public static int GetSessionPacketLength(byte[] buffer, int offset)
+        {
+            byte flags = ByteReader.ReadByte(buffer, offset + 1);
+            int trailerLength = (flags & 0x01) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
+            return 4 + trailerLength;
+        }
+
         public static SessionPacket GetSessionPacket(byte[] buffer, int offset)
         {
             SessionPacketTypeName type = (SessionPacketTypeName)ByteReader.ReadByte(buffer, offset);

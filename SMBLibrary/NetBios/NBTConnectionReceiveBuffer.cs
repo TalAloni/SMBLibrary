@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -43,9 +43,7 @@ namespace SMBLibrary.NetBios
             {
                 if (!m_packetLength.HasValue)
                 {
-                    byte flags = ByteReader.ReadByte(m_buffer, m_readOffset + 1);
-                    int trailerLength = (flags & 0x01) << 16 | BigEndianConverter.ToUInt16(m_buffer, m_readOffset + 2);
-                    m_packetLength = 4 + trailerLength;
+                    m_packetLength = SessionPacket.GetSessionPacketLength(m_buffer, m_readOffset);
                 }
                 return m_bytesInBuffer >= m_packetLength.Value;
             }
