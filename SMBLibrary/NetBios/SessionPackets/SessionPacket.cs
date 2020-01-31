@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -13,15 +13,19 @@ namespace SMBLibrary.NetBios
 {
     /// <summary>
     /// [RFC 1002] 4.3.1. SESSION PACKET
+    /// [MS-SMB2] 2.1 Transport - Direct TCP transport packet
     /// </summary>
+    /// <remarks>
+    /// We extend this implementation to support Direct TCP transport packet which utilize the unused session packet flags to extend the maximum trailer length.
+    /// </remarks>
     public abstract class SessionPacket
     {
         public const int HeaderLength = 4;
         public const int MaxSessionPacketLength = 131075;
+        public const int MaxDirectTcpPacketLength = 16777215;
 
         public SessionPacketTypeName Type;
-        public byte Flags;
-        private int TrailerLength; // 2 bytes + length extension bit
+        private int TrailerLength; // Session packet: 17 bits, Direct TCP transport packet: 3 bytes
         public byte[] Trailer;
 
         public SessionPacket()
@@ -31,24 +35,19 @@ namespace SMBLibrary.NetBios
         public SessionPacket(byte[] buffer, int offset)
         {
             Type = (SessionPacketTypeName)ByteReader.ReadByte(buffer, offset + 0);
-            Flags = ByteReader.ReadByte(buffer, offset + 1);
-            TrailerLength = (Flags & 0x01) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
+            TrailerLength = ByteReader.ReadByte(buffer, offset + 1) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
             Trailer = ByteReader.ReadBytes(buffer, offset + 4, TrailerLength);
         }
 
         public virtual byte[] GetBytes()
         {
             TrailerLength = this.Trailer.Length;
-            if (TrailerLength > 0x1FFFF)
-            {
-                throw new ArgumentException("Invalid NBT packet length");
-            }
 
-            Flags = Convert.ToByte(TrailerLength > 0xFFFF);
+            byte flags = Convert.ToByte(TrailerLength >> 16);
 
             byte[] buffer = new byte[HeaderLength + Trailer.Length];
             ByteWriter.WriteByte(buffer, 0, (byte)Type);
-            ByteWriter.WriteByte(buffer, 1, Flags);
+            ByteWriter.WriteByte(buffer, 1, flags);
             BigEndianWriter.WriteUInt16(buffer, 2, (ushort)(TrailerLength & 0xFFFF));
             ByteWriter.WriteBytes(buffer, 4, Trailer);
 
@@ -65,8 +64,7 @@ namespace SMBLibrary.NetBios
 
         public static int GetSessionPacketLength(byte[] buffer, int offset)
         {
-            byte flags = ByteReader.ReadByte(buffer, offset + 1);
-            int trailerLength = (flags & 0x01) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
+            int trailerLength = ByteReader.ReadByte(buffer, offset + 1) << 16 | BigEndianConverter.ToUInt16(buffer, offset + 2);
             return 4 + trailerLength;
         }
 
