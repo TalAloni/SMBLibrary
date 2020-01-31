@@ -677,7 +677,8 @@ namespace SMBLibrary.Client
         {
             try
             {
-                socket.Send(packet.GetBytes());
+                byte[] packetBytes = packet.GetBytes();
+                socket.Send(packetBytes);
             }
             catch (SocketException)
             {
