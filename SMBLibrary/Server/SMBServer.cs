@@ -382,7 +382,7 @@ namespace SMBLibrary.Server
             }
             else
             {
-                state.LogToServer(Severity.Warning, "Invalid NetBIOS packet");
+                state.LogToServer(Severity.Warning, "Inappropriate NetBIOS session packet");
                 state.ClientSocket.Close();
                 return;
             }
