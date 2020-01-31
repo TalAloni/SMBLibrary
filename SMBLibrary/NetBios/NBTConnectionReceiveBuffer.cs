@@ -18,7 +18,7 @@ namespace SMBLibrary.NetBios
         private int m_bytesInBuffer = 0;
         private int? m_packetLength;
 
-        public NBTConnectionReceiveBuffer() : this(SessionPacket.MaxSessionPacketLength)
+        public NBTConnectionReceiveBuffer(bool isLargeMTU) : this(isLargeMTU ? SessionPacket.MaxDirectTcpPacketLength : SessionPacket.MaxSessionPacketLength)
         {
         }
 

@@ -142,7 +142,7 @@ namespace SMBLibrary.Client
                 return false;
             }
 
-            ConnectionState state = new ConnectionState(m_clientSocket);
+            ConnectionState state = new ConnectionState(m_clientSocket, false);
             NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
             m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
             return true;

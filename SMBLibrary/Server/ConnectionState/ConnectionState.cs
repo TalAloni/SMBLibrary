@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -29,11 +29,11 @@ namespace SMBLibrary.Server
         public SMBDialect Dialect;
         public GSSContext AuthenticationContext;
 
-        public ConnectionState(Socket clientSocket, IPEndPoint clientEndPoint, LogDelegate logToServerHandler)
+        public ConnectionState(Socket clientSocket, IPEndPoint clientEndPoint, SMBTransportType transportType, LogDelegate logToServerHandler)
         {
             m_clientSocket = clientSocket;
             m_clientEndPoint = clientEndPoint;
-            m_receiveBuffer = new NBTConnectionReceiveBuffer();
+            m_receiveBuffer = new NBTConnectionReceiveBuffer(transportType == SMBTransportType.DirectTCPTransport);
             m_sendQueue = new BlockingQueue<SessionPacket>();
             m_creationDT = DateTime.UtcNow;
             m_lastReceiveDT = DateTime.UtcNow;

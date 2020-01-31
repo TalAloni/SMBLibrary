@@ -19,10 +19,10 @@ namespace SMBLibrary.Client
         private Socket m_clientSocket;
         private NBTConnectionReceiveBuffer m_receiveBuffer;
 
-        public ConnectionState(Socket clientSocket)
+        public ConnectionState(Socket clientSocket, bool isLargeMTU)
         {
             m_clientSocket = clientSocket;
-            m_receiveBuffer = new NBTConnectionReceiveBuffer();
+            m_receiveBuffer = new NBTConnectionReceiveBuffer(isLargeMTU);
         }
 
         public Socket ClientSocket
