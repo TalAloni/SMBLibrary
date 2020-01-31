@@ -515,6 +515,11 @@ namespace SMBLibrary.Client
             {
                 // [RFC 1001] NetBIOS session keep alives do not require a response from the NetBIOS peer
             }
+            else
+            {
+                Log("Inappropriate NetBIOS session packet");
+                state.ClientSocket.Close();
+            }
         }
 
         internal SMB1Message WaitForMessage(CommandName commandName)
