@@ -402,7 +402,8 @@ namespace SMBLibrary.Server
                 Socket clientSocket = state.ClientSocket;
                 try
                 {
-                    clientSocket.Send(response.GetBytes());
+                    byte[] responseBytes = response.GetBytes();
+                    clientSocket.Send(responseBytes);
                 }
                 catch (SocketException ex)
                 {
