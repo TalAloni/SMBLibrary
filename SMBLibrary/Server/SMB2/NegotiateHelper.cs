@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -22,9 +22,12 @@ namespace SMBLibrary.Server.SMB2
         public const uint ServerMaxTransactSize = 65536;
         public const uint ServerMaxReadSize = 65536;
         public const uint ServerMaxWriteSize = 65536;
+        public const uint ServerMaxTransactSizeLargeMTU = 8388608;
+        public const uint ServerMaxReadSizeLargeMTU = 8388608;
+        public const uint ServerMaxWriteSizeLargeMTU = 8388608;
 
         // Special case - SMB2 client initially connecting using SMB1
-        internal static SMB2Command GetNegotiateResponse(List<string> smb2Dialects, GSSProvider securityProvider, ConnectionState state, Guid serverGuid, DateTime serverStartTime)
+        internal static SMB2Command GetNegotiateResponse(List<string> smb2Dialects, GSSProvider securityProvider, ConnectionState state, SMBTransportType transportType, Guid serverGuid, DateTime serverStartTime)
         {
             NegotiateResponse response = new NegotiateResponse();
             response.Header.Credits = 1;
@@ -44,16 +47,26 @@ namespace SMBLibrary.Server.SMB2
             }
             response.SecurityMode = SecurityMode.SigningEnabled;
             response.ServerGuid = serverGuid;
-            response.MaxTransactSize = ServerMaxTransactSize;
-            response.MaxReadSize = ServerMaxReadSize;
-            response.MaxWriteSize = ServerMaxWriteSize;
+            if (state.Dialect != SMBDialect.SMB202 && transportType == SMBTransportType.DirectTCPTransport)
+            {
+                response.Capabilities = Capabilities.LargeMTU;
+                response.MaxTransactSize = ServerMaxTransactSizeLargeMTU;
+                response.MaxReadSize = ServerMaxReadSizeLargeMTU;
+                response.MaxWriteSize = ServerMaxWriteSizeLargeMTU;
+            }
+            else
+            {
+                response.MaxTransactSize = ServerMaxTransactSize;
+                response.MaxReadSize = ServerMaxReadSize;
+                response.MaxWriteSize = ServerMaxWriteSize;
+            }
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = serverStartTime;
             response.SecurityBuffer = securityProvider.GetSPNEGOTokenInitBytes();
             return response;
         }
 
-        internal static SMB2Command GetNegotiateResponse(NegotiateRequest request, GSSProvider securityProvider, ConnectionState state, Guid serverGuid, DateTime serverStartTime)
+        internal static SMB2Command GetNegotiateResponse(NegotiateRequest request, GSSProvider securityProvider, ConnectionState state, SMBTransportType transportType, Guid serverGuid, DateTime serverStartTime)
         {
             NegotiateResponse response = new NegotiateResponse();
             if (request.Dialects.Contains(SMB2Dialect.SMB210))
@@ -73,9 +86,19 @@ namespace SMBLibrary.Server.SMB2
             }
             response.SecurityMode = SecurityMode.SigningEnabled;
             response.ServerGuid = serverGuid;
-            response.MaxTransactSize = ServerMaxTransactSize;
-            response.MaxReadSize = ServerMaxReadSize;
-            response.MaxWriteSize = ServerMaxWriteSize;
+            if (state.Dialect != SMBDialect.SMB202 && transportType == SMBTransportType.DirectTCPTransport)
+            {
+                response.Capabilities = Capabilities.LargeMTU;
+                response.MaxTransactSize = ServerMaxTransactSizeLargeMTU;
+                response.MaxReadSize = ServerMaxReadSizeLargeMTU;
+                response.MaxWriteSize = ServerMaxWriteSizeLargeMTU;
+            }
+            else
+            {
+                response.MaxTransactSize = ServerMaxTransactSize;
+                response.MaxReadSize = ServerMaxReadSize;
+                response.MaxWriteSize = ServerMaxWriteSize;
+            }
             response.SystemTime = DateTime.Now;
             response.ServerStartTime = serverStartTime;
             response.SecurityBuffer = securityProvider.GetSPNEGOTokenInitBytes();
