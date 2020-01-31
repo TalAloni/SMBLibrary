@@ -20,12 +20,13 @@ namespace SMBLibrary.Client
 {
     public class SMB1Client : ISMBClient
     {
-        public const int NetBiosOverTCPPort = 139;
-        public const int DirectTCPPort = 445;
-        public const string NTLanManagerDialect = "NT LM 0.12";
+        private const string NTLanManagerDialect = "NT LM 0.12";
         
-        public const ushort ClientMaxBufferSize = 65535; // Valid range: 512 - 65535
-        public const ushort ClientMaxMpxCount = 1;
+        public static readonly int NetBiosOverTCPPort = 139;
+        public static readonly int DirectTCPPort = 445;
+
+        private static readonly ushort ClientMaxBufferSize = 65535; // Valid range: 512 - 65535
+        private static readonly ushort ClientMaxMpxCount = 1;
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -649,7 +650,7 @@ namespace SMBLibrary.Client
         {
             get
             {
-                return ClientMaxBufferSize - (SMB1Header.Length + 3 + ReadAndXResponse.ParametersLength);
+                return (uint)ClientMaxBufferSize - (SMB1Header.Length + 3 + ReadAndXResponse.ParametersLength);
             }
         }
 
