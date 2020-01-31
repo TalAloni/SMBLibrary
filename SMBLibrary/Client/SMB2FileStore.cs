@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -13,6 +13,8 @@ namespace SMBLibrary.Client
 {
     public class SMB2FileStore : ISMBFileStore
     {
+        private const int BytesPerCredit = 65536;
+
         private SMB2Client m_client;
         private uint m_treeID;
 
@@ -69,6 +71,7 @@ namespace SMBLibrary.Client
         {
             data = null;
             ReadRequest request = new ReadRequest();
+            request.Header.CreditCharge = (ushort)Math.Ceiling((double)maxCount / BytesPerCredit);
             request.FileId = (FileID)handle;
             request.Offset = (ulong)offset;
             request.ReadLength = (uint)maxCount;
@@ -91,6 +94,7 @@ namespace SMBLibrary.Client
         {
             numberOfBytesWritten = 0;
             WriteRequest request = new WriteRequest();
+            request.Header.CreditCharge = (ushort)Math.Ceiling((double)data.Length / BytesPerCredit);
             request.FileId = (FileID)handle;
             request.Offset = (ulong)offset;
             request.Data = data;
@@ -128,6 +132,7 @@ namespace SMBLibrary.Client
         {
             result = new List<QueryDirectoryFileInformation>();
             QueryDirectoryRequest request = new QueryDirectoryRequest();
+            request.Header.CreditCharge = (ushort)Math.Ceiling((double)m_client.MaxTransactSize / BytesPerCredit);
             request.FileInformationClass = informationClass;
             request.Reopen = true;
             request.FileId = (FileID)handle;
@@ -279,6 +284,7 @@ namespace SMBLibrary.Client
         {
             output = null;
             IOCtlRequest request = new IOCtlRequest();
+            request.Header.CreditCharge = (ushort)Math.Ceiling((double)maxOutputLength / BytesPerCredit);
             request.CtlCode = ctlCode;
             request.IsFSCtl = true;
             request.FileId = (FileID)handle;

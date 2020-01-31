@@ -24,9 +24,10 @@ namespace SMBLibrary.Client
         public const int NetBiosOverTCPPort = 139;
         public const int DirectTCPPort = 445;
 
-        public const uint ClientMaxTransactSize = 65536;
-        public const uint ClientMaxReadSize = 65536;
-        public const uint ClientMaxWriteSize = 65536;
+        public static readonly uint ClientMaxTransactSize = 8388608;
+        public static readonly uint ClientMaxReadSize = 8388608;
+        public static readonly uint ClientMaxWriteSize = 8388608;
+        private static readonly ushort DesiredCredits = 128; 
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -49,6 +50,7 @@ namespace SMBLibrary.Client
         private ulong m_sessionID;
         private byte[] m_securityBlob;
         private byte[] m_sessionKey;
+        private ushort m_availableCredits = 1;
 
         public SMB2Client()
         {
@@ -388,6 +390,8 @@ namespace SMBLibrary.Client
                     return;
                 }
 
+                m_availableCredits += command.Header.Credits;
+
                 // [MS-SMB2] 3.2.5.1.2 - If the MessageId is 0xFFFFFFFFFFFFFFFF, this is not a reply to a previous request,
                 // and the client MUST NOT attempt to locate the request, but instead process it as follows:
                 // If the command field in the SMB2 header is SMB2 OPLOCK_BREAK, it MUST be processed as specified in 3.2.5.19.
@@ -469,7 +473,32 @@ namespace SMBLibrary.Client
 
         internal void TrySendCommand(SMB2Command request)
         {
-            request.Header.Credits = 1;
+            if (m_dialect == SMB2Dialect.SMB202 || m_transport == SMBTransportType.NetBiosOverTCP)
+            {
+                request.Header.CreditCharge = 0;
+                request.Header.Credits = 1;
+                m_availableCredits -= 1;
+            }
+            else
+            {
+                if (request.Header.CreditCharge == 0)
+                {
+                    request.Header.CreditCharge = 1;
+                }
+
+                if (m_availableCredits < request.Header.CreditCharge)
+                {
+                    throw new Exception("Not enough credits");
+                }
+
+                m_availableCredits -= request.Header.CreditCharge;
+
+                if (m_availableCredits < DesiredCredits)
+                {
+                    request.Header.Credits += (ushort)(DesiredCredits - m_availableCredits);
+                }
+            }
+
             request.Header.MessageID = m_messageID;
             request.Header.SessionID = m_sessionID;
             if (m_signingRequired)
@@ -485,7 +514,14 @@ namespace SMBLibrary.Client
                 }
             }
             TrySendCommand(m_clientSocket, request);
-            m_messageID++;
+            if (m_dialect == SMB2Dialect.SMB202 || m_transport == SMBTransportType.NetBiosOverTCP)
+            {
+                m_messageID++;
+            }
+            else
+            {
+                m_messageID += request.Header.CreditCharge;
+            }
         }
 
         public uint MaxTransactSize
