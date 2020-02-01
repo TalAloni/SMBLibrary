@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -403,6 +403,7 @@ namespace SMBLibrary.Win32
                 m_pendingRequests.Add(request);
                 // The request has been added, we can now return STATUS_PENDING.
                 requestAddedEvent.Set();
+                // There is a possibility of race condition if the caller will wait for STATUS_PENDING and then immediate call Cancel, but this scenario is very unlikely.
                 NTStatus status = NtNotifyChangeDirectoryFile((IntPtr)handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, out request.IOStatusBlock, buffer, (uint)buffer.Length, completionFilter, watchTree);
                 if (status == NTStatus.STATUS_SUCCESS)
                 {

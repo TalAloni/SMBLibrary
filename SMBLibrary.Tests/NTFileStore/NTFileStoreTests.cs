@@ -38,6 +38,7 @@ namespace SMBLibrary.Tests
             NTStatus status = m_fileStore.NotifyChange(out ioRequest, handle, NotifyChangeFilter.FileName | NotifyChangeFilter.LastWrite | NotifyChangeFilter.DirName, false, 8192, OnNotifyChangeCompleted, null);
             Assert.IsTrue(status == NTStatus.STATUS_PENDING);
 
+            Thread.Sleep(1);
             m_fileStore.Cancel(ioRequest);
             m_fileStore.CloseFile(handle);
             while (m_notifyChangeStatus == null)
