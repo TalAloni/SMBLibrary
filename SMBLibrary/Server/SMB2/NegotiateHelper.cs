@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using SMBLibrary.Authentication.GSSAPI;
+using SMBLibrary.NetBios;
 using SMBLibrary.SMB2;
 using Utilities;
 
@@ -53,6 +54,12 @@ namespace SMBLibrary.Server.SMB2
                 response.MaxTransactSize = ServerMaxTransactSizeLargeMTU;
                 response.MaxReadSize = ServerMaxReadSizeLargeMTU;
                 response.MaxWriteSize = ServerMaxWriteSizeLargeMTU;
+                // [MS-SMB2] 3.3.5.2 Receiving Any Message - If the length of the message exceeds Connection.MaxTransactSize + 256, the server MUST disconnect the connection.
+                int maxPacketSize = SessionPacket.HeaderLength + (int)ServerMaxTransactSize + 256;
+                if (maxPacketSize > state.ReceiveBuffer.Buffer.Length)
+                {
+                    state.ReceiveBuffer.IncreaseBufferSize(maxPacketSize);
+                }
             }
             else
             {
@@ -92,6 +99,12 @@ namespace SMBLibrary.Server.SMB2
                 response.MaxTransactSize = ServerMaxTransactSizeLargeMTU;
                 response.MaxReadSize = ServerMaxReadSizeLargeMTU;
                 response.MaxWriteSize = ServerMaxWriteSizeLargeMTU;
+                // [MS-SMB2] 3.3.5.2 Receiving Any Message - If the length of the message exceeds Connection.MaxTransactSize + 256, the server MUST disconnect the connection.
+                int maxPacketSize = SessionPacket.HeaderLength + (int)ServerMaxTransactSize + 256;
+                if (maxPacketSize > state.ReceiveBuffer.Buffer.Length)
+                {
+                    state.ReceiveBuffer.IncreaseBufferSize(maxPacketSize);
+                }
             }
             else
             {

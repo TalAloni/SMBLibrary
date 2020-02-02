@@ -160,7 +160,7 @@ namespace SMBLibrary.Server
 
             if (acceptConnection)
             {
-                ConnectionState state = new ConnectionState(clientSocket, clientEndPoint, m_transport, Log);
+                ConnectionState state = new ConnectionState(clientSocket, clientEndPoint, Log);
                 state.LogToServer(Severity.Verbose, "New connection request accepted");
                 Thread senderThread = new Thread(delegate()
                 {

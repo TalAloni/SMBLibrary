@@ -136,7 +136,7 @@ namespace SMBLibrary.Client
                 return false;
             }
 
-            ConnectionState state = new ConnectionState(m_clientSocket, true);
+            ConnectionState state = new ConnectionState(m_clientSocket);
             NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
             m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
             return true;
@@ -391,6 +391,21 @@ namespace SMBLibrary.Client
                 }
 
                 m_availableCredits += command.Header.Credits;
+
+                if (m_transport == SMBTransportType.DirectTCPTransport && command is NegotiateResponse)
+                {
+                    NegotiateResponse negotiateResponse = (NegotiateResponse)command;
+                    if ((negotiateResponse.Capabilities & Capabilities.LargeMTU) > 0)
+                    {
+                        // [MS-SMB2] 3.2.5.1 Receiving Any Message - If the message size received exceeds Connection.MaxTransactSize, the client MUST disconnect the connection.
+                        // Note: Windows clients do not enforce the MaxTransactSize value, we add 256 bytes.
+                        int maxPacketSize = SessionPacket.HeaderLength + (int)Math.Min(negotiateResponse.MaxTransactSize, ClientMaxTransactSize) + 256;
+                        if (maxPacketSize > state.ReceiveBuffer.Buffer.Length)
+                        {
+                            state.ReceiveBuffer.IncreaseBufferSize(maxPacketSize);
+                        }
+                    }
+                }
 
                 // [MS-SMB2] 3.2.5.1.2 - If the MessageId is 0xFFFFFFFFFFFFFFFF, this is not a reply to a previous request,
                 // and the client MUST NOT attempt to locate the request, but instead process it as follows:

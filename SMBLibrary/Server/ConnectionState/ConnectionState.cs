@@ -29,11 +29,11 @@ namespace SMBLibrary.Server
         public SMBDialect Dialect;
         public GSSContext AuthenticationContext;
 
-        public ConnectionState(Socket clientSocket, IPEndPoint clientEndPoint, SMBTransportType transportType, LogDelegate logToServerHandler)
+        public ConnectionState(Socket clientSocket, IPEndPoint clientEndPoint, LogDelegate logToServerHandler)
         {
             m_clientSocket = clientSocket;
             m_clientEndPoint = clientEndPoint;
-            m_receiveBuffer = new NBTConnectionReceiveBuffer(transportType == SMBTransportType.DirectTCPTransport);
+            m_receiveBuffer = new NBTConnectionReceiveBuffer();
             m_sendQueue = new BlockingQueue<SessionPacket>();
             m_creationDT = DateTime.UtcNow;
             m_lastReceiveDT = DateTime.UtcNow;

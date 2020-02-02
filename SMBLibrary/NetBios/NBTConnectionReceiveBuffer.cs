@@ -18,7 +18,7 @@ namespace SMBLibrary.NetBios
         private int m_bytesInBuffer = 0;
         private int? m_packetLength;
 
-        public NBTConnectionReceiveBuffer(bool isLargeMTU) : this(isLargeMTU ? SessionPacket.MaxDirectTcpPacketLength : SessionPacket.MaxSessionPacketLength)
+        public NBTConnectionReceiveBuffer() : this(SessionPacket.MaxSessionPacketLength)
         {
         }
 
@@ -30,6 +30,17 @@ namespace SMBLibrary.NetBios
                 throw new ArgumentException("bufferLength must be large enough to hold the largest possible NBT packet");
             }
             m_buffer = new byte[bufferLength];
+        }
+
+        public void IncreaseBufferSize(int bufferLength)
+        {
+            byte[] buffer = new byte[bufferLength];
+            if (m_bytesInBuffer > 0)
+            {
+                Array.Copy(m_buffer, m_readOffset, buffer, 0, m_bytesInBuffer);
+                m_readOffset = 0;
+            }
+            m_buffer = buffer;
         }
 
         public void SetNumberOfBytesReceived(int numberOfBytesReceived)
