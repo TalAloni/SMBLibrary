@@ -23,9 +23,9 @@ namespace SMBLibrary.Server.SMB2
         public const uint ServerMaxTransactSize = 65536;
         public const uint ServerMaxReadSize = 65536;
         public const uint ServerMaxWriteSize = 65536;
-        public const uint ServerMaxTransactSizeLargeMTU = 8388608;
-        public const uint ServerMaxReadSizeLargeMTU = 8388608;
-        public const uint ServerMaxWriteSizeLargeMTU = 8388608;
+        public const uint ServerMaxTransactSizeLargeMTU = 1048576;
+        public const uint ServerMaxReadSizeLargeMTU = 1048576;
+        public const uint ServerMaxWriteSizeLargeMTU = 1048576;
 
         // Special case - SMB2 client initially connecting using SMB1
         internal static SMB2Command GetNegotiateResponse(List<string> smb2Dialects, GSSProvider securityProvider, ConnectionState state, SMBTransportType transportType, Guid serverGuid, DateTime serverStartTime)
