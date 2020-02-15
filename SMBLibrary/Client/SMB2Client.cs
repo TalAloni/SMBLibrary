@@ -24,10 +24,10 @@ namespace SMBLibrary.Client
         public static readonly int NetBiosOverTCPPort = 139;
         public static readonly int DirectTCPPort = 445;
 
-        public static readonly uint ClientMaxTransactSize = 8388608;
-        public static readonly uint ClientMaxReadSize = 8388608;
-        public static readonly uint ClientMaxWriteSize = 8388608;
-        private static readonly ushort DesiredCredits = 128; 
+        public static readonly uint ClientMaxTransactSize = 1048576;
+        public static readonly uint ClientMaxReadSize = 1048576;
+        public static readonly uint ClientMaxWriteSize = 1048576;
+        private static readonly ushort DesiredCredits = 16; 
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
