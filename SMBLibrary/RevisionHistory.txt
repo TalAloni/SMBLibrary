@@ -426,3 +426,10 @@ Revision History:
         Client: NetBios: Added NameServiceClient.
         Client: Improved NetBios over TCP support.
         NetBios: Minor implementation improvements.
+
+1.4.1 - Server: Enabled SMB 2.1 Large MTU support.
+        Client: Enabled SMB 2.1 Large MTU support.
+        Client: Disconnect connection when inappropriate NetBIOS session packet is received.
+        SessionPacket: Added support for SMB 2.1 Large MTU.
+        NBTConnectionReceiveBuffer: Added support for SMB 2.1 Large MTU.
+        Added VS2019 solution and projects.
