@@ -5,10 +5,17 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary.Win32</AssemblyName>
     <RootNamespace>SMBLibrary.Win32</RootNamespace>
+    <Authors>Tal Aloni</Authors>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SMBLibrary\SMBLibrary.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(Configuration)' != 'Release'">
     <ProjectReference Include="..\Utilities\Utilities.csproj" />
   </ItemGroup>
 
