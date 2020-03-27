@@ -16,8 +16,8 @@ namespace SMBLibrary
     /// </summary>
     /// <remarks>
     /// [MS-FSA] 2.1.5.14.11
-    /// FILE_RENAME_INFORMATION_TYPE_1: Used for 32-bit local clients.
-    /// FILE_RENAME_INFORMATION_TYPE_2: Used for remote clients or 64-bit local clients.
+    /// FILE_RENAME_INFORMATION_TYPE_1: Used for 32-bit local clients and the SMB1 protocol.
+    /// FILE_RENAME_INFORMATION_TYPE_2: Used for 64-bit local clients and the SMB2 protocol.
     /// </remarks>
     public class FileRenameInformationType2 : FileInformation
     {

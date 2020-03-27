@@ -16,8 +16,8 @@ namespace SMBLibrary
     /// </summary>
     /// <remarks>
     /// [MS-FSA] 2.1.5.14.6
-    /// FILE_LINK_INFORMATION_TYPE_1: Used for 32-bit local clients.
-    /// FILE_LINK_INFORMATION_TYPE_2: Used for remote clients or 64-bit local clients.
+    /// FILE_LINK_INFORMATION_TYPE_1: Used for 32-bit local clients and the SMB1 protocol.
+    /// FILE_LINK_INFORMATION_TYPE_2: Used for 64-bit local clients and the SMB2 protocol.
     /// </remarks>
     public class FileLinkInformationType2 : FileInformation
     {
