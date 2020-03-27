@@ -289,7 +289,43 @@ namespace SMBLibrary.Client
 
         public NTStatus SetFileInformation(object handle, FileInformation information)
         {
-            throw new NotImplementedException();
+            if (m_client.InfoLevelPassthrough)
+            {
+	            if (information is FileRenameInformationType2)
+	            {
+	                FileRenameInformationType1 informationType1 = new FileRenameInformationType1();
+	                informationType1.FileName = ((FileRenameInformationType2)information).FileName;
+	                informationType1.ReplaceIfExists = ((FileRenameInformationType2)information).ReplaceIfExists;
+	                informationType1.RootDirectory = (uint)((FileRenameInformationType2)information).RootDirectory;
+	                information = informationType1;
+	            }
+	
+	            int maxOutputLength = 4096;
+	            Transaction2SetFileInformationRequest subcommand = new Transaction2SetFileInformationRequest();
+	            subcommand.FID = (ushort)handle;
+	            subcommand.SetInformation(information);
+	
+	            Transaction2Request request = new Transaction2Request();
+	            request.Setup = subcommand.GetSetup();
+	            request.TransParameters = subcommand.GetParameters(m_client.Unicode);
+	            request.TransData = subcommand.GetData(m_client.Unicode);
+	            request.TotalDataCount = (ushort)request.TransData.Length;
+	            request.TotalParameterCount = (ushort)request.TransParameters.Length;
+	            request.MaxParameterCount = Transaction2SetFileInformationResponse.ParametersLength;
+	            request.MaxDataCount = (ushort)maxOutputLength;
+	
+	            TrySendMessage(request);
+	            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
+	            if (reply != null)
+	            {
+	                return reply.Header.Status;
+	            }
+	            return NTStatus.STATUS_INVALID_SMB;
+            }
+			else
+			{
+				throw new NotSupportedException("Server does not support InfoLevelPassthrough");
+			}
         }
 
         public NTStatus SetFileInformation(object handle, SetInformation information)
@@ -351,7 +387,7 @@ namespace SMBLibrary.Client
             }
             else
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("Server does not support InfoLevelPassthrough");
             }
         }
 
