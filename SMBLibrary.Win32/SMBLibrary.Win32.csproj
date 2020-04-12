@@ -4,8 +4,10 @@
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary.Win32</AssemblyName>
+    <Version>1.4.2</Version>
     <RootNamespace>SMBLibrary.Win32</RootNamespace>
     <Authors>Tal Aloni</Authors>
+    <PackageDescription>Windows specific extensions for SMBLibrary</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>

@@ -433,3 +433,6 @@ Revision History:
         SessionPacket: Added support for SMB 2.1 Large MTU.
         NBTConnectionReceiveBuffer: Added support for SMB 2.1 Large MTU.
         Added VS2019 solution and projects.
+
+1.4.2 - Server: Bugfix: Buffer was not set to the correct size for SMB2 Large MTU.
+        Client: Client: SMB1FileStore: Implemented SetFileInformation with FileInformation parameter.
