@@ -55,6 +55,8 @@ Using SMBLibrary:
 Any directory / filesystem / object you wish to share must implement the IFileSystem interface (or the lower-level INTFileStore interface).  
 You can share anything from actual directories to custom objects, as long as they expose a directory structure.  
 
+Client code examples can be found [here](ClientExamples.md).
+
 Contact:
 ========
 If you have any question, feel free to contact me.  
