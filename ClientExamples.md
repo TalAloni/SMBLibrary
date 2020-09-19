@@ -1,4 +1,4 @@
-Login and List Shares:
+Login and list shares:
 ======================
 ```
 SMB1Client client = new SMB1Client(); // SMB2Client can be used as well
@@ -90,7 +90,33 @@ status = fileStore.CloseFile(fileHandle);
 status = fileStore.Disconnect();
 ```
 
-Delete File:
+Create a file and write to it:
+==============================
+```
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);                
+string filePath = "NewFile.txt";
+if (fileStore is SMB1FileStore)
+{
+    filePath = @"\\" + filePath;
+}
+object fileHandle;
+FileStatus fileStatus;
+status = fileStore.CreateFile(out fileHandle, out fileStatus, filePath, AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE, FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_CREATE, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+if (status == NTStatus.STATUS_SUCCESS)
+{
+    int numberOfBytesWritten;
+    byte[] data = System.Text.ASCIIEncoding.ASCII.GetBytes("Hello");
+    status = fileStore.WriteFile(out numberOfBytesWritten, fileHandle, 0, data);
+    if (status != NTStatus.STATUS_SUCCESS)
+    {
+        throw new Exception("Failed to write to file");
+    }
+    status = fileStore.CloseFile(fileHandle);
+}
+status = fileStore.Disconnect();
+```
+
+Delete file:
 ============
 ```
 ISMBFileStore fileStore = client.TreeConnect("Shared", out status);                
