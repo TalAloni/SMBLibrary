@@ -17,7 +17,7 @@ if (isConnected)
 Connect to share and list files and directories - SMB1:
 =======================================================
 ```
-SMB1FileStore fileStore = client.TreeConnect("Shared", out status);
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 if (status == NTStatus.STATUS_SUCCESS)
 {
     object directoryHandle;
@@ -36,7 +36,7 @@ status = fileStore.Disconnect();
 Connect to share and list files and directories - SMB2:
 =======================================================
 ```
-SMB1FileStore fileStore = client.TreeConnect("Shared", out status);
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 if (status == NTStatus.STATUS_SUCCESS)
 {
     object directoryHandle;
