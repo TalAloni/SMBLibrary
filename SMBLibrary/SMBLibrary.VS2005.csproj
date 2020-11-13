@@ -575,11 +575,13 @@
     <Compile Include="SMB2\Enums\SessionSetup\SessionSetupFlags.cs" />
     <Compile Include="SMB2\Enums\SMB2CommandName.cs" />
     <Compile Include="SMB2\Enums\SMB2PacketHeaderFlags.cs" />
+    <Compile Include="SMB2\Enums\SMB2TransformHeaderFlags.cs" />
     <Compile Include="SMB2\Enums\TreeConnect\ShareCapabilities.cs" />
     <Compile Include="SMB2\Enums\TreeConnect\ShareFlags.cs" />
     <Compile Include="SMB2\Enums\TreeConnect\ShareType.cs" />
     <Compile Include="SMB2\Enums\Write\WriteFlags.cs" />
     <Compile Include="SMB2\SMB2Header.cs" />
+    <Compile Include="SMB2\SMB2TransformHeader.cs" />
     <Compile Include="SMB2\Structures\CreateContext.cs" />
     <Compile Include="SMB2\Structures\Enums\LockFlags.cs" />
     <Compile Include="SMB2\Structures\FileID.cs" />
