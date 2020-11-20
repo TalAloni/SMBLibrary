@@ -57,7 +57,7 @@ namespace SMBLibrary.RPC
             LittleEndianWriter.WriteUInt16(buffer, ref offset, OpNum);
             if ((Flags & PacketFlags.ObjectUUID) > 0)
             {
-                LittleEndianWriter.WriteGuidBytes(buffer, ref offset, ObjectGuid);
+                LittleEndianWriter.WriteGuid(buffer, ref offset, ObjectGuid);
             }
             ByteWriter.WriteBytes(buffer, ref offset, Data);
             ByteWriter.WriteBytes(buffer, ref offset, AuthVerifier);

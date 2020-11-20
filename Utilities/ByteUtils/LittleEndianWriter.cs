@@ -77,15 +77,15 @@ namespace Utilities
             offset += 8;
         }
 
-        public static void WriteGuidBytes(byte[] buffer, int offset, Guid value)
+        public static void WriteGuid(byte[] buffer, int offset, Guid value)
         {
             byte[] bytes = LittleEndianConverter.GetBytes(value);
             Array.Copy(bytes, 0, buffer, offset, bytes.Length);
         }
 
-        public static void WriteGuidBytes(byte[] buffer, ref int offset, Guid value)
+        public static void WriteGuid(byte[] buffer, ref int offset, Guid value)
         {
-            WriteGuidBytes(buffer, offset, value);
+            WriteGuid(buffer, offset, value);
             offset += 16;
         }
 

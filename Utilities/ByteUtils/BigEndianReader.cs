@@ -52,7 +52,7 @@ namespace Utilities
             return BigEndianConverter.ToUInt64(buffer, offset - 8);
         }
 
-        public static Guid ReadGuidBytes(byte[] buffer, ref int offset)
+        public static Guid ReadGuid(byte[] buffer, ref int offset)
         {
             offset += 16;
             return BigEndianConverter.ToGuid(buffer, offset - 16);
@@ -107,7 +107,7 @@ namespace Utilities
             return BigEndianConverter.ToUInt64(buffer, 0);
         }
 
-        public static Guid ReadGuidBytes(Stream stream)
+        public static Guid ReadGuid(Stream stream)
         {
             byte[] buffer = new byte[16];
             stream.Read(buffer, 0, 16);

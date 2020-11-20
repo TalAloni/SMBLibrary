@@ -74,7 +74,7 @@ namespace SMBLibrary.SMB1
             ByteWriter.WriteByte(this.SMBParameters, 33, ChallengeLength);
 
             this.SMBData = new byte[16 + SecurityBlob.Length];
-            LittleEndianWriter.WriteGuidBytes(this.SMBData, 0, ServerGuid);
+            LittleEndianWriter.WriteGuid(this.SMBData, 0, ServerGuid);
             ByteWriter.WriteBytes(this.SMBData, 16, SecurityBlob);
 
             return base.GetBytes(isUnicode);

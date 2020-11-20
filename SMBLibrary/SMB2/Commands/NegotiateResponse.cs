@@ -81,7 +81,7 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt16(buffer, offset + 2, (ushort)SecurityMode);
             LittleEndianWriter.WriteUInt16(buffer, offset + 4, (ushort)DialectRevision);
             LittleEndianWriter.WriteUInt16(buffer, offset + 6, NegotiateContextCount);
-            LittleEndianWriter.WriteGuidBytes(buffer, offset + 8, ServerGuid);
+            LittleEndianWriter.WriteGuid(buffer, offset + 8, ServerGuid);
             LittleEndianWriter.WriteUInt32(buffer, offset + 24, (uint)Capabilities);
             LittleEndianWriter.WriteUInt32(buffer, offset + 28, MaxTransactSize);
             LittleEndianWriter.WriteUInt32(buffer, offset + 32, MaxReadSize);

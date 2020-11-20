@@ -33,7 +33,7 @@ namespace SMBLibrary
 
         public override void WriteBytes(byte[] buffer, int offset)
         {
-            LittleEndianWriter.WriteGuidBytes(buffer, offset + 0, ObjectID);
+            LittleEndianWriter.WriteGuid(buffer, offset + 0, ObjectID);
             ByteWriter.WriteBytes(buffer, offset + 16, ExtendedInfo);
         }
 

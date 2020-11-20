@@ -35,7 +35,7 @@ namespace SMBLibrary.RPC
 
         public void WriteBytes(byte[] buffer, int offset)
         {
-            LittleEndianWriter.WriteGuidBytes(buffer, offset + 0, InterfaceUUID);
+            LittleEndianWriter.WriteGuid(buffer, offset + 0, InterfaceUUID);
             LittleEndianWriter.WriteUInt32(buffer, offset + 16, InterfaceVersion);
         }
 

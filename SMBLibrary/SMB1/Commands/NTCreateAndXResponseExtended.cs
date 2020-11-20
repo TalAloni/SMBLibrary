@@ -85,7 +85,7 @@ namespace SMBLibrary.SMB1
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, (ushort)ResourceType);
             LittleEndianWriter.WriteUInt16(this.SMBParameters, ref parametersOffset, NMPipeStatus_or_FileStatusFlags);
             ByteWriter.WriteByte(this.SMBParameters, ref parametersOffset, Convert.ToByte(Directory));
-            LittleEndianWriter.WriteGuidBytes(this.SMBParameters, ref parametersOffset, VolumeGuid);
+            LittleEndianWriter.WriteGuid(this.SMBParameters, ref parametersOffset, VolumeGuid);
             LittleEndianWriter.WriteUInt64(this.SMBParameters, ref parametersOffset, FileID);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)MaximalAccessRights);
             LittleEndianWriter.WriteUInt32(this.SMBParameters, ref parametersOffset, (uint)GuestMaximalAccessRights);

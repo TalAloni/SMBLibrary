@@ -55,7 +55,7 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt16(buffer, offset + 4, (ushort)SecurityMode);
             LittleEndianWriter.WriteUInt16(buffer, offset + 6, Reserved);
             LittleEndianWriter.WriteUInt32(buffer, offset + 8, (uint)Capabilities);
-            LittleEndianWriter.WriteGuidBytes(buffer, offset + 12, ClientGuid);
+            LittleEndianWriter.WriteGuid(buffer, offset + 12, ClientGuid);
             LittleEndianWriter.WriteInt64(buffer, offset + 28, ClientStartTime.ToFileTimeUtc());
             
             for (int index = 0; index < Dialects.Count; index++)

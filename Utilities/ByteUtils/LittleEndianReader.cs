@@ -89,7 +89,7 @@ namespace Utilities
             return LittleEndianConverter.ToUInt64(buffer, 0);
         }
 
-        public static Guid ReadGuidBytes(Stream stream)
+        public static Guid ReadGuid(Stream stream)
         {
             byte[] buffer = new byte[16];
             stream.Read(buffer, 0, 16);

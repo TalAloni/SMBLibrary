@@ -89,15 +89,15 @@ namespace Utilities
             offset += 8;
         }
 
-        public static void WriteGuidBytes(byte[] buffer, int offset, Guid value)
+        public static void WriteGuid(byte[] buffer, int offset, Guid value)
         {
             byte[] bytes = BigEndianConverter.GetBytes(value);
             Array.Copy(bytes, 0, buffer, offset, bytes.Length);
         }
 
-        public static void WriteGuidBytes(byte[] buffer, ref int offset, Guid value)
+        public static void WriteGuid(byte[] buffer, ref int offset, Guid value)
         {
-            WriteGuidBytes(buffer, offset, value);
+            WriteGuid(buffer, offset, value);
             offset += 16;
         }
 
@@ -143,7 +143,7 @@ namespace Utilities
             stream.Write(bytes, 0, bytes.Length);
         }
 
-        public static void WriteGuidBytes(Stream stream, Guid value)
+        public static void WriteGuid(Stream stream, Guid value)
         {
             byte[] bytes = BigEndianConverter.GetBytes(value);
             stream.Write(bytes, 0, bytes.Length);

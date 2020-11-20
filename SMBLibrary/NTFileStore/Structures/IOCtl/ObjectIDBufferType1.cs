@@ -38,10 +38,10 @@ namespace SMBLibrary
         public byte[] GetBytes()
         {
             byte[] buffer = new byte[Length];
-            LittleEndianWriter.WriteGuidBytes(buffer, 0, ObjectId);
-            LittleEndianWriter.WriteGuidBytes(buffer, 16, BirthVolumeId);
-            LittleEndianWriter.WriteGuidBytes(buffer, 32, BirthObjectId);
-            LittleEndianWriter.WriteGuidBytes(buffer, 48, DomainId);
+            LittleEndianWriter.WriteGuid(buffer, 0, ObjectId);
+            LittleEndianWriter.WriteGuid(buffer, 16, BirthVolumeId);
+            LittleEndianWriter.WriteGuid(buffer, 32, BirthObjectId);
+            LittleEndianWriter.WriteGuid(buffer, 48, DomainId);
             return buffer;
         }
     }
