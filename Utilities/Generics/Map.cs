@@ -1,13 +1,18 @@
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+ * 
+ * Based on:
+ * http://stackoverflow.com/questions/10966331/two-way-bidirectional-dictionary-in-c
+ * 
+ * You can redistribute this program and/or modify it under the terms of
+ * the GNU Lesser Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Utilities
 {
-    /// <summary>
-    /// Based on:
-    /// http://stackoverflow.com/questions/10966331/two-way-bidirectional-dictionary-in-c
-    /// </summary>
     public class Map<T1, T2>
     {
         private Dictionary<T1, T2> m_forward = new Dictionary<T1, T2>();

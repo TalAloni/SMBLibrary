@@ -1,10 +1,11 @@
+/* Author: Damien Guard (damieng@gmail.com)
+ * http://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net
+ */
 using System;
 using System.Security.Cryptography;
 
 namespace Utilities
 {
-    // Author: Damien Guard (damieng@gmail.com)
-    // http://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net
     public class CRC32 : HashAlgorithm
     {
         public const UInt32 DefaultPolynomial = 0xedb88320;
