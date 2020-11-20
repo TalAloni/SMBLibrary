@@ -42,6 +42,7 @@
     <Compile Include="Conversion\BigEndianConverter.cs" />
     <Compile Include="Conversion\Conversion.SimpleTypes.cs" />
     <Compile Include="Conversion\LittleEndianConverter.cs" />
+    <Compile Include="Cryptography\AesCmac.cs" />
     <Compile Include="Cryptography\CRC32.cs" />
     <Compile Include="Generics\BlockingQueue.cs" />
     <Compile Include="Generics\KeyValuePairList.cs" />

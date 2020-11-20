@@ -12,6 +12,38 @@ namespace SMBLibrary.SMB2
 {
     internal class SMB2Cryptography
     {
+        public static byte[] CalculateSignature(byte[] signingKey, SMB2Dialect dialect, byte[] buffer, int offset, int paddedLength)
+        {
+            if (dialect == SMB2Dialect.SMB202 || dialect == SMB2Dialect.SMB210)
+            {
+                return new HMACSHA256(signingKey).ComputeHash(buffer, offset, paddedLength);
+            }
+            else
+            {
+                return AesCmac.CalculateAesCmac(signingKey, buffer, offset, paddedLength);
+            }
+        }
+
+        public static byte[] GenerateSigningKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
+        {
+            if (dialect == SMB2Dialect.SMB202 || dialect == SMB2Dialect.SMB210)
+            {
+                return sessionKey;
+            }
+
+            if (dialect == SMB2Dialect.SMB311 && preauthIntegrityHashValue == null)
+            {
+                throw new ArgumentNullException("preauthIntegrityHashValue");
+            }
+
+            string labelString = (dialect == SMB2Dialect.SMB311) ? "SMBSigningKey" : "SMB2AESCMAC";
+            byte[] label = GetNullTerminatedAnsiString(labelString);
+            byte[] context = (dialect == SMB2Dialect.SMB311) ? preauthIntegrityHashValue : GetNullTerminatedAnsiString("SmbSign");
+
+            HMACSHA256 hmac = new HMACSHA256(sessionKey);
+            return SP800_1008.DeriveKey(hmac, label, context, 128);
+        }
+
         public static byte[] GenerateEncryptionKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
         {
             if (dialect == SMB2Dialect.SMB311 && preauthIntegrityHashValue == null)

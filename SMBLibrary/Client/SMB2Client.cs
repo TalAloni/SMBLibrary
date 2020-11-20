@@ -523,7 +523,7 @@ namespace SMBLibrary.Client
                 {
                     request.Header.Signature = new byte[16]; // Request could be reused
                     byte[] buffer = request.GetBytes();
-                    byte[] signature = new HMACSHA256(m_sessionKey).ComputeHash(buffer, 0, buffer.Length);
+                    byte[] signature = SMB2Cryptography.CalculateSignature(m_sessionKey, m_dialect, buffer, 0, buffer.Length);
                     // [MS-SMB2] The first 16 bytes of the hash MUST be copied into the 16-byte signature field of the SMB2 Header.
                     request.Header.Signature = ByteReader.ReadBytes(signature, 0, 16);
                 }

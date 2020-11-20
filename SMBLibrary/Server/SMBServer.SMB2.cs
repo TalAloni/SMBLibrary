@@ -246,9 +246,23 @@ namespace SMBLibrary.Server
             }
 
             SessionMessagePacket packet = new SessionMessagePacket();
-            packet.Trailer = SMB2Command.GetCommandChainBytes(responseChain, sessionKey);
+            SMB2Dialect smb2Dialect = (sessionKey != null) ? ToSMB2Dialect(state.Dialect) : SMB2Dialect.SMB2xx;
+            packet.Trailer = SMB2Command.GetCommandChainBytes(responseChain, sessionKey, smb2Dialect);
             state.SendQueue.Enqueue(packet);
             state.LogToServer(Severity.Verbose, "SMB2 response chain queued: Response count: {0}, First response: {1}, Packet length: {2}", responseChain.Count, responseChain[0].CommandName.ToString(), packet.Length);
+        }
+
+        private static SMB2Dialect ToSMB2Dialect(SMBDialect smbDialect)
+        {
+            switch (smbDialect)
+            {
+                case SMBDialect.SMB202:
+                    return SMB2Dialect.SMB202;
+                case SMBDialect.SMB210:
+                    return SMB2Dialect.SMB210;
+                default:
+                    throw new ArgumentException("Unsupported SMB2 Dialect: " + smbDialect.ToString());
+            }
         }
 
         private static void UpdateSMB2Header(SMB2Command response, SMB2Command request, ConnectionState state)
