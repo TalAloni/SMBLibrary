@@ -115,5 +115,23 @@ namespace Utilities
             ByteUtils.CopyStream(stream, temp);
             return temp.ToArray();
         }
+
+        public static string ReadAnsiString(Stream stream, int length)
+        {
+            byte[] buffer = ReadBytes(stream, length);
+            return ASCIIEncoding.GetEncoding(28591).GetString(buffer);
+        }
+
+        public static string ReadNullTerminatedAnsiString(Stream stream)
+        {
+            StringBuilder builder = new StringBuilder();
+            char c = (char)stream.ReadByte();
+            while (c != '\0')
+            {
+                builder.Append(c);
+                c = (char)stream.ReadByte();
+            }
+            return builder.ToString();
+        }
     }
 }
