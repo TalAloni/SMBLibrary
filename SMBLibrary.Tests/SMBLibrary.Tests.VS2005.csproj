@@ -35,6 +35,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AesCcmTests.cs" />
     <Compile Include="NetBiosTests.cs" />
     <Compile Include="NTFileStore\NTDirectoryFileSystemTests.cs" />
     <Compile Include="NTFileStore\NTFileStoreTests.cs" />

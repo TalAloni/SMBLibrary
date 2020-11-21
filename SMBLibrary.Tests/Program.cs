@@ -10,6 +10,7 @@ namespace SMBLibrary.Tests
         {
             new NTLMAuthenticationTests().TestAll();
             new NTLMSigningTests().TestAll();
+            new AesCcmTests().TestAll();
             new SMB2EncryptionTests().TestAll();
             new RC4Tests().TestAll();
             
