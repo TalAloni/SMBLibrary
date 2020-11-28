@@ -1,6 +1,6 @@
 About SMBLibrary:
 =================
-SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0 and SMB 2.1 server implementation.  
+SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation.  
 SMBLibrary gives .NET developers an easy way to share a directory / file system / virtual file system, with any operating system that supports the SMB protocol.  
 SMBLibrary is modular, you can take advantage of Integrated Windows Authentication and the Windows storage subsystem on a Windows host or use independent implementations that allow for cross-platform compatibility.  
 SMBLibrary shares can be accessed from any Windows version since Windows NT 4.0.  
@@ -22,7 +22,7 @@ By default, Windows already use ports 139 and 445. there are several techniques 
 ##### Method 1: Disable Windows File and Printer Sharing server completely:
 ###### Windows XP/2003:
 1. For every network adapter: Uncheck 'File and Printer Sharing for Microsoft Networks".
-2. Navigate to HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters and set SMBDeviceEnabled to '0' (this will free port 445).
+2. Navigate to 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters' and set 'SMBDeviceEnabled' to '0' (this will free port 445).
 3. Reboot.
 
 ###### Windows 7/8/2008/2012:
@@ -41,14 +41,11 @@ SMBLibrary offers a name service of its own.
 
 * You can install a virtual network adapter driver for Windows to be used solely with SMBLibrary:
   - You can install the 'Microsoft Loopback adapter' and use it for server-only communication with SMBLibrary.
-  - A limited alternative is 'OpenVPN TAP-Windows Adapter' that can be used for client communication with SMBLibrary.
-
-  However, you will have to configure this adapter to use a separate network segment.
-The driver installation can be downloaded from: https://openvpn.net/index.php/open-source/downloads.html
-To get started, go to Adapter properties > 'Advanced' and set 'Media Status' to 'Always Connected'.
 
 ###### Windows 7/8/2008/2012:
-* if you want localhost access from Windows explorer to work as expected, you must use port 445, you must also specify the IP address that you selected (\\\\127.0.0.1 or \\\\localhost will not work as expected).
+* It's possible to prevent Windows from using port 445 by removing all of the '\Device\Tcpip_{..}' and '\Device\Tcpip6_{..}' entries from the `Bind' registry key under 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Linkage'.  
+
+* if you want localhost access from Windows explorer to work as expected, you must specify the IP address that you selected (\\\\127.0.0.1 or \\\\localhost will not work as expected), in addition, I have observed that when connecting to the first IP address of a given adapter, Windows will only attempt to connect to port 445.
 
 ##### Method 3: Use an IP address that is invisible to Windows File Sharing:
 Using PCap.Net you can programmatically setup a virtual Network adapter and intercept SMB traffic (similar to how a virtual machine operates), You should use the ARP protocol to notify the network about the new IP address, and then process the incoming SMB traffic using SMBLibrary, good luck! 
@@ -57,6 +54,8 @@ Using SMBLibrary:
 =================
 Any directory / filesystem / object you wish to share must implement the IFileSystem interface (or the lower-level INTFileStore interface).  
 You can share anything from actual directories to custom objects, as long as they expose a directory structure.  
+
+Client code examples can be found [here](ClientExamples.md).
 
 Contact:
 ========

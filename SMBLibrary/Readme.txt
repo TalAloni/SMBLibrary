@@ -1,6 +1,6 @@
 About SMBLibrary:
 =================
-SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0 and SMB 2.1 server implementation.
+SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation.  
 SMBLibrary gives .NET developers an easy way to share a directory / file system / virtual file system, with any operating system that supports the SMB protocol.
 SMBLibrary is modular, you can take advantage of Integrated Windows Authentication and the Windows storage subsystem on a Windows host or use independent implementations that allow for cross-platform compatibility.
 SMBLibrary shares can be accessed from any Windows version since Windows NT 4.0.
@@ -44,10 +44,6 @@ SMBLibrary offers a name service of its own.
 
 • You can install a virtual network adapter driver for Windows to be used solely with SMBLibrary:
 - You can install the 'Microsoft Loopback adapter' and use it for server-only communication with SMBLibrary.
-- A limited alternative is 'OpenVPN TAP-Windows Adapter' that can be used for client communication with SMBLibrary,
-However, you will have to configure this adapter to use a separate network segment.
-The driver installation can be downloaded from: https://openvpn.net/index.php/open-source/downloads.html
-To get started, go to Adapter properties > 'Advanced' and set 'Media Status' to 'Always Connected'.
 
 Windows 7/8/2008/2012:
 • if you want localhost access from Windows explorer to work as expected, you must use port 445, you must also specify the IP address that you selected (\\127.0.0.1 or \\localhost will not work as expected).
