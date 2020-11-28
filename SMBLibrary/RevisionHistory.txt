@@ -436,3 +436,11 @@ Revision History:
 
 1.4.2 - Server: Bugfix: Buffer was not set to the correct size for SMB2 Large MTU.
         Client: Client: SMB1FileStore: Implemented SetFileInformation with FileInformation parameter.
+
+1.4.3 - Client: Bugfix: Reading FindInformationList may have caused infinite loop.
+        Added SMB2TransformHeader implementation.
+        Added logic to calculate SMB 3.x encryption / decryption keys.
+        Added SMB 3.0 message signing logic.
+        SMB2Cryptography: Added logic for SMB 3.0 encryption.
+        Client: Added SMB 3.0 support.
+        Server: Added option to enable SMB 3.0 dialect.
