@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -67,12 +67,14 @@ namespace SMBLibrary.Server.SMB2
                 {
                     state.LogToServer(Severity.Information, "Session Setup: User '{0}' authenticated successfully (Domain: '{1}', Workstation: '{2}', OS version: '{3}').", userName, domainName, machineName, osVersion);
                     bool signingRequired = (request.SecurityMode & SecurityMode.SigningRequired) > 0;
-                    state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken, signingRequired);
+                    SMB2Dialect smb2Dialect = SMBServer.ToSMB2Dialect(state.Dialect);
+                    byte[] signingKey = SMB2Cryptography.GenerateSigningKey(sessionKey, smb2Dialect, null);
+                    state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken, signingRequired, signingKey);
                 }
                 else
                 {
                     state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}', OS version: '{3}'), logged in as guest.", userName, domainName, machineName, osVersion);
-                    state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken, false);
+                    state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken, false, null);
                     response.SessionFlags = SessionFlags.IsGuest;
                 }
             }

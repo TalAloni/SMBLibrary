@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,6 +20,7 @@ namespace SMBLibrary.Server
         private SecurityContext m_securityContext;
         private DateTime m_creationDT;
         private bool m_signingRequired;
+        private byte[] m_signingKey;
 
         // Key is TreeID
         private Dictionary<uint, ISMBShare> m_connectedTrees = new Dictionary<uint, ISMBShare>();
@@ -32,7 +33,7 @@ namespace SMBLibrary.Server
         // Key is the volatile portion of the FileID
         private Dictionary<ulong, OpenSearch> m_openSearches = new Dictionary<ulong, OpenSearch>();
 
-        public SMB2Session(SMB2ConnectionState connection, ulong sessionID, string userName, string machineName, byte[] sessionKey, object accessToken, bool signingRequired)
+        public SMB2Session(SMB2ConnectionState connection, ulong sessionID, string userName, string machineName, byte[] sessionKey, object accessToken, bool signingRequired, byte[] signingKey)
         {
             m_connection = connection;
             m_sessionID = sessionID;
@@ -40,6 +41,7 @@ namespace SMBLibrary.Server
             m_securityContext = new SecurityContext(userName, machineName, connection.ClientEndPoint, connection.AuthenticationContext, accessToken);
             m_creationDT = DateTime.UtcNow;
             m_signingRequired = signingRequired;
+            m_signingKey = signingKey;
         }
 
         private uint? AllocateTreeID()
@@ -254,6 +256,14 @@ namespace SMBLibrary.Server
             get
             {
                 return m_signingRequired;
+            }
+        }
+
+        public byte[] SigningKey
+        {
+            get
+            {
+                return m_signingKey;
             }
         }
     }

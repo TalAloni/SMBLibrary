@@ -228,7 +228,7 @@ namespace SMBLibrary.Server
 
         private static void EnqueueResponseChain(ConnectionState state, List<SMB2Command> responseChain)
         {
-            byte[] sessionKey = null;
+            byte[] signingKey = null;
             if (state is SMB2ConnectionState)
             {
                 // Note: multiple sessions MAY be multiplexed on the same connection, so theoretically
@@ -240,19 +240,19 @@ namespace SMBLibrary.Server
                     SMB2Session session = ((SMB2ConnectionState)state).GetSession(sessionID);
                     if (session != null)
                     {
-                        sessionKey = session.SessionKey;
+                        signingKey = session.SigningKey;
                     }
                 }
             }
 
             SessionMessagePacket packet = new SessionMessagePacket();
-            SMB2Dialect smb2Dialect = (sessionKey != null) ? ToSMB2Dialect(state.Dialect) : SMB2Dialect.SMB2xx;
-            packet.Trailer = SMB2Command.GetCommandChainBytes(responseChain, sessionKey, smb2Dialect);
+            SMB2Dialect smb2Dialect = (signingKey != null) ? ToSMB2Dialect(state.Dialect) : SMB2Dialect.SMB2xx;
+            packet.Trailer = SMB2Command.GetCommandChainBytes(responseChain, signingKey, smb2Dialect);
             state.SendQueue.Enqueue(packet);
             state.LogToServer(Severity.Verbose, "SMB2 response chain queued: Response count: {0}, First response: {1}, Packet length: {2}", responseChain.Count, responseChain[0].CommandName.ToString(), packet.Length);
         }
 
-        private static SMB2Dialect ToSMB2Dialect(SMBDialect smbDialect)
+        internal static SMB2Dialect ToSMB2Dialect(SMBDialect smbDialect)
         {
             switch (smbDialect)
             {
