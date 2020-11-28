@@ -17,11 +17,13 @@ namespace SMBLibrary.Client
 
         private SMB2Client m_client;
         private uint m_treeID;
+        private bool m_encryptShareData;
 
-        public SMB2FileStore(SMB2Client client, uint treeID)
+        public SMB2FileStore(SMB2Client client, uint treeID, bool encryptShareData)
         {
             m_client = client;
             m_treeID = treeID;
+            m_encryptShareData = encryptShareData;
         }
 
         public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
@@ -320,7 +322,7 @@ namespace SMBLibrary.Client
         private void TrySendCommand(SMB2Command request)
         {
             request.Header.TreeID = m_treeID;
-            m_client.TrySendCommand(request);
+            m_client.TrySendCommand(request, m_encryptShareData);
         }
 
         public uint MaxReadSize
