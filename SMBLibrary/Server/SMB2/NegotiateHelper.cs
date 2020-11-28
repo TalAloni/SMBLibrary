@@ -73,10 +73,15 @@ namespace SMBLibrary.Server.SMB2
             return response;
         }
 
-        internal static SMB2Command GetNegotiateResponse(NegotiateRequest request, GSSProvider securityProvider, ConnectionState state, SMBTransportType transportType, Guid serverGuid, DateTime serverStartTime)
+        internal static SMB2Command GetNegotiateResponse(NegotiateRequest request, GSSProvider securityProvider, ConnectionState state, SMBTransportType transportType, Guid serverGuid, DateTime serverStartTime, bool enableSMB3)
         {
             NegotiateResponse response = new NegotiateResponse();
-            if (request.Dialects.Contains(SMB2Dialect.SMB210))
+            if (enableSMB3 && request.Dialects.Contains(SMB2Dialect.SMB300))
+            {
+                state.Dialect = SMBDialect.SMB300;
+                response.DialectRevision = SMB2Dialect.SMB300;
+            }
+            else if (request.Dialects.Contains(SMB2Dialect.SMB210))
             {
                 state.Dialect = SMBDialect.SMB210;
                 response.DialectRevision = SMB2Dialect.SMB210;

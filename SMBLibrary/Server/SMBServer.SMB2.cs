@@ -83,7 +83,7 @@ namespace SMBLibrary.Server
                 if (command is NegotiateRequest)
                 {
                     NegotiateRequest request = (NegotiateRequest)command;
-                    SMB2Command response = NegotiateHelper.GetNegotiateResponse(request, m_securityProvider, state, m_transport, m_serverGuid, m_serverStartTime);
+                    SMB2Command response = NegotiateHelper.GetNegotiateResponse(request, m_securityProvider, state, m_transport, m_serverGuid, m_serverStartTime, m_enableSMB3);
                     if (state.Dialect != SMBDialect.NotSet)
                     {
                         state = new SMB2ConnectionState(state);
@@ -260,6 +260,8 @@ namespace SMBLibrary.Server
                     return SMB2Dialect.SMB202;
                 case SMBDialect.SMB210:
                     return SMB2Dialect.SMB210;
+                case SMBDialect.SMB300:
+                    return SMB2Dialect.SMB300;
                 default:
                     throw new ArgumentException("Unsupported SMB2 Dialect: " + smbDialect.ToString());
             }

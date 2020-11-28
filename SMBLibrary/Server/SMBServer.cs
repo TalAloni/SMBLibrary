@@ -38,6 +38,7 @@ namespace SMBLibrary.Server
         private SMBTransportType m_transport;
         private bool m_enableSMB1;
         private bool m_enableSMB2;
+        private bool m_enableSMB3;
         private Socket m_listenerSocket;
         private bool m_listening;
         private DateTime m_serverStartTime;
@@ -61,7 +62,12 @@ namespace SMBLibrary.Server
 
         public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2)
         {
-            Start(serverAddress, transport, enableSMB1, enableSMB2, null);
+            Start(serverAddress, transport, enableSMB1, enableSMB2, false);
+        }
+
+        public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, bool enableSMB3)
+        {
+            Start(serverAddress, transport, enableSMB1, enableSMB2, enableSMB3, null);
         }
 
         /// <param name="connectionInactivityTimeout">
@@ -70,15 +76,21 @@ namespace SMBLibrary.Server
         /// to prevent such connections from hanging around indefinitely, this parameter can be used.
         /// </param>
         /// <exception cref="System.Net.Sockets.SocketException"></exception>
-        public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, TimeSpan? connectionInactivityTimeout)
+        public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
         {
             if (!m_listening)
             {
+                if (enableSMB3 && !enableSMB2)
+                {
+                    throw new ArgumentException("SMB2 must be enabled for SMB3 to be enabled");
+                }
+
                 Log(Severity.Information, "Starting server");
                 m_serverAddress = serverAddress;
                 m_transport = transport;
                 m_enableSMB1 = enableSMB1;
                 m_enableSMB2 = enableSMB2;
+                m_enableSMB3 = enableSMB3;
                 m_listening = true;
                 m_serverStartTime = DateTime.Now;
 
@@ -290,7 +302,7 @@ namespace SMBLibrary.Server
                 // Note: To be compatible with SMB2 specifications, we must accept SMB_COM_NEGOTIATE.
                 // We will disconnect the connection if m_enableSMB1 == false and the client does not support SMB2.
                 bool acceptSMB1 = (state.Dialect == SMBDialect.NotSet || state.Dialect == SMBDialect.NTLM012);
-                bool acceptSMB2 = (m_enableSMB2 && (state.Dialect == SMBDialect.NotSet || state.Dialect == SMBDialect.SMB202 || state.Dialect == SMBDialect.SMB210));
+                bool acceptSMB2 = (m_enableSMB2 && (state.Dialect == SMBDialect.NotSet || state.Dialect == SMBDialect.SMB202 || state.Dialect == SMBDialect.SMB210 || state.Dialect == SMBDialect.SMB300));
 
                 if (SMB1Header.IsValidSMB1Header(packet.Trailer))
                 {
