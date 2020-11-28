@@ -44,7 +44,7 @@ namespace SMBLibrary.SMB2
             return SP800_1008.DeriveKey(hmac, label, context, 128);
         }
 
-        public static byte[] GenerateEncryptionKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
+        public static byte[] GenerateClientEncryptionKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
         {
             if (dialect == SMB2Dialect.SMB311 && preauthIntegrityHashValue == null)
             {
@@ -59,7 +59,7 @@ namespace SMBLibrary.SMB2
             return SP800_1008.DeriveKey(hmac, label, context, 128);
         }
 
-        public static byte[] GenerateDecryptionKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
+        public static byte[] GenerateClientDecryptionKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
         {
             if (dialect == SMB2Dialect.SMB311 && preauthIntegrityHashValue == null)
             {
