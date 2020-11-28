@@ -15,7 +15,10 @@ namespace SMBLibrary.SMB2
     public class SMB2TransformHeader
     {
         public const int Length = 52;
-        public const int SignatureOffset = 4;
+        public const int SignatureLength = 16;
+        public const int NonceLength = 16;
+
+        private const int NonceStartOffset = 20;
 
         public static readonly byte[] ProtocolSignature = new byte[] { 0xFD, 0x53, 0x4D, 0x42 };
 
@@ -35,8 +38,8 @@ namespace SMBLibrary.SMB2
         public SMB2TransformHeader(byte[] buffer, int offset)
         {
             ProtocolId = ByteReader.ReadBytes(buffer, offset + 0, 4);
-            Signature = ByteReader.ReadBytes(buffer, offset + 4, 16);
-            Nonce = ByteReader.ReadBytes(buffer, offset + 20, 16);
+            Signature = ByteReader.ReadBytes(buffer, offset + 4, SignatureLength);
+            Nonce = ByteReader.ReadBytes(buffer, offset + 20, NonceLength);
             OriginalMessageSize = LittleEndianConverter.ToUInt32(buffer, offset + 36);
             Reserved = LittleEndianConverter.ToUInt16(buffer, offset + 40);
             Flags = (SMB2TransformHeaderFlags)LittleEndianConverter.ToUInt16(buffer, offset + 42);
@@ -47,11 +50,29 @@ namespace SMBLibrary.SMB2
         {
             ByteWriter.WriteBytes(buffer, offset + 0, ProtocolId);
             ByteWriter.WriteBytes(buffer, offset + 4, Signature);
-            ByteWriter.WriteBytes(buffer, offset + 20, Nonce);
-            LittleEndianWriter.WriteUInt32(buffer, offset + 36, OriginalMessageSize);
-            LittleEndianWriter.WriteUInt16(buffer, offset + 40, Reserved);
-            LittleEndianWriter.WriteUInt16(buffer, offset + 42, (ushort)Flags);
-            LittleEndianWriter.WriteUInt64(buffer, offset + 44, SessionId);
+            WriteAssociatedData(buffer, offset + 20);
+        }
+
+        private void WriteAssociatedData(byte[] buffer, int offset)
+        {
+            ByteWriter.WriteBytes(buffer, offset + 0, Nonce);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 16, OriginalMessageSize);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 20, Reserved);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 22, (ushort)Flags);
+            LittleEndianWriter.WriteUInt64(buffer, offset + 24, SessionId);
+        }
+
+        public byte[] GetAssociatedData()
+        {
+            byte[] buffer = new byte[Length - NonceStartOffset];
+            WriteAssociatedData(buffer, 0);
+            return buffer;
+        }
+
+        public static bool IsTransformHeader(byte[] buffer, int offset)
+        {
+            byte[] protocolId = ByteReader.ReadBytes(buffer, offset + 0, 4);
+            return ByteUtils.AreByteArraysEqual(ProtocolSignature, protocolId);
         }
     }
 }
