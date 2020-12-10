@@ -47,6 +47,7 @@
     <Compile Include="Cryptography\CRC32.cs" />
     <Compile Include="Generics\BlockingQueue.cs" />
     <Compile Include="Generics\KeyValuePairList.cs" />
+    <Compile Include="Generics\KeyValuePairList.Sort.cs" />
     <Compile Include="Generics\Map.cs" />
     <Compile Include="Generics\Reference.cs" />
     <Compile Include="Generics\SortedList.cs" />
