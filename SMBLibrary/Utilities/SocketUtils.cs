@@ -25,12 +25,19 @@ namespace Utilities
         public static void SetKeepAlive(Socket socket, bool enable, TimeSpan timeout, TimeSpan interval)
         {
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-            // https://msdn.microsoft.com/en-us/library/dd877220.aspx
-            byte[] tcp_keepalive = new byte[12];
-            LittleEndianWriter.WriteUInt32(tcp_keepalive, 0, Convert.ToUInt32(enable));
-            LittleEndianWriter.WriteUInt32(tcp_keepalive, 4, (uint)timeout.TotalMilliseconds);
-            LittleEndianWriter.WriteUInt32(tcp_keepalive, 8, (uint)interval.TotalMilliseconds);
-            socket.IOControl(IOControlCode.KeepAliveValues, tcp_keepalive, null);
+            try
+            {
+                // https://msdn.microsoft.com/en-us/library/dd877220.aspx
+                byte[] tcp_keepalive = new byte[12];
+                LittleEndianWriter.WriteUInt32(tcp_keepalive, 0, Convert.ToUInt32(enable));
+                LittleEndianWriter.WriteUInt32(tcp_keepalive, 4, (uint)timeout.TotalMilliseconds);
+                LittleEndianWriter.WriteUInt32(tcp_keepalive, 8, (uint)interval.TotalMilliseconds);
+                socket.IOControl(IOControlCode.KeepAliveValues, tcp_keepalive, null);
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // Setting the timeout value is only supported by .NET Core on Windows.
+            }
         }
 
         /// <summary>
