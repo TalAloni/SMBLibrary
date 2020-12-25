@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyName>DiskAccessLibrary.FileSystems.Abstractions</AssemblyName>
+    <Version>1.0.0</Version>
+    <NoWarn>1573;1591</NoWarn>
+    <RootNamespace>DiskAccessLibrary.FileSystems.Abstractions</RootNamespace>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>Tal Aloni</Authors>
+    <PackageDescription>DiskAccessLibrary abstractions and interfaces for FileSystem implementations</PackageDescription>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TalAloni/DynamicDiskPartitioner</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TalAloni/DynamicDiskPartitioner</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

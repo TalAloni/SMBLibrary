@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using DiskAccessLibrary.FileSystems.Abstractions;
 using Utilities;
 
 namespace SMBLibrary

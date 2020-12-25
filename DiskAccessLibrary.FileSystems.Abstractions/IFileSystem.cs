@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Utilities
+namespace DiskAccessLibrary.FileSystems.Abstractions
 {
     public interface IFileSystem
     {

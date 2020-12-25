@@ -3,15 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskAccessLibrary.FileSystems.Abstractions", "DiskAccessLibrary.FileSystems.Abstractions\DiskAccessLibrary.FileSystems.Abstractions.csproj", "{9119EC7E-AF78-4814-BF03-F3823A29A471}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities", "Utilities\Utilities.csproj", "{6E0F2D1E-6167-4032-BA90-DEE3A99207D0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMBLibrary", "SMBLibrary\SMBLibrary.csproj", "{8D9E8F5D-FD13-4E4C-9723-A333DA2034A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMBLibrary.Win32", "SMBLibrary.Win32\SMBLibrary.Win32.csproj", "{8CE25496-A52B-4841-822F-74C469D10EE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMBServer", "SMBServer\SMBServer.csproj", "{70D43E2A-26A2-4046-A472-5BA8C9437612}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMBServer", "SMBServer\SMBServer.csproj", "{70D43E2A-26A2-4046-A472-5BA8C9437612}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMBLibrary.Tests", "SMBLibrary.Tests\SMBLibrary.Tests.csproj", "{C79B06EB-32C1-44CA-B7E1-A891B8135658}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMBLibrary.Tests", "SMBLibrary.Tests\SMBLibrary.Tests.csproj", "{C79B06EB-32C1-44CA-B7E1-A891B8135658}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +21,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9119EC7E-AF78-4814-BF03-F3823A29A471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9119EC7E-AF78-4814-BF03-F3823A29A471}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9119EC7E-AF78-4814-BF03-F3823A29A471}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9119EC7E-AF78-4814-BF03-F3823A29A471}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6E0F2D1E-6167-4032-BA90-DEE3A99207D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6E0F2D1E-6167-4032-BA90-DEE3A99207D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E0F2D1E-6167-4032-BA90-DEE3A99207D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
