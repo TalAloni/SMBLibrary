@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,7 +6,6 @@
  */
 using System;
 using System.IO;
-using DiskAccessLibrary.FileSystems.Abstractions;
 
 namespace SMBLibrary.Server
 {
@@ -26,13 +25,6 @@ namespace SMBLibrary.Server
         {
             m_name = shareName;
             m_fileSystem = fileSystem;
-            m_cachingPolicy = cachingPolicy;
-        }
-
-        public FileSystemShare(string shareName, IFileSystem fileSystem, CachingPolicy cachingPolicy)
-        {
-            m_name = shareName;
-            m_fileSystem = new NTFileSystemAdapter(fileSystem);
             m_cachingPolicy = cachingPolicy;
         }
 

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyName>SMBLibrary.Adapters</AssemblyName>
+    <Version>1.4.3</Version>
+    <RootNamespace>SMBLibrary.Adapters</RootNamespace>
+    <Authors>Tal Aloni</Authors>
+    <PackageDescription>FileSystem adapters for SMBLibrary</PackageDescription>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DiskAccessLibrary.FileSystems.Abstractions\DiskAccessLibrary.FileSystems.Abstractions.csproj" />
+    <ProjectReference Include="..\SMBLibrary\SMBLibrary.csproj" />
+  </ItemGroup>
+
+</Project>

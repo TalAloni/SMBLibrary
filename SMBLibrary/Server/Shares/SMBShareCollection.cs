@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,18 +6,11 @@
  */
 using System;
 using System.Collections.Generic;
-using DiskAccessLibrary.FileSystems.Abstractions;
 
 namespace SMBLibrary.Server
 {
     public class SMBShareCollection : List<FileSystemShare>
     {
-        public void Add(string shareName, IFileSystem fileSystem, CachingPolicy cachingPolicy)
-        {
-            FileSystemShare share = new FileSystemShare(shareName, fileSystem, cachingPolicy);
-            this.Add(share);
-        }
-
         public bool Contains(string shareName, StringComparison comparisonType)
         {
             return (this.IndexOf(shareName, comparisonType) != -1);

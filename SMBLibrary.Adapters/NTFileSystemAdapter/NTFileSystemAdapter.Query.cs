@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -10,7 +10,7 @@ using System.IO;
 using DiskAccessLibrary.FileSystems.Abstractions;
 using Utilities;
 
-namespace SMBLibrary
+namespace SMBLibrary.Adapters
 {
     public partial class NTFileSystemAdapter
     {
