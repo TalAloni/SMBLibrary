@@ -5,6 +5,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary</AssemblyName>
     <Version>1.4.3</Version>
+    <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Tal Aloni</Authors>
@@ -12,6 +13,7 @@
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

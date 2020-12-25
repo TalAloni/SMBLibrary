@@ -5,12 +5,14 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary.Adapters</AssemblyName>
     <Version>1.4.3</Version>
+    <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary.Adapters</RootNamespace>
     <Authors>Tal Aloni</Authors>
     <PackageDescription>FileSystem adapters for SMBLibrary</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
