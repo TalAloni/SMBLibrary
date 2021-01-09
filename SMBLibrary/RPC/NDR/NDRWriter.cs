@@ -121,6 +121,11 @@ namespace SMBLibrary.RPC
             LittleEndianWriter.WriteUInt32(m_stream, value);
         }
 
+        public void WriteByteArray(byte[] data)
+        {
+            m_stream.Write(data, 0, data.Length);
+        }
+
         public byte[] GetBytes()
         {
             byte[] buffer = new byte[m_stream.Length];

@@ -15,7 +15,7 @@ namespace SMBLibrary.Services
     /// <summary>
     /// NetrShareEnum Request (opnum 15)
     /// </summary>
-    public class NetrShareEnumRequest
+    public class NetrShareEnumRequest : IRPCRequest
     {
         public string ServerName;
         public ShareEnum InfoStruct;

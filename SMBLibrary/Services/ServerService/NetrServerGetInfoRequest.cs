@@ -15,7 +15,7 @@ namespace SMBLibrary.Services
     /// <summary>
     /// NetrServerGetInfo Request (opnum 21)
     /// </summary>
-    public class NetrServerGetInfoRequest
+    public class NetrServerGetInfoRequest : IRPCRequest
     {
         public string ServerName;
         public uint Level;

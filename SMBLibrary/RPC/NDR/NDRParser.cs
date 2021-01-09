@@ -67,9 +67,9 @@ namespace SMBLibrary.RPC
             }
         }
 
-        public string ReadUnicodeString()
+        public string ReadUnicodeString(bool IgnoreNullTerminator = false)
         {
-            NDRUnicodeString unicodeString = new NDRUnicodeString(this);
+            NDRUnicodeString unicodeString = new NDRUnicodeString(this, IgnoreNullTerminator);
             return unicodeString.Value;
         }
 
@@ -134,6 +134,12 @@ namespace SMBLibrary.RPC
         {
             m_offset += (4 - (m_offset % 4)) % 4;
             return LittleEndianReader.ReadUInt32(m_buffer, ref m_offset);
+        }
+
+        public void ReadBytes(byte[] data)
+        {
+            Array.Copy(m_buffer, m_offset, data, 0, data.Length);
+            m_offset += data.Length;
         }
     }
 }

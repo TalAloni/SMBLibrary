@@ -6,6 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Utilities;
 
 namespace SMBLibrary
@@ -32,7 +33,44 @@ namespace SMBLibrary
             Revision = 0x01;
         }
 
+        public SID(string sidString)
+        {
+            if (!sidString.StartsWith("S-", StringComparison.InvariantCultureIgnoreCase))
+                throw new ApplicationException("The SID " + sidString + " does not start with S-");
+            string[] s = sidString.Split('-');
+            if (s.Length < 4)
+                throw new ApplicationException("The SID " + sidString + " cannot be splitted in subauthorities");
+            Revision = (byte) int.Parse(s[1]);
+            if (int.Parse(s[2]) != 5)
+                throw new ApplicationException("The SID " + sidString + " has an unsupported Authority (<> 5)");
+            IdentifierAuthority = SECURITY_NT_AUTHORITY;
+            for (int i = 3; i < s.Length; i++)
+            {
+                SubAuthority.Add(uint.Parse(s[i]));
+            }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("S-");
+            sb.Append(Revision);
+            sb.Append("-");
+            sb.Append(IdentifierAuthority[IdentifierAuthority.Length - 1]);
+            foreach (uint subA in SubAuthority)
+            {
+                sb.Append("-");
+                sb.Append(subA);
+            }
+            return sb.ToString();
+        }
+
         public SID(byte[] buffer, int offset)
+        {
+            Read(buffer, offset);
+        }
+
+        public void Read(byte[] buffer, int offset)
         {
             Revision = ByteReader.ReadByte(buffer, ref offset);
             byte subAuthorityCount = ByteReader.ReadByte(buffer, ref offset);
@@ -54,6 +92,18 @@ namespace SMBLibrary
             {
                 LittleEndianWriter.WriteUInt32(buffer, ref offset, SubAuthority[index]);
             }
+        }
+
+        // Build a SID from an existing SID and its relative ID.
+        // Avoid to perform a ToString, concat, then Constructor again
+        public SID ChildSID(uint RelativeId)
+        {
+            SID sid = new SID();
+            sid.Revision = Revision;
+            sid.IdentifierAuthority = IdentifierAuthority;
+            sid.SubAuthority = new List<uint>(SubAuthority);
+            sid.SubAuthority.Add(RelativeId);
+            return sid;
         }
 
         public int Length

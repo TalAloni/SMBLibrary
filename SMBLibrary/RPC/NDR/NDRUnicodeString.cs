@@ -14,19 +14,24 @@ namespace SMBLibrary.RPC
     public class NDRUnicodeString : INDRStructure
     {
         public string Value;
+        // string are not in any case null terminated (RPC_UNICODE_STRING for example)
+        // this flag is present to disable the Null Terminator check
+        public bool IgnoreNullTerminator;
 
         public NDRUnicodeString()
         {
             Value = String.Empty;
         }
 
-        public NDRUnicodeString(string value)
+        public NDRUnicodeString(string value, bool ignoreNullTerminator = false)
         {
             Value = value;
+            IgnoreNullTerminator = ignoreNullTerminator;
         }
 
-        public NDRUnicodeString(NDRParser parser)
+        public NDRUnicodeString(NDRParser parser, bool ignoreNullTerminator = false)
         {
+            IgnoreNullTerminator = ignoreNullTerminator;
             Read(parser);
         }
 
@@ -39,12 +44,14 @@ namespace SMBLibrary.RPC
             // actualCount includes the null terminator
             uint actualCount = parser.ReadUInt32();
             StringBuilder builder = new StringBuilder();
-            for (int position = 0; position < actualCount - 1; position++)
+            int max = IgnoreNullTerminator ? (int) actualCount : (int)actualCount - 1;
+            for (int position = 0; position < max; position++)
             {
                 builder.Append((char)parser.ReadUInt16());
             }
             this.Value = builder.ToString();
-            parser.ReadUInt16(); // null terminator
+            if (!IgnoreNullTerminator)
+                parser.ReadUInt16(); // null terminator
         }
 
         public void Write(NDRWriter writer)
@@ -62,13 +69,16 @@ namespace SMBLibrary.RPC
             uint index = 0;
             writer.WriteUInt32(index);
             // actualCount includes the null terminator
-            uint actualCount = (uint)(length + 1);
+            uint actualCount = (uint)(length + (IgnoreNullTerminator ? 0 : 1));
             writer.WriteUInt32(actualCount);
             for (int position = 0; position < length; position++)
             {
                 writer.WriteUInt16((ushort)Value[position]);
             }
-            writer.WriteUInt16(0); // null terminator
+            if (!IgnoreNullTerminator)
+            {
+                writer.WriteUInt16(0); // null terminator
+            }
         }
     }
 }

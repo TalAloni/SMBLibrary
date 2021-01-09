@@ -15,7 +15,7 @@ namespace SMBLibrary.Services
     /// <summary>
     /// NetrShareGetInfo Request (opnum 16)
     /// </summary>
-    public class NetrShareGetInfoRequest
+    public class NetrShareGetInfoRequest : IRPCRequest
     {
         public string ServerName;
         public string NetName; // Share name
