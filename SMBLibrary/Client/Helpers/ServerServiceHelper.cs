@@ -69,6 +69,7 @@ namespace SMBLibrary.Client
                 }
                 responseData = ByteUtils.Concatenate(responseData, responsePDU.Data);
             }
+            namedPipeShare.CloseFile(pipeHandle);
             NetrShareEnumResponse shareEnumResponse = new NetrShareEnumResponse(responseData);
             ShareInfo1Container shareInfo1 = shareEnumResponse.InfoStruct.Info as ShareInfo1Container;
             if (shareInfo1 == null || shareInfo1.Entries == null)
