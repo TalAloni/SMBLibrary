@@ -14,51 +14,11 @@ namespace SMBLibrary.Client
 {
     public class ServerServiceHelper
     {
-        public static NTStatus BindPipe(INTFileStore namedPipeShare, string pipeName, out object pipeHandle, out int maxTransmitFragmentSize)
-        {
-            maxTransmitFragmentSize = 0;
-            FileStatus fileStatus;
-            NTStatus status = namedPipeShare.CreateFile(out pipeHandle, out fileStatus, pipeName, (AccessMask)(FileAccessMask.FILE_READ_DATA | FileAccessMask.FILE_WRITE_DATA), 0, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, 0, null);
-            if (status != NTStatus.STATUS_SUCCESS)
-            {
-                return status;
-            }
-            BindPDU bindPDU = new BindPDU();
-            bindPDU.Flags = PacketFlags.FirstFragment | PacketFlags.LastFragment;
-            bindPDU.DataRepresentation.CharacterFormat = CharacterFormat.ASCII;
-            bindPDU.DataRepresentation.ByteOrder = ByteOrder.LittleEndian;
-            bindPDU.DataRepresentation.FloatingPointRepresentation = FloatingPointRepresentation.IEEE;
-            bindPDU.MaxTransmitFragmentSize = 5680;
-            bindPDU.MaxReceiveFragmentSize = 5680;
-
-            ContextElement serverServiceContext = new ContextElement();
-            serverServiceContext.AbstractSyntax = new SyntaxID(ServerService.ServiceInterfaceGuid, ServerService.ServiceVersion);
-            serverServiceContext.TransferSyntaxList.Add(new SyntaxID(RemoteServiceHelper.NDRTransferSyntaxIdentifier, RemoteServiceHelper.NDRTransferSyntaxVersion));
-
-            bindPDU.ContextList.Add(serverServiceContext);
-
-            byte[] input = bindPDU.GetBytes();
-            byte[] output;
-            status = namedPipeShare.DeviceIOControl(pipeHandle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, input, out output, 4096);
-            if (status != NTStatus.STATUS_SUCCESS)
-            {
-                return status;
-            }
-            BindAckPDU bindAckPDU = RPCPDU.GetPDU(output, 0) as BindAckPDU;
-            if (bindAckPDU == null)
-            {
-                return NTStatus.STATUS_NOT_SUPPORTED;
-            }
-
-            maxTransmitFragmentSize = bindAckPDU.MaxTransmitFragmentSize;
-            return NTStatus.STATUS_SUCCESS;
-        }
-
         public static List<string> ListShares(INTFileStore namedPipeShare, ShareType? shareType, out NTStatus status)
         {
             object pipeHandle;
             int maxTransmitFragmentSize;
-            status = BindPipe(namedPipeShare, ServerService.ServicePipeName, out pipeHandle, out maxTransmitFragmentSize);
+            status = NamedPipeHelper.BindPipe(namedPipeShare, ServerService.ServicePipeName, ServerService.ServiceInterfaceGuid, ServerService.ServiceVersion, out pipeHandle, out maxTransmitFragmentSize);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return null;

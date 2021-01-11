@@ -57,6 +57,7 @@
     <Compile Include="Authentication\NTLM\Structures\NTLMVersion.cs" />
     <Compile Include="Client\ConnectionState.cs" />
     <Compile Include="Client\Enums\AuthenticationMethod.cs" />
+    <Compile Include="Client\Helpers\NamedPipeHelper.cs" />
     <Compile Include="Client\Helpers\NTLMAuthenticationHelper.cs" />
     <Compile Include="Client\Helpers\ServerServiceHelper.cs" />
     <Compile Include="Client\ISMBClient.cs" />
