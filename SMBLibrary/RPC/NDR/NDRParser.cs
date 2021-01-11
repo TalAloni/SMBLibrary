@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -134,6 +134,11 @@ namespace SMBLibrary.RPC
         {
             m_offset += (4 - (m_offset % 4)) % 4;
             return LittleEndianReader.ReadUInt32(m_buffer, ref m_offset);
+        }
+
+        public byte[] ReadBytes(int count)
+        {
+            return ByteReader.ReadBytes(m_buffer, ref m_offset, count);
         }
     }
 }
