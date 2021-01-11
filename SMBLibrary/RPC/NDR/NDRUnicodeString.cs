@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -13,15 +13,21 @@ namespace SMBLibrary.RPC
 {
     public class NDRUnicodeString : INDRStructure
     {
+        private bool m_writeNullTerminationCharacter;
+
         public string Value;
 
-        public NDRUnicodeString()
+        public NDRUnicodeString() : this(String.Empty, true)
         {
-            Value = String.Empty;
         }
 
-        public NDRUnicodeString(string value)
+        public NDRUnicodeString(string value) : this(value, true)
         {
+        }
+
+        public NDRUnicodeString(string value, bool writeNullTerminationCharacter)
+        {
+            m_writeNullTerminationCharacter = writeNullTerminationCharacter;
             Value = value;
         }
 
@@ -39,36 +45,37 @@ namespace SMBLibrary.RPC
             // actualCount includes the null terminator
             uint actualCount = parser.ReadUInt32();
             StringBuilder builder = new StringBuilder();
-            for (int position = 0; position < actualCount - 1; position++)
+            for (int position = 0; position < actualCount; position++)
             {
                 builder.Append((char)parser.ReadUInt16());
             }
-            this.Value = builder.ToString();
-            parser.ReadUInt16(); // null terminator
+            this.Value = builder.ToString().TrimEnd('\0');
         }
 
         public void Write(NDRWriter writer)
         {
-            int length = 0;
+            string valueToWrite = String.Empty;
             if (Value != null)
             {
-                length = Value.Length;
+                valueToWrite = Value;
             }
 
-            // maxCount includes the null terminator
-            uint maxCount = (uint)(length + 1);
+            if (m_writeNullTerminationCharacter)
+            {
+                valueToWrite += '\0';
+            }
+
+            uint maxCount = (uint)valueToWrite.Length;
             writer.WriteUInt32(maxCount);
             // the offset from the first index of the string to the first index of the actual subset being passed
             uint index = 0;
             writer.WriteUInt32(index);
-            // actualCount includes the null terminator
-            uint actualCount = (uint)(length + 1);
+            uint actualCount = (uint)valueToWrite.Length;
             writer.WriteUInt32(actualCount);
-            for (int position = 0; position < length; position++)
+            for (int position = 0; position < valueToWrite.Length; position++)
             {
-                writer.WriteUInt16((ushort)Value[position]);
+                writer.WriteUInt16((ushort)valueToWrite[position]);
             }
-            writer.WriteUInt16(0); // null terminator
         }
     }
 }
