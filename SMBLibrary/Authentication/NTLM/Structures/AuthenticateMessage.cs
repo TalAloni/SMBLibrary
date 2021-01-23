@@ -127,16 +127,16 @@ namespace SMBLibrary.Authentication.NTLM
                 offset += MIC.Length;
             }
             
-            AuthenticationMessageUtils.WriteBufferPointer(buffer, 12, (ushort)LmChallengeResponse.Length, (uint)offset);
-            ByteWriter.WriteBytes(buffer, ref offset, LmChallengeResponse);
-            AuthenticationMessageUtils.WriteBufferPointer(buffer, 20, (ushort)NtChallengeResponse.Length, (uint)offset);
-            ByteWriter.WriteBytes(buffer, ref offset, NtChallengeResponse);
             AuthenticationMessageUtils.WriteBufferPointer(buffer, 28, (ushort)(DomainName.Length * 2), (uint)offset);
             ByteWriter.WriteUTF16String(buffer, ref offset, DomainName);
             AuthenticationMessageUtils.WriteBufferPointer(buffer, 36, (ushort)(UserName.Length * 2), (uint)offset);
             ByteWriter.WriteUTF16String(buffer, ref offset, UserName);
             AuthenticationMessageUtils.WriteBufferPointer(buffer, 44, (ushort)(WorkStation.Length * 2), (uint)offset);
             ByteWriter.WriteUTF16String(buffer, ref offset, WorkStation);
+            AuthenticationMessageUtils.WriteBufferPointer(buffer, 12, (ushort)LmChallengeResponse.Length, (uint)offset);
+            ByteWriter.WriteBytes(buffer, ref offset, LmChallengeResponse);
+            AuthenticationMessageUtils.WriteBufferPointer(buffer, 20, (ushort)NtChallengeResponse.Length, (uint)offset);
+            ByteWriter.WriteBytes(buffer, ref offset, NtChallengeResponse);
             AuthenticationMessageUtils.WriteBufferPointer(buffer, 52, (ushort)EncryptedRandomSessionKey.Length, (uint)offset);
             ByteWriter.WriteBytes(buffer, ref offset, EncryptedRandomSessionKey);
 
