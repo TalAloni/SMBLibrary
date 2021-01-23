@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -131,6 +131,14 @@ namespace SMBLibrary.Authentication.GSSAPI
                 int responseTokenConstructionLength = 1 + responseTokenBytesLengthFieldSize + ResponseToken.Length;
                 int responseTokenConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(responseTokenConstructionLength);
                 int responseTokenLength = 1 + responseTokenConstructionLengthFieldSize + 1 + responseTokenBytesLengthFieldSize + ResponseToken.Length;
+                result += responseTokenLength;
+            }
+            if (MechanismListMIC != null)
+            {
+                int mechanismListMICBytesLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(MechanismListMIC.Length);
+                int mechanismListMICConstructionLength = 1 + mechanismListMICBytesLengthFieldSize + MechanismListMIC.Length;
+                int mechanismListMICConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(mechanismListMICConstructionLength);
+                int responseTokenLength = 1 + mechanismListMICConstructionLengthFieldSize + 1 + mechanismListMICBytesLengthFieldSize + MechanismListMIC.Length;
                 result += responseTokenLength;
             }
             return result;
