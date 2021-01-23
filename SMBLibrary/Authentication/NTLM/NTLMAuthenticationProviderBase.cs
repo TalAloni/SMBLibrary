@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -25,32 +25,12 @@ namespace SMBLibrary.Authentication.NTLM
             MessageTypeName messageType = AuthenticationMessageUtils.GetMessageType(inputToken);
             if (messageType == MessageTypeName.Negotiate)
             {
-                NegotiateMessage negotiateMessage;
-                try
-                {
-                    negotiateMessage = new NegotiateMessage(inputToken);
-                }
-                catch
-                {
-                    return NTStatus.SEC_E_INVALID_TOKEN;
-                }
-                ChallengeMessage challengeMessage;
-                NTStatus status = GetChallengeMessage(out context, negotiateMessage, out challengeMessage);
-                outputToken = challengeMessage.GetBytes();
+                NTStatus status = GetChallengeMessage(out context, inputToken, out outputToken);
                 return status;
             }
             else if (messageType == MessageTypeName.Authenticate)
             {
-                AuthenticateMessage authenticateMessage;
-                try
-                {
-                    authenticateMessage = new AuthenticateMessage(inputToken);
-                }
-                catch
-                {
-                    return NTStatus.SEC_E_INVALID_TOKEN;
-                }
-                return Authenticate(context, authenticateMessage);
+                return Authenticate(context, inputToken);
             }
             else
             {
@@ -58,9 +38,9 @@ namespace SMBLibrary.Authentication.NTLM
             }
         }
 
-        public abstract NTStatus GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage);
+        public abstract NTStatus GetChallengeMessage(out object context, byte[] negotiateMessageBytes, out byte[] challengeMessageBytes);
 
-        public abstract NTStatus Authenticate(object context, AuthenticateMessage authenticateMessage);
+        public abstract NTStatus Authenticate(object context, byte[] authenticateMessageBytes);
 
         public abstract bool DeleteSecurityContext(ref object context);
 

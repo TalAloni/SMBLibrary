@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -33,11 +33,9 @@ namespace SMBLibrary.Win32.Security
             }
         }
 
-        public override NTStatus GetChallengeMessage(out object context, NegotiateMessage negotiateMessage, out ChallengeMessage challengeMessage)
+        public override NTStatus GetChallengeMessage(out object context, byte[] negotiateMessageBytes, out byte[] challengeMessageBytes)
         {
-            byte[] negotiateMessageBytes = negotiateMessage.GetBytes();
             SecHandle serverContext;
-            byte[] challengeMessageBytes;
             try
             {
                 challengeMessageBytes = SSPIHelper.GetType2Message(negotiateMessageBytes, out serverContext);
@@ -45,13 +43,12 @@ namespace SMBLibrary.Win32.Security
             catch (Exception)
             {
                 context = null;
-                challengeMessage = null;
+                challengeMessageBytes = null;
                 // We assume that the problem is not with our implementation.
                 return NTStatus.SEC_E_INVALID_TOKEN;
             }
 
             context = new AuthContext(serverContext);
-            challengeMessage = new ChallengeMessage(challengeMessageBytes);
             return NTStatus.SEC_I_CONTINUE_NEEDED;
         }
 
@@ -60,8 +57,18 @@ namespace SMBLibrary.Win32.Security
         /// 1. The correct password is blank and 'limitblankpassworduse' is set to 1.
         /// 2. The user is listed in the "Deny access to this computer from the network" list.
         /// </summary>
-        public override NTStatus Authenticate(object context, AuthenticateMessage message)
+        public override NTStatus Authenticate(object context, byte[] authenticateMessageBytes)
         {
+            AuthenticateMessage message;
+            try
+            {
+                message = new AuthenticateMessage(authenticateMessageBytes);
+            }
+            catch(Exception)
+            {
+                return NTStatus.SEC_E_INVALID_TOKEN;
+            }
+
             AuthContext authContext = context as AuthContext;
             if (authContext == null)
             {
@@ -95,11 +102,10 @@ namespace SMBLibrary.Win32.Security
                 }
             }
 
-            byte[] messageBytes = message.GetBytes();
             bool success;
             try
             {
-                success = SSPIHelper.AuthenticateType3Message(authContext.ServerContext, messageBytes);
+                success = SSPIHelper.AuthenticateType3Message(authContext.ServerContext, authenticateMessageBytes);
             }
             catch (Exception)
             {
