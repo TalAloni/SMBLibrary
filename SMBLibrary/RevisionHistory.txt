@@ -452,3 +452,8 @@ Revision History:
         Client: ServerServiceHelper.ListShares: Close pipe after all data has been read.
         NDRUnicodeString: Added constructor argument allowing skipping writing null terminator character.
         NDRParser / NDRWriter: Added ability to read/write arbitrary number of bytes.
+
+1.4.5 - SimpleProtectedNegotiationTokenResponse: Bugfix: GetBytes threw exception when MechanismListMIC was not null.
+        NTLM: AuthenticateMessage: Read/Write MIC field if present.
+        NTLM: AuthenticateMessage: Immitate Windows write order for easier comparison.
+        NTLM: Bugfix: IndependentNTLMAuthenticationProvider login failed to to modification of message byte arrays.
