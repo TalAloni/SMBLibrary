@@ -444,3 +444,11 @@ Revision History:
         SMB2Cryptography: Added logic for SMB 3.0 encryption.
         Client: Added SMB 3.0 support.
         Server: Added option to enable SMB 3.0 dialect.
+        
+1.4.4 - SocketUtils.SetKeepAlive: Added support for Linux.
+        Moved NTFileSystemAdapter to SMBLibrary.Adapters.
+        ServerServiceHelper: Extracted BindPipe method.
+        Made BindPipe method more generic and movied it to NamedPipeHelper.
+        Client: ServerServiceHelper.ListShares: Close pipe after all data has been read.
+        NDRUnicodeString: Added constructor argument allowing skipping writing null terminator character.
+        NDRParser / NDRWriter: Added ability to read/write arbitrary number of bytes.

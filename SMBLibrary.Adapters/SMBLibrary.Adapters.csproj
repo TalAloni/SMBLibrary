@@ -4,7 +4,7 @@
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary.Adapters</AssemblyName>
-    <Version>1.4.3</Version>
+    <Version>1.4.4</Version>
     <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary.Adapters</RootNamespace>
     <Authors>Tal Aloni</Authors>
