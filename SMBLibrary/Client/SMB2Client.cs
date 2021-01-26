@@ -223,12 +223,15 @@ namespace SMBLibrary.Client
                     if (response != null)
                     {
                         m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
-                        m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
-                        if (m_dialect == SMB2Dialect.SMB300)
+                        if (m_isLoggedIn)
                         {
-                            m_encryptSessionData = (((SessionSetupResponse)response).SessionFlags & SessionFlags.EncryptData) > 0;
-                            m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
-                            m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
+                            m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
+                            if (m_dialect == SMB2Dialect.SMB300)
+                            {
+                                m_encryptSessionData = (((SessionSetupResponse)response).SessionFlags & SessionFlags.EncryptData) > 0;
+                                m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
+                                m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
+                            }
                         }
                         return response.Header.Status;
                     }
