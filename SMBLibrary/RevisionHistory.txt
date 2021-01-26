@@ -457,3 +457,5 @@ Revision History:
         NTLM: AuthenticateMessage: Read/Write MIC field if present.
         NTLM: AuthenticateMessage: Immitate Windows write order for easier comparison.
         NTLM: Bugfix: IndependentNTLMAuthenticationProvider login failed to to modification of message byte arrays.
+
+1.4.6 - SMB2Client: Fixed InvalidCastException on failed login to SMB 3.0 server.
