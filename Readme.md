@@ -60,7 +60,7 @@ Client code examples can be found [here](ClientExamples.md).
 NuGet Packages:
 ===============
 [SMBLibrary](https://www.nuget.org/packages/SMBLibrary/) - Cross-platform server and client implementation.  
-[SMBLibrary.Win32](https://www.nuget.org/packages/DiskAccessLibrary.Win32/) - Allows utilizing Integrated Windows Authentication and/or the Windows storage subsystem on a Windows host.  
+[SMBLibrary.Win32](https://www.nuget.org/packages/SMBLibrary.Win32/) - Allows utilizing Integrated Windows Authentication and/or the Windows storage subsystem on a Windows host.  
 [SMBLibrary.Adapters](https://www.nuget.org/packages/SMBLibrary.Adapters/) - IFileSystem to INTFileStore adapter for SMBLibrary.  
 
 Contact:
