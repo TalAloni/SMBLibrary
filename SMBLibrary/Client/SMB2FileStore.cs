@@ -79,15 +79,24 @@ namespace SMBLibrary.Client
             request.ReadLength = (uint)maxCount;
             
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Read);
-            if (response != null)
+            bool pending = true;
+            do
             {
-                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is ReadResponse)
+                SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Read);
+                if (response != null)
                 {
-                    data = ((ReadResponse)response).Data;
+                    if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is ReadResponse)
+                    {
+                        data = ((ReadResponse)response).Data;
+                    }
+                    else if (response.Header.Status == NTStatus.STATUS_PENDING)
+                    {
+                        continue;
+                    }
+
+                    return response.Header.Status;
                 }
-                return response.Header.Status;
-            }
+            } while (pending);
 
             return NTStatus.STATUS_INVALID_SMB;
         }
@@ -102,15 +111,23 @@ namespace SMBLibrary.Client
             request.Data = data;
 
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Write);
-            if (response != null)
+            bool pending = true;
+            do
             {
-                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is WriteResponse)
+                SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Write);
+                if (response != null)
                 {
-                    numberOfBytesWritten = (int)((WriteResponse)response).Count;
+                    if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is WriteResponse)
+                    {
+                        numberOfBytesWritten = (int)((WriteResponse)response).Count;
+                    }
+                    else if (response.Header.Status == NTStatus.STATUS_PENDING)
+                    {
+                        continue;
+                    }
+                    return response.Header.Status;
                 }
-                return response.Header.Status;
-            }
+            } while (pending);
 
             return NTStatus.STATUS_INVALID_SMB;
         }
