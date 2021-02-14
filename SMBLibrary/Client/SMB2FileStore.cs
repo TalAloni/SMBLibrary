@@ -79,7 +79,6 @@ namespace SMBLibrary.Client
             request.ReadLength = (uint)maxCount;
             
             TrySendCommand(request);
-            bool pending = true;
             do
             {
                 SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Read);
@@ -96,9 +95,11 @@ namespace SMBLibrary.Client
 
                     return response.Header.Status;
                 }
-            } while (pending);
-
-            return NTStatus.STATUS_INVALID_SMB;
+                else
+                {
+                    return NTStatus.STATUS_INVALID_SMB;
+                }
+            } while (true);
         }
 
         public NTStatus WriteFile(out int numberOfBytesWritten, object handle, long offset, byte[] data)
@@ -111,7 +112,6 @@ namespace SMBLibrary.Client
             request.Data = data;
 
             TrySendCommand(request);
-            bool pending = true;
             do
             {
                 SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Write);
@@ -127,9 +127,11 @@ namespace SMBLibrary.Client
                     }
                     return response.Header.Status;
                 }
-            } while (pending);
-
-            return NTStatus.STATUS_INVALID_SMB;
+                else
+                {
+                    return NTStatus.STATUS_INVALID_SMB;
+                }
+            } while (true);
         }
 
         public NTStatus FlushFileBuffers(object handle)
