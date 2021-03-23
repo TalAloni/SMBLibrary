@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+
+  <metadata minClientVersion="3.3">
+    <id>Lansweeper.SMBLibrary</id>
+    <version>$version$</version>
+    <title>Lansweeper.SMBLibrary</title>
+    <authors>TalAloni/Lansweeper</authors>
+    <description>SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation.</description>
+    <contentFiles>
+      <files include="*" />
+    </contentFiles>
+
+    <dependencies>
+      <!--<group targetFramework="net46">
+      </group>
+      <group targetFramework="netstandard2.0">
+      </group>-->
+    </dependencies>
+
+    <!--Needed to restore references when client installs package-->
+    <references>
+      <group targetFramework="net40">
+        <reference file="SMBLibrary.dll" />
+      </group>
+      <group targetFramework="netstandard2.0">
+        <reference file="SMBLibrary.dll" />
+      </group>
+    </references>
+  </metadata>
+
+  <!--Needed for package-->
+  <files>
+    <file src="SMBLibrary\bin\Release\netstandard2.0\SMBLibrary.dll" target="lib\netstandard2.0" />
+    <file src="SMBLibrary\bin\Release\netstandard2.0\Utilities.dll" target="lib\netstandard2.0" />
+    <file src="SMBLibrary\bin\Release\net40\SMBLibrary.dll" target="lib\net40" />
+    <file src="SMBLibrary\bin\Release\net40\Utilities.dll" target="lib\net40" />
+  </files>
+
+</package>
