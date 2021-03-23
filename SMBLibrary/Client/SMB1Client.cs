@@ -53,16 +53,14 @@ namespace SMBLibrary.Client
         private byte[] m_securityBlob;
         private byte[] m_sessionKey;
 
+        public string Hostname { get; private set; } = string.Empty;
+        public string Domainname { get; private set; } = string.Empty;
+
         public SMB1Client()
         {
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport)
-        {
-            return Connect(serverAddress, transport, true);
-        }
-
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity = false)
         {
             m_transport = transport;
             if (!m_isConnected)
@@ -173,6 +171,8 @@ namespace SMBLibrary.Client
             if (reply.Commands[0] is NegotiateResponse && !forceExtendedSecurity)
             {
                 NegotiateResponse response = (NegotiateResponse)reply.Commands[0];
+                Domainname = response.DomainName;
+                Hostname = response.ServerName;
                 m_unicode = ((response.Capabilities & Capabilities.Unicode) > 0);
                 m_largeFiles = ((response.Capabilities & Capabilities.LargeFiles) > 0);
                 bool ntSMB = ((response.Capabilities & Capabilities.NTSMB) > 0);
