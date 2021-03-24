@@ -32,9 +32,7 @@
   <!--Needed for package-->
   <files>
     <file src="SMBLibrary\bin\Release\netstandard2.0\SMBLibrary.dll" target="lib\netstandard2.0" />
-    <file src="SMBLibrary\bin\Release\netstandard2.0\Utilities.dll" target="lib\netstandard2.0" />
     <file src="SMBLibrary\bin\Release\net40\SMBLibrary.dll" target="lib\net40" />
-    <file src="SMBLibrary\bin\Release\net40\Utilities.dll" target="lib\net40" />
   </files>
 
 </package>
