@@ -18,7 +18,7 @@ namespace SMBLibrary.Tests
             new RPCTests().TestAll();
             new SMB2SigningTests().TestAll();
 
-            new NTDirectoryFileSystemTests().TestAll();
+            //new NTDirectoryFileSystemTests().TestAll();
         }
     }
 }

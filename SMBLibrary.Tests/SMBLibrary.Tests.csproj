@@ -9,7 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SMBLibrary.Win32\SMBLibrary.Win32.csproj" />
+    <Compile Remove="NTFileStore\**" />
+    <EmbeddedResource Remove="NTFileStore\**" />
+    <None Remove="NTFileStore\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SMBLibrary\SMBLibrary.csproj" />
   </ItemGroup>
 
