@@ -60,7 +60,12 @@ namespace SMBLibrary.Client
         {
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity = false)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport)
+        {
+            return Connect(serverAddress, transport, false);
+        }
+
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
         {
             m_transport = transport;
             if (!m_isConnected)
