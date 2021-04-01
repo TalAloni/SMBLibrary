@@ -2,10 +2,11 @@ const { version: previousVersion } = require("./package.json");
 const projectfolder = "SMBLibrary/";
 const csprojfile = "Lansweeper.SMBLibrary.csproj";
 const nugetpackage = "Lansweeper.SMBLibrary";
+const gitprimarybranch = "master";
 
 module.exports = {
   "branches": [
-    "main"
+    gitprimarybranch
   ],
   "plugins": [
     "@semantic-release/commit-analyzer",
