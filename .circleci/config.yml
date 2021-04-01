@@ -7,7 +7,7 @@ parameters:
 
   csproj-file:
     type: string
-    default: "Lansweeper.SMBLibrary.csproj"
+    default: "SMBLibrary.csproj"
 
   git-primary-branch:
     type: string
@@ -96,15 +96,6 @@ jobs:
 
 workflows:
   version: 2
-
-  ci_on_pr:
-    jobs:
-      - build:
-          context:
-            - lec-github-packages-rw
-          filters:
-            branches:
-              ignore: << pipeline.parameters.git-primary-branch >>
 
   ci_and_release_primary_branch:
     jobs:
