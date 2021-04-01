@@ -89,10 +89,6 @@ jobs:
       - run:
           name: Increase version with semantic-release
           command: yarn run release
-      - run: 
-          name: Push package
-          command: dotnet nuget push dotnet nuget push ./SMBLibrary/bin/Release/SMBLibrary.1.4.7.nupkg --source "github" --api-key $GITHUB_TOKEN
-
       - persist_to_workspace:
           root: .
           paths:
@@ -105,14 +101,14 @@ workflows:
     jobs:
       - build:
           context:
-            - lec-github-packages-rw
+            - lec-github-release
           filters:
             branches:
               only: << pipeline.parameters.git-primary-branch >>
 
       - release:
           context:
-            - lec-github-packages-rw
+            - lec-github-release
           requires:
             - build
           filters:

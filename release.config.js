@@ -18,7 +18,8 @@ module.exports = {
         "prepareCmd": `sed -i -E 's/<Version>${previousVersion}/<Version>\${nextRelease.version}/' ${projectfolder}${csprojfile} && \
           git add ${projectfolder}${csprojfile} && \
           git commit -m ":bookmark: Bump from ${previousVersion} to \${nextRelease.version} in ${projectfolder}${csprojfile}" && \
-          dotnet pack ${projectfolder}${csprojfile} --configuration Release`
+          dotnet pack ${projectfolder}${csprojfile} --configuration Release && \
+          dotnet nuget push ./${projectfolder}bin/Release/${nugetpackage}.\${nextRelease.version}.nupkg --source \"github\" --api-key $GITHUB_TOKEN`
       }
     ],
     [
