@@ -19,6 +19,7 @@ module.exports = {
           git add ${projectfolder}${csprojfile} && \
           git commit -m ":bookmark: Bump from ${previousVersion} to \${nextRelease.version} in ${projectfolder}${csprojfile}" && \
           dotnet pack ${projectfolder}${csprojfile} --configuration Release && \
+          cat nuget.config\
           dotnet nuget push ./${projectfolder}bin/Release/${nugetpackage}.\${nextRelease.version}.nupkg --source \"github\" --api-key $GITHUB_TOKEN`
       }
     ],
