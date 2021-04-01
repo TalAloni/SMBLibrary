@@ -36,10 +36,12 @@ namespace SMBLibrary.NetBios
 
         public byte[] GetBytes()
         {
-            MemoryStream stream = new MemoryStream();
-            Header.WriteBytes(stream);
-            Question.WriteBytes(stream);
-            return stream.ToArray();
+            using (MemoryStream stream = new MemoryStream())
+            {
+                Header.WriteBytes(stream);
+                Question.WriteBytes(stream);
+                return stream.ToArray();
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using SMBLibrary.NetBios;
 
 namespace SMBLibrary.Client
@@ -43,14 +44,20 @@ namespace SMBLibrary.Client
 
         private NodeStatusResponse SendNodeStatusRequest(NodeStatusRequest request)
         {
-            UdpClient client = new UdpClient();
-            IPEndPoint serverEndPoint = new IPEndPoint(m_serverAddress, NetBiosNameServicePort);
-            client.Connect(serverEndPoint);
-
-            byte[] requestBytes = request.GetBytes();
-            client.Send(requestBytes, requestBytes.Length);
-            byte[] responseBytes = client.Receive(ref serverEndPoint);
-            return new NodeStatusResponse(responseBytes, 0);
+            using (UdpClient client = new UdpClient())
+            {
+                IPEndPoint serverEndPoint = new IPEndPoint(m_serverAddress, NetBiosNameServicePort);
+                client.Connect(serverEndPoint);
+                byte[] requestBytes = request.GetBytes();
+                client.Send(requestBytes, requestBytes.Length);
+                Thread.Sleep(100);
+                if (client.Available > 0)
+                {
+                    var responseBytes = client.Receive(ref serverEndPoint);
+                    return new NodeStatusResponse(responseBytes, 0);
+                }
+            }
+            return new NodeStatusResponse();
         }
     }
 }
