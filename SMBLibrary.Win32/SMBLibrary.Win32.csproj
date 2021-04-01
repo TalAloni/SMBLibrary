@@ -10,8 +10,8 @@
     <Authors>Tal Aloni</Authors>
     <PackageDescription>Windows specific extensions for SMBLibrary</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Lansweeper/SMBLibrary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Lansweeper/SMBLibrary</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

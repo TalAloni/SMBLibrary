@@ -11,8 +11,8 @@
     <Authors>Tal Aloni</Authors>
     <PackageDescription>SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Lansweeper/SMBLibrary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Lansweeper/SMBLibrary</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
