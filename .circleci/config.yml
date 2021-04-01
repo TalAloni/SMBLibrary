@@ -1,0 +1,125 @@
+version: 2.1
+
+parameters:
+  project-folder:
+    type: string
+    default: "SMBLibrary/"
+
+  csproj-file:
+    type: string
+    default: "Lansweeper.SMBLibrary.csproj"
+
+  git-primary-branch:
+    type: string
+    default: "master"
+
+executors:
+  node:
+    docker:
+      - image: circleci/node:12
+
+orbs:
+  win: circleci/windows@2.2.0
+
+commands:
+  nuget-prepare:
+    description: "generate nuget.config file to pull in (and publish) nuget dependencies "
+    steps:
+      - run:
+          name: Create local nuget config file
+          command: |
+            $xml = "<?xml version='1.0' encoding='utf-8'?>
+            <configuration>
+              <packageSources>
+                <add key='github' value='https://nuget.pkg.github.com/Lansweeper/index.json' />
+              </packageSources>
+              <packageSourceCredentials>
+                <github>
+                  <add key='Username' value='$env:GITHUB_USER' />
+                  <add key='ClearTextPassword' value='$env:GITHUB_TOKEN' />
+                </github>
+              </packageSourceCredentials>
+            </configuration>"
+            Out-File -FilePath nuget.config -InputObject $xml -Encoding ASCII
+
+  install-deps:
+    description: "Install and cache dependencies"
+    steps:
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - << pipeline.parameters.project-folder >>-dependencies-{{ checksum "yarn.lock" }}
+      - run: yarn install --pure-lockfile
+      - save_cache:
+          paths:
+            - node_modules
+          key: << pipeline.parameters.project-folder >>-dependencies-{{ checksum "yarn.lock" }}
+
+jobs:
+  build:
+    executor: win/default
+
+    steps:
+      - checkout
+      - nuget-prepare
+      - run: dotnet build << pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >> --configuration Release
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  release:
+    executor: node
+    steps:
+      - attach_workspace:
+          at: .
+      - run: git config user.email "development@lansweeper.com"
+      - run: git config user.name "circleCI-automated-commit"
+      - install-deps
+      - run:
+          name: install dotnet SDK
+          command: |
+            wget https://packages.microsoft.com/config/ubuntu/20.10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+            sudo dpkg -i packages-microsoft-prod.deb
+            sudo apt-get update; \
+            sudo apt-get install -y apt-transport-https && \
+            sudo apt-get update && \
+            sudo apt-get install -y dotnet-sdk-5.0
+      - run:
+          name: Increase version with semantic-release
+          command: yarn run release
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+workflows:
+  version: 2
+
+  ci_on_pr:
+    jobs:
+      - build:
+          context:
+            - lec-github-packages-rw
+          filters:
+            branches:
+              ignore: << pipeline.parameters.git-primary-branch >>
+
+  ci_and_release_primary_branch:
+    jobs:
+      - build:
+          context:
+            - lec-github-packages-rw
+          filters:
+            branches:
+              only: << pipeline.parameters.git-primary-branch >>
+
+      - release:
+          context:
+            - lec-github-packages-rw
+          requires:
+            - build
+          filters:
+            branches:
+              only: << pipeline.parameters.git-primary-branch >>

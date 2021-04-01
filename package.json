@@ -1,0 +1,41 @@
+{
+  "name": "lansweeper.smblibrary",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation.  ",
+  "scripts": {
+    "release": "cross-env HUSKY=0 semantic-release",
+    "prepare": "is-ci || husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lansweeper/SMBLibrary.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lansweeper/SMBLibrary/issues"
+  },
+  "homepage": "https://github.com/Lansweeper/SMBLibrary#readme",
+  "devDependencies": {
+    "@commitlint/config-conventional": "^12.0.1",
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/exec": "5.0.0",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/github": "^7.2.0",
+    "@semantic-release/npm": "7.0.10",
+    "cross-env": "^5.2.0",
+    "husky": "^5.1.3",
+    "is-ci": "^3.0.0",
+    "semantic-release": "^17.4.2"
+  },
+  "dependencies": {
+    "yarn": "^1.22.10"
+  },
+  "commitlint": {
+    "extends": [
+      "./@commitlint/config-conventional"
+    ]
+  }
+}
