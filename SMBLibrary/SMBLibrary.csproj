@@ -24,8 +24,9 @@
     <ProjectReference Include="..\Utilities\Utilities.csproj" PrivateAssets="All" />
   </ItemGroup>
 
+<!--
   <Target Name="ILMerge" Condition="'$(Configuration)' == 'Release'" AfterTargets="AfterBuild">
     <Exec Command="&quot;$(ILMergeConsolePath)&quot; /out:&quot;$(OutputPath)\SMBLibrary.dll&quot; &quot;$(OutputPath)\SMBLibrary.dll&quot; &quot;$(OutputPath)\Utilities.dll&quot;"></Exec>
   </Target>
-
+-->
 </Project>
