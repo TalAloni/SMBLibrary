@@ -101,14 +101,14 @@ workflows:
     jobs:
       - build:
           context:
-            - lec-github-release
+            - lec-github-packages-rw
           filters:
             branches:
               only: << pipeline.parameters.git-primary-branch >>
 
       - release:
           context:
-            - lec-github-release
+            - lec-github-packages-rw
           requires:
             - build
           filters:
