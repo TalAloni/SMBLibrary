@@ -1,7 +1,7 @@
 const { version: previousVersion } = require("./package.json");
 const projectfolder = "SMBLibrary/";
 const csprojfile = "SMBLibrary.csproj";
-const nugetpackage = "Lansweeper.SMBLibrary";
+const nugetpackage = "SMBLibrary";
 const gitprimarybranch = "master";
 
 module.exports = {
