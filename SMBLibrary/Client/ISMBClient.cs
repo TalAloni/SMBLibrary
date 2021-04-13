@@ -12,7 +12,7 @@ namespace SMBLibrary.Client
 {
     public interface ISMBClient
     {
-        bool Connect(IPAddress serverAddress, SMBTransportType transport);
+        bool Connect(IPAddress serverAddress, SMBTransportType transport, string serverName = null);
 
         void Disconnect();
 

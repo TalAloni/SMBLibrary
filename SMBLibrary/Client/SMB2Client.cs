@@ -60,20 +60,13 @@ namespace SMBLibrary.Client
         {
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, string serverName = null)
         {
             m_transport = transport;
             if (!m_isConnected)
             {
                 int port;
-                if (transport == SMBTransportType.NetBiosOverTCP)
-                {
-                    port = NetBiosOverTCPPort;
-                }
-                else
-                {
-                    port = DirectTCPPort;
-                }
+                port = transport == SMBTransportType.NetBiosOverTCP ? NetBiosOverTCPPort : DirectTCPPort;
 
                 if (!ConnectSocket(serverAddress, port))
                 {
@@ -83,7 +76,7 @@ namespace SMBLibrary.Client
                 if (transport == SMBTransportType.NetBiosOverTCP)
                 {
                     SessionRequestPacket sessionRequest = new SessionRequestPacket();
-                    sessionRequest.CalledName = NetBiosUtils.GetMSNetBiosName("*SMBSERVER", NetBiosSuffix.FileServiceService);
+                    sessionRequest.CalledName = NetBiosUtils.GetMSNetBiosName(serverName ?? "*SMBSERVER", NetBiosSuffix.FileServiceService);
                     sessionRequest.CallingName = NetBiosUtils.GetMSNetBiosName(Environment.MachineName, NetBiosSuffix.WorkstationService);
                     TrySendPacket(m_clientSocket, sessionRequest);
 
@@ -97,7 +90,7 @@ namespace SMBLibrary.Client
                         }
 
                         NameServiceClient nameServiceClient = new NameServiceClient(serverAddress);
-                        string serverName = nameServiceClient.GetServerName();
+                        serverName = nameServiceClient.GetServerName();
                         if (serverName == null)
                         {
                             return false;
@@ -179,6 +172,35 @@ namespace SMBLibrary.Client
                 return true;
             }
             return false;
+        }
+
+        public byte[] GetAnonymousLoginSecurityBuffer()
+        {
+            if (!m_isConnected)
+            {
+                throw new InvalidOperationException("A connection must be successfully established before attempting login");
+            }
+
+            byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, string.Empty, AuthenticationMethod.NTLMv2);
+            if (negotiateMessage == null)
+            {
+                return null;
+            }
+
+            var request = new SessionSetupRequest
+            {
+                SecurityMode = SecurityMode.SigningEnabled, 
+                SecurityBuffer = negotiateMessage
+            };
+            TrySendCommand(request);
+            var response = WaitForCommand(SMB2CommandName.SessionSetup);
+            if (response != null
+                && response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED
+                && response is SessionSetupResponse ssr)
+            {
+                return ssr.SecurityBuffer;
+            }
+            return null;
         }
 
         public NTStatus Login(string domainName, string userName, string password)

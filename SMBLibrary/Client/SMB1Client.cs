@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -55,31 +56,27 @@ namespace SMBLibrary.Client
 
         public string Hostname { get; private set; } = string.Empty;
         public string Domainname { get; private set; } = string.Empty;
+        public string NativeLM { get; set; } = string.Empty;
+
+        public string NativeOs { get; set; } = string.Empty;
 
         public SMB1Client()
         {
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, string serverName = null)
         {
-            return Connect(serverAddress, transport, false);
+            return Connect(serverAddress, transport, false, serverName);
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity, string serverName = null)
         {
             m_transport = transport;
             if (!m_isConnected)
             {
                 m_forceExtendedSecurity = forceExtendedSecurity;
                 int port;
-                if (transport == SMBTransportType.NetBiosOverTCP)
-                {
-                    port = NetBiosOverTCPPort;
-                }
-                else
-                {
-                    port = DirectTCPPort;
-                }
+                port = transport == SMBTransportType.NetBiosOverTCP ? NetBiosOverTCPPort : DirectTCPPort;
 
                 if (!ConnectSocket(serverAddress, port))
                 {
@@ -89,7 +86,7 @@ namespace SMBLibrary.Client
                 if (transport == SMBTransportType.NetBiosOverTCP)
                 {
                     SessionRequestPacket sessionRequest = new SessionRequestPacket();
-                    sessionRequest.CalledName = NetBiosUtils.GetMSNetBiosName("*SMBSERVER", NetBiosSuffix.FileServiceService);
+                    sessionRequest.CalledName = NetBiosUtils.GetMSNetBiosName(serverName ?? "*SMBSERVER", NetBiosSuffix.FileServiceService);
                     sessionRequest.CallingName = NetBiosUtils.GetMSNetBiosName(Environment.MachineName, NetBiosSuffix.WorkstationService);
                     TrySendPacket(m_clientSocket, sessionRequest);
 
@@ -103,7 +100,7 @@ namespace SMBLibrary.Client
                         }
 
                         NameServiceClient nameServiceClient = new NameServiceClient(serverAddress);
-                        string serverName = nameServiceClient.GetServerName();
+                        serverName = nameServiceClient.GetServerName();
                         if (serverName == null)
                         {
                             return false;
@@ -178,6 +175,7 @@ namespace SMBLibrary.Client
                 NegotiateResponse response = (NegotiateResponse)reply.Commands[0];
                 Domainname = response.DomainName;
                 Hostname = response.ServerName;
+                
                 m_unicode = ((response.Capabilities & Capabilities.Unicode) > 0);
                 m_largeFiles = ((response.Capabilities & Capabilities.LargeFiles) > 0);
                 bool ntSMB = ((response.Capabilities & Capabilities.NTSMB) > 0);
@@ -251,8 +249,8 @@ namespace SMBLibrary.Client
                 new Random().NextBytes(clientChallenge);
                 if (authenticationMethod == AuthenticationMethod.NTLMv1)
                 {
-                    request.OEMPassword = NTLMCryptography.ComputeLMv1Response(m_serverChallenge, password);
-                    request.UnicodePassword = NTLMCryptography.ComputeNTLMv1Response(m_serverChallenge, password);
+                    request.OEMPassword = string.IsNullOrEmpty(password) ? new byte[0] : NTLMCryptography.ComputeLMv1Response(m_serverChallenge, password);
+                    request.UnicodePassword = string.IsNullOrEmpty(password) ? new byte[0] : NTLMCryptography.ComputeNTLMv1Response(m_serverChallenge, password);
                 }
                 else if (authenticationMethod == AuthenticationMethod.NTLMv1ExtendedSessionSecurity)
                 {
@@ -276,6 +274,7 @@ namespace SMBLibrary.Client
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 if (reply != null)
                 {
+                    HandleSessionSetupMessage(reply);
                     m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
                     return reply.Header.Status;
                 }
@@ -299,6 +298,7 @@ namespace SMBLibrary.Client
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 if (reply != null)
                 {
+                    HandleSessionSetupMessage(reply);
                     if (reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                     {
                         SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
@@ -329,6 +329,32 @@ namespace SMBLibrary.Client
                     }
                 }
                 return NTStatus.STATUS_INVALID_SMB;
+            }
+        }
+
+        private void HandleSessionSetupMessage(SMB1Message message)
+        {
+            var sessionSetup = message.Commands.FirstOrDefault(x => x.CommandName == CommandName.SMB_COM_SESSION_SETUP_ANDX);
+            if (sessionSetup == null) return;
+
+            switch (sessionSetup)
+            {
+                case SessionSetupAndXRequest command when !string.IsNullOrEmpty(command.NativeOS):
+                    NativeOs = command.NativeOS;
+                    NativeLM = command.NativeLanMan;
+                    break;
+                case SessionSetupAndXRequestExtended command when !string.IsNullOrEmpty(command.NativeOS):
+                    NativeOs = command.NativeOS;
+                    NativeLM = command.NativeLanMan;
+                    break;
+                case SessionSetupAndXResponse command when !string.IsNullOrEmpty(command.NativeOS):
+                    NativeOs = command.NativeOS;
+                    NativeLM = command.NativeLanMan;
+                    break;
+                case SessionSetupAndXResponseExtended command when !string.IsNullOrEmpty(command.NativeOS):
+                    NativeOs = command.NativeOS;
+                    NativeLM = command.NativeLanMan;
+                    break;
             }
         }
 
