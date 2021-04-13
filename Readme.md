@@ -1,3 +1,8 @@
+Updating (Lansweeper) Version
+=================
+Replace ALL occurences of current nuget package version by the new version
+-> .nuspec file, .csproj file, .circleci/config.yaml
+
 About SMBLibrary:
 =================
 SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation.  
