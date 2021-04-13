@@ -9,6 +9,10 @@ parameters:
     type: string
     default: "SMBLibrary.csproj"
 
+  nuget-output-file:
+    type: string
+    default: "bin/Release/SMBLibrary.1.5.0.nupkg"
+
   git-primary-branch:
     type: string
     default: "master"
