@@ -69,30 +69,28 @@ jobs:
           paths:
             - .
 
-  release:
-    executor: node
+  nuget-publish:
+    executor:
+      name: win/default
     steps:
       - attach_workspace:
           at: .
-      - run: git config user.email "development@lansweeper.com"
-      - run: git config user.name "circleCI-automated-commit"
-      - install-deps
       - run:
-          name: install dotnet SDK
+          name: Set correct version in csproj file, build and pack it
           command: |
-            wget https://packages.microsoft.com/config/ubuntu/20.10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-            sudo dpkg -i packages-microsoft-prod.deb
-            sudo apt-get update; \
-            sudo apt-get install -y apt-transport-https && \
-            sudo apt-get update && \
-            sudo apt-get install -y dotnet-sdk-5.0
+            $env:package_version = "1.5.0"
+            $file = Get-Item << pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >>
+            [xml]$cn = Get-Content $file
+            $cn.Project.PropertyGroup.Version="$env:package_version"
+            $cn.Save($file.FullName)
+            type ./<< pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >>
       - run:
-          name: Increase version with semantic-release
-          command: yarn run release
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
+          name: Pack the package
+          command: dotnet pack << pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >> --configuration Release
+      - run:
+          name: Publish the package
+          command: |
+            dotnet nuget push << pipeline.parameters.project-folder >><< pipeline.parameters.nuget-output-file >> --source "github" --api-key $env:GITHUB_TOKEN
 
 workflows:
   version: 2
@@ -106,11 +104,11 @@ workflows:
             branches:
               only: << pipeline.parameters.git-primary-branch >>
 
-      - release:
-          context:
-            - lec-github-packages-rw
+      - nuget-publish:
           requires:
             - build
+          context:
+            - lec-github-packages-rw
           filters:
             branches:
               only: << pipeline.parameters.git-primary-branch >>
