@@ -12,6 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0FFD55AB-3A84-47E0-8B38-2F367940D2F3}"
 	ProjectSection(SolutionItems) = preProject
 		Lansweeper.SMBLibrary.nuspec = Lansweeper.SMBLibrary.nuspec
+		package.json = package.json
 	EndProjectSection
 EndProject
 Global
