@@ -11,7 +11,7 @@ parameters:
 
   nuget-output-file:
     type: string
-    default: "bin/Release/SMBLibrary.1.5.0.nupkg"
+    default: "bin/Release/Lansweeper.SMBLibrary.1.5.0.nupkg"
 
   git-primary-branch:
     type: string
