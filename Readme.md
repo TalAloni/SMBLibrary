@@ -1,7 +1,7 @@
 Updating (Lansweeper) Version
 =================
 Replace ALL occurences of current nuget package version by the new version
--> .nuspec file, .csproj file, .circleci/config.yaml
+-> .nuspec file, SMBLibrary/.csproj file, .circleci/config.yaml
 
 About SMBLibrary:
 =================
