@@ -167,7 +167,7 @@ namespace SMBLibrary.Client
             request.Dialects.Add(SMB2Dialect.SMB300);
 
             TrySendCommand(request);
-            NegotiateResponse response = WaitForCommand(SMB2CommandName.Negotiate) as NegotiateResponse;
+            NegotiateResponse response = WaitForCommand(request.MessageID) as NegotiateResponse;
             if (response != null && response.Header.Status == NTStatus.STATUS_SUCCESS)
             {
                 m_dialect = response.DialectRevision;
@@ -203,7 +203,7 @@ namespace SMBLibrary.Client
             request.SecurityMode = SecurityMode.SigningEnabled;
             request.SecurityBuffer = negotiateMessage;
             TrySendCommand(request);
-            SMB2Command response = WaitForCommand(SMB2CommandName.SessionSetup);
+            SMB2Command response = WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && response is SessionSetupResponse)
@@ -219,7 +219,7 @@ namespace SMBLibrary.Client
                     request.SecurityMode = SecurityMode.SigningEnabled;
                     request.SecurityBuffer = authenticateMessage;
                     TrySendCommand(request);
-                    response = WaitForCommand(SMB2CommandName.SessionSetup);
+                    response = WaitForCommand(request.MessageID);
                     if (response != null)
                     {
                         m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
@@ -254,7 +254,7 @@ namespace SMBLibrary.Client
             LogoffRequest request = new LogoffRequest();
             TrySendCommand(request);
 
-            SMB2Command response = WaitForCommand(SMB2CommandName.Logoff);
+            SMB2Command response = WaitForCommand(request.MessageID);
             if (response != null)
             {
                 m_isLoggedIn = (response.Header.Status != NTStatus.STATUS_SUCCESS);
@@ -293,7 +293,7 @@ namespace SMBLibrary.Client
             TreeConnectRequest request = new TreeConnectRequest();
             request.Path = sharePath;
             TrySendCommand(request);
-            SMB2Command response = WaitForCommand(SMB2CommandName.TreeConnect);
+            SMB2Command response = WaitForCommand(request.MessageID);
             if (response != null)
             {
                 status = response.Header.Status;
@@ -465,7 +465,7 @@ namespace SMBLibrary.Client
             }
         }
 
-        internal SMB2Command WaitForCommand(SMB2CommandName commandName)
+        internal SMB2Command WaitForCommand(ulong messageID)
         {
             const int TimeOut = 5000;
             Stopwatch stopwatch = new Stopwatch();
@@ -478,7 +478,7 @@ namespace SMBLibrary.Client
                     {
                         SMB2Command command = m_incomingQueue[index];
 
-                        if (command.CommandName == commandName)
+                        if (command.Header.MessageID == messageID)
                         {
                             m_incomingQueue.RemoveAt(index);
                             if (command.Header.IsAsync && command.Header.Status == NTStatus.STATUS_PENDING)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -40,7 +40,7 @@ namespace SMBLibrary.Client
             request.ImpersonationLevel = ImpersonationLevel.Impersonation;
             TrySendCommand(request);
 
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Create);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is CreateResponse)
@@ -60,7 +60,7 @@ namespace SMBLibrary.Client
             CloseRequest request = new CloseRequest();
             request.FileId = (FileID)handle;
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Close);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 return response.Header.Status;
@@ -79,7 +79,7 @@ namespace SMBLibrary.Client
             request.ReadLength = (uint)maxCount;
             
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Read);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is ReadResponse)
@@ -102,7 +102,7 @@ namespace SMBLibrary.Client
             request.Data = data;
 
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.Write);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is WriteResponse)
@@ -142,7 +142,7 @@ namespace SMBLibrary.Client
             request.FileName = fileName;
 
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryDirectory);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 while (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryDirectoryResponse)
@@ -151,7 +151,7 @@ namespace SMBLibrary.Client
                     result.AddRange(page);
                     request.Reopen = false;
                     TrySendCommand(request);
-                    response = m_client.WaitForCommand(SMB2CommandName.QueryDirectory);
+                    response = m_client.WaitForCommand(request.MessageID);
                 }
                 return response.Header.Status;
             }
@@ -169,7 +169,7 @@ namespace SMBLibrary.Client
             request.FileId = (FileID)handle;
 
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryInfo);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryInfoResponse)
@@ -191,7 +191,7 @@ namespace SMBLibrary.Client
             request.SetFileInformation(information);
 
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.SetInfo);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 return response.Header.Status;
@@ -226,7 +226,7 @@ namespace SMBLibrary.Client
             request.FileId = (FileID)handle;
 
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryInfo);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryInfoResponse)
@@ -254,7 +254,7 @@ namespace SMBLibrary.Client
             request.FileId = (FileID)handle;
 
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.QueryInfo);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is QueryInfoResponse)
@@ -293,7 +293,7 @@ namespace SMBLibrary.Client
             request.Input = input;
             request.MaxOutputResponse = (uint)maxOutputLength;
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.IOCtl);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if ((response.Header.Status == NTStatus.STATUS_SUCCESS || response.Header.Status == NTStatus.STATUS_BUFFER_OVERFLOW) && response is IOCtlResponse)
@@ -310,7 +310,7 @@ namespace SMBLibrary.Client
         {
             TreeDisconnectRequest request = new TreeDisconnectRequest();
             TrySendCommand(request);
-            SMB2Command response = m_client.WaitForCommand(SMB2CommandName.TreeDisconnect);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
             if (response != null)
             {
                 return response.Header.Status;
