@@ -4,7 +4,7 @@
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary</AssemblyName>
-    <Version>1.4.6</Version>
+    <Version>1.4.6.1</Version>
     <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
