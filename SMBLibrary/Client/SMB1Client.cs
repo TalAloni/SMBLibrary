@@ -1,5 +1,5 @@
 /* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
- * 
+ *
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
@@ -21,7 +21,7 @@ namespace SMBLibrary.Client
     public class SMB1Client : ISMBClient
     {
         private const string NTLanManagerDialect = "NT LM 0.12";
-        
+
         public static readonly int NetBiosOverTCPPort = 139;
         public static readonly int DirectTCPPort = 445;
 
@@ -82,7 +82,7 @@ namespace SMBLibrary.Client
                 {
                     return false;
                 }
-                
+
                 if (transport == SMBTransportType.NetBiosOverTCP)
                 {
                     SessionRequestPacket sessionRequest = new SessionRequestPacket();
@@ -94,6 +94,9 @@ namespace SMBLibrary.Client
                     if (!(sessionResponsePacket is PositiveSessionResponsePacket))
                     {
                         m_clientSocket.Disconnect(false);
+#if NETSTANDARD2_0
+                        m_clientSocket.Dispose();
+#endif
                         if (!ConnectSocket(serverAddress, port))
                         {
                             return false;
@@ -121,6 +124,9 @@ namespace SMBLibrary.Client
                 if (!supportsDialect)
                 {
                     m_clientSocket.Close();
+#if NETSTANDARD2_0
+                    m_clientSocket.Dispose();
+#endif
                 }
                 else
                 {
@@ -133,13 +139,16 @@ namespace SMBLibrary.Client
         private bool ConnectSocket(IPAddress serverAddress, int port)
         {
             m_clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            
+
             try
             {
                 m_clientSocket.Connect(serverAddress, port);
             }
             catch (SocketException)
             {
+#if NETSTANDARD2_0
+                m_clientSocket.Dispose();
+#endif
                 return false;
             }
 
@@ -154,6 +163,9 @@ namespace SMBLibrary.Client
             if (m_isConnected)
             {
                 m_clientSocket.Disconnect(false);
+#if NETSTANDARD2_0
+                m_clientSocket.Dispose();
+#endif
                 m_isConnected = false;
             }
         }
@@ -265,7 +277,7 @@ namespace SMBLibrary.Client
                     byte[] proofStr = NTLMCryptography.ComputeNTLMv2Proof(m_serverChallenge, temp, password, userName, domainName);
                     request.UnicodePassword = ByteUtils.Concatenate(proofStr, temp);
                 }
-                
+
                 TrySendMessage(request);
 
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
@@ -290,7 +302,7 @@ namespace SMBLibrary.Client
                 request.Capabilities = clientCapabilities;
                 request.SecurityBlob = negotiateMessage;
                 TrySendMessage(request);
-                
+
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 if (reply != null)
                 {

@@ -1,5 +1,5 @@
 /* Copyright (C) 2017-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
- * 
+ *
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
@@ -27,7 +27,7 @@ namespace SMBLibrary.Client
         public static readonly uint ClientMaxTransactSize = 1048576;
         public static readonly uint ClientMaxReadSize = 1048576;
         public static readonly uint ClientMaxWriteSize = 1048576;
-        private static readonly ushort DesiredCredits = 16; 
+        private static readonly ushort DesiredCredits = 16;
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -91,6 +91,9 @@ namespace SMBLibrary.Client
                     if (!(sessionResponsePacket is PositiveSessionResponsePacket))
                     {
                         m_clientSocket.Disconnect(false);
+#if NETSTANDARD2_0
+                        m_clientSocket.Dispose();
+#endif
                         if (!ConnectSocket(serverAddress, port))
                         {
                             return false;
@@ -118,6 +121,9 @@ namespace SMBLibrary.Client
                 if (!supportsDialect)
                 {
                     m_clientSocket.Close();
+#if NETSTANDARD2_0
+                    m_clientSocket.Dispose();
+#endif
                 }
                 else
                 {
@@ -137,6 +143,9 @@ namespace SMBLibrary.Client
             }
             catch (SocketException)
             {
+#if NETSTANDARD2_0
+                m_clientSocket.Dispose();
+#endif
                 return false;
             }
 
@@ -151,6 +160,9 @@ namespace SMBLibrary.Client
             if (m_isConnected)
             {
                 m_clientSocket.Disconnect(false);
+#if NETSTANDARD2_0
+                m_clientSocket.Dispose();
+#endif
                 m_isConnected = false;
             }
         }
