@@ -117,7 +117,20 @@ namespace SMBLibrary.Client
 
         public NTStatus FlushFileBuffers(object handle)
         {
-            throw new NotImplementedException();
+            FlushRequest request = new FlushRequest();
+            request.FileId = (FileID) handle;
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
+            if (response != null)
+            {
+                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is FlushResponse)
+                {
+                    return response.Header.Status;
+                }
+            }
+
+            return NTStatus.STATUS_INVALID_SMB;
         }
 
         public NTStatus LockFile(object handle, long byteOffset, long length, bool exclusiveLock)
