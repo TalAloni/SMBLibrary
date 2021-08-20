@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,6 +16,15 @@ namespace SMBLibrary.Client
     {
         public static List<string> ListShares(INTFileStore namedPipeShare, ShareType? shareType, out NTStatus status)
         {
+            return ListShares(namedPipeShare, "*", shareType, out status);
+        }
+
+        /// <param name="serverName">
+        /// When a Windows Server host is using Failover Cluster & Cluster Shared Volumes, each of those CSV file shares is associated
+        /// with a specific host name associated with the cluster and is not accessible using the node IP address or node host name.
+        /// </param>
+        public static List<string> ListShares(INTFileStore namedPipeShare, string serverName, ShareType? shareType, out NTStatus status)
+        {
             object pipeHandle;
             int maxTransmitFragmentSize;
             status = NamedPipeHelper.BindPipe(namedPipeShare, ServerService.ServicePipeName, ServerService.ServiceInterfaceGuid, ServerService.ServiceVersion, out pipeHandle, out maxTransmitFragmentSize);
@@ -29,7 +38,7 @@ namespace SMBLibrary.Client
             shareEnumRequest.InfoStruct.Level = 1;
             shareEnumRequest.InfoStruct.Info = new ShareInfo1Container();
             shareEnumRequest.PreferedMaximumLength = UInt32.MaxValue;
-            shareEnumRequest.ServerName = "*";
+            shareEnumRequest.ServerName = serverName;
             RequestPDU requestPDU = new RequestPDU();
             requestPDU.Flags = PacketFlags.FirstFragment | PacketFlags.LastFragment;
             requestPDU.DataRepresentation.CharacterFormat = CharacterFormat.ASCII;

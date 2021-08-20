@@ -27,8 +27,9 @@ namespace SMBLibrary.Client
         public static readonly uint ClientMaxTransactSize = 1048576;
         public static readonly uint ClientMaxReadSize = 1048576;
         public static readonly uint ClientMaxWriteSize = 1048576;
-        private static readonly ushort DesiredCredits = 16; 
+        private static readonly ushort DesiredCredits = 16;
 
+        private string m_serverName;
         private SMBTransportType m_transport;
         private bool m_isConnected;
         private bool m_isLoggedIn;
@@ -60,8 +61,29 @@ namespace SMBLibrary.Client
         {
         }
 
+        /// <param name="serverName">
+        /// When a Windows Server host is using Failover Cluster & Cluster Shared Volumes, each of those CSV file shares is associated
+        /// with a specific host name associated with the cluster and is not accessible using the node IP address or node host name.
+        /// </param>
+        public bool Connect(string serverName, SMBTransportType transport)
+        {
+            m_serverName = serverName;
+            IPHostEntry hostEntry = Dns.GetHostEntry(serverName);
+            if (hostEntry.AddressList.Length == 0)
+            {
+                throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
+            }
+            IPAddress serverAddress = hostEntry.AddressList[0];
+            return Connect(serverAddress, transport);
+        }
+
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
         {
+            if (m_serverName == null)
+            {
+                m_serverName = serverAddress.ToString();
+            }
+
             m_transport = transport;
             if (!m_isConnected)
             {
@@ -276,7 +298,7 @@ namespace SMBLibrary.Client
                 return null;
             }
 
-            List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, SMBLibrary.Services.ShareType.DiskDrive, out status);
+            List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, m_serverName, SMBLibrary.Services.ShareType.DiskDrive, out status);
             namedPipeShare.Disconnect();
             return shares;
         }
@@ -288,8 +310,7 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A login session must be successfully established before connecting to a share");
             }
 
-            IPAddress serverIPAddress = ((IPEndPoint)m_clientSocket.RemoteEndPoint).Address;
-            string sharePath = String.Format(@"\\{0}\{1}", serverIPAddress.ToString(), shareName);
+            string sharePath = String.Format(@"\\{0}\{1}", m_serverName, shareName);
             TreeConnectRequest request = new TreeConnectRequest();
             request.Path = sharePath;
             TrySendCommand(request);
