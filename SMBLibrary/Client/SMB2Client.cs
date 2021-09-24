@@ -21,8 +21,8 @@ namespace SMBLibrary.Client
 {
     public class SMB2Client : ISMBClient
     {
-        public static readonly int NetBiosOverTCPPort = 139;
-        public static readonly int DirectTCPPort = 445;
+        public static int NetBiosOverTCPPort = 139;
+        public static int DirectTCPPort = 445;
 
         public static readonly uint ClientMaxTransactSize = 1048576;
         public static readonly uint ClientMaxReadSize = 1048576;
