@@ -22,7 +22,6 @@ namespace SMBLibrary.Server
     {
         public static readonly int NetBiosOverTCPPort = 139;
         public static readonly int DirectTCPPort = 445;
-        public static int CustomPort;
         public const string NTLanManagerDialect = "NT LM 0.12";
         public static readonly bool EnableExtendedSecurity = true;
         private static readonly int InactivityMonitoringInterval = 30000; // Check every 30 seconds
@@ -70,6 +69,18 @@ namespace SMBLibrary.Server
         {
             Start(serverAddress, transport, enableSMB1, enableSMB2, enableSMB3, null);
         }
+        
+        public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
+        {
+            this.Start(
+                serverAddress,
+                transport,
+                enableSMB1,
+                enableSMB2,
+                enableSMB3,
+                null,
+                m_transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
+        }
 
         /// <param name="connectionInactivityTimeout">
         /// The duration after which an unsolicited ECHO response will be sent if no data has been sent or received.
@@ -77,7 +88,14 @@ namespace SMBLibrary.Server
         /// to prevent such connections from hanging around indefinitely, this parameter can be used.
         /// </param>
         /// <exception cref="System.Net.Sockets.SocketException"></exception>
-        public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
+        public void Start(
+            IPAddress serverAddress,
+            SMBTransportType transport,
+            bool enableSMB1,
+            bool enableSMB2,
+            bool enableSMB3,
+            TimeSpan? connectionInactivityTimeout,
+            int port)
         {
             if (!m_listening)
             {
@@ -96,8 +114,6 @@ namespace SMBLibrary.Server
                 m_serverStartTime = DateTime.Now;
 
                 m_listenerSocket = new Socket(m_serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                int port = (m_transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-                port = CustomPort != default ? CustomPort : port;
                 
                 m_listenerSocket.Bind(new IPEndPoint(m_serverAddress, port));
                 m_listenerSocket.Listen((int)SocketOptionName.MaxConnections);
@@ -119,6 +135,7 @@ namespace SMBLibrary.Server
             }
         }
 
+        
         public void Stop()
         {
             Log(Severity.Information, "Stopping server");
