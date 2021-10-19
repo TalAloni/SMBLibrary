@@ -27,6 +27,7 @@ namespace SMBLibrary.Client
 
         private static readonly ushort ClientMaxBufferSize = 65535; // Valid range: 512 - 65535
         private static readonly ushort ClientMaxMpxCount = 1;
+        private static readonly int ResponseTimeoutInMilliseconds = 5000;
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -536,10 +537,9 @@ namespace SMBLibrary.Client
 
         internal SMB1Message WaitForMessage(CommandName commandName)
         {
-            const int TimeOut = 5000;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < TimeOut)
+            while (stopwatch.ElapsedMilliseconds < ResponseTimeoutInMilliseconds)
             {
                 lock (m_incomingQueueLock)
                 {

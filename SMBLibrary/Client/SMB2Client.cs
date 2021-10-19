@@ -25,6 +25,7 @@ namespace SMBLibrary.Client
         public static readonly uint ClientMaxReadSize = 1048576;
         public static readonly uint ClientMaxWriteSize = 1048576;
         private static readonly ushort DesiredCredits = 16;
+        public static readonly int ResponseTimeoutInMilliseconds = 5000;
 
         private string m_serverName;
         private SMBTransportType m_transport;
@@ -485,10 +486,9 @@ namespace SMBLibrary.Client
 
         internal SMB2Command WaitForCommand(ulong messageID)
         {
-            const int TimeOut = 5000;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < TimeOut)
+            while (stopwatch.ElapsedMilliseconds < ResponseTimeoutInMilliseconds)
             {
                 lock (m_incomingQueueLock)
                 {
