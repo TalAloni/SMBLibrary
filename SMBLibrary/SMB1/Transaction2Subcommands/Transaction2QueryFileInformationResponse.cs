@@ -12,7 +12,7 @@ namespace SMBLibrary.SMB1
 {
     /// <summary>
     /// TRANS2_QUERY_FILE_INFORMATION Response
-    /// </summary
+    /// </summary>
     public class Transaction2QueryFileInformationResponse : Transaction2Subcommand
     {
         public const int ParametersLength = 2;
