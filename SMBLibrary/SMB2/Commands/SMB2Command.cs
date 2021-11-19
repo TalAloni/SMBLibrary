@@ -135,7 +135,7 @@ namespace SMBLibrary.SMB2
             return GetCommandChainBytes(commands, null, SMB2Dialect.SMB2xx);
         }
 
-        /// <param name="sessionKey">
+        /// <param name="signingKey">
         /// Message will be signed using this key if (not null and) SMB2_FLAGS_SIGNED is set.
         /// </param>
         /// <param name="dialect">

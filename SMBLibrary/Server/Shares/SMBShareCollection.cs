@@ -39,7 +39,7 @@ namespace SMBLibrary.Server
             return result;
         }
 
-        /// <param name="relativePath">e.g. \Shared</param>
+        /// <param name="shareName">e.g. \Shared</param>
         public FileSystemShare GetShareFromName(string shareName)
         {
             int index = IndexOf(shareName, StringComparison.OrdinalIgnoreCase);
