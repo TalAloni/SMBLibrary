@@ -20,7 +20,7 @@ namespace SMBLibrary.Client
         }
 
         /// <param name="serverName">
-        /// When a Windows Server host is using Failover Cluster & Cluster Shared Volumes, each of those CSV file shares is associated
+        /// When a Windows Server host is using Failover Cluster and Cluster Shared Volumes, each of those CSV file shares is associated
         /// with a specific host name associated with the cluster and is not accessible using the node IP address or node host name.
         /// </param>
         public static List<string> ListShares(INTFileStore namedPipeShare, string serverName, ShareType? shareType, out NTStatus status)
