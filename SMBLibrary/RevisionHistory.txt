@@ -469,3 +469,5 @@ Revision History:
         SMB2Command: Add MessageID property.
         NTStatus: Added STATUS_WRONG_PASSWORD.
         NTStatus: Correct STATUS_PASSWORD_MUST_CHANGE value.
+
+1.4.8 - SMBServer - Start method bugfix.
