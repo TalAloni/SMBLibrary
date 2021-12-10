@@ -38,7 +38,7 @@ namespace SMBLibrary.Client
             shareEnumRequest.InfoStruct.Level = 1;
             shareEnumRequest.InfoStruct.Info = new ShareInfo1Container();
             shareEnumRequest.PreferedMaximumLength = UInt32.MaxValue;
-            shareEnumRequest.ServerName = serverName;
+            shareEnumRequest.ServerName = @"\\" + serverName;
             RequestPDU requestPDU = new RequestPDU();
             requestPDU.Flags = PacketFlags.FirstFragment | PacketFlags.LastFragment;
             requestPDU.DataRepresentation.CharacterFormat = CharacterFormat.ASCII;
