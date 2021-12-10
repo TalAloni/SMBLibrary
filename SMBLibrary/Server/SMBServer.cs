@@ -78,7 +78,7 @@ namespace SMBLibrary.Server
         /// <exception cref="System.Net.Sockets.SocketException"></exception>
         public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
         {
-            int port = (m_transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
+            int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
             Start(serverAddress, transport, port, enableSMB1, enableSMB2, enableSMB3, connectionInactivityTimeout);
         }
 
