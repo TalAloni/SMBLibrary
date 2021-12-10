@@ -77,6 +77,12 @@ namespace SMBLibrary.Client
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
         {
+            int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
+            return Connect(serverAddress, transport, port);
+        }
+
+        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port)
+        {
             if (m_serverName == null)
             {
                 m_serverName = serverAddress.ToString();
@@ -85,16 +91,6 @@ namespace SMBLibrary.Client
             m_transport = transport;
             if (!m_isConnected)
             {
-                int port;
-                if (transport == SMBTransportType.NetBiosOverTCP)
-                {
-                    port = NetBiosOverTCPPort;
-                }
-                else
-                {
-                    port = DirectTCPPort;
-                }
-
                 if (!ConnectSocket(serverAddress, port))
                 {
                     return false;

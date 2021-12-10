@@ -76,20 +76,16 @@ namespace SMBLibrary.Client
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
         {
+            int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
+            return Connect(serverAddress, transport, port, forceExtendedSecurity);
+        }
+
+        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity)
+        {
             m_transport = transport;
             if (!m_isConnected)
             {
                 m_forceExtendedSecurity = forceExtendedSecurity;
-                int port;
-                if (transport == SMBTransportType.NetBiosOverTCP)
-                {
-                    port = NetBiosOverTCPPort;
-                }
-                else
-                {
-                    port = DirectTCPPort;
-                }
-
                 if (!ConnectSocket(serverAddress, port))
                 {
                     return false;
