@@ -68,8 +68,8 @@ namespace SMBLibrary
         STATUS_NOT_FOUND = 0xC0000225,
         STATUS_ACCOUNT_LOCKED_OUT = 0xC0000234,
         STATUS_PASSWORD_MUST_CHANGE = 0xC0000224,
-        STATUS_NOT_A_REPARSE_POINT = 0xC0000275,
         STATUS_PATH_NOT_COVERED = 0xC0000257,
+        STATUS_NOT_A_REPARSE_POINT = 0xC0000275,
 
         STATUS_INVALID_SMB = 0x00010002,        // SMB1/CIFS: A corrupt or invalid SMB request was received
         STATUS_SMB_BAD_COMMAND = 0x00160002,    // SMB1/CIFS: An unknown SMB command code was received by the server
