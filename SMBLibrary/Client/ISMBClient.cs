@@ -4,15 +4,17 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
-using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace SMBLibrary.Client
 {
     public interface ISMBClient
     {
         bool Connect(IPAddress serverAddress, SMBTransportType transport, string serverName = null);
+
+        Task<bool> ConnectAsync(IPAddress serverAddress, SMBTransportType transport, string serverName = null);
 
         void Disconnect();
 

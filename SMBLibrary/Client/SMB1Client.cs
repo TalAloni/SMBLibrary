@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.NetBios;
 using SMBLibrary.Services;
@@ -67,6 +68,79 @@ namespace SMBLibrary.Client
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, string serverName = null)
         {
             return Connect(serverAddress, transport, false, serverName);
+        }
+
+        public Task<bool> ConnectAsync(IPAddress serverAddress, SMBTransportType transport, string serverName = null)
+        {
+            return ConnectAsync(serverAddress, transport, false, serverName);
+        }
+
+        public async Task<bool> ConnectAsync(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity, string serverName = null)
+        {
+            m_transport = transport;
+            if (!m_isConnected)
+            {
+                m_forceExtendedSecurity = forceExtendedSecurity;
+                int port;
+                port = transport == SMBTransportType.NetBiosOverTCP ? NetBiosOverTCPPort : DirectTCPPort;
+
+                if (!await ConnectSocketAsync(serverAddress, port))
+                {
+                    return false;
+                }
+
+                if (transport == SMBTransportType.NetBiosOverTCP)
+                {
+                    SessionRequestPacket sessionRequest = new SessionRequestPacket();
+                    sessionRequest.CalledName = NetBiosUtils.GetMSNetBiosName(serverName ?? "*SMBSERVER", NetBiosSuffix.FileServiceService);
+                    sessionRequest.CallingName = NetBiosUtils.GetMSNetBiosName(Environment.MachineName, NetBiosSuffix.WorkstationService);
+                    await TrySendPacketAsync(m_clientSocket, sessionRequest);
+
+                    SessionPacket sessionResponsePacket = await WaitForSessionResponsePacketAsync();
+                    if (!(sessionResponsePacket is PositiveSessionResponsePacket))
+                    {
+                        var socketAsyncEventArgs = new SocketAsyncEventArgs
+                        {
+                            DisconnectReuseSocket = false
+                        };
+                        var task = CreateTaskFromCompletionHandler(socketAsyncEventArgs, SocketAsyncOperation.Disconnect);
+                        m_clientSocket.DisconnectAsync(socketAsyncEventArgs);
+                        await task;
+
+                        if (!await ConnectSocketAsync(serverAddress, port))
+                        {
+                            return false;
+                        }
+
+                        NameServiceClient nameServiceClient = new NameServiceClient(serverAddress);
+                        serverName = nameServiceClient.GetServerName();
+                        if (serverName == null)
+                        {
+                            return false;
+                        }
+
+                        sessionRequest.CalledName = serverName;
+                        await TrySendPacketAsync(m_clientSocket, sessionRequest);
+
+                        sessionResponsePacket = await WaitForSessionResponsePacketAsync();
+                        if (!(sessionResponsePacket is PositiveSessionResponsePacket))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                bool supportsDialect = await NegotiateDialectAsync(m_forceExtendedSecurity);
+                if (!supportsDialect)
+                {
+                    m_clientSocket.Close();
+                }
+                else
+                {
+                    m_isConnected = true;
+                }
+            }
+            return m_isConnected;
         }
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity, string serverName = null)
@@ -149,11 +223,51 @@ namespace SMBLibrary.Client
             return true;
         }
 
+        private async Task<bool> ConnectSocketAsync(IPAddress serverAddress, int port)
+        {
+            m_clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                var socketAsyncEventArgs = new SocketAsyncEventArgs
+                {
+                    RemoteEndPoint = new IPEndPoint(serverAddress, port)
+                };
+                var task = CreateTaskFromCompletionHandler(socketAsyncEventArgs, SocketAsyncOperation.Connect);
+                m_clientSocket.ConnectAsync(socketAsyncEventArgs);
+                await task;
+            }
+            catch (SocketException)
+            {
+                return false;
+            }
+
+            ConnectionState state = new ConnectionState(m_clientSocket);
+            NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
+            m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+            return true;
+        }
+
         public void Disconnect()
         {
             if (m_isConnected)
             {
                 m_clientSocket.Disconnect(false);
+                m_isConnected = false;
+            }
+        }
+
+        public async Task DisconnectAsync()
+        {
+            if (m_isConnected)
+            {
+                var socketAsyncEventArgs = new SocketAsyncEventArgs
+                {
+                    DisconnectReuseSocket = false
+                };
+                var task = CreateTaskFromCompletionHandler(socketAsyncEventArgs, SocketAsyncOperation.Disconnect);
+                m_clientSocket.DisconnectAsync(socketAsyncEventArgs);
+                await task;
                 m_isConnected = false;
             }
         }
@@ -176,6 +290,59 @@ namespace SMBLibrary.Client
                 Domainname = response.DomainName;
                 Hostname = response.ServerName;
                 
+                m_unicode = ((response.Capabilities & Capabilities.Unicode) > 0);
+                m_largeFiles = ((response.Capabilities & Capabilities.LargeFiles) > 0);
+                bool ntSMB = ((response.Capabilities & Capabilities.NTSMB) > 0);
+                bool rpc = ((response.Capabilities & Capabilities.RpcRemoteApi) > 0);
+                bool ntStatusCode = ((response.Capabilities & Capabilities.NTStatusCode) > 0);
+                m_infoLevelPassthrough = ((response.Capabilities & Capabilities.InfoLevelPassthrough) > 0);
+                m_largeRead = ((response.Capabilities & Capabilities.LargeRead) > 0);
+                m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
+                m_serverMaxBufferSize = response.MaxBufferSize;
+                m_maxMpxCount = Math.Min(response.MaxMpxCount, ClientMaxMpxCount);
+                m_serverChallenge = response.Challenge;
+                return ntSMB && rpc && ntStatusCode;
+            }
+            else if (reply.Commands[0] is NegotiateResponseExtended)
+            {
+                NegotiateResponseExtended response = (NegotiateResponseExtended)reply.Commands[0];
+                m_unicode = ((response.Capabilities & Capabilities.Unicode) > 0);
+                m_largeFiles = ((response.Capabilities & Capabilities.LargeFiles) > 0);
+                bool ntSMB = ((response.Capabilities & Capabilities.NTSMB) > 0);
+                bool rpc = ((response.Capabilities & Capabilities.RpcRemoteApi) > 0);
+                bool ntStatusCode = ((response.Capabilities & Capabilities.NTStatusCode) > 0);
+                m_infoLevelPassthrough = ((response.Capabilities & Capabilities.InfoLevelPassthrough) > 0);
+                m_largeRead = ((response.Capabilities & Capabilities.LargeRead) > 0);
+                m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
+                m_serverMaxBufferSize = response.MaxBufferSize;
+                m_maxMpxCount = Math.Min(response.MaxMpxCount, ClientMaxMpxCount);
+                m_securityBlob = response.SecurityBlob;
+                return ntSMB && rpc && ntStatusCode;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private async Task<bool> NegotiateDialectAsync(bool forceExtendedSecurity)
+        {
+            NegotiateRequest request = new NegotiateRequest();
+            request.Dialects.Add(NTLanManagerDialect);
+
+            await TrySendMessageAsync(request);
+            SMB1Message reply = await WaitForMessageAsync(CommandName.SMB_COM_NEGOTIATE);
+            if (reply == null)
+            {
+                return false;
+            }
+
+            if (reply.Commands[0] is NegotiateResponse && !forceExtendedSecurity)
+            {
+                NegotiateResponse response = (NegotiateResponse)reply.Commands[0];
+                Domainname = response.DomainName;
+                Hostname = response.ServerName;
+
                 m_unicode = ((response.Capabilities & Capabilities.Unicode) > 0);
                 m_largeFiles = ((response.Capabilities & Capabilities.LargeFiles) > 0);
                 bool ntSMB = ((response.Capabilities & Capabilities.NTSMB) > 0);
@@ -554,6 +721,32 @@ namespace SMBLibrary.Client
             }
         }
 
+        internal async Task<SMB1Message> WaitForMessageAsync(CommandName commandName)
+        {
+            const int TimeOut = 5000;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            while (stopwatch.ElapsedMilliseconds < TimeOut)
+            {
+                lock (m_incomingQueueLock)
+                {
+                    for (int index = 0; index < m_incomingQueue.Count; index++)
+                    {
+                        SMB1Message message = m_incomingQueue[index];
+
+                        if (message.Commands[0].CommandName == commandName)
+                        {
+                            m_incomingQueue.RemoveAt(index);
+                            return message;
+                        }
+                    }
+                }
+                await Task.Delay(99);
+                m_incomingQueueEventHandle.WaitOne(1);
+            }
+            return null;
+        }
+
         internal SMB1Message WaitForMessage(CommandName commandName)
         {
             const int TimeOut = 5000;
@@ -599,6 +792,27 @@ namespace SMBLibrary.Client
             return null;
         }
 
+        internal async Task<SessionPacket> WaitForSessionResponsePacketAsync()
+        {
+            const int TimeOut = 5000;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            while (stopwatch.ElapsedMilliseconds < TimeOut)
+            {
+                if (m_sessionResponsePacket != null)
+                {
+                    SessionPacket result = m_sessionResponsePacket;
+                    m_sessionResponsePacket = null;
+                    return result;
+                }
+
+                await Task.Delay(99);
+                m_sessionResponseEventHandle.WaitOne(1);
+            }
+
+            return null;
+        }
+
         private void Log(string message)
         {
             System.Diagnostics.Debug.Print(message);
@@ -619,6 +833,23 @@ namespace SMBLibrary.Client
             message.Header.TID = treeID;
             message.Commands.Add(request);
             TrySendMessage(m_clientSocket, message);
+        }
+
+        internal Task TrySendMessageAsync(SMB1Command request)
+        {
+            return TrySendMessageAsync(request, 0);
+        }
+
+        internal Task TrySendMessageAsync(SMB1Command request, ushort treeID)
+        {
+            SMB1Message message = new SMB1Message();
+            message.Header.UnicodeFlag = m_unicode;
+            message.Header.ExtendedSecurityFlag = m_forceExtendedSecurity;
+            message.Header.Flags2 |= HeaderFlags2.LongNamesAllowed | HeaderFlags2.LongNameUsed | HeaderFlags2.NTStatusCode;
+            message.Header.UID = m_userID;
+            message.Header.TID = treeID;
+            message.Commands.Add(request);
+            return TrySendMessageAsync(m_clientSocket, message);
         }
 
         public bool Unicode
@@ -705,6 +936,15 @@ namespace SMBLibrary.Client
             TrySendPacket(socket, packet);
         }
 
+        public static Task TrySendMessageAsync(Socket socket, SMB1Message message)
+        {
+            SessionMessagePacket packet = new SessionMessagePacket
+            {
+                Trailer = message.GetBytes()
+            };
+            return TrySendPacketAsync(socket, packet);
+        }
+
         public static void TrySendPacket(Socket socket, SessionPacket packet)
         {
             try
@@ -718,6 +958,45 @@ namespace SMBLibrary.Client
             catch (ObjectDisposedException)
             {
             }
+        }
+
+        public static async Task TrySendPacketAsync(Socket socket, SessionPacket packet)
+        {
+            try
+            {
+                byte[] packetBytes = packet.GetBytes();
+                var socketAsyncEventArgs = new SocketAsyncEventArgs();
+                socketAsyncEventArgs.SetBuffer(packetBytes, 0, packetBytes.Length);
+                var task = CreateTaskFromCompletionHandler(socketAsyncEventArgs, SocketAsyncOperation.Send);
+                socket.SendAsync(socketAsyncEventArgs);
+                await task;
+            }
+            catch (SocketException)
+            {
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
+        private static Task CreateTaskFromCompletionHandler(SocketAsyncEventArgs socketAsyncEventArgs, SocketAsyncOperation socketAsyncOperation)
+        {
+            TaskCompletionSource<string> completionSource = new TaskCompletionSource<string>();
+            socketAsyncEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>((o, eventArgs) =>
+            {
+                if (eventArgs.LastOperation == socketAsyncOperation)
+                {
+                    if (eventArgs.SocketError == SocketError.Success)
+                    {
+                        completionSource.SetResult("");
+                    }
+                    else
+                    {
+                        completionSource.SetException(new SocketException((int)eventArgs.SocketError));
+                    }
+                }
+            });
+            return completionSource.Task;
         }
     }
 }
