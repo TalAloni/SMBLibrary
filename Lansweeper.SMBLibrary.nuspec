@@ -3,7 +3,7 @@
 
   <metadata minClientVersion="3.3">
     <id>Lansweeper.SMBLibrary</id>
-    <version>1.6.0</version>
+    <version>1.7.0</version>
     <title>Lansweeper.SMBLibrary</title>
     <authors>TalAloni/Lansweeper</authors>
     <description>SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation.</description>
