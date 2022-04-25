@@ -459,3 +459,15 @@ Revision History:
         NTLM: Bugfix: IndependentNTLMAuthenticationProvider login failed to to modification of message byte arrays.
 
 1.4.6 - SMB2Client: Fixed InvalidCastException on failed login to SMB 3.0 server.
+
+1.4.7 - SMBServer: Added private Start overload allowing to specify the listening port.
+        Client: Added private Connect overload allowing to specify the server port.
+        SMB2Client: Correctly handle async responses.
+        SMB2Client: WaitForCommand: Compare MessageID instead of CommandName.
+        Client: SMB2FileStore: Implement Flush.
+        Client: Added support for accessing Cluster Shared Volumes file shares.
+        SMB2Command: Add MessageID property.
+        NTStatus: Added STATUS_WRONG_PASSWORD.
+        NTStatus: Correct STATUS_PASSWORD_MUST_CHANGE value.
+
+1.4.8 - SMBServer - Start method bugfix.

@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -9,12 +9,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using SMBLibrary.Authentication.NTLM;
 using SMBLibrary.NetBios;
-using SMBLibrary.Services;
 using SMBLibrary.SMB2;
 using Utilities;
 
@@ -28,8 +25,10 @@ namespace SMBLibrary.Client
         public static readonly uint ClientMaxTransactSize = 1048576;
         public static readonly uint ClientMaxReadSize = 1048576;
         public static readonly uint ClientMaxWriteSize = 1048576;
-        private static readonly ushort DesiredCredits = 16; 
+        private static readonly ushort DesiredCredits = 16;
+        public static readonly int ResponseTimeoutInMilliseconds = 5000;
 
+        private string m_serverName;
         private SMBTransportType m_transport;
         private bool m_isConnected;
         private bool m_isLoggedIn;
@@ -63,11 +62,15 @@ namespace SMBLibrary.Client
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, string serverName = null)
         {
+            if (m_serverName == null)
+            {
+                m_serverName = serverAddress.ToString();
+            }
+
             m_transport = transport;
             if (!m_isConnected)
             {
-                int port;
-                port = transport == SMBTransportType.NetBiosOverTCP ? NetBiosOverTCPPort : DirectTCPPort;
+                var port = transport == SMBTransportType.NetBiosOverTCP ? NetBiosOverTCPPort : DirectTCPPort;
 
                 if (!ConnectSocket(serverAddress, port))
                 {
@@ -294,7 +297,7 @@ namespace SMBLibrary.Client
             request.Dialects.Add(SMB2Dialect.SMB300);
 
             TrySendCommand(request);
-            NegotiateResponse response = WaitForCommand(SMB2CommandName.Negotiate) as NegotiateResponse;
+            NegotiateResponse response = WaitForCommand(request.MessageID) as NegotiateResponse;
             if (response != null && response.Header.Status == NTStatus.STATUS_SUCCESS)
             {
                 m_dialect = response.DialectRevision;
@@ -327,7 +330,7 @@ namespace SMBLibrary.Client
                 SecurityBuffer = negotiateMessage
             };
             TrySendCommand(request);
-            var response = WaitForCommand(SMB2CommandName.SessionSetup);
+            var response = WaitForCommand(request.MessageID);
             if (response != null
                 && response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED
                 && response is SessionSetupResponse ssr)
@@ -359,7 +362,7 @@ namespace SMBLibrary.Client
             request.SecurityMode = SecurityMode.SigningEnabled;
             request.SecurityBuffer = negotiateMessage;
             TrySendCommand(request);
-            SMB2Command response = WaitForCommand(SMB2CommandName.SessionSetup);
+            SMB2Command response = WaitForCommand(request.MessageID);
             if (response != null)
             {
                 if (response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && response is SessionSetupResponse)
@@ -375,7 +378,7 @@ namespace SMBLibrary.Client
                     request.SecurityMode = SecurityMode.SigningEnabled;
                     request.SecurityBuffer = authenticateMessage;
                     TrySendCommand(request);
-                    response = WaitForCommand(SMB2CommandName.SessionSetup);
+                    response = WaitForCommand(request.MessageID);
                     if (response != null)
                     {
                         m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
@@ -410,7 +413,7 @@ namespace SMBLibrary.Client
             LogoffRequest request = new LogoffRequest();
             TrySendCommand(request);
 
-            SMB2Command response = WaitForCommand(SMB2CommandName.Logoff);
+            SMB2Command response = WaitForCommand(request.MessageID);
             if (response != null)
             {
                 m_isLoggedIn = (response.Header.Status != NTStatus.STATUS_SUCCESS);
@@ -432,7 +435,7 @@ namespace SMBLibrary.Client
                 return null;
             }
 
-            List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, SMBLibrary.Services.ShareType.DiskDrive, out status);
+            List<string> shares = ServerServiceHelper.ListShares(namedPipeShare, m_serverName, SMBLibrary.Services.ShareType.DiskDrive, out status);
             namedPipeShare.Disconnect();
             return shares;
         }
@@ -444,12 +447,11 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A login session must be successfully established before connecting to a share");
             }
 
-            IPAddress serverIPAddress = ((IPEndPoint)m_clientSocket.RemoteEndPoint).Address;
-            string sharePath = String.Format(@"\\{0}\{1}", serverIPAddress.ToString(), shareName);
+            string sharePath = String.Format(@"\\{0}\{1}", m_serverName, shareName);
             TreeConnectRequest request = new TreeConnectRequest();
             request.Path = sharePath;
             TrySendCommand(request);
-            SMB2Command response = WaitForCommand(SMB2CommandName.TreeConnect);
+            SMB2Command response = WaitForCommand(request.MessageID);
             if (response != null)
             {
                 status = response.Header.Status;
@@ -621,12 +623,11 @@ namespace SMBLibrary.Client
             }
         }
 
-        internal SMB2Command WaitForCommand(SMB2CommandName commandName)
+        internal SMB2Command WaitForCommand(ulong messageID)
         {
-            const int TimeOut = 5000;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < TimeOut)
+            while (stopwatch.ElapsedMilliseconds < ResponseTimeoutInMilliseconds)
             {
                 lock (m_incomingQueueLock)
                 {
@@ -634,9 +635,14 @@ namespace SMBLibrary.Client
                     {
                         SMB2Command command = m_incomingQueue[index];
 
-                        if (command.CommandName == commandName)
+                        if (command.Header.MessageID == messageID)
                         {
                             m_incomingQueue.RemoveAt(index);
+                            if (command.Header.IsAsync && command.Header.Status == NTStatus.STATUS_PENDING)
+                            {
+                                index--;
+                                continue;
+                            }
                             return command;
                         }
                     }

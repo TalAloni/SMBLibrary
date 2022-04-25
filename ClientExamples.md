@@ -11,6 +11,7 @@ if (isConnected)
         List<string> shares = client.ListShares(out status);
         client.Logoff();
     }
+    client.Disconnect();
 }
 ```
 
@@ -93,7 +94,7 @@ status = fileStore.Disconnect();
 Create a file and write to it:
 ==============================
 ```
-ISMBFileStore fileStore = client.TreeConnect("Shared", out status);                
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 string filePath = "NewFile.txt";
 if (fileStore is SMB1FileStore)
 {
@@ -116,10 +117,52 @@ if (status == NTStatus.STATUS_SUCCESS)
 status = fileStore.Disconnect();
 ```
 
+Write a large file:
+===================
+```
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
+if (status != NTStatus.STATUS_SUCCESS)
+{
+    throw new Exception("Failed to connect to share");
+}
+string localFilePath = @"C:\Image.jpg";
+string remoteFilePath = "NewFile.jpg";
+if (fileStore is SMB1FileStore)
+{
+    remoteFilePath = @"\\" + remoteFilePath;
+}
+FileStream localFileStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read);
+object fileHandle;
+FileStatus fileStatus;
+status = fileStore.CreateFile(out fileHandle, out fileStatus, remoteFilePath, AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE, FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_CREATE, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+if (status == NTStatus.STATUS_SUCCESS)
+{
+    int writeOffset = 0;
+    while (localFileStream.Position < localFileStream.Length)
+    {
+        byte[] buffer = new byte[(int)client.MaxWriteSize];
+        int bytesRead = localFileStream.Read(buffer, 0, buffer.Length);
+        if (bytesRead < (int)client.MaxWriteSize)
+        {
+            Array.Resize<byte>(ref buffer, bytesRead);
+        }
+        int numberOfBytesWritten;
+        status = fileStore.WriteFile(out numberOfBytesWritten, fileHandle, writeOffset, buffer);
+        if (status != NTStatus.STATUS_SUCCESS)
+        {
+            throw new Exception("Failed to write to file");
+        }
+        writeOffset += bytesRead;
+    }
+    status = fileStore.CloseFile(fileHandle);
+}
+status = fileStore.Disconnect();
+```
+
 Delete file:
 ============
 ```
-ISMBFileStore fileStore = client.TreeConnect("Shared", out status);                
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 string filePath = "DeleteMe.txt";
 if (fileStore is SMB1FileStore)
 {

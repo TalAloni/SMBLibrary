@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -29,6 +29,7 @@ namespace SMBLibrary.Client
 
         private static readonly ushort ClientMaxBufferSize = 65535; // Valid range: 512 - 65535
         private static readonly ushort ClientMaxMpxCount = 1;
+        private static readonly int ResponseTimeoutInMilliseconds = 5000;
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -81,8 +82,7 @@ namespace SMBLibrary.Client
             if (!m_isConnected)
             {
                 m_forceExtendedSecurity = forceExtendedSecurity;
-                int port;
-                port = transport == SMBTransportType.NetBiosOverTCP ? NetBiosOverTCPPort : DirectTCPPort;
+                var port = transport == SMBTransportType.NetBiosOverTCP ? NetBiosOverTCPPort : DirectTCPPort;
 
                 if (!await ConnectSocketAsync(serverAddress, port))
                 {
@@ -749,10 +749,9 @@ namespace SMBLibrary.Client
 
         internal SMB1Message WaitForMessage(CommandName commandName)
         {
-            const int TimeOut = 5000;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < TimeOut)
+            while (stopwatch.ElapsedMilliseconds < ResponseTimeoutInMilliseconds)
             {
                 lock (m_incomingQueueLock)
                 {

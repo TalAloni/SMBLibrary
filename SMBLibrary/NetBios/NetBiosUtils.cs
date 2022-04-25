@@ -60,7 +60,7 @@ namespace SMBLibrary.NetBios
             return EncodeName(netBiosName, scopeID);
         }
 
-        /// <param name="name">NetBIOS name</param>
+        /// <param name="netBiosName">NetBIOS name</param>
         /// <param name="scopeID">dot-separated labels, formatted per DNS naming rules</param>
         public static byte[] EncodeName(string netBiosName, string scopeID)
         {
@@ -75,7 +75,7 @@ namespace SMBLibrary.NetBios
         // into two nibbles and then adding the value of 'A' (0x41).
         // Thus, the '&' character (0x26) would be encoded as "CG".
         // NetBIOS names are usually padded with spaces before being encoded. 
-        /// <param name="name">NetBIOS name</param>
+        /// <param name="netBiosName">NetBIOS name</param>
         /// <param name="scopeID">dot-separated labels, formatted per DNS naming rules</param>
         public static string FirstLevelEncoding(string netBiosName, string scopeID)
         {

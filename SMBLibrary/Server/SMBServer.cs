@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -78,6 +78,12 @@ namespace SMBLibrary.Server
         /// <exception cref="System.Net.Sockets.SocketException"></exception>
         public void Start(IPAddress serverAddress, SMBTransportType transport, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
         {
+            int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
+            Start(serverAddress, transport, port, enableSMB1, enableSMB2, enableSMB3, connectionInactivityTimeout);
+        }
+
+        private void Start(IPAddress serverAddress, SMBTransportType transport, int port, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
+        {
             if (!m_listening)
             {
                 if (enableSMB3 && !enableSMB2)
@@ -95,7 +101,6 @@ namespace SMBLibrary.Server
                 m_serverStartTime = DateTime.Now;
 
                 m_listenerSocket = new Socket(m_serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                int port = (m_transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
                 m_listenerSocket.Bind(new IPEndPoint(m_serverAddress, port));
                 m_listenerSocket.Listen((int)SocketOptionName.MaxConnections);
                 m_listenerSocket.BeginAccept(ConnectRequestCallback, m_listenerSocket);
