@@ -37,5 +37,15 @@ namespace SMBLibrary.Client
         {
             get;
         }
+
+        bool IsConnected
+        { 
+            get; 
+        }
+
+        bool IsLoggedIn
+        {
+            get;
+        }
     }
 }

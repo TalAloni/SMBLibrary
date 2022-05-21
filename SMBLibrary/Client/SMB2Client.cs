@@ -29,8 +29,6 @@ namespace SMBLibrary.Client
 
         private string m_serverName;
         private SMBTransportType m_transport;
-        private bool m_isConnected;
-        private bool m_isLoggedIn;
         private Socket m_clientSocket;
 
         private object m_incomingQueueLock = new object();
@@ -54,6 +52,9 @@ namespace SMBLibrary.Client
         private byte[] m_securityBlob;
         private byte[] m_sessionKey;
         private ushort m_availableCredits = 1;
+
+        public bool IsConnected { get; private set; }
+        public bool IsLoggedIn { get; private set; }
 
         public SMB2Client()
         {
@@ -89,7 +90,7 @@ namespace SMBLibrary.Client
             }
 
             m_transport = transport;
-            if (!m_isConnected)
+            if (!IsConnected)
             {
                 if (!ConnectSocket(serverAddress, port))
                 {
@@ -137,10 +138,10 @@ namespace SMBLibrary.Client
                 }
                 else
                 {
-                    m_isConnected = true;
+                    IsConnected = true;
                 }
             }
-            return m_isConnected;
+            return IsConnected;
         }
 
         private bool ConnectSocket(IPAddress serverAddress, int port)
@@ -164,10 +165,10 @@ namespace SMBLibrary.Client
 
         public void Disconnect()
         {
-            if (m_isConnected)
+            if (IsConnected)
             {
                 m_clientSocket.Disconnect(false);
-                m_isConnected = false;
+                IsConnected = false;
             }
         }
 
@@ -204,7 +205,7 @@ namespace SMBLibrary.Client
 
         public NTStatus Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
         {
-            if (!m_isConnected)
+            if (!IsConnected)
             {
                 throw new InvalidOperationException("A connection must be successfully established before attempting login");
             }
@@ -238,8 +239,8 @@ namespace SMBLibrary.Client
                     response = WaitForCommand(request.MessageID);
                     if (response != null)
                     {
-                        m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
-                        if (m_isLoggedIn)
+                        IsLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
+                        if (IsLoggedIn)
                         {
                             m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
                             if (m_dialect == SMB2Dialect.SMB300)
@@ -262,7 +263,7 @@ namespace SMBLibrary.Client
 
         public NTStatus Logoff()
         {
-            if (!m_isConnected)
+            if (!IsConnected)
             {
                 throw new InvalidOperationException("A login session must be successfully established before attempting logoff");
             }
@@ -273,7 +274,7 @@ namespace SMBLibrary.Client
             SMB2Command response = WaitForCommand(request.MessageID);
             if (response != null)
             {
-                m_isLoggedIn = (response.Header.Status != NTStatus.STATUS_SUCCESS);
+                IsLoggedIn = (response.Header.Status != NTStatus.STATUS_SUCCESS);
                 return response.Header.Status;
             }
             return NTStatus.STATUS_INVALID_SMB;
@@ -281,7 +282,7 @@ namespace SMBLibrary.Client
 
         public List<string> ListShares(out NTStatus status)
         {
-            if (!m_isConnected || !m_isLoggedIn)
+            if (!IsConnected || !IsLoggedIn)
             {
                 throw new InvalidOperationException("A login session must be successfully established before retrieving share list");
             }
@@ -299,7 +300,7 @@ namespace SMBLibrary.Client
 
         public ISMBFileStore TreeConnect(string shareName, out NTStatus status)
         {
-            if (!m_isConnected || !m_isLoggedIn)
+            if (!IsConnected || !IsLoggedIn)
             {
                 throw new InvalidOperationException("A login session must be successfully established before connecting to a share");
             }
@@ -357,7 +358,7 @@ namespace SMBLibrary.Client
 
             if (numberOfBytesReceived == 0)
             {
-                m_isConnected = false;
+                IsConnected = false;
             }
             else
             {
@@ -371,12 +372,12 @@ namespace SMBLibrary.Client
                 }
                 catch (ObjectDisposedException)
                 {
-                    m_isConnected = false;
+                    IsConnected = false;
                     Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
                 }
                 catch (SocketException ex)
                 {
-                    m_isConnected = false;
+                    IsConnected = false;
                     Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
                 }
             }
@@ -430,7 +431,7 @@ namespace SMBLibrary.Client
                 {
                     Log("Invalid SMB2 response: " + ex.Message);
                     state.ClientSocket.Close();
-                    m_isConnected = false;
+                    IsConnected = false;
                     return;
                 }
 
