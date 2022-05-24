@@ -45,12 +45,21 @@ namespace SMBLibrary.Authentication.NTLM
         }
 
         public NTLMv2ClientChallenge(DateTime timeStamp, byte[] clientChallenge, KeyValuePairList<AVPairKey, byte[]> targetInfo)
+            : this(timeStamp, clientChallenge, targetInfo, null)
+        {
+        }
+
+        public NTLMv2ClientChallenge(DateTime timeStamp, byte[] clientChallenge, KeyValuePairList<AVPairKey, byte[]> targetInfo, string spn)
         {
             CurrentVersion = StructureVersion;
             MaximumSupportedVersion = StructureVersion;
             TimeStamp = timeStamp;
             ClientChallenge = clientChallenge;
             AVPairs = targetInfo;
+            if (!string.IsNullOrEmpty(spn))
+            {
+                AVPairs.Add(AVPairKey.TargetName, UnicodeEncoding.Unicode.GetBytes(spn));
+            }
         }
 
         public NTLMv2ClientChallenge(byte[] buffer) : this(buffer, 0)

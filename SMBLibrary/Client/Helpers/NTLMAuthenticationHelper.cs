@@ -75,7 +75,7 @@ namespace SMBLibrary.Client
             }
         }
 
-        public static byte[] GetAuthenticateMessage(byte[] securityBlob, string domainName, string userName, string password, AuthenticationMethod authenticationMethod, out byte[] sessionKey)
+        public static byte[] GetAuthenticateMessage(byte[] securityBlob, string domainName, string userName, string password, string spn, AuthenticationMethod authenticationMethod, out byte[] sessionKey)
         {
             sessionKey = null;
             bool useGSSAPI = false;
@@ -163,7 +163,7 @@ namespace SMBLibrary.Client
             }
             else // NTLMv2
             {
-                NTLMv2ClientChallenge clientChallengeStructure = new NTLMv2ClientChallenge(time, clientChallenge, challengeMessage.TargetInfo);
+                NTLMv2ClientChallenge clientChallengeStructure = new NTLMv2ClientChallenge(time, clientChallenge, challengeMessage.TargetInfo, spn);
                 byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
                 byte[] ntProofStr = NTLMCryptography.ComputeNTLMv2Proof(challengeMessage.ServerChallenge, clientChallengeStructurePadded, password, userName, domainName);
 
