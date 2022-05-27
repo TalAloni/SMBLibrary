@@ -39,6 +39,7 @@
     <Compile Include="Security\LoginAPI.cs" />
     <Compile Include="Security\NetworkAPI.cs" />
     <Compile Include="Security\SSPIHelper.cs" />
+    <Compile Include="Security\SSPIHelper.NTLM.cs" />
     <Compile Include="Security\Structures\SecBuffer.cs" />
     <Compile Include="Security\Structures\SecBufferDesc.cs" />
     <Compile Include="ThreadingHelper.cs" />
