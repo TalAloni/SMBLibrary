@@ -60,12 +60,12 @@ namespace SMBLibrary.Client
 
         public bool Connect(string serverName, SMBTransportType transport)
         {
-            IPHostEntry hostEntry = Dns.GetHostEntry(serverName);
-            if (hostEntry.AddressList.Length == 0)
+            IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
+            if (hostAddresses.Length == 0)
             {
                 throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
             }
-            IPAddress serverAddress = hostEntry.AddressList[0];
+            IPAddress serverAddress = hostAddresses[0];
             return Connect(serverAddress, transport);
         }
 
