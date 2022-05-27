@@ -224,7 +224,8 @@ namespace SMBLibrary.Client
             {
                 if (response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && response is SessionSetupResponse)
                 {
-                    byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(((SessionSetupResponse)response).SecurityBuffer, domainName, userName, password, authenticationMethod, out m_sessionKey);
+                    string spn = string.Format("cifs/{0}", m_serverName);
+                    byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(((SessionSetupResponse)response).SecurityBuffer, domainName, userName, password, spn, authenticationMethod, out m_sessionKey);
                     if (authenticateMessage == null)
                     {
                         return NTStatus.SEC_E_INVALID_TOKEN;

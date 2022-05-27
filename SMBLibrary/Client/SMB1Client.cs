@@ -21,7 +21,7 @@ namespace SMBLibrary.Client
     public class SMB1Client : ISMBClient
     {
         private const string NTLanManagerDialect = "NT LM 0.12";
-        
+
         public static readonly int NetBiosOverTCPPort = 139;
         public static readonly int DirectTCPPort = 445;
 
@@ -90,7 +90,7 @@ namespace SMBLibrary.Client
                 {
                     return false;
                 }
-                
+
                 if (transport == SMBTransportType.NetBiosOverTCP)
                 {
                     SessionRequestPacket sessionRequest = new SessionRequestPacket();
@@ -141,7 +141,7 @@ namespace SMBLibrary.Client
         private bool ConnectSocket(IPAddress serverAddress, int port)
         {
             m_clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            
+
             try
             {
                 m_clientSocket.Connect(serverAddress, port);
@@ -273,7 +273,7 @@ namespace SMBLibrary.Client
                     byte[] proofStr = NTLMCryptography.ComputeNTLMv2Proof(m_serverChallenge, temp, password, userName, domainName);
                     request.UnicodePassword = ByteUtils.Concatenate(proofStr, temp);
                 }
-                
+
                 TrySendMessage(request);
 
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
@@ -305,7 +305,7 @@ namespace SMBLibrary.Client
                     if (reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                     {
                         SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
-                        byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, authenticationMethod, out m_sessionKey);
+                        byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, null, authenticationMethod, out m_sessionKey);
                         if (authenticateMessage == null)
                         {
                             return NTStatus.SEC_E_INVALID_TOKEN;
