@@ -40,14 +40,16 @@ namespace SMBLibrary.Server.SMB2
             }
 
             // According to [MS-SMB2] 3.3.5.5.3, response.Header.SessionID must be allocated if the server returns STATUS_MORE_PROCESSING_REQUIRED
-            if (request.Header.SessionID == 0)
+            ulong sessionID = request.Header.SessionID;
+            if (sessionID == 0)
             {
-                ulong? sessionID = state.AllocateSessionID();
-                if (!sessionID.HasValue)
+                ulong? allocatedSessionID = state.AllocateSessionID();
+                if (!allocatedSessionID.HasValue)
                 {
                     return new ErrorResponse(request.CommandName, NTStatus.STATUS_TOO_MANY_SESSIONS);
                 }
-                response.Header.SessionID = sessionID.Value;
+                sessionID = allocatedSessionID.Value;
+                response.Header.SessionID = allocatedSessionID.Value;
             }
 
             if (status == NTStatus.SEC_I_CONTINUE_NEEDED)
@@ -69,12 +71,12 @@ namespace SMBLibrary.Server.SMB2
                     bool signingRequired = (request.SecurityMode & SecurityMode.SigningRequired) > 0;
                     SMB2Dialect smb2Dialect = SMBServer.ToSMB2Dialect(state.Dialect);
                     byte[] signingKey = SMB2Cryptography.GenerateSigningKey(sessionKey, smb2Dialect, null);
-                    state.CreateSession(request.Header.SessionID, userName, machineName, sessionKey, accessToken, signingRequired, signingKey);
+                    state.CreateSession(sessionID, userName, machineName, sessionKey, accessToken, signingRequired, signingKey);
                 }
                 else
                 {
                     state.LogToServer(Severity.Information, "Session Setup: User '{0}' failed authentication (Domain: '{1}', Workstation: '{2}', OS version: '{3}'), logged in as guest.", userName, domainName, machineName, osVersion);
-                    state.CreateSession(request.Header.SessionID, "Guest", machineName, sessionKey, accessToken, false, null);
+                    state.CreateSession(sessionID, "Guest", machineName, sessionKey, accessToken, false, null);
                     response.SessionFlags = SessionFlags.IsGuest;
                 }
             }
