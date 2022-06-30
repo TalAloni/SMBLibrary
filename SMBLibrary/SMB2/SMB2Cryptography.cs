@@ -7,6 +7,7 @@
 using System;
 using System.Security.Cryptography;
 using Utilities;
+using AesCcm = Utilities.AesCcm;
 
 namespace SMBLibrary.SMB2
 {
