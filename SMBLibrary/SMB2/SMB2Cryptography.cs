@@ -4,17 +4,16 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
+using SMBLibrary.SMB2.Encryption;
 using System;
 using System.Security.Cryptography;
 using Utilities;
-using AesCcm = Utilities.AesCcm;
+
 
 namespace SMBLibrary.SMB2
 {
-    internal class SMB2Cryptography
+	internal class SMB2Cryptography
     {
-        private const int AesCcmNonceLength = 11;
-
         public static byte[] CalculateSignature(byte[] signingKey, SMB2Dialect dialect, byte[] buffer, int offset, int paddedLength)
         {
             if (dialect == SMB2Dialect.SMB202 || dialect == SMB2Dialect.SMB210)
@@ -78,14 +77,16 @@ namespace SMBLibrary.SMB2
         }
 
         /// <summary>
-        /// Encyrpt message and prefix with SMB2 TransformHeader
+        /// Encrypt message and prefix with SMB2 TransformHeader
         /// </summary>
-        public static byte[] TransformMessage(byte[] key, byte[] message, ulong sessionID)
+        public static byte[] TransformMessage(EncryptionProvider encryptionStrategy, byte[] message, ulong sessionID)
         {
-            byte[] nonce = GenerateAesCcmNonce();
+            byte[] nonce = encryptionStrategy.GenerateNonce();
             byte[] signature;
-            byte[] encryptedMessage = EncryptMessage(key, nonce, message, sessionID, out signature);
             SMB2TransformHeader transformHeader = CreateTransformHeader(nonce, message.Length, sessionID);
+            
+            byte[] encryptedMessage = encryptionStrategy.EncryptMessage(nonce, message, transformHeader.GetAssociatedData(), out signature);
+
             transformHeader.Signature = signature;
 
             byte[] buffer = new byte[SMB2TransformHeader.Length + message.Length];
@@ -93,22 +94,8 @@ namespace SMBLibrary.SMB2
             ByteWriter.WriteBytes(buffer, SMB2TransformHeader.Length, encryptedMessage);
             return buffer;
         }
-        
-        public static byte[] EncryptMessage(byte[] key, byte[] nonce, byte[] message, ulong sessionID, out byte[] signature)
-        {
-            SMB2TransformHeader transformHeader = CreateTransformHeader(nonce, message.Length, sessionID);
-            byte[] associatedata = transformHeader.GetAssociatedData();
-            return AesCcm.Encrypt(key, nonce, message, associatedata, SMB2TransformHeader.SignatureLength, out signature);
-        }
 
-        public static byte[] DecryptMessage(byte[] key, SMB2TransformHeader transformHeader, byte[] encryptedMessage)
-        {
-            byte[] associatedData = transformHeader.GetAssociatedData();
-            byte[] aesCcmNonce = ByteReader.ReadBytes(transformHeader.Nonce, 0, AesCcmNonceLength);
-            return AesCcm.DecryptAndAuthenticate(key, aesCcmNonce, encryptedMessage, associatedData, transformHeader.Signature);
-        }
-
-        private static SMB2TransformHeader CreateTransformHeader(byte[] nonce, int originalMessageLength, ulong sessionID)
+        public static SMB2TransformHeader CreateTransformHeader(byte[] nonce, int originalMessageLength, ulong sessionID)
         {
             byte[] nonceWithPadding = new byte[SMB2TransformHeader.NonceLength];
             Array.Copy(nonce, nonceWithPadding, nonce.Length);
@@ -122,11 +109,11 @@ namespace SMBLibrary.SMB2
             return transformHeader;
         }
 
-        private static byte[] GenerateAesCcmNonce()
+        public static byte[] DecryptMessage(DecryptionProvider decryptionStrategy, SMB2TransformHeader transformHeader, byte[] encryptedMessage)
         {
-            byte[] aesCcmNonce = new byte[AesCcmNonceLength];
-            new Random().NextBytes(aesCcmNonce);
-            return aesCcmNonce;
+            byte[] associatedData = transformHeader.GetAssociatedData();
+            byte[] aesCcmNonce = ByteReader.ReadBytes(transformHeader.Nonce, 0, decryptionStrategy.NonceLength);
+            return decryptionStrategy.DecryptAndAuthenticate(aesCcmNonce, encryptedMessage, associatedData, transformHeader.Signature);
         }
 
         private static byte[] GetNullTerminatedAnsiString(string value)

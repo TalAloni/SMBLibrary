@@ -7,11 +7,12 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary.SMB2;
+using SMBLibrary.SMB2.Encryption;
 using Utilities;
 
 namespace SMBLibrary.Tests
 {
-    [TestClass]
+	[TestClass]
     // https://docs.microsoft.com/en-us/archive/blogs/openspecification/encryption-in-smb-3-0-a-protocol-perspective
     public class SMB2EncryptionTests
     {
@@ -69,10 +70,20 @@ namespace SMBLibrary.Tests
             byte[] expectedSignature = new byte[] { 0x81, 0xA2, 0x86, 0x53, 0x54, 0x15, 0x44, 0x5D, 0xAE, 0x39, 0x39, 0x21, 0xE4, 0x4F, 0xA4, 0x2E };
 
             byte[] signature;
-            byte[] encryptedMessage = SMB2Cryptography.EncryptMessage(encryptionKey, nonce, message, sessionID, out signature);
+            DefaultAesCcmEncryptionProvider encryptionStrategy = new DefaultAesCcmEncryptionProvider(encryptionKey);
+
+            SMB2TransformHeader transformHeader = SMB2Cryptography.CreateTransformHeader(nonce, message.Length, sessionID);
+
+            byte[] encryptedMessage = encryptionStrategy.EncryptMessage(nonce, message, transformHeader.GetAssociatedData(), out signature);
 
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(expectedEncrypted, encryptedMessage));
             // The associated data in this sample include non-zero nonce padding so we ignore signature validation
+
+#if NETCOREAPP3_1_OR_GREATER
+            SystemAesCcmEncryptionProvider systemStrategy = new SystemAesCcmEncryptionProvider(encryptionKey);
+            encryptedMessage = systemStrategy.EncryptMessage(transformHeader.Nonce, message, transformHeader.GetAssociatedData(), out signature);
+            Assert.IsTrue(ByteUtils.AreByteArraysEqual(expectedEncrypted, encryptedMessage));
+#endif
         }
 
         [TestMethod]
@@ -98,9 +109,16 @@ namespace SMBLibrary.Tests
 
             SMB2TransformHeader transformHeader = new SMB2TransformHeader(transformedPacket, 0);
             byte[] encryptedMessage = ByteReader.ReadBytes(transformedPacket, SMB2TransformHeader.Length, (int)transformHeader.OriginalMessageSize);
-            byte[] decryptedMessage = SMB2Cryptography.DecryptMessage(decryptionKey, transformHeader, encryptedMessage);
 
+            DefaultAesCcmDecryptionProvider defaultStrategy = new DefaultAesCcmDecryptionProvider(decryptionKey);
+            byte[] decryptedMessage = SMB2Cryptography.DecryptMessage(defaultStrategy, transformHeader, encryptedMessage);
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(expectedDecryptedMessage, decryptedMessage));
+
+#if NETCOREAPP3_1_OR_GREATER
+            SystemAesCcmDecryptionProvider systemStrategy = new SystemAesCcmDecryptionProvider(decryptionKey);
+            decryptedMessage = systemStrategy.DecryptAndAuthenticate(transformHeader.Nonce, encryptedMessage, transformHeader.GetAssociatedData(), transformHeader.Signature);
+            Assert.IsTrue(ByteUtils.AreByteArraysEqual(expectedDecryptedMessage, decryptedMessage));
+#endif
         }
 
         public void TestAll()

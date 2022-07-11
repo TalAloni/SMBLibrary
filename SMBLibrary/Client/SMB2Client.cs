@@ -12,11 +12,12 @@ using System.Net.Sockets;
 using System.Threading;
 using SMBLibrary.NetBios;
 using SMBLibrary.SMB2;
+using SMBLibrary.SMB2.Encryption;
 using Utilities;
 
 namespace SMBLibrary.Client
 {
-    public class SMB2Client : ISMBClient
+	public class SMB2Client : ISMBClient
     {
         public static readonly int NetBiosOverTCPPort = 139;
         public static readonly int DirectTCPPort = 445;
@@ -26,8 +27,7 @@ namespace SMBLibrary.Client
         public static readonly uint ClientMaxWriteSize = 1048576;
         private static readonly ushort DesiredCredits = 16;
         public static readonly int ResponseTimeoutInMilliseconds = 5000;
-
-        private string m_serverName;
+		private string m_serverName;
         private SMBTransportType m_transport;
         private bool m_isConnected;
         private bool m_isLoggedIn;
@@ -45,8 +45,8 @@ namespace SMBLibrary.Client
         private bool m_signingRequired;
         private byte[] m_signingKey;
         private bool m_encryptSessionData;
-        private byte[] m_encryptionKey;
-        private byte[] m_decryptionKey;
+        private SMB2.Encryption.EncryptionProvider m_encryptionProvider;
+        private DecryptionProvider m_decryptionProvider;
         private uint m_maxTransactSize;
         private uint m_maxReadSize;
         private uint m_maxWriteSize;
@@ -246,8 +246,8 @@ namespace SMBLibrary.Client
                             if (m_dialect == SMB2Dialect.SMB300)
                             {
                                 m_encryptSessionData = (((SessionSetupResponse)response).SessionFlags & SessionFlags.EncryptData) > 0;
-                                m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
-                                m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
+								m_encryptionProvider = EncryptionProvider.GetProvider(m_sessionKey, SMB2Dialect.SMB300);
+                                m_decryptionProvider = DecryptionProvider.GetProvider(m_sessionKey, SMB2Dialect.SMB300);
                             }
                         }
                         return response.Header.Status;
@@ -415,7 +415,7 @@ namespace SMBLibrary.Client
                 {
                     SMB2TransformHeader transformHeader = new SMB2TransformHeader(packet.Trailer, 0);
                     byte[] encryptedMessage = ByteReader.ReadBytes(packet.Trailer, SMB2TransformHeader.Length, (int)transformHeader.OriginalMessageSize);
-                    messageBytes = SMB2Cryptography.DecryptMessage(m_decryptionKey, transformHeader, encryptedMessage);
+                    messageBytes = SMB2Cryptography.DecryptMessage(m_decryptionProvider, transformHeader, encryptedMessage);
                 }
                 else
                 {
@@ -584,7 +584,8 @@ namespace SMBLibrary.Client
                     request.Header.Signature = ByteReader.ReadBytes(signature, 0, 16);
                 }
             }
-            TrySendCommand(m_clientSocket, request, encryptData ? m_encryptionKey : null);
+
+            TrySendCommand(m_clientSocket, request, encryptData);
             if (m_dialect == SMB2Dialect.SMB202 || m_transport == SMBTransportType.NetBiosOverTCP)
             {
                 m_messageID++;
@@ -619,13 +620,13 @@ namespace SMBLibrary.Client
             }
         }
 
-        public static void TrySendCommand(Socket socket, SMB2Command request, byte[] encryptionKey)
+        public void TrySendCommand(Socket socket, SMB2Command request, bool encrypt)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
-            if (encryptionKey != null)
+            if (encrypt)
             {
                 byte[] requestBytes = request.GetBytes();
-                packet.Trailer = SMB2Cryptography.TransformMessage(encryptionKey, requestBytes, request.Header.SessionID);
+                packet.Trailer = SMB2Cryptography.TransformMessage(m_encryptionProvider, requestBytes, request.Header.SessionID);
             }
             else
             {
