@@ -17,7 +17,7 @@ using Utilities;
 
 namespace SMBLibrary.Client
 {
-	public class SMB2Client : ISMBClient
+	public class SMB2Client : ISMBClient, IDisposable
     {
         public static readonly int NetBiosOverTCPPort = 139;
         public static readonly int DirectTCPPort = 445;
@@ -649,5 +649,36 @@ namespace SMBLibrary.Client
             {
             }
         }
-    }
+
+		public void Dispose()
+		{
+            if (m_decryptionProvider != null)
+            {
+                m_decryptionProvider.Dispose();
+            }
+
+            if (m_encryptionProvider != null)
+            {
+                m_encryptionProvider.Dispose();
+            }
+
+            if (m_clientSocket != null)
+			{
+#if NET40_OR_GREATER
+                m_clientSocket.Dispose();
+#else
+                m_clientSocket.Close();
+#endif
+            }
+
+#if NET40_OR_GREATER
+            m_incomingQueueEventHandle.Dispose();
+            m_sessionResponseEventHandle.Dispose();
+#else
+            m_incomingQueueEventHandle.Close();
+            m_sessionResponseEventHandle.Close();
+#endif
+
+        }
+	}
 }
