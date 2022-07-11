@@ -246,7 +246,20 @@ namespace SMBLibrary.Client
                             if (m_dialect == SMB2Dialect.SMB300)
                             {
                                 m_encryptSessionData = (((SessionSetupResponse)response).SessionFlags & SessionFlags.EncryptData) > 0;
-								m_encryptionProvider = EncryptionProvider.GetProvider(m_sessionKey, SMB2Dialect.SMB300);
+
+                                if (m_encryptionProvider != null)
+								{
+                                    m_encryptionProvider.Dispose();
+                                    m_encryptionProvider = null;
+								}
+
+                                if (m_decryptionProvider != null)
+                                {
+                                    m_decryptionProvider.Dispose();
+                                    m_decryptionProvider = null;
+                                }
+
+                                m_encryptionProvider = EncryptionProvider.GetProvider(m_sessionKey, SMB2Dialect.SMB300);
                                 m_decryptionProvider = DecryptionProvider.GetProvider(m_sessionKey, SMB2Dialect.SMB300);
                             }
                         }
