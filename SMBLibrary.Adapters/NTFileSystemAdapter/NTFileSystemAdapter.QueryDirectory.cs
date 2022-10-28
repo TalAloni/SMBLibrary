@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2022 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -50,9 +50,9 @@ namespace SMBLibrary.Adapters
                 // The SMB1 / SMB2 specifications mandate that when zero entries are found, the server SHOULD / MUST return STATUS_NO_SUCH_FILE.
                 // For this reason, we MUST include the current directory and/or parent directory when enumerating a directory
                 // in order to diffrentiate between a directory that does not exist and a directory with no entries.
-                FileSystemEntry currentDirectory = m_fileSystem.GetEntry(path);
+                FileSystemEntry currentDirectory = m_fileSystem.GetEntry(path).Clone();
                 currentDirectory.Name = ".";
-                FileSystemEntry parentDirectory = m_fileSystem.GetEntry(FileSystem.GetParentDirectory(path));
+                FileSystemEntry parentDirectory = m_fileSystem.GetEntry(FileSystem.GetParentDirectory(path)).Clone();
                 parentDirectory.Name = "..";
                 entries.Insert(0, parentDirectory);
                 entries.Insert(0, currentDirectory);
