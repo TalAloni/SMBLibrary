@@ -471,3 +471,10 @@ Revision History:
         NTStatus: Correct STATUS_PASSWORD_MUST_CHANGE value.
 
 1.4.8 - SMBServer - Start method bugfix.
+
+1.4.9 - Server: SessionSetupHelper: Bugfix: Use correct sessionID for session creation in which token is accepted immediately.
+        Server: SessionSetupHelper: Bugfix: Trim session key if longer than 16 bytes.
+        Server: SMB2: Correctly handle invalid SessionSetup request containing a sessionID already in use.
+        Client: Fixed bug when trying to use local ip address as host name.
+        Client: Provide SPN with NTLMv2 token.
+        NTFileSystemAdapter: Avoid modifications of entries returned from IFileSystem.
