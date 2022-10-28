@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2022 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -50,6 +50,11 @@ namespace SMBLibrary.Server.SMB2
                 }
                 sessionID = allocatedSessionID.Value;
                 response.Header.SessionID = allocatedSessionID.Value;
+            }
+            else if (state.GetSession(sessionID) != null)
+            {
+                // We already have an established session associated with this sessionID, the client is in violation
+                return new ErrorResponse(request.CommandName, NTStatus.STATUS_REQUEST_NOT_ACCEPTED);
             }
 
             if (status == NTStatus.SEC_I_CONTINUE_NEEDED)
