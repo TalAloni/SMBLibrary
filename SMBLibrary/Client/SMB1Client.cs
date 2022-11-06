@@ -140,7 +140,7 @@ namespace SMBLibrary.Client
 
         private bool ConnectSocket(IPAddress serverAddress, int port)
         {
-            m_clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            m_clientSocket = new Socket(serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             try
             {
