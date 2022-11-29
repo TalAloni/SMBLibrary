@@ -58,7 +58,8 @@ commands:
 
 jobs:
   build:
-    executor: win/default
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:7.0
 
     steps:
       - checkout
@@ -83,8 +84,8 @@ jobs:
             - .
             
   publish_nuget_package:
-    executor:
-      name: win/default
+    docker: 
+        - image: mcr.microsoft.com/dotnet/sdk:7.0
     steps:    
       - attach_workspace:
           at: .
