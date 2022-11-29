@@ -94,10 +94,6 @@ jobs:
           at: .
           
       - run:
-          name: install jq
-          command: apt update && apt install jq -y
-          
-      - run:
           name: Persist next version to environment
           command: echo "export VERSION=$(cat package.json | jq --raw-output '.version')" >> $BASH_ENV
           
