@@ -1,17 +1,13 @@
 version: 2.1
 
 parameters:
-  project-folder:
+  PROJECT-NAME:
     type: string
-    default: "SMBLibrary/"
-
+    default: "SMBLibrary"
+    
   csproj-file:
     type: string
     default: "SMBLibrary.csproj"
-
-  nuget-output-file:
-    type: string
-    default: "bin/Release/Lansweeper.SMBLibrary.1.7.0.nupkg"
 
   git-primary-branch:
     type: string
@@ -20,7 +16,7 @@ parameters:
 executors:
   node:
     docker:
-      - image: circleci/node:12
+      - image: cimg/node:18.9.0
 
 orbs:
   win: circleci/windows@2.2.0
@@ -39,25 +35,26 @@ commands:
               </packageSources>
               <packageSourceCredentials>
                 <github>
-                  <add key='Username' value='LansweeperCloudDevelopment' />
-                  <add key='ClearTextPassword' value='$env:GITHUB_TOKEN' />
+                  <add key='Username' value='$GITHUB_USER' />
+                  <add key='ClearTextPassword' value='$GITHUB_TOKEN' />
                 </github>
               </packageSourceCredentials>
-            </configuration>"
-            Out-File -FilePath nuget.config -InputObject $xml -Encoding ASCII
+            </configuration>" >> nuget.config
 
   install-deps:
     description: "Install and cache dependencies"
     steps:
-      # Download and cache dependencies
       - restore_cache:
           keys:
-            - << pipeline.parameters.project-folder >>-dependencies-{{ checksum "yarn.lock" }}
-      - run: yarn install --pure-lockfile
+            -  << pipeline.parameters.PROJECT-NAME >>-deps-cache-{{ checksum "yarn.lock" }}
+            -  << pipeline.parameters.PROJECT-NAME >>-deps-cache- # when lock file changes, use increasingly general patterns to restore cache
+      - run:
+          name: Install Dependencies
+          command: yarn --frozen-lockfile --cache-folder ~/.cache/yarn
       - save_cache:
+          key:  << pipeline.parameters.PROJECT-NAME >>-deps-cache-{{ checksum "yarn.lock" }}
           paths:
-            - node_modules
-          key: << pipeline.parameters.project-folder >>-dependencies-{{ checksum "yarn.lock" }}
+            - ~/.cache/yarn
 
 jobs:
   build:
@@ -66,35 +63,53 @@ jobs:
     steps:
       - checkout
       - nuget-prepare
-      - run: dotnet build << pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >> --configuration Release
+      - run: dotnet build << pipeline.parameters.PROJECT-NAME >>/<< pipeline.parameters.csproj-file >> --configuration Release
 
       - persist_to_workspace:
           root: .
           paths:
             - .
 
-  nuget-publish:
-    executor:
-      name: win/default
+  release:
+    executor: node
     steps:
       - attach_workspace:
           at: .
+      - install-deps
+      - run: yarn release
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+            
+  publish_nuget_package:
+    executor:
+      name: win/default
+    steps:    
+      - attach_workspace:
+          at: .
+          
       - run:
-          name: Set correct version in csproj file, build and pack it
+          name: install jq
+          command: apt update && apt install jq -y
+          
+      - run:
+          name: Persist next version to environment
+          command: echo "export VERSION=$(cat package.json | jq --raw-output '.version')" >> $BASH_ENV
+          
+      - run:
+          name: Replace nuspec version string with next release
+          command: sed -i -E 's/<Version>/<Version>'"$VERSION"'/' ./SMBLibrary/SMBLibrary.csproj      
+          
+      - run:
+          name: Pack the nuget
+          command: dotnet pack ./<< pipeline.parameters.PROJECT-NAME >>/<< pipeline.parameters.csproj-file >> --configuration Release
+
+      - run:
+          name: Push the nuget
           command: |
-            $env:package_version = "1.7.0"
-            $file = Get-Item << pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >>
-            [xml]$cn = Get-Content $file
-            $cn.Project.PropertyGroup.Version="$env:package_version"
-            $cn.Save($file.FullName)
-            type ./<< pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >>
-      - run:
-          name: Pack the package
-          command: dotnet pack << pipeline.parameters.project-folder >><< pipeline.parameters.csproj-file >> --configuration Release
-      - run:
-          name: Publish the package
-          command: |
-            dotnet nuget push << pipeline.parameters.project-folder >><< pipeline.parameters.nuget-output-file >> --source "github" --api-key $env:GITHUB_TOKEN
+              VERSION=$(cat package.json | jq --raw-output '.version')
+              dotnet nuget push ./<< pipeline.parameters.PROJECT-NAME >>/bin/Release/<< pipeline.parameters.PROJECT-NAME >>.$VERSION.nupkg --source "github" --api-key $GITHUB_TOKEN
 
 workflows:
   version: 2
@@ -107,10 +122,20 @@ workflows:
           filters:
             branches:
               only: << pipeline.parameters.git-primary-branch >>
-
-      - nuget-publish:
+              
+      - release:
           requires:
             - build
+          context:
+            - lec-github-release
+            - lec-npm-ro
+          filters:
+            branches:
+              only: << pipeline.parameters.git-primary-branch >>
+
+      - publish_nuget_package:
+          requires:
+            - release
           context:
             - lec-github-packages-rw
           filters:
