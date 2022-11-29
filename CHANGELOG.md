@@ -1,3 +1,10 @@
+## [1.10.5](https://github.com/Lansweeper/SMBLibrary/compare/v1.10.4...v1.10.5) (2022-11-29)
+
+
+### Bug Fixes
+
+* sigh ([452521e](https://github.com/Lansweeper/SMBLibrary/commit/452521eee59101b94d814dc7520ccdb3ac003973))
+
 ## [1.10.4](https://github.com/Lansweeper/SMBLibrary/compare/v1.10.3...v1.10.4) (2022-11-29)
 
 
