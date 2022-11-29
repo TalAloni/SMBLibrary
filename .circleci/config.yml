@@ -19,7 +19,7 @@ executors:
       - image: cimg/node:18.9.0
 
 orbs:
-  win: circleci/windows@2.2.0
+  win: circleci/windows@2.4.1
 
 commands:
   nuget-prepare:
@@ -41,6 +41,7 @@ commands:
               </packageSourceCredentials>
             </configuration>" >> nuget.config
 
+
   install-deps:
     description: "Install and cache dependencies"
     steps:
@@ -58,8 +59,9 @@ commands:
 
 jobs:
   build:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0
+    executor: 
+      name: win/default
+      shell: bash.exe
 
     steps:
       - checkout
@@ -84,8 +86,9 @@ jobs:
             - .
             
   publish_nuget_package:
-    docker: 
-        - image: mcr.microsoft.com/dotnet/sdk:7.0
+    executor: 
+      name: win/default
+      shell: bash.exe
     steps:    
       - attach_workspace:
           at: .
