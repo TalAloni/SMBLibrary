@@ -1,0 +1,28 @@
+{
+  "name": "@lansweeper/SMBLibrary",
+  "version": "1.10.0",
+  "private": true,
+  "description": "",
+  "scripts": {
+    "release": "semantic-release"
+  },
+  "repository": "https://github.com/Lansweeper/SMBLibrary",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Lansweeper/SMBLibrary/issues"
+  },
+  "homepage": "https://github.com/Lansweeper/SMBLibrary#readme",
+  "devDependencies": {
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/exec": "5.0.0",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/github": "^7.2.0",
+    "@semantic-release/npm": "7.0.10",
+    "semantic-release": "^19.0.3"
+  },
+  "dependencies": {
+    "yarn": "^1.22.10"
+  }
+}
