@@ -109,7 +109,7 @@ jobs:
           name: Push the nuget
           command: |
               VERSION=$(cat package.json | jq --raw-output '.version')
-              dotnet nuget push ./<< pipeline.parameters.PROJECT-NAME >>/bin/Release/<< pipeline.parameters.PROJECT-NAME >>.$VERSION.nupkg --source "github" --api-key $GITHUB_TOKEN
+              dotnet nuget push ./<< pipeline.parameters.PROJECT-NAME >>/bin/Release/Lansweeper.<< pipeline.parameters.PROJECT-NAME >>.$VERSION.nupkg --source "github" --api-key $GITHUB_TOKEN
 
 workflows:
   version: 2
