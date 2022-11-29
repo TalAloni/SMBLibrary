@@ -28,7 +28,7 @@ commands:
       - run:
           name: Create local nuget config file
           command: |
-            $xml = "<?xml version='1.0' encoding='utf-8'?>
+            echo "<?xml version='1.0' encoding='utf-8'?>
             <configuration>
               <packageSources>
                 <add key='github' value='https://nuget.pkg.github.com/Lansweeper/index.json' />
