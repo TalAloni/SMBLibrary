@@ -14,7 +14,20 @@ if (isConnected)
     client.Disconnect();
 }
 ```
+ ## Connect using Server Name:
 
+Run following command as admin in powershell to get server name
+```
+Get-SmbConnection
+```
+| ServerName   | ShareName | UserName     | Credential       | Dialect     | NumOpens    |
+| -------------| ----------| -------------|------------------|-------------|-------------|
+| Server-FS1   | VMS5      | sv\user      | sv.test.net\user | 3.1.1       |      1      |
+
+Copy the server name in connect function of SMB1Client
+```
+bool isConnected = client.Connect("Server-FS1", SMBTransportType.DirectTCPTransport);
+```
 Connect to share and list files and directories - SMB1:
 =======================================================
 ```
