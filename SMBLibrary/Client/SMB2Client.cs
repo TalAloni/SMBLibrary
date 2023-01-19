@@ -25,7 +25,8 @@ namespace SMBLibrary.Client
         public static readonly uint ClientMaxReadSize = 1048576;
         public static readonly uint ClientMaxWriteSize = 1048576;
         private static readonly ushort DesiredCredits = 16;
-        public static readonly int ResponseTimeoutInMilliseconds = 5000;
+        public static int ResponseTimeoutInMilliseconds = 5000;
+        private List<SMB2Command> commandsHistories = new List<SMB2Command>();
 
         private string m_serverName;
         private SMBTransportType m_transport;
@@ -63,7 +64,7 @@ namespace SMBLibrary.Client
         /// When a Windows Server host is using Failover Cluster and Cluster Shared Volumes, each of those CSV file shares is associated
         /// with a specific host name associated with the cluster and is not accessible using the node IP address or node host name.
         /// </param>
-        public bool Connect(string serverName, SMBTransportType transport)
+        public SMB2ClientConnectResponse Connect(string serverName, SMBTransportType transport)
         {
             m_serverName = serverName;
             IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
@@ -75,14 +76,17 @@ namespace SMBLibrary.Client
             return Connect(serverAddress, transport);
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport)
+        public SMB2ClientConnectResponse Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeOut = 5000)
         {
+            ResponseTimeoutInMilliseconds = responseTimeOut;
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-            return Connect(serverAddress, transport, port);
+            return Connect(serverAddress, transport, responseTimeOut, port);
         }
 
-        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port)
+        private SMB2ClientConnectResponse Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeOut, int port)
         {
+            SMB2ClientConnectResponse response = new SMB2ClientConnectResponse();
+
             if (m_serverName == null)
             {
                 m_serverName = serverAddress.ToString();
@@ -93,7 +97,8 @@ namespace SMBLibrary.Client
             {
                 if (!ConnectSocket(serverAddress, port))
                 {
-                    return false;
+                    response.Successful = false;
+                    return response;
                 }
 
                 if (transport == SMBTransportType.NetBiosOverTCP)
@@ -109,14 +114,16 @@ namespace SMBLibrary.Client
                         m_clientSocket.Disconnect(false);
                         if (!ConnectSocket(serverAddress, port))
                         {
-                            return false;
+                            response.Successful = false;
+                            return response;
                         }
 
                         NameServiceClient nameServiceClient = new NameServiceClient(serverAddress);
                         string serverName = nameServiceClient.GetServerName();
                         if (serverName == null)
                         {
-                            return false;
+                            response.Successful = false;
+                            return response;
                         }
 
                         sessionRequest.CalledName = serverName;
@@ -125,7 +132,8 @@ namespace SMBLibrary.Client
                         sessionResponsePacket = WaitForSessionResponsePacket();
                         if (!(sessionResponsePacket is PositiveSessionResponsePacket))
                         {
-                            return false;
+                            response.Successful = false;
+                            return response;
                         }
                     }
                 }
@@ -133,14 +141,17 @@ namespace SMBLibrary.Client
                 bool supportsDialect = NegotiateDialect();
                 if (!supportsDialect)
                 {
+                    response.Successful = false;
+                    response.ConnectCommandsHistories = commandsHistories;
                     m_clientSocket.Close();
                 }
                 else
                 {
+                    response.Successful = true;
                     m_isConnected = true;
                 }
             }
-            return m_isConnected;
+            return response;
         }
 
         private bool ConnectSocket(IPAddress serverAddress, int port)
@@ -485,6 +496,8 @@ namespace SMBLibrary.Client
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
+            commandsHistories = new List<SMB2Command>();
+
             while (stopwatch.ElapsedMilliseconds < ResponseTimeoutInMilliseconds)
             {
                 lock (m_incomingQueueLock)
@@ -492,6 +505,8 @@ namespace SMBLibrary.Client
                     for (int index = 0; index < m_incomingQueue.Count; index++)
                     {
                         SMB2Command command = m_incomingQueue[index];
+
+                        commandsHistories.Add(command);
 
                         if (command.Header.MessageID == messageID)
                         {

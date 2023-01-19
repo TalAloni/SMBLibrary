@@ -18,7 +18,7 @@ using Utilities;
 
 namespace SMBLibrary.Client
 {
-    public class SMB1Client : ISMBClient
+    public class SMB1Client
     {
         private const string NTLanManagerDialect = "NT LM 0.12";
 
@@ -69,7 +69,7 @@ namespace SMBLibrary.Client
             return Connect(serverAddress, transport);
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeOut = 5000)
         {
             return Connect(serverAddress, transport, true);
         }

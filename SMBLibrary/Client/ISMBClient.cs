@@ -4,6 +4,7 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
+using SMBLibrary.SMB2;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -12,9 +13,9 @@ namespace SMBLibrary.Client
 {
     public interface ISMBClient
     {
-        bool Connect(string serverName, SMBTransportType transport);
+        SMB2ClientConnectResponse Connect(string serverName, SMBTransportType transport);
 
-        bool Connect(IPAddress serverAddress, SMBTransportType transport);
+        SMB2ClientConnectResponse Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeOut);
 
         void Disconnect();
 
