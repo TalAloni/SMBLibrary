@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2022 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -25,13 +25,14 @@ namespace SMBLibrary.Client
         public static readonly uint ClientMaxReadSize = 1048576;
         public static readonly uint ClientMaxWriteSize = 1048576;
         private static readonly ushort DesiredCredits = 16;
-        public static readonly int ResponseTimeoutInMilliseconds = 5000;
+        public static readonly int DefaultResponseTimeoutInMilliseconds = 5000;
 
         private string m_serverName;
         private SMBTransportType m_transport;
         private bool m_isConnected;
         private bool m_isLoggedIn;
         private Socket m_clientSocket;
+        private int m_responseTimeoutInMilliseconds;
 
         private object m_incomingQueueLock = new object();
         private List<SMB2Command> m_incomingQueue = new List<SMB2Command>();
@@ -78,10 +79,10 @@ namespace SMBLibrary.Client
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
         {
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-            return Connect(serverAddress, transport, port);
+            return Connect(serverAddress, transport, port, DefaultResponseTimeoutInMilliseconds);
         }
 
-        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port)
+        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, int responseTimeoutInMilliseconds)
         {
             if (m_serverName == null)
             {
@@ -91,6 +92,7 @@ namespace SMBLibrary.Client
             m_transport = transport;
             if (!m_isConnected)
             {
+                m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
                 if (!ConnectSocket(serverAddress, port))
                 {
                     return false;
@@ -485,7 +487,7 @@ namespace SMBLibrary.Client
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < ResponseTimeoutInMilliseconds)
+            while (stopwatch.ElapsedMilliseconds < m_responseTimeoutInMilliseconds)
             {
                 lock (m_incomingQueueLock)
                 {

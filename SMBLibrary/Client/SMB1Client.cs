@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2022 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -27,7 +27,7 @@ namespace SMBLibrary.Client
 
         private static readonly ushort ClientMaxBufferSize = 65535; // Valid range: 512 - 65535
         private static readonly ushort ClientMaxMpxCount = 1;
-        private static readonly int ResponseTimeoutInMilliseconds = 5000;
+        private static readonly int DefaultResponseTimeoutInMilliseconds = 5000;
 
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -41,6 +41,7 @@ namespace SMBLibrary.Client
         private bool m_largeWrite;
         private uint m_serverMaxBufferSize;
         private ushort m_maxMpxCount;
+        private int m_responseTimeoutInMilliseconds;
 
         private object m_incomingQueueLock = new object();
         private List<SMB1Message> m_incomingQueue = new List<SMB1Message>();
@@ -77,15 +78,16 @@ namespace SMBLibrary.Client
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
         {
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-            return Connect(serverAddress, transport, port, forceExtendedSecurity);
+            return Connect(serverAddress, transport, port, forceExtendedSecurity, DefaultResponseTimeoutInMilliseconds);
         }
 
-        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity)
+        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity, int responseTimeoutInMilliseconds)
         {
             m_transport = transport;
             if (!m_isConnected)
             {
                 m_forceExtendedSecurity = forceExtendedSecurity;
+                m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
                 if (!ConnectSocket(serverAddress, port))
                 {
                     return false;
@@ -535,7 +537,7 @@ namespace SMBLibrary.Client
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < ResponseTimeoutInMilliseconds)
+            while (stopwatch.ElapsedMilliseconds < m_responseTimeoutInMilliseconds)
             {
                 lock (m_incomingQueueLock)
                 {
