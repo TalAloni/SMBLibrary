@@ -170,6 +170,9 @@ namespace SMBLibrary.Client
             {
                 m_clientSocket.Disconnect(false);
                 m_isConnected = false;
+                m_messageID = 0;
+                m_sessionID = 0;
+                m_availableCredits = 1;
             }
         }
 

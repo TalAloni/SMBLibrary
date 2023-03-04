@@ -165,6 +165,7 @@ namespace SMBLibrary.Client
             {
                 m_clientSocket.Disconnect(false);
                 m_isConnected = false;
+                m_userID = 0;
             }
         }
 
