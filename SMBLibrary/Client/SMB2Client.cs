@@ -72,7 +72,7 @@ namespace SMBLibrary.Client
             {
                 throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
             }
-            IPAddress serverAddress = hostAddresses[0];
+            IPAddress serverAddress = IPAddressHelper.SelectAddressPreferIPv4(hostAddresses);
             return Connect(serverAddress, transport);
         }
 
