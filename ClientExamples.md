@@ -1,6 +1,6 @@
 Login and list shares:
 ======================
-```
+```cs
 SMB1Client client = new SMB1Client(); // SMB2Client can be used as well
 bool isConnected = client.Connect(IPAddress.Parse("192.168.1.11"), SMBTransportType.DirectTCPTransport);
 if (isConnected)
@@ -17,7 +17,7 @@ if (isConnected)
 
 Connect to share and list files and directories - SMB1:
 =======================================================
-```
+```cs
 ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 if (status == NTStatus.STATUS_SUCCESS)
 {
@@ -36,7 +36,7 @@ status = fileStore.Disconnect();
 
 Connect to share and list files and directories - SMB2:
 =======================================================
-```
+```cs
 ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 if (status == NTStatus.STATUS_SUCCESS)
 {
@@ -55,7 +55,7 @@ status = fileStore.Disconnect();
 
 Read large file to its end:
 ===========================
-```
+```cs
 ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 object fileHandle;
 FileStatus fileStatus;
@@ -93,7 +93,7 @@ status = fileStore.Disconnect();
 
 Create a file and write to it:
 ==============================
-```
+```cs
 ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 string filePath = "NewFile.txt";
 if (fileStore is SMB1FileStore)
@@ -119,7 +119,7 @@ status = fileStore.Disconnect();
 
 Write a large file:
 ===================
-```
+```cs
 ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 if (status != NTStatus.STATUS_SUCCESS)
 {
@@ -161,7 +161,7 @@ status = fileStore.Disconnect();
 
 Delete file:
 ============
-```
+```cs
 ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 string filePath = "DeleteMe.txt";
 if (fileStore is SMB1FileStore)
