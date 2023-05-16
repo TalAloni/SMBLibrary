@@ -38,7 +38,7 @@ namespace SMBLibrary.Server.SMB1
             object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
             bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
 
-            if (sessionKey.Length > 16)
+            if (sessionKey != null && sessionKey.Length > 16)
             {
                 // [MS-CIFS] 3.3.5.43 If the session key is equal to or longer than 16 bytes, only the least significant 16 bytes MUST be stored in Server.Session.SessionKey
                 sessionKey = ByteReader.ReadBytes(sessionKey, 0, 16);
@@ -128,7 +128,7 @@ namespace SMBLibrary.Server.SMB1
                 object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
 
-                if (sessionKey.Length > 16)
+                if (sessionKey != null && sessionKey.Length > 16)
                 {
                     // [MS-CIFS] 3.3.5.43 If the session key is equal to or longer than 16 bytes, only the least significant 16 bytes MUST be stored in Server.Session.SessionKey
                     sessionKey = ByteReader.ReadBytes(sessionKey, 0, 16);

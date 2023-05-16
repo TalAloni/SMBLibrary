@@ -71,7 +71,7 @@ namespace SMBLibrary.Server.SMB2
                 object accessToken = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.AccessToken);
                 bool? isGuest = securityProvider.GetContextAttribute(state.AuthenticationContext, GSSAttributeName.IsGuest) as bool?;
 
-                if (sessionKey.Length > 16)
+                if (sessionKey != null && sessionKey.Length > 16)
                 {
                     // [MS-SMB2] 3.3.1.8 SessionKey MUST be set to the first 16 bytes of the cryptographic key queried from the GSS protocol for this authenticated context.
                     sessionKey = ByteReader.ReadBytes(sessionKey, 0, 16);
