@@ -264,5 +264,13 @@ namespace Utilities
             }
             return result;
         }
+
+        public static DateTime ToFileUtcDateTime(Int64 ticksToConvert)
+        {
+            if (ticksToConvert <= DateTime.MaxValue.Ticks)
+                return DateTime.FromFileTimeUtc(ticksToConvert);
+            
+            return DateTime.MaxValue;
+        }
 	}
 }

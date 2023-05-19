@@ -33,10 +33,10 @@ namespace SMBLibrary
 
         public FileDirectoryInformation(byte[] buffer, int offset) : base(buffer, offset)
         {
-            CreationTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 8));
-            LastAccessTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 16));
-            LastWriteTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 24));
-            ChangeTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 32));
+            CreationTime = Conversion.ToFileUtcDateTime(LittleEndianConverter.ToInt64(buffer, offset + 8));
+            LastAccessTime = Conversion.ToFileUtcDateTime(LittleEndianConverter.ToInt64(buffer, offset + 16));
+            LastWriteTime = Conversion.ToFileUtcDateTime(LittleEndianConverter.ToInt64(buffer, offset + 24));
+            ChangeTime = Conversion.ToFileUtcDateTime(LittleEndianConverter.ToInt64(buffer, offset + 32));
             EndOfFile = LittleEndianConverter.ToInt64(buffer, offset + 40);
             AllocationSize = LittleEndianConverter.ToInt64(buffer, offset + 48);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 56);
