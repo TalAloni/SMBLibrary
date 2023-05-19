@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -24,6 +24,15 @@ namespace SMBLibrary.Tests
         {
             byte[] hash = NTLMCryptography.LMOWFv1("Password");
             byte[] expected = new byte[] { 0xe5, 0x2c, 0xac, 0x67, 0x41, 0x9a, 0x9a, 0x22, 0x4a, 0x3b, 0x10, 0x8f, 0x3f, 0xa6, 0xcb, 0x6d };
+            Assert.IsTrue(ByteUtils.AreByteArraysEqual(hash, expected));
+        }
+
+        // Will use weak DES key
+        [TestMethod]
+        public void LMv1HashTestEmptyPassword()
+        {
+            byte[] hash = NTLMCryptography.LMOWFv1("");
+            byte[] expected = new byte[] { 0xaa, 0xd3, 0xb4, 0x35, 0xb5, 0x14, 0x04, 0xee, 0xaa, 0xd3, 0xb4, 0x35, 0xb5, 0x14, 0x04, 0xee };
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(hash, expected));
         }
 
@@ -155,6 +164,7 @@ namespace SMBLibrary.Tests
         public void TestAll()
         {
             LMv1HashTest();
+            LMv1HashTestEmptyPassword();
             NTv1HashTest();
             NTv2HashTest();
             LMv1ResponseTest();

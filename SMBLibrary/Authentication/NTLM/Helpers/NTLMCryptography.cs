@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -78,11 +78,26 @@ namespace SMBLibrary.Authentication.NTLM
         {
             DES des = DES.Create();
             des.Mode = mode;
-            DESCryptoServiceProvider sm = des as DESCryptoServiceProvider;
-            MethodInfo mi = sm.GetType().GetMethod("_NewEncryptor", BindingFlags.NonPublic | BindingFlags.Instance);
-            object[] Par = { rgbKey, mode, rgbIV, sm.FeedbackSize, 0 };
-            ICryptoTransform trans = mi.Invoke(sm, Par) as ICryptoTransform;
-            return trans;
+            ICryptoTransform transform;
+            if (DES.IsWeakKey(rgbKey) || DES.IsSemiWeakKey(rgbKey))            
+            {
+#if NETSTANDARD2_0
+                MethodInfo getTransformCoreMethodInfo = des.GetType().GetMethod("CreateTransformCore", BindingFlags.NonPublic | BindingFlags.Static);
+                object[] getTransformCoreParameters = { mode, des.Padding, rgbKey, rgbIV, des.BlockSize / 8 , des.FeedbackSize / 8,  des.BlockSize / 8, true };
+                transform = getTransformCoreMethodInfo.Invoke(null, getTransformCoreParameters) as ICryptoTransform;
+#else
+                DESCryptoServiceProvider desServiceProvider = des as DESCryptoServiceProvider;
+                MethodInfo newEncryptorMethodInfo = desServiceProvider.GetType().GetMethod("_NewEncryptor", BindingFlags.NonPublic | BindingFlags.Instance);
+                object[] encryptorParameters = { rgbKey, mode, rgbIV, desServiceProvider.FeedbackSize, 0 };
+                transform = newEncryptorMethodInfo.Invoke(desServiceProvider, encryptorParameters) as ICryptoTransform;
+#endif
+            }
+            else
+            {
+                transform = des.CreateEncryptor(rgbKey, rgbIV);
+            }
+
+            return transform;
         }
 
         /// <summary>
@@ -123,7 +138,11 @@ namespace SMBLibrary.Authentication.NTLM
 
         public static Encoding GetOEMEncoding()
         {
+#if NETSTANDARD2_0
+            return ASCIIEncoding.GetEncoding(28591);
+#else
             return Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
+#endif
         }
 
         /// <summary>
