@@ -478,3 +478,11 @@ Revision History:
         Client: Fixed bug when trying to use local ip address as host name.
         Client: Provide SPN with NTLMv2 token.
         NTFileSystemAdapter: Avoid modifications of entries returned from IFileSystem.
+
+1.5.0 - Server: Fix issue when GSSAPI SessionKey is null.
+        Client: Added IsConnected property.
+        Client: Fixed IPv6 related issue.
+        Client: Add private overload to set response timeout in Connect method.
+        Client: Allow reusing client instance.
+        Client: Prefer IPv4 when resolving DNS hostname.
+        NTLMCryptography: Add .NET 5.0 \ 6.0 support.
