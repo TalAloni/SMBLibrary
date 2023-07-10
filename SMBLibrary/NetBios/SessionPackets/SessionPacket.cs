@@ -39,19 +39,18 @@ namespace SMBLibrary.NetBios
             Trailer = ByteReader.ReadBytes(buffer, offset + 4, TrailerLength);
         }
 
-        public virtual byte[] GetBytes()
+        public virtual IList<ArraySegment<byte>> GetBytes()
         {
             TrailerLength = this.Trailer.Length;
 
             byte flags = Convert.ToByte(TrailerLength >> 16);
 
-            byte[] buffer = new byte[HeaderLength + Trailer.Length];
+            byte[] buffer = new byte[HeaderLength];
             ByteWriter.WriteByte(buffer, 0, (byte)Type);
             ByteWriter.WriteByte(buffer, 1, flags);
             BigEndianWriter.WriteUInt16(buffer, 2, (ushort)(TrailerLength & 0xFFFF));
-            ByteWriter.WriteBytes(buffer, 4, Trailer);
 
-            return buffer;
+            return new List<ArraySegment<byte>> { new ArraySegment<byte>(buffer), new ArraySegment<byte>(Trailer) };
         }
 
         public virtual int Length

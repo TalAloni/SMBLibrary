@@ -24,7 +24,7 @@ namespace SMBLibrary.NetBios
         {
         }
 
-        public override byte[] GetBytes()
+        public override IList<ArraySegment<byte>> GetBytes()
         {
             this.Trailer = new byte[0];
             return base.GetBytes();

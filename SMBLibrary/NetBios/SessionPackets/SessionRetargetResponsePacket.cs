@@ -29,7 +29,7 @@ namespace SMBLibrary.NetBios
             Port = BigEndianConverter.ToUInt16(this.Trailer, offset + 4);
         }
 
-        public override byte[] GetBytes()
+        public override IList<ArraySegment<byte>> GetBytes()
         {
             this.Trailer = new byte[6];
             BigEndianWriter.WriteUInt32(this.Trailer, 0, IPAddress);

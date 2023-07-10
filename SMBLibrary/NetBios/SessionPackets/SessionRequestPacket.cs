@@ -29,7 +29,7 @@ namespace SMBLibrary.NetBios
             CallingName = NetBiosUtils.DecodeName(this.Trailer, ref offset);
         }
 
-        public override byte[] GetBytes()
+        public override IList<ArraySegment<byte>> GetBytes()
         {
             byte[] part1 = NetBiosUtils.EncodeName(CalledName, String.Empty);
             byte[] part2 = NetBiosUtils.EncodeName(CallingName, String.Empty);

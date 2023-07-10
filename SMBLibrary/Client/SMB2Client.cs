@@ -21,9 +21,10 @@ namespace SMBLibrary.Client
         public static readonly int NetBiosOverTCPPort = 139;
         public static readonly int DirectTCPPort = 445;
 
-        public static readonly uint ClientMaxTransactSize = 1048576;
-        public static readonly uint ClientMaxReadSize = 1048576;
-        public static readonly uint ClientMaxWriteSize = 1048576;
+        private static readonly uint RawDataBufferSize = 1048576 - 256 - SessionPacket.HeaderLength;
+        public static readonly uint ClientMaxTransactSize = RawDataBufferSize;
+        public static readonly uint ClientMaxReadSize = RawDataBufferSize;
+        public static readonly uint ClientMaxWriteSize = RawDataBufferSize;
         private static readonly ushort DesiredCredits = 16;
         public static readonly int DefaultResponseTimeoutInMilliseconds = 5000;
 
@@ -338,6 +339,7 @@ namespace SMBLibrary.Client
 
             if (!clientSocket.Connected)
             {
+                state.Dispose();
                 return;
             }
 
@@ -348,22 +350,26 @@ namespace SMBLibrary.Client
             }
             catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
             {
+                state.Dispose();
                 return;
             }
             catch (ObjectDisposedException)
             {
                 Log("[ReceiveCallback] EndReceive ObjectDisposedException");
+                state.Dispose();
                 return;
             }
             catch (SocketException ex)
             {
                 Log("[ReceiveCallback] EndReceive SocketException: " + ex.Message);
+                state.Dispose();
                 return;
             }
 
             if (numberOfBytesReceived == 0)
             {
                 m_isConnected = false;
+                state.Dispose();
             }
             else
             {
@@ -378,11 +384,13 @@ namespace SMBLibrary.Client
                 catch (ObjectDisposedException)
                 {
                     m_isConnected = false;
+                    state.Dispose();
                     Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
                 }
                 catch (SocketException ex)
                 {
                     m_isConnected = false;
+                    state.Dispose();
                     Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
                 }
             }
@@ -651,7 +659,7 @@ namespace SMBLibrary.Client
         {
             try
             {
-                byte[] packetBytes = packet.GetBytes();
+                IList<ArraySegment<byte>> packetBytes = packet.GetBytes();
                 socket.Send(packetBytes);
             }
             catch (SocketException)

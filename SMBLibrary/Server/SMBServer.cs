@@ -419,7 +419,7 @@ namespace SMBLibrary.Server
                 Socket clientSocket = state.ClientSocket;
                 try
                 {
-                    byte[] responseBytes = response.GetBytes();
+                    IList<ArraySegment<byte>> responseBytes = response.GetBytes();
                     clientSocket.Send(responseBytes);
                 }
                 catch (SocketException ex)

@@ -4,18 +4,20 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using Utilities;
+#if NETSTANDARD2_0
+using System.Buffers;
+#endif
 
 namespace SMBLibrary.NetBios
 {
-    public class NBTConnectionReceiveBuffer
+    public sealed class NBTConnectionReceiveBuffer : IDisposable
     {
         private byte[] m_buffer;
-        private int m_readOffset = 0;
-        private int m_bytesInBuffer = 0;
+        private int m_readOffset;
+        private int m_bytesInBuffer;
         private int? m_packetLength;
 
         public NBTConnectionReceiveBuffer() : this(SessionPacket.MaxSessionPacketLength)
@@ -26,20 +28,32 @@ namespace SMBLibrary.NetBios
         public NBTConnectionReceiveBuffer(int bufferLength)
         {
             if (bufferLength < SessionPacket.MaxSessionPacketLength)
-            {
-                throw new ArgumentException("bufferLength must be large enough to hold the largest possible NBT packet");
-            }
+                throw new ArgumentException(
+                    "bufferLength must be large enough to hold the largest possible NBT packet");
+#if NETSTANDARD2_0 
+            m_buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
+#else
             m_buffer = new byte[bufferLength];
+#endif
         }
 
         public void IncreaseBufferSize(int bufferLength)
         {
-            byte[] buffer = new byte[bufferLength];
+            if (m_buffer.Length >= bufferLength) return;
+#if NETSTANDARD2_0
+            var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
+#else
+            var buffer = new byte[bufferLength];
+#endif
             if (m_bytesInBuffer > 0)
             {
                 Array.Copy(m_buffer, m_readOffset, buffer, 0, m_bytesInBuffer);
                 m_readOffset = 0;
             }
+
+#if NETSTANDARD2_0
+            ArrayPool<byte>.Shared.Return(m_buffer);
+#endif
             m_buffer = buffer;
         }
 
@@ -53,11 +67,10 @@ namespace SMBLibrary.NetBios
             if (m_bytesInBuffer >= 4)
             {
                 if (!m_packetLength.HasValue)
-                {
                     m_packetLength = SessionPacket.GetSessionPacketLength(m_buffer, m_readOffset);
-                }
                 return m_bytesInBuffer >= m_packetLength.Value;
             }
+
             return false;
         }
 
@@ -76,23 +89,14 @@ namespace SMBLibrary.NetBios
             {
                 throw new InvalidDataException("Invalid NetBIOS session packet", ex);
             }
+
             RemovePacketBytes();
             return packet;
         }
 
-        /// <summary>
-        /// HasCompletePDU must be called and return true before calling DequeuePDUBytes
-        /// </summary>
-        public byte[] DequeuePacketBytes()
+        public void RemovePacketBytes()
         {
-            byte[] packetBytes = ByteReader.ReadBytes(m_buffer, m_readOffset, m_packetLength.Value);
-            RemovePacketBytes();
-            return packetBytes;
-        }
-
-        private void RemovePacketBytes()
-        {
-            m_bytesInBuffer -= m_packetLength.Value;
+            m_bytesInBuffer -= m_packetLength.GetValueOrDefault(0);
             if (m_bytesInBuffer == 0)
             {
                 m_readOffset = 0;
@@ -100,7 +104,7 @@ namespace SMBLibrary.NetBios
             }
             else
             {
-                m_readOffset += m_packetLength.Value;
+                m_readOffset += m_packetLength.GetValueOrDefault(0);
                 m_packetLength = null;
                 if (!HasCompletePacket())
                 {
@@ -110,36 +114,30 @@ namespace SMBLibrary.NetBios
             }
         }
 
-        public byte[] Buffer
+        public byte[] Buffer => m_buffer;
+
+        public int WriteOffset => m_readOffset + m_bytesInBuffer;
+
+        public int BytesInBuffer => m_bytesInBuffer;
+
+        public int AvailableLength => m_buffer.Length - (m_readOffset + m_bytesInBuffer);
+
+        private void ReleaseUnmanagedResources()
         {
-            get
-            {
-                return m_buffer;
-            }
+#if NETSTANDARD2_0
+            ArrayPool<byte>.Shared.Return(m_buffer);
+#endif
         }
 
-        public int WriteOffset
+        public void Dispose()
         {
-            get
-            {
-                return m_readOffset + m_bytesInBuffer;
-            }
+            ReleaseUnmanagedResources();
+            GC.SuppressFinalize(this);
         }
 
-        public int BytesInBuffer
+        ~NBTConnectionReceiveBuffer()
         {
-            get
-            {
-                return m_bytesInBuffer;
-            }
-        }
-
-        public int AvailableLength
-        {
-            get
-            {
-                return m_buffer.Length - (m_readOffset + m_bytesInBuffer);
-            }
+            ReleaseUnmanagedResources();
         }
     }
 }
