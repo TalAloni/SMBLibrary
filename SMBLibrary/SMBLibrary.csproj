@@ -9,6 +9,7 @@
     <RootNamespace>SMBLibrary</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Tal Aloni</Authors>
+    <Copyright>Tal Aloni</Copyright>
     <PackageDescription>SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
