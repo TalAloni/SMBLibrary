@@ -182,3 +182,104 @@ if (status == NTStatus.STATUS_SUCCESS)
 }
 status = fileStore.Disconnect();
 ```
+
+Rename file:
+===========
+```cs
+using System.Net;
+using SMBLibrary;
+using SMBLibrary.Client;
+using FileAttributes = SMBLibrary.FileAttributes;
+
+void RenderExceptionLog(string message, NTStatus status)
+{
+	throw new Exception(status + " => " + message);
+}
+
+var client = new SMB2Client();
+
+// Connect
+{
+	var isConnect = client.Connect(IPAddress.Parse("127.0.0.1"), SMBTransportType.DirectTCPTransport);
+
+	if (isConnect is false)
+	{
+		throw new Exception("Connect");
+	}
+}
+
+// Login
+{
+	var status = client.Login(string.Empty, "Admin", "admin");
+
+	if (status is not NTStatus.STATUS_SUCCESS)
+	{
+		RenderExceptionLog("Login", status);
+	}
+}
+
+// TreeConnect
+var fileStore = client.TreeConnect("Shared", out var isTreeConnect);
+
+if (isTreeConnect is not NTStatus.STATUS_SUCCESS)
+{
+	RenderExceptionLog("TreeConnect", isTreeConnect);
+}
+
+// RenameFile
+{
+	const string filePath = "\\FileMove.txt";
+
+	// OpenFile
+	var status = fileStore.CreateFile(
+		out var fileHandle,
+		out _,
+		filePath,
+		AccessMask.GENERIC_WRITE | AccessMask.DELETE | AccessMask.SYNCHRONIZE,
+		FileAttributes.Normal,
+		ShareAccess.None,
+		CreateDisposition.FILE_OPEN,
+		CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT,
+		null
+	);
+
+	if (status is not NTStatus.STATUS_SUCCESS)
+	{
+		RenderExceptionLog("CreateFile", status);
+	}
+
+	// MoveFile
+	var fileRenameInformationType2 = new FileRenameInformationType2
+	{
+		ReplaceIfExists = false,
+		FileName = "\\Move\\FileMoveClone.txt"
+	};
+	
+	status = fileStore.SetFileInformation(fileHandle, fileRenameInformationType2);
+	
+	if (status is not NTStatus.STATUS_SUCCESS)
+	{
+		RenderExceptionLog("SetFileInformation FileRenameInformationType2", status);
+	}
+
+	// Close
+	status = fileStore.CloseFile(fileHandle);
+
+	if (status is not NTStatus.STATUS_SUCCESS)
+	{
+		RenderExceptionLog("CloseFile", status);
+	}
+}
+
+// Logoff
+{
+	var status = client.Logoff();
+
+	if (status is not NTStatus.STATUS_SUCCESS)
+	{
+		RenderExceptionLog("Logoff", status);
+	}
+}
+
+client.Disconnect();
+```
