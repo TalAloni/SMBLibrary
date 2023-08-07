@@ -13,8 +13,8 @@ namespace SMBLibrary.Client
 {
     public sealed class ConnectionState : IDisposable
     {
-        private readonly Socket m_clientSocket;
-        private readonly NBTConnectionReceiveBuffer m_receiveBuffer;
+        private Socket m_clientSocket;
+        private NBTConnectionReceiveBuffer m_receiveBuffer;
 
         public ConnectionState(Socket clientSocket)
         {
@@ -22,9 +22,21 @@ namespace SMBLibrary.Client
             m_receiveBuffer = new NBTConnectionReceiveBuffer();
         }
 
-        public Socket ClientSocket => m_clientSocket;
+        public Socket ClientSocket
+        {
+            get
+            {
+                return m_clientSocket;
+            }
+        }
 
-        public NBTConnectionReceiveBuffer ReceiveBuffer => m_receiveBuffer;
+        public NBTConnectionReceiveBuffer ReceiveBuffer
+        {
+            get
+            {
+                return m_receiveBuffer;
+            }
+        }
 
         public void Dispose()
         {

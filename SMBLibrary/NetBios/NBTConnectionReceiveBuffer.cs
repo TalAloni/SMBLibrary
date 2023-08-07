@@ -4,9 +4,9 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
-
 using System;
 using System.IO;
+using Utilities;
 #if NETSTANDARD2_0
 using System.Buffers;
 #endif
@@ -16,8 +16,8 @@ namespace SMBLibrary.NetBios
     public sealed class NBTConnectionReceiveBuffer : IDisposable
     {
         private byte[] m_buffer;
-        private int m_readOffset;
-        private int m_bytesInBuffer;
+        private int m_readOffset = 0;
+        private int m_bytesInBuffer = 0;
         private int? m_packetLength;
 
         public NBTConnectionReceiveBuffer() : this(SessionPacket.MaxSessionPacketLength)
@@ -67,10 +67,11 @@ namespace SMBLibrary.NetBios
             if (m_bytesInBuffer >= 4)
             {
                 if (!m_packetLength.HasValue)
+                {
                     m_packetLength = SessionPacket.GetSessionPacketLength(m_buffer, m_readOffset);
+                }
                 return m_bytesInBuffer >= m_packetLength.Value;
             }
-
             return false;
         }
 
@@ -94,7 +95,17 @@ namespace SMBLibrary.NetBios
             return packet;
         }
 
-        public void RemovePacketBytes()
+        /// <summary>
+        /// HasCompletePDU must be called and return true before calling DequeuePDUBytes
+        /// </summary>
+        public byte[] DequeuePacketBytes()
+        {
+            byte[] packetBytes = ByteReader.ReadBytes(m_buffer, m_readOffset, m_packetLength.GetValueOrDefault(0));
+            RemovePacketBytes();
+            return packetBytes;
+        }
+
+        private void RemovePacketBytes()
         {
             m_bytesInBuffer -= m_packetLength.GetValueOrDefault(0);
             if (m_bytesInBuffer == 0)
@@ -114,13 +125,37 @@ namespace SMBLibrary.NetBios
             }
         }
 
-        public byte[] Buffer => m_buffer;
+        public byte[] Buffer
+        {
+            get
+            {
+                return m_buffer;
+            }
+        }
 
-        public int WriteOffset => m_readOffset + m_bytesInBuffer;
+        public int WriteOffset
+        {
+            get
+            {
+                return m_readOffset + m_bytesInBuffer;
+            }
+        }
 
-        public int BytesInBuffer => m_bytesInBuffer;
+        public int BytesInBuffer
+        {
+            get
+            {
+                return m_bytesInBuffer;
+            }
+        }
 
-        public int AvailableLength => m_buffer.Length - (m_readOffset + m_bytesInBuffer);
+        public int AvailableLength
+        {
+            get
+            {
+                return m_buffer.Length - (m_readOffset + m_bytesInBuffer);
+            }
+        }
 
         private void ReleaseUnmanagedResources()
         {
