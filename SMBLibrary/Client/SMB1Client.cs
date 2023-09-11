@@ -289,7 +289,7 @@ namespace SMBLibrary.Client
             }
             else // m_securityBlob != null
             {
-                byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
+                byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, userName, password, authenticationMethod);
                 if (negotiateMessage == null)
                 {
                     return NTStatus.SEC_E_INVALID_TOKEN;

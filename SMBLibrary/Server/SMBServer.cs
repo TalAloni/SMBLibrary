@@ -11,7 +11,6 @@ using System.Net.Sockets;
 using System.Threading;
 using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.NetBios;
-using SMBLibrary.Services;
 using SMBLibrary.SMB1;
 using SMBLibrary.SMB2;
 using Utilities;
