@@ -214,7 +214,7 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A connection must be successfully established before attempting login");
             }
 
-            byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, authenticationMethod);
+            byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, userName, password, authenticationMethod);
             if (negotiateMessage == null)
             {
                 return NTStatus.SEC_E_INVALID_TOKEN;
