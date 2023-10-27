@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using SMBLibrary.Client.Authentication;
 using SMBLibrary.NetBios;
 using SMBLibrary.SMB2;
 using Utilities;
@@ -209,12 +210,19 @@ namespace SMBLibrary.Client
 
         public NTStatus Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
         {
+            string spn = string.Format("cifs/{0}", m_serverName);
+            NTLMAuthenticationClient authenticationClient = new NTLMAuthenticationClient(domainName, userName, password, spn, authenticationMethod);
+            return Login(authenticationClient);
+        }
+
+        public NTStatus Login(IAuthenticationClient authenticationClient)
+        {
             if (!m_isConnected)
             {
                 throw new InvalidOperationException("A connection must be successfully established before attempting login");
             }
 
-            byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, userName, password, authenticationMethod);
+            byte[] negotiateMessage = authenticationClient.InitializeSecurityContext(m_securityBlob);
             if (negotiateMessage == null)
             {
                 return NTStatus.SEC_E_INVALID_TOKEN;
@@ -229,12 +237,12 @@ namespace SMBLibrary.Client
             {
                 if (response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && response is SessionSetupResponse)
                 {
-                    string spn = string.Format("cifs/{0}", m_serverName);
-                    byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(((SessionSetupResponse)response).SecurityBuffer, domainName, userName, password, spn, authenticationMethod, out m_sessionKey);
+                    byte[] authenticateMessage = authenticationClient.InitializeSecurityContext(((SessionSetupResponse)response).SecurityBuffer);
                     if (authenticateMessage == null)
                     {
                         return NTStatus.SEC_E_INVALID_TOKEN;
                     }
+                    m_sessionKey = authenticationClient.GetSessionKey();
 
                     m_sessionID = response.Header.SessionID;
                     request = new SessionSetupRequest();

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using SMBLibrary.Authentication.GSSAPI;
 using SMBLibrary.Authentication.NTLM;
 using Utilities;
 
@@ -15,27 +14,8 @@ namespace SMBLibrary.Client
 {
     public class NTLMAuthenticationHelper
     {
-        public static byte[] GetNegotiateMessage(byte[] securityBlob, string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
+        public static byte[] GetNegotiateMessage(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
         {
-            bool useGSSAPI = false;
-            if (securityBlob.Length > 0)
-            {
-                SimpleProtectedNegotiationTokenInit inputToken = null;
-                try
-                {
-                    inputToken = SimpleProtectedNegotiationToken.ReadToken(securityBlob, 0, true) as SimpleProtectedNegotiationTokenInit;
-                }
-                catch
-                {
-                }
-
-                if (inputToken == null || !ContainsMechanism(inputToken, GSSProvider.NTLMSSPIdentifier))
-                {
-                    return null;
-                }
-                useGSSAPI = true;
-            }
-
             NegotiateMessage negotiateMessage = new NegotiateMessage();
             negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
                                               NegotiateFlags.OEMEncoding |
@@ -65,44 +45,14 @@ namespace SMBLibrary.Client
             negotiateMessage.Version = NTLMVersion.Server2003;
             negotiateMessage.DomainName = domainName;
             negotiateMessage.Workstation = Environment.MachineName;
-            if (useGSSAPI)
-            {
-                SimpleProtectedNegotiationTokenInit outputToken = new SimpleProtectedNegotiationTokenInit();
-                outputToken.MechanismTypeList = new List<byte[]>();
-                outputToken.MechanismTypeList.Add(GSSProvider.NTLMSSPIdentifier);
-                outputToken.MechanismToken = negotiateMessage.GetBytes();
-                return outputToken.GetBytes(true);
-            }
-            else
-            {
-                return negotiateMessage.GetBytes();
-            }
+            return negotiateMessage.GetBytes();
         }
 
-        public static byte[] GetAuthenticateMessage(byte[] securityBlob, string domainName, string userName, string password, string spn, AuthenticationMethod authenticationMethod, out byte[] sessionKey)
+        public static byte[] GetAuthenticateMessage(byte[] challengeMessageBytes, string domainName, string userName, string password, string spn, AuthenticationMethod authenticationMethod, out byte[] sessionKey)
         {
             sessionKey = null;
-            bool useGSSAPI = false;
-            SimpleProtectedNegotiationTokenResponse inputToken = null;
-            try
-            {
-                inputToken = SimpleProtectedNegotiationToken.ReadToken(securityBlob, 0, false) as SimpleProtectedNegotiationTokenResponse;
-            }
-            catch
-            {
-            }
 
-            ChallengeMessage challengeMessage;
-            if (inputToken != null)
-            {
-                challengeMessage = GetChallengeMessage(inputToken.ResponseToken);
-                useGSSAPI = true;
-            }
-            else
-            {
-                challengeMessage = GetChallengeMessage(securityBlob);
-            }
-
+            ChallengeMessage challengeMessage = GetChallengeMessage(challengeMessageBytes);
             if (challengeMessage == null)
             {
                 return null;
@@ -212,16 +162,7 @@ namespace SMBLibrary.Client
                 sessionKey = keyExchangeKey;
             }
 
-            if (useGSSAPI)
-            {
-                SimpleProtectedNegotiationTokenResponse outputToken = new SimpleProtectedNegotiationTokenResponse();
-                outputToken.ResponseToken = authenticateMessage.GetBytes();
-                return outputToken.GetBytes();
-            }
-            else
-            {
-                return authenticateMessage.GetBytes();
-            }
+            return authenticateMessage.GetBytes();
         }
 
         private static ChallengeMessage GetChallengeMessage(byte[] messageBytes)
@@ -242,18 +183,6 @@ namespace SMBLibrary.Client
                 }
             }
             return null;
-        }
-
-        private static bool ContainsMechanism(SimpleProtectedNegotiationTokenInit token, byte[] mechanismIdentifier)
-        {
-            for (int index = 0; index < token.MechanismTypeList.Count; index++)
-            {
-                if (ByteUtils.AreByteArraysEqual(token.MechanismTypeList[index], GSSProvider.NTLMSSPIdentifier))
-                {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using SMBLibrary.Authentication.NTLM;
+using SMBLibrary.Client.Authentication;
 using SMBLibrary.NetBios;
 using SMBLibrary.Services;
 using SMBLibrary.SMB1;
@@ -289,7 +290,8 @@ namespace SMBLibrary.Client
             }
             else // m_securityBlob != null
             {
-                byte[] negotiateMessage = NTLMAuthenticationHelper.GetNegotiateMessage(m_securityBlob, domainName, userName, password, authenticationMethod);
+                NTLMAuthenticationClient authenticationClient = new NTLMAuthenticationClient(domainName, userName, password, null, authenticationMethod);
+                byte[] negotiateMessage = authenticationClient.InitializeSecurityContext(m_securityBlob);
                 if (negotiateMessage == null)
                 {
                     return NTStatus.SEC_E_INVALID_TOKEN;
@@ -308,11 +310,12 @@ namespace SMBLibrary.Client
                     if (reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                     {
                         SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
-                        byte[] authenticateMessage = NTLMAuthenticationHelper.GetAuthenticateMessage(response.SecurityBlob, domainName, userName, password, null, authenticationMethod, out m_sessionKey);
+                        byte[] authenticateMessage = authenticationClient.InitializeSecurityContext(response.SecurityBlob);
                         if (authenticateMessage == null)
                         {
                             return NTStatus.SEC_E_INVALID_TOKEN;
                         }
+                        m_sessionKey = authenticationClient.GetSessionKey();
 
                         m_userID = reply.Header.UID;
                         request = new SessionSetupAndXRequestExtended();
