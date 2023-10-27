@@ -640,7 +640,7 @@ namespace SMBLibrary.Client
             }
         }
 
-        public static void TrySendCommand(Socket socket, SMB2Command request, byte[] encryptionKey)
+        private void TrySendCommand(Socket socket, SMB2Command request, byte[] encryptionKey)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             if (encryptionKey != null)
@@ -655,7 +655,7 @@ namespace SMBLibrary.Client
             TrySendPacket(socket, packet);
         }
 
-        public static void TrySendPacket(Socket socket, SessionPacket packet)
+        private void TrySendPacket(Socket socket, SessionPacket packet)
         {
             try
             {
@@ -664,9 +664,11 @@ namespace SMBLibrary.Client
             }
             catch (SocketException)
             {
+                m_isConnected = false;
             }
             catch (ObjectDisposedException)
             {
+                m_isConnected = false;
             }
         }
     }

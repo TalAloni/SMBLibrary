@@ -688,14 +688,14 @@ namespace SMBLibrary.Client
             }
         }
 
-        public static void TrySendMessage(Socket socket, SMB1Message message)
+        private void TrySendMessage(Socket socket, SMB1Message message)
         {
             SessionMessagePacket packet = new SessionMessagePacket();
             packet.Trailer = message.GetBytes();
             TrySendPacket(socket, packet);
         }
 
-        public static void TrySendPacket(Socket socket, SessionPacket packet)
+        private void TrySendPacket(Socket socket, SessionPacket packet)
         {
             try
             {
@@ -704,9 +704,11 @@ namespace SMBLibrary.Client
             }
             catch (SocketException)
             {
+                m_isConnected = false;
             }
             catch (ObjectDisposedException)
             {
+                m_isConnected = false;
             }
         }
     }
