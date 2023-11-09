@@ -67,6 +67,11 @@ namespace SMBLibrary.Client
         /// </param>
         public bool Connect(string serverName, SMBTransportType transport)
         {
+            return Connect(serverName, transport, DefaultResponseTimeoutInMilliseconds);
+        }
+
+        public bool Connect(string serverName, SMBTransportType transport, int responseTimeoutInMilliseconds)
+        {
             m_serverName = serverName;
             IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
             if (hostAddresses.Length == 0)
@@ -74,13 +79,18 @@ namespace SMBLibrary.Client
                 throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
             }
             IPAddress serverAddress = IPAddressHelper.SelectAddressPreferIPv4(hostAddresses);
-            return Connect(serverAddress, transport);
+            return Connect(serverAddress, transport, responseTimeoutInMilliseconds);
         }
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
         {
+            return Connect(serverAddress, transport, DefaultResponseTimeoutInMilliseconds);
+        }
+
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeoutInMilliseconds)
+        {
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-            return Connect(serverAddress, transport, port, DefaultResponseTimeoutInMilliseconds);
+            return Connect(serverAddress, transport, port, responseTimeoutInMilliseconds);
         }
 
         private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, int responseTimeoutInMilliseconds)
@@ -520,7 +530,7 @@ namespace SMBLibrary.Client
                 }
                 m_incomingQueueEventHandle.WaitOne(100);
             }
-            return null;
+            throw new TimeoutException($"Timed out while waiting {m_responseTimeoutInMilliseconds}ms for a response");
         }
 
         internal SessionPacket WaitForSessionResponsePacket()
