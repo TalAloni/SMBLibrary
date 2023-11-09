@@ -530,7 +530,7 @@ namespace SMBLibrary.Client
                 }
                 m_incomingQueueEventHandle.WaitOne(100);
             }
-            throw new TimeoutException($"Timed out while waiting {m_responseTimeoutInMilliseconds}ms for a response");
+            return null;
         }
 
         internal SessionPacket WaitForSessionResponsePacket()
