@@ -30,6 +30,8 @@ namespace SMBLibrary
             {
                 case AceType.ACCESS_ALLOWED_ACE_TYPE:
                     return new AccessAllowedACE(buffer, offset);
+                case AceType.ACCESS_DENIED_ACE_TYPE:
+                    return new AccessDeniedACE(buffer, offset);
                 default:
                     throw new NotImplementedException();
             }
