@@ -55,6 +55,8 @@
     <Compile Include="Authentication\NTLM\Structures\NegotiateMessage.cs" />
     <Compile Include="Authentication\NTLM\Structures\NTLMv2ClientChallenge.cs" />
     <Compile Include="Authentication\NTLM\Structures\NTLMVersion.cs" />
+    <Compile Include="Client\Authentication\IAuthenticationClient.cs" />
+    <Compile Include="Client\Authentication\NTLMAuthenticationClient.cs" />
     <Compile Include="Client\ConnectionState.cs" />
     <Compile Include="Client\Enums\AuthenticationMethod.cs" />
     <Compile Include="Client\Helpers\IPAddressHelper.cs" />
@@ -77,6 +79,7 @@
     <Compile Include="Exceptions\UnsupportedInformationLevelException.cs" />
     <Compile Include="Helpers\FileTimeHelper.cs" />
     <Compile Include="Helpers\SP800_1008.cs" />
+    <Compile Include="NTFileStore\Structures\SecurityInformation\ACE\AccessDeniedACE.cs" />
     <Compile Include="SMB2\SMB2Cryptography.cs" />
     <Compile Include="NetBios\NameServicePackets\Enums\ResourceRecordClass.cs" />
     <Compile Include="NetBios\NameServicePackets\Enums\NameRecordType.cs" />
