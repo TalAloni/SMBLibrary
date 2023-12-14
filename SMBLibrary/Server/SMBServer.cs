@@ -288,6 +288,7 @@ namespace SMBLibrary.Server
                 catch (Exception ex)
                 {
                     state.ClientSocket.Close();
+                    state.ReceiveBuffer.Dispose();
                     state.LogToServer(Severity.Warning, "Rejected Invalid NetBIOS session packet: {0}", ex.Message);
                     break;
                 }

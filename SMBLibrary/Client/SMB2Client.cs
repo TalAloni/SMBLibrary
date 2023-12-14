@@ -33,6 +33,7 @@ namespace SMBLibrary.Client
         private bool m_isConnected;
         private bool m_isLoggedIn;
         private Socket m_clientSocket;
+        private ConnectionState m_connectionState;
         private int m_responseTimeoutInMilliseconds;
 
         private object m_incomingQueueLock = new object();
@@ -169,9 +170,9 @@ namespace SMBLibrary.Client
                 return false;
             }
 
-            ConnectionState state = new ConnectionState(m_clientSocket);
-            NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
-            m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+            m_connectionState = new ConnectionState(m_clientSocket);
+            NBTConnectionReceiveBuffer buffer = m_connectionState.ReceiveBuffer;
+            m_clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), m_connectionState);
             return true;
         }
 
@@ -180,6 +181,7 @@ namespace SMBLibrary.Client
             if (m_isConnected)
             {
                 m_clientSocket.Disconnect(false);
+                m_connectionState.ReceiveBuffer.Dispose();
                 m_isConnected = false;
                 m_messageID = 0;
                 m_sessionID = 0;
@@ -356,6 +358,7 @@ namespace SMBLibrary.Client
 
             if (!clientSocket.Connected)
             {
+                state.ReceiveBuffer.Dispose();
                 return;
             }
 
@@ -366,22 +369,26 @@ namespace SMBLibrary.Client
             }
             catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
             {
+                state.ReceiveBuffer.Dispose();
                 return;
             }
             catch (ObjectDisposedException)
             {
                 Log("[ReceiveCallback] EndReceive ObjectDisposedException");
+                state.ReceiveBuffer.Dispose();
                 return;
             }
             catch (SocketException ex)
             {
                 Log("[ReceiveCallback] EndReceive SocketException: " + ex.Message);
+                state.ReceiveBuffer.Dispose();
                 return;
             }
 
             if (numberOfBytesReceived == 0)
             {
                 m_isConnected = false;
+                state.ReceiveBuffer.Dispose();
             }
             else
             {
@@ -397,11 +404,13 @@ namespace SMBLibrary.Client
                 {
                     m_isConnected = false;
                     Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
+                    buffer.Dispose();
                 }
                 catch (SocketException ex)
                 {
                     m_isConnected = false;
                     Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
+                    buffer.Dispose();
                 }
             }
         }
@@ -419,6 +428,7 @@ namespace SMBLibrary.Client
                 catch (Exception)
                 {
                     state.ClientSocket.Close();
+                    state.ReceiveBuffer.Dispose();
                     break;
                 }
 
@@ -455,6 +465,7 @@ namespace SMBLibrary.Client
                     Log("Invalid SMB2 response: " + ex.Message);
                     state.ClientSocket.Close();
                     m_isConnected = false;
+                    state.ReceiveBuffer.Dispose();
                     return;
                 }
 
@@ -501,6 +512,7 @@ namespace SMBLibrary.Client
             {
                 Log("Inappropriate NetBIOS session packet");
                 state.ClientSocket.Close();
+                state.ReceiveBuffer.Dispose();
             }
         }
 

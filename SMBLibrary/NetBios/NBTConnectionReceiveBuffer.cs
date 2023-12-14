@@ -1,17 +1,16 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Utilities;
 
 namespace SMBLibrary.NetBios
 {
-    public class NBTConnectionReceiveBuffer
+    public class NBTConnectionReceiveBuffer : IDisposable
     {
         private byte[] m_buffer;
         private int m_readOffset = 0;
@@ -108,6 +107,11 @@ namespace SMBLibrary.NetBios
                     m_readOffset = 0;
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            m_buffer = null;
         }
 
         public byte[] Buffer

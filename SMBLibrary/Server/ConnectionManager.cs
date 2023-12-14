@@ -42,6 +42,7 @@ namespace SMBLibrary.Server
             connection.SendQueue.Stop();
             SocketUtils.ReleaseSocket(connection.ClientSocket);
             connection.CloseSessions();
+            connection.ReceiveBuffer.Dispose();
             RemoveConnection(connection);
         }
 
