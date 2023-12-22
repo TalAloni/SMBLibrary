@@ -2,14 +2,13 @@
 
   <PropertyGroup>
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary</AssemblyName>
     <Version>1.5.0.3</Version>
     <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Tal Aloni</Authors>
-    <Copyright>Tal Aloni</Copyright>
+    <Copyright>Copyright © Tal Aloni 2014-2023</Copyright>
     <PackageDescription>SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
@@ -25,6 +24,12 @@
     <PackageReference Include="System.Buffers">
       <Version>4.5.1</Version>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>SMBLibrary.Tests</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="ILRepack" Condition="'$(Configuration)' == 'Release'" AfterTargets="AfterBuild">

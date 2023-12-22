@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net20;net40;netcoreapp3.1</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Copyright>Copyright © Tal Aloni 2014-2023</Copyright>
     <AssemblyName>SMBServer</AssemblyName>
     <RootNamespace>SMBServer</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>

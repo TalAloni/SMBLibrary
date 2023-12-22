@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>Utilities</AssemblyName>
     <RootNamespace>Utilities</RootNamespace>
+    <Copyright>Copyright © Tal Aloni 2005-2023</Copyright>
   </PropertyGroup>
 
 </Project>

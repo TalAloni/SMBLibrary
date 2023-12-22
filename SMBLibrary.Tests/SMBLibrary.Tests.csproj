@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net40</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>SMBLibrary.Tests</AssemblyName>
     <RootNamespace>SMBLibrary.Tests</RootNamespace>
     <OutputType>Exe</OutputType>
