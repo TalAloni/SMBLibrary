@@ -121,13 +121,5 @@ namespace SMBLibrary.Tests
             byte[] data = AesCcm.DecryptAndAuthenticate(key, nonce, encyrptedData, associatedData, signature);
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(expectedData, data));
         }
-
-        public void TestAll()
-        {
-            TestEncryption_Rfc3610_Packet_Vector1();
-            TestDecryption_Rfc3610_Packet_Vector1();
-            TestEncryption();
-            TestDecryption();
-        }
     }
 }

@@ -70,12 +70,5 @@ namespace SMBLibrary.Tests
             byte[] expected = new byte[] { 0x73, 0xF2, 0xCC, 0x56, 0x09, 0x3E, 0xD2, 0xB5, 0xD7, 0x10, 0x66, 0x6C, 0xE4, 0x28, 0x2D, 0xD1 };
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(signature, expected));
         }
-
-        public void TestAll()
-        {
-            TestSMB202SignatureCalculation();
-            TestSMB210SignatureCalculation();
-            TestSMB300SignatureCalculation();
-        }
     }
 }

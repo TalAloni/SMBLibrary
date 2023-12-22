@@ -207,14 +207,6 @@ namespace SMBLibrary.Tests
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(mic, expected));
         }
 
-        public void TestAll()
-        {
-            TestLMMIC();
-            TestNTLMv1MIC();
-            TestNTLMv1ExtendedSessionSecurityKeyExchangeMIC();
-            TestNTLMv2KeyExchangeMIC();
-        }
-
         private static byte[] GetExportedSessionKey(byte[] sessionBaseKey, AuthenticateMessage message, byte[] serverChallenge, byte[] lmowf)
         {
             byte[] keyExchangeKey;

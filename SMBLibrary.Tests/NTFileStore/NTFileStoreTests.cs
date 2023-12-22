@@ -52,10 +52,5 @@ namespace SMBLibrary.Tests
         {
             m_notifyChangeStatus = status;
         }
-
-        public void TestAll()
-        {
-            TestCancel();
-        }
     }
 }

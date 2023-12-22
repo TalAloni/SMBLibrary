@@ -125,12 +125,5 @@ namespace SMBLibrary.Tests
             byte[] cipher = RC4.Encrypt(key, text);
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(cipher, expectedCipher));
         }
-
-        public void TestAll()
-        {
-            Test1();
-            Test2();
-            Test3();
-        }
     }
 }

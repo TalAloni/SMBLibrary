@@ -102,13 +102,5 @@ namespace SMBLibrary.Tests
 
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(expectedDecryptedMessage, decryptedMessage));
         }
-
-        public void TestAll()
-        {
-            TestEncryptionKeyGeneration();
-            TestDecryptionKeyGeneration();
-            TestEncryption();
-            TestDecryption();
-        }
     }
 }

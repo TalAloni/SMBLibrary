@@ -93,14 +93,5 @@ namespace SMBLibrary.Tests
             byte[] requestBytes = request.GetBytes();
             //Assert.IsTrue(ByteUtils.AreByteArraysEqual(buffer, requestBytes));
         }
-
-        public void TestAll()
-        {
-            Test1();
-            Test2();
-            Test3();
-            Test4();
-            Test5();
-        }
     }
 }

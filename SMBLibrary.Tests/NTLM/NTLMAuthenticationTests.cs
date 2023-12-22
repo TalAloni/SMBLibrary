@@ -5,8 +5,6 @@
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary.Authentication.NTLM;
 using Utilities;
@@ -159,20 +157,6 @@ namespace SMBLibrary.Tests
             byte[] messageBytes = message.GetBytes();
             // The payload entries may be distributed differently so we use cmp.GetBytes()
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(messageBytes, cmp.GetBytes()));
-        }
-
-        public void TestAll()
-        {
-            LMv1HashTest();
-            LMv1HashTestEmptyPassword();
-            NTv1HashTest();
-            NTv2HashTest();
-            LMv1ResponseTest();
-            NTLMv1ResponseTest();
-            LMv2ResponseTest();
-            NTLMv2ResponseTest();
-            NTLMv2ChallengeMessageTest();
-            NTLMv2AuthenticateMessageTest();
         }
     }
 }

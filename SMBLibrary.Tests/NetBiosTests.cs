@@ -33,11 +33,5 @@ namespace SMBLibrary.Tests
             byte[] encodedName = NetBiosUtils.EncodeName(name, String.Empty);
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(buffer, encodedName));
         }
-
-        public void TestAll()
-        {
-            Test1();
-            Test2();
-        }
     }
 }
