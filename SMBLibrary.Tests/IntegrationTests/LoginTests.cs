@@ -46,6 +46,26 @@ namespace SMBLibrary.Tests.IntegrationTests
         }
 
         [TestMethod]
+        public void When_ClientDisconnectAndReconnect_LoginSucceed()
+        {
+            // Arrange
+            SMB2Client client = new SMB2Client();
+            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, 5000);
+
+            // Act
+            NTStatus status = client.Login("", "John", "password");
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
+            status = client.Logoff();
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
+            client.Disconnect();
+            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, 5000);
+            status = client.Login("", "John", "password");
+
+            // Assert
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
+        }
+
+        [TestMethod]
         public void When_InvalidCredentialsProvided_LoginFails()
         {
             // Arrange
