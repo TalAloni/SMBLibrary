@@ -13,7 +13,7 @@ namespace SMBLibrary.Tests
     public class RPCTests
     {
         [TestMethod]
-        public void Test1()
+        public void Decode_NetrWkstaGetInfoResponse()
         {
             byte[] buffer = new byte[]{ 0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0xf4, 0x01, 0x00, 0x00, 0x04, 0x00, 0x02, 0x00,
                                         0x08, 0x00, 0x02, 0x00, 0x05, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00,
@@ -23,22 +23,24 @@ namespace SMBLibrary.Tests
                                         0x47, 0x00, 0x52, 0x00, 0x4f, 0x00, 0x55, 0x00, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             NetrWkstaGetInfoResponse response = new NetrWkstaGetInfoResponse(buffer);
 
-            byte[] responseBytes = response.GetBytes();
-            //Assert.IsTrue(ByteUtils.AreByteArraysEqual(buffer, responseBytes));
+            Assert.AreEqual((uint)100, response.WkstaInfo.Level);
+            Assert.IsInstanceOfType(response.WkstaInfo.Info, typeof(WorkstationInfo100));
+            Assert.AreEqual("TAL2-VM7", ((WorkstationInfo100)response.WkstaInfo.Info).ComputerName.Value);
         }
 
         [TestMethod]
-        public void Test2()
+        public void Decode_NetrServerGetInfoResponse()
         {
             byte[] buffer = new byte[] { 0x65, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0xf4, 0x01, 0x00, 0x00, 0x04, 0x00, 0x02, 0x00, 0x05, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x90, 0x84, 0x00, 0x08, 0x00, 0x02, 0x00, 0x0d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d, 0x00, 0x00, 0x00, 0x31, 0x00, 0x39, 0x00, 0x32, 0x00, 0x2e, 0x00, 0x31, 0x00, 0x36, 0x00, 0x38, 0x00, 0x2e, 0x00, 0x31, 0x00, 0x2e, 0x00, 0x35, 0x00, 0x37, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00 };
             NetrServerGetInfoResponse response = new NetrServerGetInfoResponse(buffer);
 
-            byte[] responseBytes = response.GetBytes();
-            //Assert.IsTrue(ByteUtils.AreByteArraysEqual(buffer, responseBytes));
+            Assert.AreEqual((uint)101, response.InfoStruct.Level);
+            Assert.IsInstanceOfType(response.InfoStruct.Info, typeof(ServerInfo101));
+            Assert.AreEqual("192.168.1.57", ((ServerInfo101)response.InfoStruct.Info).ServerName.Value);
         }
 
         [TestMethod]
-        public void Test3()
+        public void Decode_NetrShareEnumRequest()
         {
             byte[] buffer = new byte[] {0x00, 0x00, 0x02, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x00,
                                         0x5c, 0x00, 0x5c, 0x00, 0x31, 0x00, 0x39, 0x00, 0x32, 0x00, 0x2e, 0x00, 0x31, 0x00, 0x36, 0x00,
@@ -47,12 +49,14 @@ namespace SMBLibrary.Tests
                                         0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00};
             NetrShareEnumRequest request = new NetrShareEnumRequest(buffer);
 
-            byte[] requestBytes = request.GetBytes();
-            //Assert.IsTrue(ByteUtils.AreByteArraysEqual(buffer, requestBytes));
+            Assert.AreEqual(@"\\192.168.1.57", request.ServerName);
+            Assert.AreEqual((uint)1, request.InfoStruct.Level);
+            Assert.IsInstanceOfType(request.InfoStruct.Info, typeof(ShareInfo1Container));
+            Assert.AreEqual(0, ((ShareInfo1Container)request.InfoStruct.Info).Count);
         }
 
         [TestMethod]
-        public void Test4()
+        public void Decode_NetrShareEnumResponse()
         {
             byte[] buffer = new byte[] {0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x04, 0x00, 0x00, 0x00,
                                         0x04, 0x00, 0x02, 0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x80,
@@ -76,12 +80,14 @@ namespace SMBLibrary.Tests
                                         0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             NetrShareEnumResponse response = new NetrShareEnumResponse(buffer);
 
-            byte[] responseBytes = response.GetBytes();
-            //Assert.IsTrue(ByteUtils.AreByteArraysEqual(buffer, responseBytes));
+            Assert.AreEqual((uint)4, response.TotalEntries);
+            Assert.AreEqual((uint)1, response.InfoStruct.Level);
+            Assert.IsInstanceOfType(response.InfoStruct.Info, typeof(ShareInfo1Container));
+            Assert.AreEqual(4, ((ShareInfo1Container)response.InfoStruct.Info).Count);
         }
 
         [TestMethod]
-        public void Test5()
+        public void Decode_NetrShareGetInfoRequest()
         {
             byte[] buffer = new byte[] {0x00, 0x00, 0x02, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x00,
                                         0x5c, 0x00, 0x5c, 0x00, 0x31, 0x00, 0x39, 0x00, 0x32, 0x00, 0x2e, 0x00, 0x31, 0x00, 0x36, 0x00,
@@ -90,8 +96,9 @@ namespace SMBLibrary.Tests
                                         0x61, 0x00, 0x72, 0x00, 0x65, 0x00, 0x64, 0x00, 0x00, 0x00, 0xb7, 0x6c, 0x02, 0x00, 0x00, 0x00};
             NetrShareGetInfoRequest request = new NetrShareGetInfoRequest(buffer);
 
-            byte[] requestBytes = request.GetBytes();
-            //Assert.IsTrue(ByteUtils.AreByteArraysEqual(buffer, requestBytes));
+            Assert.AreEqual(@"\\192.168.1.52", request.ServerName);
+            Assert.AreEqual((uint)2, request.Level);
+            Assert.AreEqual("Shared", request.NetName);
         }
     }
 }
