@@ -94,7 +94,7 @@ namespace SMBLibrary.Client
             return Connect(serverAddress, transport, port, responseTimeoutInMilliseconds);
         }
 
-        private bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, int responseTimeoutInMilliseconds)
+        internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, int responseTimeoutInMilliseconds)
         {
             if (m_serverName == null)
             {
