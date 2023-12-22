@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net40</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <AssemblyName>SMBLibrary.Tests</AssemblyName>
     <RootNamespace>SMBLibrary.Tests</RootNamespace>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,9 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
-      <HintPath>Components\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
   </ItemGroup>
 
 </Project>
