@@ -18,6 +18,7 @@ namespace SMBLibrary.Client.Authentication
         private string m_spn;
         private byte[] m_sessionKey;
         private AuthenticationMethod m_authenticationMethod;
+        private byte[] m_negotiateMessageBytes;
 
         private bool m_isNegotiationMessageAcquired = false;
 
@@ -64,18 +65,18 @@ namespace SMBLibrary.Client.Authentication
                 useGSSAPI = true;
             }
 
-            byte[] negotiateMessageBytes = NTLMAuthenticationHelper.GetNegotiateMessage(m_domainName, m_userName, m_password, m_authenticationMethod);
+            m_negotiateMessageBytes = NTLMAuthenticationHelper.GetNegotiateMessage(m_domainName, m_userName, m_password, m_authenticationMethod);
             if (useGSSAPI)
             {
                 SimpleProtectedNegotiationTokenInit outputToken = new SimpleProtectedNegotiationTokenInit();
                 outputToken.MechanismTypeList = new List<byte[]>();
                 outputToken.MechanismTypeList.Add(GSSProvider.NTLMSSPIdentifier);
-                outputToken.MechanismToken = negotiateMessageBytes;
+                outputToken.MechanismToken = m_negotiateMessageBytes;
                 return outputToken.GetBytes(true);
             }
             else
             {
-                return negotiateMessageBytes;
+                return m_negotiateMessageBytes;
             }
         }
 
