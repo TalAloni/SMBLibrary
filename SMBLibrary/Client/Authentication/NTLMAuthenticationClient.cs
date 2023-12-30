@@ -102,16 +102,16 @@ namespace SMBLibrary.Client.Authentication
                 challengeMessageBytes = securityBlob;
             }
 
-            byte[] authenticationMessageBytes = NTLMAuthenticationHelper.GetAuthenticateMessage(challengeMessageBytes, m_domainName, m_userName, m_password, m_spn, m_authenticationMethod, out m_sessionKey);
-            if (useGSSAPI && authenticationMessageBytes != null)
+            byte[] authenticateMessageBytes = NTLMAuthenticationHelper.GetAuthenticateMessage(challengeMessageBytes, m_domainName, m_userName, m_password, m_spn, m_authenticationMethod, out m_sessionKey);
+            if (useGSSAPI && authenticateMessageBytes != null)
             {
                 SimpleProtectedNegotiationTokenResponse outputToken = new SimpleProtectedNegotiationTokenResponse();
-                outputToken.ResponseToken = authenticationMessageBytes;
+                outputToken.ResponseToken = authenticateMessageBytes;
                 return outputToken.GetBytes();
             }
             else
             {
-                return authenticationMessageBytes;
+                return authenticateMessageBytes;
             }
         }
 
