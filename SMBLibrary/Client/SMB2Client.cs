@@ -427,6 +427,7 @@ namespace SMBLibrary.Client
                 }
                 catch (Exception)
                 {
+                    Log("[ProcessConnectionBuffer] Invalid packet");
                     state.ClientSocket.Close();
                     state.ReceiveBuffer.Dispose();
                     break;
