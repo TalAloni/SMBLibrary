@@ -273,5 +273,61 @@ namespace SMBLibrary.Authentication.NTLM
 
             return ByteUtils.AreByteArraysEqual(mic, expectedMic);
         }
+
+        public static byte[] ComputeClientSignKey(byte[] exportedSessionKey)
+        {
+            return ComputeSignKey(exportedSessionKey, true);
+        }
+
+        public static byte[] ComputeServerSignKey(byte[] exportedSessionKey)
+        {
+            return ComputeSignKey(exportedSessionKey, false);
+        }
+
+        private static byte[] ComputeSignKey(byte[] exportedSessionKey, bool isClient)
+        {
+            // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
+            string str;
+            if (isClient)
+            {
+                str = "session key to client-to-server signing key magic constant";
+            }
+            else
+            {
+                str = "session key to server-to-client signing key magic constant";
+            }
+            byte[] encodedString = Encoding.GetEncoding(28591).GetBytes(str);
+            byte[] nullTerminatedEncodedString = ByteUtils.Concatenate(encodedString, new byte[1]);
+            byte[] concatendated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
+            return MD5.Create().ComputeHash(concatendated);
+        }
+
+        public static byte[] ComputeClientSealKey(byte[] exportedSessionKey)
+        {
+            return ComputeSealKey(exportedSessionKey, true);
+        }
+
+        public static byte[] ComputeServerSealKey(byte[] exportedSessionKey)
+        {
+            return ComputeSealKey(exportedSessionKey, false);
+        }
+
+        private static byte[] ComputeSealKey(byte[] exportedSessionKey, bool isClient)
+        {
+            // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
+            string str;
+            if (isClient)
+            {
+                str = "session key to client-to-server sealing key magic constant";
+            }
+            else
+            {
+                str = "session key to server-to-client sealing key magic constant";
+            }
+            byte[] encodedString = Encoding.GetEncoding(28591).GetBytes(str);
+            byte[] nullTerminatedEncodedString = ByteUtils.Concatenate(encodedString, new byte[1]);
+            byte[] concatendated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
+            return MD5.Create().ComputeHash(concatendated);
+        }
     }
 }

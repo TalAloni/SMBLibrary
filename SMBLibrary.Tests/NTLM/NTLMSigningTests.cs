@@ -4,8 +4,6 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
-using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary.Authentication.NTLM;
@@ -181,6 +179,34 @@ namespace SMBLibrary.Tests
 
             bool isMicValid = NTLMCryptography.ValidateAuthenticateMessageMIC(exportedSessionKey, type1, type2, type3);
             Assert.IsTrue(isMicValid);
+        }
+
+        [TestMethod]
+        public void Test_ComputeClientSignKey()
+        {
+            // Arrange
+            byte[] exportedSessionKey = new byte[] { 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55 };
+            byte[] expected = new byte[] { 0x47, 0x88, 0xdc, 0x86, 0x1b, 0x47, 0x82, 0xf3, 0x5d, 0x43, 0xfd, 0x98, 0xfe, 0x1a, 0x2d, 0x39 };
+
+            // Act
+            byte[] signKey = NTLMCryptography.ComputeClientSignKey(exportedSessionKey);
+
+            // Assert
+            Assert.IsTrue(ByteUtils.AreByteArraysEqual(expected, signKey));
+        }
+
+        [TestMethod]
+        public void Test_ComputeClientSealKey()
+        {
+            // Arrange
+            byte[] exportedSessionKey = new byte[] { 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55 };
+            byte[] expected = new byte[] { 0x59, 0xf6, 0x00, 0x97, 0x3c, 0xc4, 0x96, 0x0a, 0x25, 0x48, 0x0a, 0x7c, 0x19, 0x6e, 0x4c, 0x58 };
+
+            // Act
+            byte[] sealKey = NTLMCryptography.ComputeClientSealKey(exportedSessionKey);
+
+            // Assert
+            Assert.IsTrue(ByteUtils.AreByteArraysEqual(expected, sealKey));
         }
 
         private static byte[] GetExportedSessionKey(byte[] sessionBaseKey, AuthenticateMessage message, byte[] serverChallenge, byte[] lmowf)
