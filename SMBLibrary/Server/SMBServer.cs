@@ -315,6 +315,7 @@ namespace SMBLibrary.Server
                     {
                         state.LogToServer(Severity.Verbose, "Rejected SMB1 message");
                         state.ClientSocket.Close();
+                        state.ReceiveBuffer.Dispose();
                         return;
                     }
 
@@ -327,6 +328,7 @@ namespace SMBLibrary.Server
                     {
                         state.LogToServer(Severity.Warning, "Invalid SMB1 message: " + ex.Message);
                         state.ClientSocket.Close();
+                        state.ReceiveBuffer.Dispose();
                         return;
                     }
                     state.LogToServer(Severity.Verbose, "SMB1 message received: {0} requests, First request: {1}, Packet length: {2}", message.Commands.Count, message.Commands[0].CommandName.ToString(), packet.Length);
@@ -365,6 +367,7 @@ namespace SMBLibrary.Server
                     {
                         state.LogToServer(Severity.Verbose, "Rejected SMB2 message");
                         state.ClientSocket.Close();
+                        state.ReceiveBuffer.Dispose();
                         return;
                     }
 
@@ -377,6 +380,7 @@ namespace SMBLibrary.Server
                     {
                         state.LogToServer(Severity.Warning, "Invalid SMB2 request chain: " + ex.Message);
                         state.ClientSocket.Close();
+                        state.ReceiveBuffer.Dispose();
                         return;
                     }
                     state.LogToServer(Severity.Verbose, "SMB2 request chain received: {0} requests, First request: {1}, Packet length: {2}", requestChain.Count, requestChain[0].CommandName.ToString(), packet.Length);
@@ -401,6 +405,7 @@ namespace SMBLibrary.Server
             {
                 state.LogToServer(Severity.Warning, "Inappropriate NetBIOS session packet");
                 state.ClientSocket.Close();
+                state.ReceiveBuffer.Dispose();
                 return;
             }
         }
