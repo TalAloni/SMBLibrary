@@ -127,10 +127,13 @@ namespace SMBLibrary.NetBios
 
         public void Dispose()
         {
+            if (m_buffer != null)
+            {
 #if NETSTANDARD2_0
-            ArrayPool<byte>.Shared.Return(m_buffer);
+                ArrayPool<byte>.Shared.Return(m_buffer);
 #endif
-            m_buffer = null;
+                m_buffer = null;
+            }
         }
 
         public byte[] Buffer
