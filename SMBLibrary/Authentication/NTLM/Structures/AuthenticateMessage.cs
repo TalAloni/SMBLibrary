@@ -1,12 +1,10 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
 namespace SMBLibrary.Authentication.NTLM
@@ -17,6 +15,7 @@ namespace SMBLibrary.Authentication.NTLM
     public class AuthenticateMessage
     {
         public const string ValidSignature = "NTLMSSP\0";
+        public const int MicFieldLenght = 16;
 
         public string Signature; // 8 bytes
         public MessageTypeName MessageType;
@@ -59,7 +58,7 @@ namespace SMBLibrary.Authentication.NTLM
             }
             if (HasMicField())
             {
-                MIC = ByteReader.ReadBytes(buffer, offset, 16);
+                MIC = ByteReader.ReadBytes(buffer, offset, MicFieldLenght);
             }
         }
 
@@ -141,6 +140,18 @@ namespace SMBLibrary.Authentication.NTLM
             ByteWriter.WriteBytes(buffer, ref offset, EncryptedRandomSessionKey);
 
             return buffer;
+        }
+
+        public static int GetMicFieldOffset(byte[] authenticateMessageBytes)
+        {
+            NegotiateFlags negotiateFlags = (NegotiateFlags)LittleEndianConverter.ToUInt32(authenticateMessageBytes, 60);
+            int offset = 64;
+            if ((negotiateFlags & NegotiateFlags.Version) > 0)
+            {
+                offset += NTLMVersion.Length;
+            }
+
+            return offset;
         }
     }
 }
