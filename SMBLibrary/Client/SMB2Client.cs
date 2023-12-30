@@ -396,21 +396,24 @@ namespace SMBLibrary.Client
                 buffer.SetNumberOfBytesReceived(numberOfBytesReceived);
                 ProcessConnectionBuffer(state);
 
-                try
+                if (clientSocket.Connected)
                 {
-                    clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
-                }
-                catch (ObjectDisposedException)
-                {
-                    m_isConnected = false;
-                    Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
-                    buffer.Dispose();
-                }
-                catch (SocketException ex)
-                {
-                    m_isConnected = false;
-                    Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
-                    buffer.Dispose();
+                    try
+                    {
+                        clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        m_isConnected = false;
+                        Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
+                        buffer.Dispose();
+                    }
+                    catch (SocketException ex)
+                    {
+                        m_isConnected = false;
+                        Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
+                        buffer.Dispose();
+                    }
                 }
             }
         }
