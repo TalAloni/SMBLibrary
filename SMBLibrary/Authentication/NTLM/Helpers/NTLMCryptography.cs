@@ -60,22 +60,6 @@ namespace SMBLibrary.Authentication.NTLM
             return _NTProof;
         }
 
-        /// <remarks>
-        /// Caller must verify that the authenticate message has MIC before calling this method
-        /// </remarks>
-        public static bool ValidateAuthenticateMessageMIC(byte[] exportedSessionKey, byte[] negotiateMessageBytes, byte[] challengeMessageBytes, byte[] authenticateMessageBytes)
-        {
-            // https://msdn.microsoft.com/en-us/library/cc236695.aspx
-            int micFieldOffset = AuthenticateMessage.GetMicFieldOffset(authenticateMessageBytes);
-            byte[] expectedMic = ByteReader.ReadBytes(authenticateMessageBytes, micFieldOffset, AuthenticateMessage.MicFieldLenght);
-            
-            ByteWriter.WriteBytes(authenticateMessageBytes, micFieldOffset, new byte[AuthenticateMessage.MicFieldLenght]);
-            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(negotiateMessageBytes, challengeMessageBytes), authenticateMessageBytes);
-            byte[] mic = new HMACMD5(exportedSessionKey).ComputeHash(temp);
-
-            return ByteUtils.AreByteArraysEqual(mic, expectedMic);
-        }
-
         public static byte[] DesEncrypt(byte[] key, byte[] plainText)
         {
             return DesEncrypt(key, plainText, 0, plainText.Length);
@@ -272,6 +256,22 @@ namespace SMBLibrary.Authentication.NTLM
                 byte[] keyExchangeKey = new HMACMD5(sessionBaseKey).ComputeHash(buffer);
                 return keyExchangeKey;
             }
+        }
+
+        /// <remarks>
+        /// Caller must verify that the authenticate message has MIC before calling this method
+        /// </remarks>
+        public static bool ValidateAuthenticateMessageMIC(byte[] exportedSessionKey, byte[] negotiateMessageBytes, byte[] challengeMessageBytes, byte[] authenticateMessageBytes)
+        {
+            // https://msdn.microsoft.com/en-us/library/cc236695.aspx
+            int micFieldOffset = AuthenticateMessage.GetMicFieldOffset(authenticateMessageBytes);
+            byte[] expectedMic = ByteReader.ReadBytes(authenticateMessageBytes, micFieldOffset, AuthenticateMessage.MicFieldLenght);
+
+            ByteWriter.WriteBytes(authenticateMessageBytes, micFieldOffset, new byte[AuthenticateMessage.MicFieldLenght]);
+            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(negotiateMessageBytes, challengeMessageBytes), authenticateMessageBytes);
+            byte[] mic = new HMACMD5(exportedSessionKey).ComputeHash(temp);
+
+            return ByteUtils.AreByteArraysEqual(mic, expectedMic);
         }
     }
 }
