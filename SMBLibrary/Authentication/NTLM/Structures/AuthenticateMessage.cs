@@ -5,6 +5,7 @@
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
+using System.Security.Cryptography;
 using Utilities;
 
 namespace SMBLibrary.Authentication.NTLM
@@ -140,6 +141,14 @@ namespace SMBLibrary.Authentication.NTLM
             ByteWriter.WriteBytes(buffer, ref offset, EncryptedRandomSessionKey);
 
             return buffer;
+        }
+
+        public void CalculateMIC(byte[] sessionKey, byte[] negotiateMessage, byte[] challengeMessage)
+        {
+            MIC = new byte[MicFieldLenght];
+            byte[] authenticateMessageBytes = GetBytes();
+            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(negotiateMessage, challengeMessage), authenticateMessageBytes);
+            MIC = new HMACMD5(sessionKey).ComputeHash(temp);
         }
 
         public static int GetMicFieldOffset(byte[] authenticateMessageBytes)
