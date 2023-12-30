@@ -47,14 +47,8 @@ namespace SMBLibrary.Tests
             byte[] lmowf = NTLMCryptography.LMOWFv1(password);
             byte[] exportedSessionKey = GetExportedSessionKey(sessionBaseKey, authenticateMessage, serverChallenge, lmowf);
 
-            // https://msdn.microsoft.com/en-us/library/cc236695.aspx
-            const int micFieldOffset = 72;
-            ByteWriter.WriteBytes(type3, micFieldOffset, new byte[16]);
-            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(type1, type2), type3);
-            byte[] mic = new HMACMD5(exportedSessionKey).ComputeHash(temp);
-            byte[] expected = new byte[] { 0x4e, 0x65, 0x54, 0xe6, 0xb3, 0xdc, 0xdc, 0x16, 0xef, 0xc4, 0xd0, 0x03, 0x3b, 0x81, 0x61, 0x6f };
-
-            Assert.IsTrue(ByteUtils.AreByteArraysEqual(mic, expected));
+            bool isMicValid = NTLMCryptography.ValidateAuthenticateMessageMIC(exportedSessionKey, type1, type2, type3);
+            Assert.IsTrue(isMicValid);
         }
 
         [TestMethod]
@@ -87,15 +81,9 @@ namespace SMBLibrary.Tests
             byte[] sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
             byte[] lmowf = NTLMCryptography.LMOWFv1(password);
             byte[] exportedSessionKey = GetExportedSessionKey(sessionBaseKey, authenticateMessage, serverChallenge, lmowf);
-            
-            // https://msdn.microsoft.com/en-us/library/cc236695.aspx
-            const int micFieldOffset = 72;
-            ByteWriter.WriteBytes(type3, micFieldOffset, new byte[16]);
-            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(type1, type2), type3);
-            byte[] mic = new HMACMD5(exportedSessionKey).ComputeHash(temp);
-            byte[] expected = new byte[] { 0xae, 0xa7, 0xba, 0x44, 0x4e, 0x93, 0xa7, 0xdb, 0xb3, 0x0c, 0x85, 0x49, 0xc2, 0x2b, 0xba, 0x9a };
 
-            Assert.IsTrue(ByteUtils.AreByteArraysEqual(mic, expected));
+            bool isMicValid = NTLMCryptography.ValidateAuthenticateMessageMIC(exportedSessionKey, type1, type2, type3);
+            Assert.IsTrue(isMicValid);
         }
 
         [TestMethod]
@@ -135,14 +123,8 @@ namespace SMBLibrary.Tests
             byte[] lmowf = NTLMCryptography.LMOWFv1(password);
             byte[] exportedSessionKey = GetExportedSessionKey(sessionBaseKey, authenticateMessage, serverChallenge, lmowf);
 
-            // https://msdn.microsoft.com/en-us/library/cc236695.aspx
-            const int micFieldOffset = 72;
-            ByteWriter.WriteBytes(type3, micFieldOffset, new byte[16]);
-            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(type1, type2), type3);
-            byte[] mic = new HMACMD5(exportedSessionKey).ComputeHash(temp);
-            byte[] expected = new byte[] { 0xc6, 0x21, 0x82, 0x59, 0x83, 0xda, 0xc7, 0xe7, 0xfa, 0x96, 0x44, 0x67, 0x16, 0xc3, 0xb3, 0x5b };
-
-            Assert.IsTrue(ByteUtils.AreByteArraysEqual(mic, expected));
+            bool isMicValid = NTLMCryptography.ValidateAuthenticateMessageMIC(exportedSessionKey, type1, type2, type3);
+            Assert.IsTrue(isMicValid);
         }
 
         [TestMethod]
@@ -197,14 +179,8 @@ namespace SMBLibrary.Tests
             byte[] sessionBaseKey = new HMACMD5(responseKeyNT).ComputeHash(ntProofStr);
             byte[] exportedSessionKey = GetExportedSessionKey(sessionBaseKey, authenticateMessage, serverChallenge, null);
 
-            // https://msdn.microsoft.com/en-us/library/cc236695.aspx
-            const int micFieldOffset = 72;
-            ByteWriter.WriteBytes(type3, micFieldOffset, new byte[16]);
-            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(type1, type2), type3);
-            byte[] mic = new HMACMD5(exportedSessionKey).ComputeHash(temp);
-            byte[] expected = new byte[] { 0x82, 0x3c, 0xff, 0x48, 0xa9, 0x03, 0x13, 0x4c, 0x33, 0x3c, 0x09, 0x87, 0xf3, 0x16, 0x59, 0x89 };
-
-            Assert.IsTrue(ByteUtils.AreByteArraysEqual(mic, expected));
+            bool isMicValid = NTLMCryptography.ValidateAuthenticateMessageMIC(exportedSessionKey, type1, type2, type3);
+            Assert.IsTrue(isMicValid);
         }
 
         private static byte[] GetExportedSessionKey(byte[] sessionBaseKey, AuthenticateMessage message, byte[] serverChallenge, byte[] lmowf)

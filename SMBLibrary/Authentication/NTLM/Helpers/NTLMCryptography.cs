@@ -5,7 +5,6 @@
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -59,6 +58,22 @@ namespace SMBLibrary.Authentication.NTLM
             HMACMD5 hmac = new HMACMD5(key);
             byte[] _NTProof = hmac.ComputeHash(ByteUtils.Concatenate(serverChallenge, temp), 0, serverChallenge.Length + temp.Length);
             return _NTProof;
+        }
+
+        /// <remarks>
+        /// Caller must verify that the authenticate message has MIC before calling this method
+        /// </remarks>
+        public static bool ValidateAuthenticateMessageMIC(byte[] exportedSessionKey, byte[] negotiateMessageBytes, byte[] challengeMessageBytes, byte[] authenticateMessageBytes)
+        {
+            // https://msdn.microsoft.com/en-us/library/cc236695.aspx
+            int micFieldOffset = AuthenticateMessage.GetMicFieldOffset(authenticateMessageBytes);
+            byte[] expectedMic = ByteReader.ReadBytes(authenticateMessageBytes, micFieldOffset, AuthenticateMessage.MicFieldLenght);
+            
+            ByteWriter.WriteBytes(authenticateMessageBytes, micFieldOffset, new byte[AuthenticateMessage.MicFieldLenght]);
+            byte[] temp = ByteUtils.Concatenate(ByteUtils.Concatenate(negotiateMessageBytes, challengeMessageBytes), authenticateMessageBytes);
+            byte[] mic = new HMACMD5(exportedSessionKey).ComputeHash(temp);
+
+            return ByteUtils.AreByteArraysEqual(mic, expectedMic);
         }
 
         public static byte[] DesEncrypt(byte[] key, byte[] plainText)
