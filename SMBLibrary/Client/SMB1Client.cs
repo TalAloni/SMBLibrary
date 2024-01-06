@@ -79,8 +79,13 @@ namespace SMBLibrary.Client
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
         {
+            return Connect(serverAddress, transport, forceExtendedSecurity, DefaultResponseTimeoutInMilliseconds);
+        }
+
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity, int responseTimeoutInMilliseconds)
+        {
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-            return Connect(serverAddress, transport, port, forceExtendedSecurity, DefaultResponseTimeoutInMilliseconds);
+            return Connect(serverAddress, transport, port, forceExtendedSecurity, responseTimeoutInMilliseconds);
         }
 
         internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity, int responseTimeoutInMilliseconds)
