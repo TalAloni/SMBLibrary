@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -48,7 +48,7 @@ namespace SMBLibrary.Client
             return negotiateMessage.GetBytes();
         }
 
-        public static byte[] GetAuthenticateMessage(byte[] challengeMessageBytes, string domainName, string userName, string password, string spn, AuthenticationMethod authenticationMethod, out byte[] sessionKey)
+        public static byte[] GetAuthenticateMessage(byte[] negotiateMessageBytes, byte[] challengeMessageBytes, string domainName, string userName, string password, string spn, AuthenticationMethod authenticationMethod, out byte[] sessionKey)
         {
             sessionKey = null;
 

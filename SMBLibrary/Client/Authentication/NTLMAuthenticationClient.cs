@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2017-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+﻿/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -103,7 +103,7 @@ namespace SMBLibrary.Client.Authentication
                 challengeMessageBytes = securityBlob;
             }
 
-            byte[] authenticateMessageBytes = NTLMAuthenticationHelper.GetAuthenticateMessage(challengeMessageBytes, m_domainName, m_userName, m_password, m_spn, m_authenticationMethod, out m_sessionKey);
+            byte[] authenticateMessageBytes = NTLMAuthenticationHelper.GetAuthenticateMessage(m_negotiateMessageBytes, challengeMessageBytes, m_domainName, m_userName, m_password, m_spn, m_authenticationMethod, out m_sessionKey);
             if (useGSSAPI && authenticateMessageBytes != null)
             {
                 SimpleProtectedNegotiationTokenResponse outputToken = new SimpleProtectedNegotiationTokenResponse();
