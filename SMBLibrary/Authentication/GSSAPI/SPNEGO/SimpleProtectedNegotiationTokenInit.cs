@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -102,16 +102,7 @@ namespace SMBLibrary.Authentication.GSSAPI
 
         protected virtual int GetTokenFieldsLength()
         {
-            int result = 0;
-            if (MechanismTypeList != null)
-            {
-                int typeListSequenceLength = GetMechanismTypeListSequenceLength(MechanismTypeList);
-                int typeListSequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListSequenceLength);
-                int typeListConstructionLength = 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
-                int typeListConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListConstructionLength);
-                int entryLength = 1 + typeListConstructionLengthFieldSize + 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
-                result += entryLength;
-            }
+            int result = GetEncodedMechanismTypeListLength(MechanismTypeList);
             if (MechanismToken != null)
             {
                 int mechanismTokenLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(MechanismToken.Length);
@@ -228,6 +219,22 @@ namespace SMBLibrary.Authentication.GSSAPI
             ByteWriter.WriteByte(buffer, ref offset, (byte)DerEncodingTag.ByteArray);
             DerEncodingHelper.WriteLength(buffer, ref offset, mechanismListMIC.Length);
             ByteWriter.WriteBytes(buffer, ref offset, mechanismListMIC);
+        }
+
+        private static int GetEncodedMechanismTypeListLength(List<byte[]> mechanismTypeList)
+        {
+            if (mechanismTypeList == null)
+            {
+                return 0;
+            }
+            else
+            {
+                int typeListSequenceLength = GetMechanismTypeListSequenceLength(mechanismTypeList);
+                int typeListSequenceLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListSequenceLength);
+                int typeListConstructionLength = 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
+                int typeListConstructionLengthFieldSize = DerEncodingHelper.GetLengthFieldSize(typeListConstructionLength);
+                return 1 + typeListConstructionLengthFieldSize + 1 + typeListSequenceLengthFieldSize + typeListSequenceLength;
+            }
         }
     }
 }
