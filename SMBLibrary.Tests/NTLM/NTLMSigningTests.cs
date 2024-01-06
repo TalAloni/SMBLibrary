@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -207,6 +207,21 @@ namespace SMBLibrary.Tests
 
             // Assert
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(expected, sealKey));
+        }
+
+        [TestMethod]
+        public void Test_ComputeMechListMIC()
+        {
+            // Arrange
+            byte[] exportedSessionKey = new byte[] { 0xBE, 0xC7, 0x33, 0xF6, 0x23, 0xB1, 0x2B, 0x98, 0xD4, 0x21, 0xFF, 0xCD, 0xD5, 0x42, 0xE3, 0xA2 };
+            byte[] mechListMicBytes = new byte[] { 0x30, 0x0c, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a };
+            byte[] expectedMic = new byte[] { 0x01, 0x00, 0x00, 0x00, 0xa1, 0xa6, 0x7b, 0x80, 0x35, 0xc1, 0x76, 0xd3, 0x00, 0x00, 0x00, 0x00 };
+
+            // Act
+            byte[] mic = NTLMCryptography.ComputeMechListMIC(exportedSessionKey, mechListMicBytes);
+            
+            // Assert
+            Assert.IsTrue(ByteUtils.AreByteArraysEqual(mic, expectedMic));
         }
 
         private static byte[] GetExportedSessionKey(byte[] sessionBaseKey, AuthenticateMessage message, byte[] serverChallenge, byte[] lmowf)

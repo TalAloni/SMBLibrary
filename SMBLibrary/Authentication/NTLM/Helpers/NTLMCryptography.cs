@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -328,6 +328,27 @@ namespace SMBLibrary.Authentication.NTLM
             byte[] nullTerminatedEncodedString = ByteUtils.Concatenate(encodedString, new byte[1]);
             byte[] concatendated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
             return MD5.Create().ComputeHash(concatendated);
+        }
+
+        public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message)
+        {
+            return ComputeMechListMIC(exportedSessionKey, message, 0);
+        }
+
+        public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message, int seqNum)
+        {
+            // [MS-NLMP] 3.4.4.2
+            byte[] signKey = ComputeClientSignKey(exportedSessionKey);
+            byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
+            byte[] concatendated = ByteUtils.Concatenate(sequenceNumberBytes, message);
+            byte[] fullHash = new HMACMD5(signKey).ComputeHash(concatendated);
+            byte[] hash = ByteReader.ReadBytes(fullHash, 0, 8);
+
+            byte[] sealKey = ComputeClientSealKey(exportedSessionKey);
+            byte[] encryptedHash = RC4.Encrypt(sealKey, hash);
+
+            byte[] version = new byte[] { 0x01, 0x00, 0x00, 0x00 };
+            return ByteUtils.Concatenate(ByteUtils.Concatenate(version, encryptedHash), sequenceNumberBytes);
         }
     }
 }
