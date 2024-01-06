@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2018 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,8 +6,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Utilities;
 
 namespace SMBLibrary.Services
 {
@@ -47,8 +45,7 @@ namespace SMBLibrary.Services
             {
                 case ServerServiceOpName.NetrShareEnum:
                     {
-                        NetrShareEnumRequest request = new NetrShareEnumRequest(requestBytes);
-                        NetrShareEnumResponse response = GetNetrShareEnumResponse(request);
+                        NetrShareEnumResponse response = GetNetrShareEnumResponse(requestBytes);
                         return response.GetBytes();
                     }
                 case ServerServiceOpName.NetrShareGetInfo:
@@ -68,9 +65,27 @@ namespace SMBLibrary.Services
             }
         }
 
-        public NetrShareEnumResponse GetNetrShareEnumResponse(NetrShareEnumRequest request)
+        public NetrShareEnumResponse GetNetrShareEnumResponse(byte[] requestBytes)
         {
+            NetrShareEnumRequest request;
             NetrShareEnumResponse response = new NetrShareEnumResponse();
+            try 
+            {
+                request = new NetrShareEnumRequest(requestBytes);
+            }
+            catch (UnsupportedLevelException ex)
+            {
+                response.InfoStruct = new ShareEnum(ex.Level);
+                response.Result = Win32Error.ERROR_NOT_SUPPORTED;
+                return response;
+            }
+            catch (InvalidLevelException ex)
+            {
+                response.InfoStruct = new ShareEnum(ex.Level);
+                response.Result = Win32Error.ERROR_INVALID_LEVEL;
+                return response;
+            }
+            
             switch (request.InfoStruct.Level)
             {
                 case 0:
