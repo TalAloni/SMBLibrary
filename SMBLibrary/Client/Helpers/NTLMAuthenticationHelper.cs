@@ -162,6 +162,7 @@ namespace SMBLibrary.Client
                 sessionKey = keyExchangeKey;
             }
 
+            authenticateMessage.CalculateMIC(sessionKey, negotiateMessageBytes, challengeMessageBytes);
             return authenticateMessage.GetBytes();
         }
 
