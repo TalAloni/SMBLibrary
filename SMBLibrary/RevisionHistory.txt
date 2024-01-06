@@ -486,3 +486,11 @@ Revision History:
         Client: Allow reusing client instance.
         Client: Prefer IPv4 when resolving DNS hostname.
         NTLMCryptography: Add .NET 5.0 \ 6.0 support.
+
+1.5.1 - Client: Support anonymous login.
+        Client: Added API to provide custom authentication.
+        Client: Improve disconnection detection.
+        Client: Add ability to control response timeout.
+        Client: Calculate Authentication message MIC.
+        NBTConnectionReceiveBuffer: Use ArrayPool rent buffers to reduce RAM usage.
+        Added access denied ace support.
