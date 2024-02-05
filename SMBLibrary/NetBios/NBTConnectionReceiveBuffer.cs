@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -15,6 +15,9 @@ namespace SMBLibrary.NetBios
 {
     public class NBTConnectionReceiveBuffer : IDisposable
     {
+#if NETSTANDARD2_0
+        private object m_bufferSyncLock = new object();
+#endif
         private byte[] m_buffer;
         private int m_readOffset = 0;
         private int m_bytesInBuffer = 0;
@@ -127,13 +130,18 @@ namespace SMBLibrary.NetBios
 
         public void Dispose()
         {
-            if (m_buffer != null)
-            {
 #if NETSTANDARD2_0
-                ArrayPool<byte>.Shared.Return(m_buffer);
-#endif
-                m_buffer = null;
+            lock (m_bufferSyncLock)
+            {
+                if (m_buffer != null)
+                {
+                   ArrayPool<byte>.Shared.Return(m_buffer);
+                   m_buffer = null;
+                }
             }
+#else
+            m_buffer = null;
+#endif
         }
 
         public byte[] Buffer
