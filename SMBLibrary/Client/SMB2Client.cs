@@ -181,6 +181,7 @@ namespace SMBLibrary.Client
             if (m_isConnected)
             {
                 m_clientSocket.Disconnect(false);
+                m_clientSocket.Close();
                 m_connectionState.ReceiveBuffer.Dispose();
                 m_isConnected = false;
                 m_messageID = 0;
