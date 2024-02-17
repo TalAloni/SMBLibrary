@@ -16,8 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DiskAccessLibrary.FileSystems.Abstractions\DiskAccessLibrary.FileSystems.Abstractions.csproj" />
     <ProjectReference Include="..\SMBLibrary\SMBLibrary.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="DiskAccessLibrary" Version="1.6.1" />
   </ItemGroup>
 
 </Project>
