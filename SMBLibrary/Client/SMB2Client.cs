@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -481,9 +481,12 @@ namespace SMBLibrary.Client
                     NegotiateResponse negotiateResponse = (NegotiateResponse)command;
                     if ((negotiateResponse.Capabilities & Capabilities.LargeMTU) > 0)
                     {
-                        // [MS-SMB2] 3.2.5.1 Receiving Any Message - If the message size received exceeds Connection.MaxTransactSize, the client MUST disconnect the connection.
-                        // Note: Windows clients do not enforce the MaxTransactSize value, we add 256 bytes.
-                        int maxPacketSize = SessionPacket.HeaderLength + (int)Math.Min(negotiateResponse.MaxTransactSize, ClientMaxTransactSize) + 256;
+                        // [MS-SMB2] 3.2.5.1 Receiving Any Message - If the message size received exceeds Connection.MaxTransactSize, the client SHOULD disconnect the connection.
+                        // Note: Windows clients do not enforce the MaxTransactSize value.
+                        // We use a value that we have observed to work well with both Microsoft and non-Microsoft servers.
+                        // see https://github.com/TalAloni/SMBLibrary/issues/239
+                        int serverMaxTransactSize = (int)Math.Max(negotiateResponse.MaxTransactSize, negotiateResponse.MaxReadSize);
+                        int maxPacketSize = SessionPacket.HeaderLength + (int)Math.Min(serverMaxTransactSize, ClientMaxTransactSize) + 256;
                         if (maxPacketSize > state.ReceiveBuffer.Buffer.Length)
                         {
                             state.ReceiveBuffer.IncreaseBufferSize(maxPacketSize);
