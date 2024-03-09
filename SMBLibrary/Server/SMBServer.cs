@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -32,6 +32,9 @@ namespace SMBLibrary.Server
 
         private ConnectionManager m_connectionManager;
         private Thread m_sendSMBKeepAliveThread;
+#if !NET20
+        private CancellationTokenSource m_sendSMBKeepAliveCancellationTokenSource;
+#endif
 
         private IPAddress m_serverAddress;
         private SMBTransportType m_transport;
@@ -106,11 +109,22 @@ namespace SMBLibrary.Server
 
                 if (connectionInactivityTimeout.HasValue)
                 {
+#if !NET20
+                    m_sendSMBKeepAliveCancellationTokenSource = new CancellationTokenSource();
+#endif
                     m_sendSMBKeepAliveThread = new Thread(delegate()
                     {
                         while (m_listening)
                         {
+#if NET20
                             Thread.Sleep(InactivityMonitoringInterval);
+#else
+                            bool cancelled = m_sendSMBKeepAliveCancellationTokenSource.Token.WaitHandle.WaitOne(InactivityMonitoringInterval);
+                            if (cancelled)
+                            {
+                                return;
+                            }
+#endif
                             m_connectionManager.SendSMBKeepAlive(connectionInactivityTimeout.Value);
                         }
                     });
@@ -126,7 +140,11 @@ namespace SMBLibrary.Server
             m_listening = false;
             if (m_sendSMBKeepAliveThread != null)
             {
+#if NET20
                 m_sendSMBKeepAliveThread.Abort();
+#else
+                m_sendSMBKeepAliveCancellationTokenSource?.Cancel();
+#endif
             }
             SocketUtils.ReleaseSocket(m_listenerSocket);
             m_connectionManager.ReleaseAllConnections();
