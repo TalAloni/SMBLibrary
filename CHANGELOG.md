@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/Lansweeper/SMBLibrary/compare/v1.10.5...v1.11.0) (2024-04-25)
+
+
+### Features
+
+* LAN-16385   Add codeowners on D1 maintained repo's ([c1f3317](https://github.com/Lansweeper/SMBLibrary/commit/c1f33171602e015ffc6ada4e9a84c380bc2ea059))
+
 ## [1.10.5](https://github.com/Lansweeper/SMBLibrary/compare/v1.10.4...v1.10.5) (2022-11-29)
 
 
