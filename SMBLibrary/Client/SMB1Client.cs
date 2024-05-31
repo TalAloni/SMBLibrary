@@ -44,6 +44,7 @@ namespace SMBLibrary.Client
         private uint m_serverMaxBufferSize;
         private ushort m_maxMpxCount;
         private int m_responseTimeoutInMilliseconds;
+        private EventWaitHandle m_disconnectedEventHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
 
         private object m_incomingQueueLock = new object();
         private List<SMB1Message> m_incomingQueue = new List<SMB1Message>();
@@ -110,7 +111,7 @@ namespace SMBLibrary.Client
                     SessionPacket sessionResponsePacket = WaitForSessionResponsePacket();
                     if (!(sessionResponsePacket is PositiveSessionResponsePacket))
                     {
-                        m_clientSocket.Disconnect(false);
+                        DisconnectSocket();
                         if (!ConnectSocket(serverAddress, port))
                         {
                             return false;
@@ -137,6 +138,7 @@ namespace SMBLibrary.Client
                 bool supportsDialect = NegotiateDialect(m_forceExtendedSecurity);
                 if (!supportsDialect)
                 {
+                    DisconnectSocket();
                     m_clientSocket.Close();
                 }
                 else
@@ -149,6 +151,7 @@ namespace SMBLibrary.Client
 
         private bool ConnectSocket(IPAddress serverAddress, int port)
         {
+            m_disconnectedEventHandle.Reset();
             m_clientSocket = new Socket(serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             try
@@ -166,11 +169,18 @@ namespace SMBLibrary.Client
             return true;
         }
 
+        private void DisconnectSocket()
+        {
+            m_clientSocket.Shutdown(SocketShutdown.Send);
+            m_disconnectedEventHandle.WaitOne();
+            m_clientSocket.Shutdown(SocketShutdown.Receive);
+        }
+
         public void Disconnect()
         {
             if (m_isConnected)
             {
-                m_clientSocket.Disconnect(false);
+                DisconnectSocket();
                 m_clientSocket.Close();
                 m_connectionState.ReceiveBuffer.Dispose();
                 m_isConnected = false;
@@ -311,7 +321,7 @@ namespace SMBLibrary.Client
                 request.Capabilities = clientCapabilities;
                 request.SecurityBlob = negotiateMessage;
                 TrySendMessage(request);
-                
+
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 if (reply != null)
                 {
@@ -424,12 +434,6 @@ namespace SMBLibrary.Client
             ConnectionState state = (ConnectionState)ar.AsyncState;
             Socket clientSocket = state.ClientSocket;
 
-            if (!clientSocket.Connected)
-            {
-                state.ReceiveBuffer.Dispose();
-                return;
-            }
-
             int numberOfBytesReceived = 0;
             try
             {
@@ -438,18 +442,21 @@ namespace SMBLibrary.Client
             catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
             {
                 state.ReceiveBuffer.Dispose();
+                m_disconnectedEventHandle.Set();
                 return;
             }
             catch (ObjectDisposedException)
             {
                 Log("[ReceiveCallback] EndReceive ObjectDisposedException");
                 state.ReceiveBuffer.Dispose();
+                m_disconnectedEventHandle.Set();
                 return;
             }
             catch (SocketException ex)
             {
                 Log("[ReceiveCallback] EndReceive SocketException: " + ex.Message);
                 state.ReceiveBuffer.Dispose();
+                m_disconnectedEventHandle.Set();
                 return;
             }
 
@@ -457,6 +464,7 @@ namespace SMBLibrary.Client
             {
                 m_isConnected = false;
                 state.ReceiveBuffer.Dispose();
+                m_disconnectedEventHandle.Set();
             }
             else
             {
@@ -464,24 +472,23 @@ namespace SMBLibrary.Client
                 buffer.SetNumberOfBytesReceived(numberOfBytesReceived);
                 ProcessConnectionBuffer(state);
 
-                if (clientSocket.Connected)
+                try
                 {
-                    try
-                    {
-                        clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        m_isConnected = false;
-                        buffer.Dispose();
-                        Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
-                    }
-                    catch (SocketException ex)
-                    {
-                        m_isConnected = false;
-                        buffer.Dispose();
-                        Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
-                    }
+                    clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+                }
+                catch (ObjectDisposedException)
+                {
+                    m_isConnected = false;
+                    Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
+                    buffer.Dispose();
+                    m_disconnectedEventHandle.Set();
+                }
+                catch (SocketException ex)
+                {
+                    m_isConnected = false;
+                    Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
+                    buffer.Dispose();
+                    m_disconnectedEventHandle.Set();
                 }
             }
         }
