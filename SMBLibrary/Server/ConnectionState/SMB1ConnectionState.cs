@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -78,14 +78,20 @@ namespace SMBLibrary.Server
         public SMB1Session GetSession(ushort userID)
         {
             SMB1Session session;
-            m_sessions.TryGetValue(userID, out session);
+            lock (m_sessions)
+            {
+                m_sessions.TryGetValue(userID, out session);
+            }
             return session;
         }
 
         public void RemoveSession(ushort userID)
         {
             SMB1Session session;
-            m_sessions.TryGetValue(userID, out session);
+            lock (m_sessions)
+            {
+                m_sessions.TryGetValue(userID, out session);
+            }
             if (session != null)
             {
                 session.Close();
