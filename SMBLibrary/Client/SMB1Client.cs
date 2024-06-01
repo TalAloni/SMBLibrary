@@ -585,10 +585,9 @@ namespace SMBLibrary.Client
 
         internal SessionPacket WaitForSessionResponsePacket()
         {
-            const int TimeOut = 5000;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < TimeOut)
+            while (stopwatch.ElapsedMilliseconds < m_responseTimeoutInMilliseconds)
             {
                 if (m_sessionResponsePacket != null)
                 {
