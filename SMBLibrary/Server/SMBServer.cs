@@ -296,8 +296,6 @@ namespace SMBLibrary.Server
 
         private void ProcessConnectionBuffer(ref ConnectionState state)
         {
-            Socket clientSocket = state.ClientSocket;
-
             NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
             while (receiveBuffer.HasCompletePacket())
             {
