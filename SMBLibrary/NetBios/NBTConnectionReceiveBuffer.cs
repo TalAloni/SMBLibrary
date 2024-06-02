@@ -13,11 +13,11 @@ using Utilities;
 
 namespace SMBLibrary.NetBios
 {
+    /// <remarks>
+    /// NBTConnectionReceiveBuffer is not thread-safe.
+    /// </remarks>
     public class NBTConnectionReceiveBuffer : IDisposable
     {
-#if NETSTANDARD2_0
-        private object m_bufferSyncLock = new object();
-#endif
         private byte[] m_buffer;
         private int m_readOffset = 0;
         private int m_bytesInBuffer = 0;
@@ -131,13 +131,10 @@ namespace SMBLibrary.NetBios
         public void Dispose()
         {
 #if NETSTANDARD2_0
-            lock (m_bufferSyncLock)
+            if (m_buffer != null)
             {
-                if (m_buffer != null)
-                {
-                   ArrayPool<byte>.Shared.Return(m_buffer);
-                   m_buffer = null;
-                }
+                ArrayPool<byte>.Shared.Return(m_buffer);
+                m_buffer = null;
             }
 #else
             m_buffer = null;

@@ -230,63 +230,66 @@ namespace SMBLibrary.Server
             ConnectionState state = (ConnectionState)result.AsyncState;
             Socket clientSocket = state.ClientSocket;
 
-            if (!m_listening)
+            lock (state.ReceiveBuffer)
             {
-                clientSocket.Close();
-                return;
-            }
-
-            int numberOfBytesReceived;
-            try
-            {
-                numberOfBytesReceived = clientSocket.EndReceive(result);
-            }
-            catch (ObjectDisposedException)
-            {
-                state.LogToServer(Severity.Debug, "The connection was terminated");
-                m_connectionManager.ReleaseConnection(state);
-                return;
-            }
-            catch (SocketException ex)
-            {
-                const int WSAECONNRESET = 10054;
-                if (ex.ErrorCode == WSAECONNRESET)
+                if (!m_listening)
                 {
-                    state.LogToServer(Severity.Debug, "The connection was forcibly closed by the remote host");
+                    clientSocket.Close();
+                    return;
                 }
-                else
-                {
-                    state.LogToServer(Severity.Debug, "The connection was terminated, Socket error code: {0}", ex.ErrorCode);
-                }
-                m_connectionManager.ReleaseConnection(state);
-                return;
-            }
 
-            if (numberOfBytesReceived == 0)
-            {
-                state.LogToServer(Severity.Debug, "The client closed the connection");
-                m_connectionManager.ReleaseConnection(state);
-                return;
-            }
-
-            state.UpdateLastReceiveDT();
-            NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
-            receiveBuffer.SetNumberOfBytesReceived(numberOfBytesReceived);
-            ProcessConnectionBuffer(ref state);
-
-            if (clientSocket.Connected)
-            {
+                int numberOfBytesReceived;
                 try
                 {
-                    clientSocket.BeginReceive(state.ReceiveBuffer.Buffer, state.ReceiveBuffer.WriteOffset, state.ReceiveBuffer.AvailableLength, 0, ReceiveCallback, state);
+                    numberOfBytesReceived = clientSocket.EndReceive(result);
                 }
                 catch (ObjectDisposedException)
                 {
+                    state.LogToServer(Severity.Debug, "The connection was terminated");
                     m_connectionManager.ReleaseConnection(state);
+                    return;
                 }
-                catch (SocketException)
+                catch (SocketException ex)
                 {
+                    const int WSAECONNRESET = 10054;
+                    if (ex.ErrorCode == WSAECONNRESET)
+                    {
+                        state.LogToServer(Severity.Debug, "The connection was forcibly closed by the remote host");
+                    }
+                    else
+                    {
+                        state.LogToServer(Severity.Debug, "The connection was terminated, Socket error code: {0}", ex.ErrorCode);
+                    }
                     m_connectionManager.ReleaseConnection(state);
+                    return;
+                }
+
+                if (numberOfBytesReceived == 0)
+                {
+                    state.LogToServer(Severity.Debug, "The client closed the connection");
+                    m_connectionManager.ReleaseConnection(state);
+                    return;
+                }
+
+                state.UpdateLastReceiveDT();
+                NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
+                receiveBuffer.SetNumberOfBytesReceived(numberOfBytesReceived);
+                ProcessConnectionBuffer(ref state);
+
+                if (clientSocket.Connected)
+                {
+                    try
+                    {
+                        clientSocket.BeginReceive(state.ReceiveBuffer.Buffer, state.ReceiveBuffer.WriteOffset, state.ReceiveBuffer.AvailableLength, 0, ReceiveCallback, state);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        m_connectionManager.ReleaseConnection(state);
+                    }
+                    catch (SocketException)
+                    {
+                        m_connectionManager.ReleaseConnection(state);
+                    }
                 }
             }
         }

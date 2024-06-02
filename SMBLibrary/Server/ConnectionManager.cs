@@ -42,7 +42,10 @@ namespace SMBLibrary.Server
             connection.SendQueue.Stop();
             SocketUtils.ReleaseSocket(connection.ClientSocket);
             connection.CloseSessions();
-            connection.ReceiveBuffer.Dispose();
+            lock (connection.ReceiveBuffer)
+            {
+                connection.ReceiveBuffer.Dispose();
+            }
             RemoveConnection(connection);
         }
 

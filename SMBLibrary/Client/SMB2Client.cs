@@ -182,7 +182,10 @@ namespace SMBLibrary.Client
             {
                 m_clientSocket.Disconnect(false);
                 m_clientSocket.Close();
-                m_connectionState.ReceiveBuffer.Dispose();
+                lock (m_connectionState.ReceiveBuffer)
+                {
+                    m_connectionState.ReceiveBuffer.Dispose();
+                }
                 m_isConnected = false;
                 m_messageID = 0;
                 m_sessionID = 0;
@@ -357,63 +360,66 @@ namespace SMBLibrary.Client
             ConnectionState state = (ConnectionState)ar.AsyncState;
             Socket clientSocket = state.ClientSocket;
 
-            if (!clientSocket.Connected)
+            lock (state.ReceiveBuffer)
             {
-                state.ReceiveBuffer.Dispose();
-                return;
-            }
-
-            int numberOfBytesReceived = 0;
-            try
-            {
-                numberOfBytesReceived = clientSocket.EndReceive(ar);
-            }
-            catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
-            {
-                state.ReceiveBuffer.Dispose();
-                return;
-            }
-            catch (ObjectDisposedException)
-            {
-                Log("[ReceiveCallback] EndReceive ObjectDisposedException");
-                state.ReceiveBuffer.Dispose();
-                return;
-            }
-            catch (SocketException ex)
-            {
-                Log("[ReceiveCallback] EndReceive SocketException: " + ex.Message);
-                state.ReceiveBuffer.Dispose();
-                return;
-            }
-
-            if (numberOfBytesReceived == 0)
-            {
-                m_isConnected = false;
-                state.ReceiveBuffer.Dispose();
-            }
-            else
-            {
-                NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
-                buffer.SetNumberOfBytesReceived(numberOfBytesReceived);
-                ProcessConnectionBuffer(state);
-
-                if (clientSocket.Connected)
+                if (!clientSocket.Connected)
                 {
-                    try
+                    state.ReceiveBuffer.Dispose();
+                    return;
+                }
+
+                int numberOfBytesReceived = 0;
+                try
+                {
+                    numberOfBytesReceived = clientSocket.EndReceive(ar);
+                }
+                catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
+                {
+                    state.ReceiveBuffer.Dispose();
+                    return;
+                }
+                catch (ObjectDisposedException)
+                {
+                    Log("[ReceiveCallback] EndReceive ObjectDisposedException");
+                    state.ReceiveBuffer.Dispose();
+                    return;
+                }
+                catch (SocketException ex)
+                {
+                    Log("[ReceiveCallback] EndReceive SocketException: " + ex.Message);
+                    state.ReceiveBuffer.Dispose();
+                    return;
+                }
+
+                if (numberOfBytesReceived == 0)
+                {
+                    m_isConnected = false;
+                    state.ReceiveBuffer.Dispose();
+                }
+                else
+                {
+                    NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
+                    buffer.SetNumberOfBytesReceived(numberOfBytesReceived);
+                    ProcessConnectionBuffer(state);
+
+                    if (clientSocket.Connected)
                     {
-                        clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        m_isConnected = false;
-                        Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
-                        buffer.Dispose();
-                    }
-                    catch (SocketException ex)
-                    {
-                        m_isConnected = false;
-                        Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
-                        buffer.Dispose();
+                        try
+                        {
+                            clientSocket.BeginReceive(buffer.Buffer, buffer.WriteOffset, buffer.AvailableLength, SocketFlags.None, new AsyncCallback(OnClientSocketReceive), state);
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            m_isConnected = false;
+                            Log("[ReceiveCallback] BeginReceive ObjectDisposedException");
+                            buffer.Dispose();
+                        }
+                        catch (SocketException ex)
+                        {
+                            m_isConnected = false;
+                            Log("[ReceiveCallback] BeginReceive SocketException: " + ex.Message);
+                            buffer.Dispose();
+                        }
                     }
                 }
             }
