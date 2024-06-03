@@ -429,12 +429,6 @@ namespace SMBLibrary.Client
 
             lock (state.ReceiveBuffer)
             {
-                if (!clientSocket.Connected)
-                {
-                    state.ReceiveBuffer.Dispose();
-                    return;
-                }
-
                 int numberOfBytesReceived = 0;
                 try
                 {
