@@ -494,3 +494,13 @@ Revision History:
         Client: Calculate Authentication message MIC.
         NBTConnectionReceiveBuffer: Use ArrayPool rent buffers to reduce RAM usage.
         Added access denied ace support.
+
+1.5.2 - Server: ServerService: correctly handle unsupported ShareEnum levels.
+        Server: Use CancellationToken for send keep-alive thread if available.
+        Server: ConnectionState: Fix thread-safety issue.
+        Client: Disconnect: Invoke Socket.Close.
+        Client: NetBIOS over TCP: Apply timeout set by the client instead of hardcoded value.
+        Client: Removed unneeded connectivity check before invoking EndReceive.
+        SMB2Client: Support non-Microsoft servers returning MaxReadSize > MaxTransactSize
+        NBTConnectionReceiveBuffer: Fix thread-safety issues.
+        FileRenameInformationType2: Bugfix: Ensure length is at least 24 bytes.
