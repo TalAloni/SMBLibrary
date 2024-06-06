@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/Lansweeper/SMBLibrary/compare/v1.11.0...v1.12.0) (2024-06-06)
+
+
+### Features
+
+* LAN-16522 Update CODEOWNERS ([b932395](https://github.com/Lansweeper/SMBLibrary/commit/b932395e66c3d1b330cdc2072ff2178782a0d857))
+
 # [1.11.0](https://github.com/Lansweeper/SMBLibrary/compare/v1.10.5...v1.11.0) (2024-04-25)
 
 
