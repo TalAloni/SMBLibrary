@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -181,7 +181,11 @@ namespace SMBLibrary.Client
 
                         TrySendMessage(request);
                         reply = m_client.WaitForMessage(CommandName.SMB_COM_TRANSACTION2);
-                        if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
+                        if (reply == null)
+                        {
+                            return NTStatus.STATUS_INVALID_SMB;
+                        }
+                        else if (reply.Header.Status == NTStatus.STATUS_SUCCESS && reply.Commands[0] is Transaction2Response)
                         {
                             response = (Transaction2Response)reply.Commands[0];
                             Transaction2FindNext2Response nextSubcommandResponse = new Transaction2FindNext2Response(response.TransParameters, response.TransData, reply.Header.UnicodeFlag);

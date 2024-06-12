@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2023 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -165,6 +165,10 @@ namespace SMBLibrary.Client
                     request.Reopen = false;
                     TrySendCommand(request);
                     response = m_client.WaitForCommand(request.MessageID);
+                    if (response == null)
+                    {
+                        return NTStatus.STATUS_INVALID_SMB;
+                    }
                 }
                 return response.Header.Status;
             }
