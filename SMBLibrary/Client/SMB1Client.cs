@@ -561,9 +561,15 @@ namespace SMBLibrary.Client
 
         internal SMB1Message WaitForMessage(CommandName commandName)
         {
+            return WaitForMessage(commandName, out bool _);
+        }
+
+        internal SMB1Message WaitForMessage(CommandName commandName, out bool connectionTerminated)
+        {
+            connectionTerminated = false;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < m_responseTimeoutInMilliseconds && m_clientSocket.Connected)
+            while (stopwatch.ElapsedMilliseconds < m_responseTimeoutInMilliseconds && !(connectionTerminated = !m_clientSocket.Connected))
             {
                 lock (m_incomingQueueLock)
                 {

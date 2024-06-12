@@ -526,9 +526,15 @@ namespace SMBLibrary.Client
 
         internal SMB2Command WaitForCommand(ulong messageID)
         {
+            return WaitForCommand(messageID, out bool _);
+        }
+
+        internal SMB2Command WaitForCommand(ulong messageID, out bool connectionTerminated)
+        {
+            connectionTerminated = false;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < m_responseTimeoutInMilliseconds && m_clientSocket.Connected)
+            while (stopwatch.ElapsedMilliseconds < m_responseTimeoutInMilliseconds && !(connectionTerminated = !m_clientSocket.Connected))
             {
                 lock (m_incomingQueueLock)
                 {
