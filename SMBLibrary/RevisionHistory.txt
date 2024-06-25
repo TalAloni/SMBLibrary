@@ -504,3 +504,9 @@ Revision History:
         SMB2Client: Support non-Microsoft servers returning MaxReadSize > MaxTransactSize
         NBTConnectionReceiveBuffer: Fix thread-safety issues.
         FileRenameInformationType2: Bugfix: Ensure length is at least 24 bytes.
+
+1.5.3 - Server: SMBServer: Mark overloaded Start method as protected internal.
+        Client: Mark overloaded Start method as protected internal.
+        Client: Improve client response time when server disconnects or return invalid data.
+        Client: Fix possible NullReferenceException when disconnection occur during directory enumeration.
+        Client: SMB1FileStore, SMB2FileStore: Return STATUS_IO_TIMEOUT instead of STATUS_INVALID_SMB when server does not reply and there is no protocol violation.
