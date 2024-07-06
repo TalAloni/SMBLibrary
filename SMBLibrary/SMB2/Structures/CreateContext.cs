@@ -59,12 +59,12 @@ namespace SMBLibrary.SMB2
             NameLength = (ushort)Name.Length;
             if (Name.Length > 0)
             {
-                NameOffset = (ushort)FixedLength;
+                NameOffset = FixedLength;
             }
             LittleEndianWriter.WriteUInt16(buffer, offset + 4, NameOffset);
             LittleEndianWriter.WriteUInt16(buffer, offset + 6, NameLength);
             LittleEndianWriter.WriteUInt16(buffer, offset + 8, Reserved);
-            DataOffset = 0;
+            DataOffset = (ushort)(FixedLength + NameLength);
             DataLength = (uint)Data.Length;
             if (Data.Length > 0)
             {
@@ -72,8 +72,8 @@ namespace SMBLibrary.SMB2
                 DataOffset = (ushort)(FixedLength + paddedNameLength);
             }
             LittleEndianWriter.WriteUInt16(buffer, offset + 10, DataOffset);
-            ByteWriter.WriteAnsiString(buffer, NameOffset, Name);
-            ByteWriter.WriteBytes(buffer, DataOffset, Data);
+            ByteWriter.WriteAnsiString(buffer, offset + NameOffset, Name);
+            ByteWriter.WriteBytes(buffer, offset + DataOffset, Data);
         }
 
         public int Length
