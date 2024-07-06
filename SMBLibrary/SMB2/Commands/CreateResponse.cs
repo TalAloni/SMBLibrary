@@ -79,13 +79,11 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt32(buffer, offset + 56, (uint)FileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, offset + 60, Reserved2);
             FileId.WriteBytes(buffer, offset + 64);
-            CreateContextsOffset = 0;
+            CreateContextsOffset = CreateContexts.Count > 0 ? (uint)(SMB2Header.Length + FixedLength) : 0;
             CreateContextsLength = (uint)CreateContext.GetCreateContextListLength(CreateContexts);
-            if (CreateContexts.Count > 0)
-            {
-                CreateContextsOffset = SMB2Header.Length + FixedLength;
-                CreateContext.WriteCreateContextList(buffer, FixedLength, CreateContexts);
-            }
+            LittleEndianWriter.WriteUInt32(buffer, offset + 80, CreateContextsOffset);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 84, CreateContextsLength);
+            CreateContext.WriteCreateContextList(buffer, SMB2Header.Length + FixedLength, CreateContexts);
         }
 
         public override int CommandLength
