@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -30,7 +30,7 @@ namespace SMBLibrary.SMB2
         public FileAttributes FileAttributes;
         public uint Reserved2;
         public FileID FileId;
-        private uint CreateContextsOffsets;
+        private uint CreateContextsOffset;
         private uint CreateContextsLength;
         public List<CreateContext> CreateContexts = new List<CreateContext>();
 
@@ -55,11 +55,11 @@ namespace SMBLibrary.SMB2
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 56);
             Reserved2 = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 60);
             FileId = new FileID(buffer, offset + SMB2Header.Length + 64);
-            CreateContextsOffsets = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 80);
+            CreateContextsOffset = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 80);
             CreateContextsLength = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 84);
             if (CreateContextsLength > 0)
             {
-                CreateContexts = CreateContext.ReadCreateContextList(buffer, offset + (int)CreateContextsOffsets);
+                CreateContexts = CreateContext.ReadCreateContextList(buffer, offset + (int)CreateContextsOffset);
             }
         }
 
@@ -78,11 +78,11 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt32(buffer, offset + 56, (uint)FileAttributes);
             LittleEndianWriter.WriteUInt32(buffer, offset + 60, Reserved2);
             FileId.WriteBytes(buffer, offset + 64);
-            CreateContextsOffsets = 0;
+            CreateContextsOffset = 0;
             CreateContextsLength = (uint)CreateContext.GetCreateContextListLength(CreateContexts);
             if (CreateContexts.Count > 0)
             {
-                CreateContextsOffsets = SMB2Header.Length + 88;
+                CreateContextsOffset = SMB2Header.Length + 88;
                 CreateContext.WriteCreateContextList(buffer, 88, CreateContexts);
             }
         }
