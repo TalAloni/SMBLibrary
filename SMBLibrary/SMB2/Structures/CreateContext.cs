@@ -72,6 +72,7 @@ namespace SMBLibrary.SMB2
                 DataOffset = (ushort)(FixedLength + paddedNameLength);
             }
             LittleEndianWriter.WriteUInt16(buffer, offset + 10, DataOffset);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 12, DataLength);
             ByteWriter.WriteAnsiString(buffer, offset + NameOffset, Name);
             ByteWriter.WriteBytes(buffer, offset + DataOffset, Data);
         }
