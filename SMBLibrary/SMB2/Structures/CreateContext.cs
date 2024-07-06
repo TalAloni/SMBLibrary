@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -44,7 +44,7 @@ namespace SMBLibrary.SMB2
             DataLength = LittleEndianConverter.ToUInt32(buffer, offset + 12);
             if (NameLength > 0)
             {
-                Name = ByteReader.ReadUTF16String(buffer, offset + NameOffset, NameLength / 2);
+                Name = ByteReader.ReadAnsiString(buffer, offset + NameOffset, NameLength);
             }
             if (DataLength > 0)
             {
@@ -56,7 +56,7 @@ namespace SMBLibrary.SMB2
         {
             LittleEndianWriter.WriteUInt32(buffer, offset + 0, Next);
             NameOffset = 0;
-            NameLength = (ushort)(Name.Length * 2);
+            NameLength = (ushort)Name.Length;
             if (Name.Length > 0)
             {
                 NameOffset = (ushort)FixedLength;
@@ -68,11 +68,11 @@ namespace SMBLibrary.SMB2
             DataLength = (uint)Data.Length;
             if (Data.Length > 0)
             {
-                int paddedNameLength = (int)Math.Ceiling((double)(Name.Length * 2) / 8) * 8;
+                int paddedNameLength = (int)Math.Ceiling((double)Name.Length / 8) * 8;
                 DataOffset = (ushort)(FixedLength + paddedNameLength);
             }
             LittleEndianWriter.WriteUInt16(buffer, offset + 10, DataOffset);
-            ByteWriter.WriteUTF16String(buffer, NameOffset, Name);
+            ByteWriter.WriteAnsiString(buffer, NameOffset, Name);
             ByteWriter.WriteBytes(buffer, DataOffset, Data);
         }
 
