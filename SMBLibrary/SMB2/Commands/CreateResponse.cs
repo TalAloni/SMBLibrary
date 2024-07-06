@@ -15,6 +15,7 @@ namespace SMBLibrary.SMB2
     /// </summary>
     public class CreateResponse : SMB2Command
     {
+        public const int FixedLength = 88;
         public const int DeclaredSize = 89;
 
         private ushort StructureSize;
@@ -82,8 +83,8 @@ namespace SMBLibrary.SMB2
             CreateContextsLength = (uint)CreateContext.GetCreateContextListLength(CreateContexts);
             if (CreateContexts.Count > 0)
             {
-                CreateContextsOffset = SMB2Header.Length + 88;
-                CreateContext.WriteCreateContextList(buffer, 88, CreateContexts);
+                CreateContextsOffset = SMB2Header.Length + FixedLength;
+                CreateContext.WriteCreateContextList(buffer, FixedLength, CreateContexts);
             }
         }
 
@@ -91,7 +92,7 @@ namespace SMBLibrary.SMB2
         {
             get
             {
-                return 88 + CreateContext.GetCreateContextListLength(CreateContexts);
+                return FixedLength + CreateContext.GetCreateContextListLength(CreateContexts);
             }
         }
     }
