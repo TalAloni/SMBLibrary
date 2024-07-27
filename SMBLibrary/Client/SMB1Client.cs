@@ -436,17 +436,20 @@ namespace SMBLibrary.Client
                 }
                 catch (ArgumentException) // The IAsyncResult object was not returned from the corresponding synchronous method on this class.
                 {
+                    m_isConnected = false;
                     state.ReceiveBuffer.Dispose();
                     return;
                 }
                 catch (ObjectDisposedException)
                 {
+                    m_isConnected = false;
                     Log("[ReceiveCallback] EndReceive ObjectDisposedException");
                     state.ReceiveBuffer.Dispose();
                     return;
                 }
                 catch (SocketException ex)
                 {
+                    m_isConnected = false;
                     Log("[ReceiveCallback] EndReceive SocketException: " + ex.Message);
                     state.ReceiveBuffer.Dispose();
                     return;
