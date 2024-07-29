@@ -271,10 +271,11 @@ namespace SMBLibrary.Client
                         m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
                         if (m_isLoggedIn)
                         {
+                            SessionFlags sessionFlags = ((SessionSetupResponse)response).SessionFlags;
                             m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
                             if (m_dialect == SMB2Dialect.SMB300)
                             {
-                                m_encryptSessionData = (((SessionSetupResponse)response).SessionFlags & SessionFlags.EncryptData) > 0;
+                                m_encryptSessionData = (sessionFlags & SessionFlags.EncryptData) > 0;
                                 m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
                                 m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
                             }
