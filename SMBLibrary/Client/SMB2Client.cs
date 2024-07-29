@@ -272,7 +272,17 @@ namespace SMBLibrary.Client
                         if (m_isLoggedIn)
                         {
                             SessionFlags sessionFlags = ((SessionSetupResponse)response).SessionFlags;
-                            m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
+                            if ((sessionFlags & SessionFlags.IsGuest) > 0)
+                            {
+                                // [MS-SMB2] 3.2.5.3.1 If the SMB2_SESSION_FLAG_IS_GUEST bit is set in the SessionFlags field of the SMB2
+                                // SESSION_SETUP Response and if RequireMessageSigning is FALSE, Session.SigningRequired MUST be set to FALSE.
+                                m_signingRequired = false;
+                            }
+                            else
+                            {
+                                m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
+                            }
+
                             if (m_dialect == SMB2Dialect.SMB300)
                             {
                                 m_encryptSessionData = (sessionFlags & SessionFlags.EncryptData) > 0;
