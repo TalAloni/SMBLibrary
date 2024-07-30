@@ -5,6 +5,7 @@
  * either version 3 of the License, or (at your option) any later version.
  */
 using SMBLibrary.Authentication.GSSAPI;
+using SMBLibrary.Authentication.NTLM;
 using System.Collections.Generic;
 using Utilities;
 
@@ -108,6 +109,9 @@ namespace SMBLibrary.Client.Authentication
             {
                 SimpleProtectedNegotiationTokenResponse outputToken = new SimpleProtectedNegotiationTokenResponse();
                 outputToken.ResponseToken = authenticateMessageBytes;
+                List<byte[]> mechanismTypeList = new List<byte[]>() { GSSProvider.NTLMSSPIdentifier };
+                byte[] mechListBytes = SimpleProtectedNegotiationTokenInit.GetMechanismTypeListBytes(mechanismTypeList);
+                outputToken.MechanismListMIC = NTLMCryptography.ComputeMechListMIC(m_sessionKey, mechListBytes);
                 return outputToken.GetBytes();
             }
             else
