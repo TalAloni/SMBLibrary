@@ -74,7 +74,7 @@ namespace SMBLibrary.SMB2
             LittleEndianWriter.WriteUInt32(buffer, offset + 8, (uint)Capabilities);
             LittleEndianWriter.WriteGuid(buffer, offset + 12, ClientGuid);
 
-            bool containsNegotiateContextList = false;
+            bool containsSMB311Dialect = false;
             for (int index = 0; index < Dialects.Count; index++)
             {
                 SMB2Dialect dialect = Dialects[index];
@@ -82,13 +82,13 @@ namespace SMBLibrary.SMB2
 
                 if (dialect == SMB2Dialect.SMB311)
                 {
-                    containsNegotiateContextList = true;
+                    containsSMB311Dialect = true;
                 }
             }
 
-            int paddingLength = (8 - ((36 + Dialects.Count * 2) % 8)) % 8;
-            if (containsNegotiateContextList)
+            if (containsSMB311Dialect)
             {
+                int paddingLength = (8 - ((36 + Dialects.Count * 2) % 8)) % 8;
                 uint negotiateContextOffset = (uint)(SMB2Header.Length + 36 + Dialects.Count * 2 + paddingLength);
                 ushort negotiateContextCount = (ushort)NegotiateContextList.Count;
                 LittleEndianWriter.WriteUInt32(buffer, offset + 28, negotiateContextOffset);
@@ -105,8 +105,8 @@ namespace SMBLibrary.SMB2
         {
             get
             {
-                bool containsNegotiateContextList = Dialects.Contains(SMB2Dialect.SMB311);
-                if (containsNegotiateContextList)
+                bool containsSMB311Dialect = Dialects.Contains(SMB2Dialect.SMB311);
+                if (containsSMB311Dialect && NegotiateContextList.Count > 0)
                 {
                     int paddingLength = (8 - ((36 + Dialects.Count * 2) % 8)) % 8;
                     int negotiateContextListLength = NegotiateContext.GetNegotiateContextListLength(NegotiateContextList);
