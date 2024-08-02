@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -58,7 +58,7 @@ namespace SMBLibrary.SMB2
             SecurityBufferLength = LittleEndianConverter.ToUInt16(buffer, offset + SMB2Header.Length + 58);
             NegotiateContextOffset = LittleEndianConverter.ToUInt32(buffer, offset + SMB2Header.Length + 60);
             SecurityBuffer = ByteReader.ReadBytes(buffer, offset + SecurityBufferOffset, SecurityBufferLength);
-            NegotiateContextList = NegotiateContext.ReadNegotiateContextList(buffer, (int)NegotiateContextOffset, NegotiateContextCount);
+            NegotiateContextList = NegotiateContext.ReadNegotiateContextList(buffer, offset + (int)NegotiateContextOffset, NegotiateContextCount);
         }
 
         public override void WriteCommandBytes(byte[] buffer, int offset)
