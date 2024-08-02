@@ -6,6 +6,7 @@
  */
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary.SMB2;
+using System;
 
 namespace SMBLibrary.Tests.SMB2
 {
@@ -13,9 +14,40 @@ namespace SMBLibrary.Tests.SMB2
     public class NegotiateResponseParsingTests
     {
         [TestMethod]
-        public void ParseNegotiateResponseWithNegotiateContextList()
+        public void ParseNegotiateResponseWithNegotiateContextList_WhenOffsetIsZero()
         {
-            byte[] negotiateResponseCommandBytes = new byte[]
+            byte[] negotiateResponseCommandBytes = GetNegotiateResponseWithNegotiateContextListBytes();
+            NegotiateResponse negotiateResponse = new NegotiateResponse(negotiateResponseCommandBytes, 0);
+            Assert.AreEqual(SMB2Dialect.SMB311, negotiateResponse.DialectRevision);
+            Assert.AreEqual(2, negotiateResponse.NegotiateContextList.Count);
+        }
+
+        [TestMethod]
+        public void ParseNegotiateResponseWithNegotiateContextList_WhenOffsetIsNonZero()
+        {
+            byte[] negotiateResponseCommandBytes = GetNegotiateResponseWithNegotiateContextListBytes();
+            byte[] buffer = new byte[negotiateResponseCommandBytes.Length + 2];
+            Array.Copy(negotiateResponseCommandBytes, 0, buffer, 2, negotiateResponseCommandBytes.Length);
+
+            NegotiateResponse negotiateResponse = new NegotiateResponse(buffer, 2);
+            Assert.AreEqual(SMB2Dialect.SMB311, negotiateResponse.DialectRevision);
+            Assert.AreEqual(2, negotiateResponse.NegotiateContextList.Count);
+        }
+
+        [TestMethod]
+        public void ParseRewrittenNegotiateResponseWithNegotiateContextList()
+        {
+            byte[] negotiateResponseCommandBytes = GetNegotiateResponseWithNegotiateContextListBytes();
+            NegotiateResponse negotiateResponse = new NegotiateResponse(negotiateResponseCommandBytes, 0);
+            negotiateResponseCommandBytes = negotiateResponse.GetBytes();
+            negotiateResponse = new NegotiateResponse(negotiateResponseCommandBytes, 0);
+            Assert.AreEqual(SMB2Dialect.SMB311, negotiateResponse.DialectRevision);
+            Assert.AreEqual(2, negotiateResponse.NegotiateContextList.Count);
+        }
+
+        private static byte[] GetNegotiateResponseWithNegotiateContextListBytes()
+        {
+            return new byte[]
             {
                 0xfe, 0x53, 0x4d, 0x42, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
                 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -50,10 +82,6 @@ namespace SMBLibrary.Tests.SMB2
                 0xe5, 0x74, 0x26, 0x7b, 0x55, 0xe9, 0x14, 0x7e, 0x96, 0xea, 0x2e, 0x56, 0x41, 0xfe, 0x00, 0x00,
                 0x02, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00
             };
-
-            NegotiateResponse negotiateResponse = new NegotiateResponse(negotiateResponseCommandBytes, 0);
-            Assert.AreEqual(SMB2Dialect.SMB311, negotiateResponse.DialectRevision);
-            Assert.AreEqual(2, negotiateResponse.NegotiateContextList.Count);
         }
     }
 }

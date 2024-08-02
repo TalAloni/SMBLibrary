@@ -6,6 +6,7 @@
  */
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary.SMB2;
+using System;
 
 namespace SMBLibrary.Tests.SMB2
 {
@@ -13,9 +14,47 @@ namespace SMBLibrary.Tests.SMB2
     public class NegotiateRequestParsingTests
     {
         [TestMethod]
-        public void ParseNegotiateRequestWithNegotiateContextList()
+        public void ParseNegotiateRequestWithNegotiateContextList_WhenOffsetIsZero()
         {
-            byte[] negotiateRequestCommandBytes = new byte[]
+            byte[] negotiateRequestCommandBytes = GetNegotiateRequestWithNegotiateContextListBytes();
+            NegotiateRequest negotiateRequest = new NegotiateRequest(negotiateRequestCommandBytes, 0);
+            Assert.AreEqual(5, negotiateRequest.Dialects.Count);
+            Assert.AreEqual(4, negotiateRequest.NegotiateContextList.Count);
+            Assert.AreEqual(NegotiateContextType.SMB2_PREAUTH_INTEGRITY_CAPABILITIES, negotiateRequest.NegotiateContextList[0].ContextType);
+            Assert.AreEqual(NegotiateContextType.SMB2_ENCRYPTION_CAPABILITIES, negotiateRequest.NegotiateContextList[1].ContextType);
+        }
+
+        [TestMethod]
+        public void ParseNegotiateRequestWithNegotiateContextList_WhenOffsetIsNonZero()
+        {
+            // Test non-zero offset
+            byte[] negotiateRequestCommandBytes = GetNegotiateRequestWithNegotiateContextListBytes();
+            byte[] buffer = new byte[negotiateRequestCommandBytes.Length + 2];
+            Array.Copy(negotiateRequestCommandBytes, 0, buffer, 2, negotiateRequestCommandBytes.Length);
+
+            NegotiateRequest negotiateRequest = new NegotiateRequest(buffer, 2);
+            Assert.AreEqual(5, negotiateRequest.Dialects.Count);
+            Assert.AreEqual(4, negotiateRequest.NegotiateContextList.Count);
+            Assert.AreEqual(NegotiateContextType.SMB2_PREAUTH_INTEGRITY_CAPABILITIES, negotiateRequest.NegotiateContextList[0].ContextType);
+            Assert.AreEqual(NegotiateContextType.SMB2_ENCRYPTION_CAPABILITIES, negotiateRequest.NegotiateContextList[1].ContextType);
+        }
+
+        [TestMethod]
+        public void ParseRewrittenNegotiateRequestWithNegotiateContextList()
+        {
+            byte[] negotiateRequestCommandBytes = GetNegotiateRequestWithNegotiateContextListBytes();
+            NegotiateRequest negotiateRequest = new NegotiateRequest(negotiateRequestCommandBytes, 0);
+            negotiateRequestCommandBytes = negotiateRequest.GetBytes();
+            negotiateRequest = new NegotiateRequest(negotiateRequestCommandBytes, 0);
+            Assert.AreEqual(5, negotiateRequest.Dialects.Count);
+            Assert.AreEqual(4, negotiateRequest.NegotiateContextList.Count);
+            Assert.AreEqual(NegotiateContextType.SMB2_PREAUTH_INTEGRITY_CAPABILITIES, negotiateRequest.NegotiateContextList[0].ContextType);
+            Assert.AreEqual(NegotiateContextType.SMB2_ENCRYPTION_CAPABILITIES, negotiateRequest.NegotiateContextList[1].ContextType);
+        }
+
+        private static byte[] GetNegotiateRequestWithNegotiateContextListBytes()
+        {
+            return new byte[]
             {
                 0xfe,0x53,0x4d,0x42,0x40,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -35,12 +74,6 @@ namespace SMBLibrary.Tests.SMB2
                 0x73,0x00,0x65,0x00,0x72,0x00,0x73,0x00,0x2e,0x00,0x6c,0x00,0x6f,0x00,0x63,0x00,
                 0x61,0x00,0x6c,0x00
             };
-
-            NegotiateRequest negotiateRequest = new NegotiateRequest(negotiateRequestCommandBytes, 0);
-            Assert.AreEqual(5, negotiateRequest.Dialects.Count);
-            Assert.AreEqual(4, negotiateRequest.NegotiateContextList.Count);
-            Assert.AreEqual(NegotiateContextType.SMB2_PREAUTH_INTEGRITY_CAPABILITIES, negotiateRequest.NegotiateContextList[0].ContextType);
-            Assert.AreEqual(NegotiateContextType.SMB2_ENCRYPTION_CAPABILITIES, negotiateRequest.NegotiateContextList[1].ContextType);
         }
     }
 }
