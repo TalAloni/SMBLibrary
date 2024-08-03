@@ -283,11 +283,11 @@ namespace SMBLibrary.Client
                                 m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
                             }
 
-                            if (m_dialect == SMB2Dialect.SMB300)
+                            if (m_dialect >= SMB2Dialect.SMB300)
                             {
                                 m_encryptSessionData = (sessionFlags & SessionFlags.EncryptData) > 0;
-                                m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
-                                m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, SMB2Dialect.SMB300, null);
+                                m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, m_dialect, null);
+                                m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, m_dialect, null);
                             }
                         }
                         return response.Header.Status;
@@ -463,7 +463,7 @@ namespace SMBLibrary.Client
             if (packet is SessionMessagePacket)
             {
                 byte[] messageBytes;
-                if (m_dialect == SMB2Dialect.SMB300 && SMB2TransformHeader.IsTransformHeader(packet.Trailer, 0))
+                if (m_dialect >= SMB2Dialect.SMB300 && SMB2TransformHeader.IsTransformHeader(packet.Trailer, 0))
                 {
                     SMB2TransformHeader transformHeader = new SMB2TransformHeader(packet.Trailer, 0);
                     byte[] encryptedMessage = ByteReader.ReadBytes(packet.Trailer, SMB2TransformHeader.Length, (int)transformHeader.OriginalMessageSize);
@@ -636,7 +636,7 @@ namespace SMBLibrary.Client
             if (m_signingRequired && !encryptData)
             {
                 request.Header.IsSigned = (m_sessionID != 0 && ((request.CommandName == SMB2CommandName.TreeConnect || request.Header.TreeID != 0) ||
-                                                                (m_dialect == SMB2Dialect.SMB300 && request.CommandName == SMB2CommandName.Logoff)));
+                                                                (m_dialect >= SMB2Dialect.SMB300 && request.CommandName == SMB2CommandName.Logoff)));
                 if (request.Header.IsSigned)
                 {
                     request.Header.Signature = new byte[16]; // Request could be reused
