@@ -26,6 +26,18 @@ namespace SMBLibrary.SMB2
         {
         }
 
+        public NegotiateContext(PreAuthIntegrityCapabilities preAuthIntegrityCapabilities)
+        {
+            ContextType = NegotiateContextType.SMB2_PREAUTH_INTEGRITY_CAPABILITIES;
+            Data = preAuthIntegrityCapabilities.GetBytes();
+        }
+
+        public NegotiateContext(EncryptionCapabilities encryptionCapabilities)
+        {
+            ContextType = NegotiateContextType.SMB2_ENCRYPTION_CAPABILITIES;
+            Data = encryptionCapabilities.GetBytes();
+        }
+
         public NegotiateContext(byte[] buffer, int offset)
         {
             ContextType = (NegotiateContextType)LittleEndianConverter.ToUInt16(buffer, offset + 0);
