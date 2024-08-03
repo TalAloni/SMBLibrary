@@ -32,7 +32,7 @@ namespace SMBLibrary.SMB2
 
         public byte[] GetBytes()
         {
-            int length = 2 * Ciphers.Count * 2;
+            int length = 2 + Ciphers.Count * 2;
             byte[] buffer = new byte[length];
             LittleEndianWriter.WriteUInt16(buffer, 0, (ushort)Ciphers.Count);
             for (int index = 0; index < Ciphers.Count; index++)
