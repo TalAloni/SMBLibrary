@@ -56,6 +56,7 @@ namespace SMBLibrary.Client
         private ulong m_sessionID;
         private byte[] m_securityBlob;
         private byte[] m_sessionKey;
+        private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
 
         public SMB2Client()
@@ -203,7 +204,14 @@ namespace SMBLibrary.Client
             request.Dialects.Add(SMB2Dialect.SMB202);
             request.Dialects.Add(SMB2Dialect.SMB210);
             request.Dialects.Add(SMB2Dialect.SMB300);
-
+#if SMB302_CLIENT
+            request.Dialects.Add(SMB2Dialect.SMB302);
+#endif
+#if SMB311_CLIENT
+            request.Dialects.Add(SMB2Dialect.SMB311);
+            request.NegotiateContextList = GetNegotiateContextList();
+            m_preauthIntegrityHashValue = new byte[64];
+#endif
             TrySendCommand(request);
             NegotiateResponse response = WaitForCommand(request.MessageID) as NegotiateResponse;
             if (response != null && response.Header.Status == NTStatus.STATUS_SUCCESS)
@@ -280,14 +288,14 @@ namespace SMBLibrary.Client
                             }
                             else
                             {
-                                m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, null);
+                                m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
                             }
 
                             if (m_dialect >= SMB2Dialect.SMB300)
                             {
                                 m_encryptSessionData = (sessionFlags & SessionFlags.EncryptData) > 0;
-                                m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, m_dialect, null);
-                                m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, m_dialect, null);
+                                m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
+                                m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
                             }
                         }
                         return response.Header.Status;
@@ -488,6 +496,11 @@ namespace SMBLibrary.Client
                     return;
                 }
 
+                if (m_preauthIntegrityHashValue != null && (command is NegotiateResponse || (command is SessionSetupResponse sessionSetupResponse && sessionSetupResponse.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED)))
+                {
+                    m_preauthIntegrityHashValue = SMB2Cryptography.ComputeHash(HashAlgorithm.SHA512, ByteUtils.Concatenate(m_preauthIntegrityHashValue, messageBytes));
+                }
+
                 m_availableCredits += command.Header.Credits;
 
                 if (m_transport == SMBTransportType.DirectTCPTransport && command is NegotiateResponse)
@@ -657,6 +670,24 @@ namespace SMBLibrary.Client
             }
         }
 
+        /// <remarks>SMB 3.1.1 only</remarks>
+        private List<NegotiateContext> GetNegotiateContextList()
+        {
+            PreAuthIntegrityCapabilities preAuthIntegrityCapabilities = new PreAuthIntegrityCapabilities();
+            preAuthIntegrityCapabilities.HashAlgorithms.Add(HashAlgorithm.SHA512);
+            preAuthIntegrityCapabilities.Salt = new byte[32];
+            new Random().NextBytes(preAuthIntegrityCapabilities.Salt);
+
+            EncryptionCapabilities encryptionCapabilities = new EncryptionCapabilities();
+            encryptionCapabilities.Ciphers.Add(CipherAlgorithm.Aes128Ccm);
+
+            return new List<NegotiateContext>()
+            {
+                new NegotiateContext(preAuthIntegrityCapabilities),
+                new NegotiateContext(encryptionCapabilities)
+            };
+        }
+
         public uint MaxTransactSize
         {
             get
@@ -700,6 +731,10 @@ namespace SMBLibrary.Client
             else
             {
                 packet.Trailer = request.GetBytes();
+                if (m_preauthIntegrityHashValue != null && (request is NegotiateRequest || request is SessionSetupRequest))
+                {
+                    m_preauthIntegrityHashValue = SMB2Cryptography.ComputeHash(HashAlgorithm.SHA512, ByteUtils.Concatenate(m_preauthIntegrityHashValue, packet.Trailer));
+                }
             }
             TrySendPacket(socket, packet);
         }
