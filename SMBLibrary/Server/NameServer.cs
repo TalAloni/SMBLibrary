@@ -111,7 +111,7 @@ namespace SMBLibrary.Server
 
                             bool nameMatch = String.Equals(name, Environment.MachineName, StringComparison.OrdinalIgnoreCase);
                             
-                            if (nameMatch && ((suffix == NetBiosSuffix.WorkstationService) || (suffix == NetBiosSuffix.FileServiceService)))
+                            if (nameMatch && ((suffix == NetBiosSuffix.WorkstationService) || (suffix == NetBiosSuffix.FileServerService)))
                             {
                                 PositiveNameQueryResponse response = new PositiveNameQueryResponse();
                                 response.Header.TransactionID = request.Header.TransactionID;
@@ -129,7 +129,7 @@ namespace SMBLibrary.Server
                             response.Resource.Name = request.Question.Name;
                             NameFlags nameFlags = new NameFlags();
                             string name1 = NetBiosUtils.GetMSNetBiosName(Environment.MachineName, NetBiosSuffix.WorkstationService);
-                            string name2 = NetBiosUtils.GetMSNetBiosName(Environment.MachineName, NetBiosSuffix.FileServiceService);
+                            string name2 = NetBiosUtils.GetMSNetBiosName(Environment.MachineName, NetBiosSuffix.FileServerService);
                             NameFlags nameFlags3 = new NameFlags();
                             nameFlags3.WorkGroup = true;
                             string name3 = NetBiosUtils.GetMSNetBiosName(WorkgroupName, NetBiosSuffix.WorkstationService);
@@ -164,7 +164,7 @@ namespace SMBLibrary.Server
         private void RegisterNetBIOSName()
         {
             NameRegistrationRequest request1 = new NameRegistrationRequest(Environment.MachineName, NetBiosSuffix.WorkstationService, m_serverAddress);
-            NameRegistrationRequest request2 = new NameRegistrationRequest(Environment.MachineName, NetBiosSuffix.FileServiceService, m_serverAddress);
+            NameRegistrationRequest request2 = new NameRegistrationRequest(Environment.MachineName, NetBiosSuffix.FileServerService, m_serverAddress);
             NameRegistrationRequest request3 = new NameRegistrationRequest(WorkgroupName, NetBiosSuffix.WorkstationService, m_serverAddress);
             request3.NameFlags.WorkGroup = true;
             RegisterName(request1);

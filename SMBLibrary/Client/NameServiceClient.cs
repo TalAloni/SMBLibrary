@@ -32,7 +32,7 @@ namespace SMBLibrary.Client
             foreach (KeyValuePair<string, NameFlags> entry in response.Names)
             {
                 NetBiosSuffix suffix = NetBiosUtils.GetSuffixFromMSNetBiosName(entry.Key);
-                if (suffix == NetBiosSuffix.FileServiceService)
+                if (suffix == NetBiosSuffix.FileServerService)
                 {
                     return entry.Key;
                 }

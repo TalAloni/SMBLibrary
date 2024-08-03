@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SMBLibrary.NetBios
 {
     /// <summary>
     /// 16th character suffix for netbios name.
-    /// see http://support.microsoft.com/kb/163409/en-us
+    /// see https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nbte/6dbf0972-bb15-4f29-afeb-baaae98416ed
     /// </summary>
     public enum NetBiosSuffix : byte
     {
@@ -15,6 +11,6 @@ namespace SMBLibrary.NetBios
         DomainMasterBrowser = 0x1B,
         MasterBrowser = 0x1D,
         BrowserServiceElections = 0x1E,
-        FileServiceService = 0x20,
+        FileServerService = 0x20,
     }
 }
