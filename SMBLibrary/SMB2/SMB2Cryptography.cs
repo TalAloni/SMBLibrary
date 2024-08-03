@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2020-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -105,6 +105,18 @@ namespace SMBLibrary.SMB2
             byte[] associatedData = transformHeader.GetAssociatedData();
             byte[] aesCcmNonce = ByteReader.ReadBytes(transformHeader.Nonce, 0, AesCcmNonceLength);
             return AesCcm.DecryptAndAuthenticate(key, aesCcmNonce, encryptedMessage, associatedData, transformHeader.Signature);
+        }
+
+        public static byte[] ComputeHash(HashAlgorithm hashAlgorithm, byte[] buffer)
+        {
+            if (hashAlgorithm == HashAlgorithm.SHA512)
+            {
+                return SHA512.Create().ComputeHash(buffer);
+            }
+            else
+            {
+                throw new NotSupportedException($"Hash algorithm {hashAlgorithm} is not supported");
+            }
         }
 
         private static SMB2TransformHeader CreateTransformHeader(byte[] nonce, int originalMessageLength, ulong sessionID)
