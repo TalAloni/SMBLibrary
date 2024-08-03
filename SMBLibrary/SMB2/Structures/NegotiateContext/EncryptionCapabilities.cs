@@ -12,7 +12,7 @@ namespace SMBLibrary.SMB2
     /// <summary>
     /// [MS-SMB2] 2.2.3.1.2 SMB2_ENCRYPTION_CAPABILITIES
     /// </summary>
-    public class EncryptionCapabilities
+    public class EncryptionCapabilities : NegotiateContext
     {
         // ushort CipherCount;
         public List<CipherAlgorithm> Ciphers = new List<CipherAlgorithm>();
@@ -21,26 +21,33 @@ namespace SMBLibrary.SMB2
         {
         }
 
-        public EncryptionCapabilities(byte[] buffer, int offset)
+        public EncryptionCapabilities(byte[] buffer, int offset) : base(buffer, offset)
         {
-            ushort cipherCount = LittleEndianConverter.ToUInt16(buffer, offset);
+            ushort cipherCount = LittleEndianConverter.ToUInt16(Data, 0);
             for (int index = 0; index < cipherCount; index++)
             {
-                Ciphers.Add((CipherAlgorithm)LittleEndianConverter.ToUInt16(buffer, offset + index * 2));
+                Ciphers.Add((CipherAlgorithm)LittleEndianConverter.ToUInt16(Data, index * 2));
             }
         }
 
-        public byte[] GetBytes()
+        public override void WriteData()
         {
-            int length = 2 + Ciphers.Count * 2;
-            byte[] buffer = new byte[length];
-            LittleEndianWriter.WriteUInt16(buffer, 0, (ushort)Ciphers.Count);
+            Data = new byte[DataLength];
+            LittleEndianWriter.WriteUInt16(Data, 0, (ushort)Ciphers.Count);
             for (int index = 0; index < Ciphers.Count; index++)
             {
-                LittleEndianWriter.WriteUInt16(buffer, 2 + index * 2, (ushort)Ciphers[index]);
+                LittleEndianWriter.WriteUInt16(Data, 2 + index * 2, (ushort)Ciphers[index]);
             }
-
-            return buffer;
         }
+
+        public override int DataLength
+        {
+            get
+            {
+                return 2 + Ciphers.Count * 2;
+            }
+        }
+
+        public override NegotiateContextType ContextType => NegotiateContextType.SMB2_ENCRYPTION_CAPABILITIES;
     }
 }

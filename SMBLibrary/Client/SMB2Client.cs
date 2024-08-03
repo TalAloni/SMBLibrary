@@ -683,8 +683,8 @@ namespace SMBLibrary.Client
 
             return new List<NegotiateContext>()
             {
-                new NegotiateContext(preAuthIntegrityCapabilities),
-                new NegotiateContext(encryptionCapabilities)
+                preAuthIntegrityCapabilities,
+                encryptionCapabilities
             };
         }
 

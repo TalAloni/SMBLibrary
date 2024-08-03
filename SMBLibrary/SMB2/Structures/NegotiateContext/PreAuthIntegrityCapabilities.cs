@@ -12,7 +12,7 @@ namespace SMBLibrary.SMB2
     /// <summary>
     /// [MS-SMB2] 2.2.3.1.1 - SMB2_PREAUTH_INTEGRITY_CAPABILITIES
     /// </summary>
-    public class PreAuthIntegrityCapabilities
+    public class PreAuthIntegrityCapabilities : NegotiateContext
     {
         // ushort HashAlgorithmCount;
         // ushort SaltLength;
@@ -23,31 +23,37 @@ namespace SMBLibrary.SMB2
         {
         }
 
-        public PreAuthIntegrityCapabilities(byte[] buffer, int offset)
+        public PreAuthIntegrityCapabilities(byte[] buffer, int offset) : base(buffer, offset)
         {
-            ushort hashAlgorithmCount = LittleEndianConverter.ToUInt16(buffer, offset + 0);
-            ushort saltLength = LittleEndianConverter.ToUInt16(buffer, offset + 2);
+            ushort hashAlgorithmCount = LittleEndianConverter.ToUInt16(Data, 0);
+            ushort saltLength = LittleEndianConverter.ToUInt16(Data, 2);
             for (int index = 0; index < hashAlgorithmCount; index++)
             {
-                HashAlgorithms.Add((HashAlgorithm)LittleEndianConverter.ToUInt16(buffer, offset + 4 + index * 2));
+                HashAlgorithms.Add((HashAlgorithm)LittleEndianConverter.ToUInt16(Data, 4 + index * 2));
             }
-            Salt = ByteReader.ReadBytes(buffer, offset + 4 + hashAlgorithmCount * 2, saltLength);
+            Salt = ByteReader.ReadBytes(Data, 4 + hashAlgorithmCount * 2, saltLength);
         }
 
-        public byte[] GetBytes()
+        public override void WriteData()
         {
-            int length = 4 + HashAlgorithms.Count * 2 + Salt.Length;
-
-            byte[] buffer = new byte[length];
-            LittleEndianWriter.WriteUInt16(buffer, 0, (ushort)HashAlgorithms.Count);
-            LittleEndianWriter.WriteUInt16(buffer, 2, (ushort)Salt.Length);
+            Data = new byte[DataLength];
+            LittleEndianWriter.WriteUInt16(Data, 0, (ushort)HashAlgorithms.Count);
+            LittleEndianWriter.WriteUInt16(Data, 2, (ushort)Salt.Length);
             for (int index = 0; index < HashAlgorithms.Count; index++)
             {
-                LittleEndianWriter.WriteUInt16(buffer, 4 + index * 2, (ushort)HashAlgorithms[index]);
+                LittleEndianWriter.WriteUInt16(Data, 4 + index * 2, (ushort)HashAlgorithms[index]);
             }
-            ByteWriter.WriteBytes(buffer, 4 + HashAlgorithms.Count * 2, Salt);
-
-            return buffer;
+            ByteWriter.WriteBytes(Data, 4 + HashAlgorithms.Count * 2, Salt);
         }
+
+        public override int DataLength
+        {
+            get
+            {
+                return 4 + HashAlgorithms.Count * 2 + Salt.Length;
+            }
+        }
+
+        public override NegotiateContextType ContextType => NegotiateContextType.SMB2_PREAUTH_INTEGRITY_CAPABILITIES;
     }
 }
