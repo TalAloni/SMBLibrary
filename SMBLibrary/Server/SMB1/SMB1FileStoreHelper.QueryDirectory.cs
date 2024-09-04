@@ -39,7 +39,7 @@ namespace SMBLibrary.Server.SMB1
                     result = null;
                     return status;
                 }
-                status = fileStore.QueryDirectory(out result, handle, fileName, fileInformation);
+                status = fileStore.QueryDirectory(out result, handle, fileName, fileInformation, securityContext);
                 fileStore.CloseFile(handle);
                 return status;
             }

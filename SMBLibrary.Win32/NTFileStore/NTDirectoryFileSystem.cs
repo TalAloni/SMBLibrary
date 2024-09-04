@@ -259,7 +259,7 @@ namespace SMBLibrary.Win32
             return NtUnlockFile((IntPtr)handle, out ioStatusBlock, ref byteOffset, ref length, 0);
         }
 
-        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
+        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass, SecurityContext securityContext)
         {
             IO_STATUS_BLOCK ioStatusBlock;
             byte[] buffer = new byte[QueryDirectoryBufferSize];

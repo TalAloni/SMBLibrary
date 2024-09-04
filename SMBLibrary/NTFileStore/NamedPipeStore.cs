@@ -161,7 +161,7 @@ namespace SMBLibrary
             return NTStatus.STATUS_NOT_SUPPORTED;
         }
 
-        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object directoryHandle, string fileName, FileInformationClass informationClass)
+        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object directoryHandle, string fileName, FileInformationClass informationClass, SecurityContext securityContext)
         {
             result = null;
             return NTStatus.STATUS_NOT_SUPPORTED;

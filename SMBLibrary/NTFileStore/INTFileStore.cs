@@ -32,7 +32,7 @@ namespace SMBLibrary
 
         NTStatus UnlockFile(object handle, long byteOffset, long length);
 
-        NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass);
+        NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass, SecurityContext securityContext);
 
         NTStatus GetFileInformation(out FileInformation result, object handle, FileInformationClass informationClass);
 

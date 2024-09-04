@@ -143,7 +143,7 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
-        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
+        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass, SecurityContext securityContext)
         {
             result = new List<QueryDirectoryFileInformation>();
             QueryDirectoryRequest request = new QueryDirectoryRequest();

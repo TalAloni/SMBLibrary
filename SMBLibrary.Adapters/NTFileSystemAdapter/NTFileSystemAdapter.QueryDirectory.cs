@@ -15,7 +15,7 @@ namespace SMBLibrary.Adapters
     public partial class NTFileSystemAdapter
     {
         /// <param name="fileName">Expression as described in [MS-FSA] 2.1.4.4</param>
-        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
+        public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass, SecurityContext securityContext)
         {
             result = null;
             FileHandle directoryHandle = (FileHandle)handle;

@@ -41,7 +41,7 @@ namespace SMBLibrary.Server.SMB2
                     session.RemoveOpenSearch(fileID);
                 }
                 List<QueryDirectoryFileInformation> entries;
-                NTStatus searchStatus = share.FileStore.QueryDirectory(out entries, openFile.Handle, request.FileName, request.FileInformationClass);
+                NTStatus searchStatus = share.FileStore.QueryDirectory(out entries, openFile.Handle, request.FileName, request.FileInformationClass, session.SecurityContext);
                 if (searchStatus != NTStatus.STATUS_SUCCESS)
                 {
                     state.LogToServer(Severity.Verbose, "Query Directory on '{0}{1}', Searched for '{2}', NTStatus: {3}", share.Name, openFile.Path, request.FileName, searchStatus.ToString());
@@ -97,7 +97,7 @@ namespace SMBLibrary.Server.SMB2
                     break;
                 }
             }
-            
+
             QueryDirectoryResponse response = new QueryDirectoryResponse();
             response.SetFileInformationList(page);
             return response;
