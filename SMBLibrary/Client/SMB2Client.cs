@@ -257,56 +257,53 @@ namespace SMBLibrary.Client
             request.SecurityBuffer = negotiateMessage;
             TrySendCommand(request);
             SMB2Command response = WaitForCommand(request.MessageID);
-            if (response != null)
+            while (response is SessionSetupResponse && response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED)
             {
-                if (response.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && response is SessionSetupResponse)
+                byte[] authenticateMessage = authenticationClient.InitializeSecurityContext(((SessionSetupResponse)response).SecurityBuffer);
+                if (authenticateMessage == null)
                 {
-                    byte[] authenticateMessage = authenticationClient.InitializeSecurityContext(((SessionSetupResponse)response).SecurityBuffer);
-                    if (authenticateMessage == null)
-                    {
-                        return NTStatus.SEC_E_INVALID_TOKEN;
-                    }
-                    m_sessionKey = authenticationClient.GetSessionKey();
-
-                    m_sessionID = response.Header.SessionID;
-                    request = new SessionSetupRequest();
-                    request.SecurityMode = SecurityMode.SigningEnabled;
-                    request.SecurityBuffer = authenticateMessage;
-                    TrySendCommand(request);
-                    response = WaitForCommand(request.MessageID);
-                    if (response != null)
-                    {
-                        m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
-                        if (m_isLoggedIn)
-                        {
-                            SessionFlags sessionFlags = ((SessionSetupResponse)response).SessionFlags;
-                            if ((sessionFlags & SessionFlags.IsGuest) > 0)
-                            {
-                                // [MS-SMB2] 3.2.5.3.1 If the SMB2_SESSION_FLAG_IS_GUEST bit is set in the SessionFlags field of the SMB2
-                                // SESSION_SETUP Response and if RequireMessageSigning is FALSE, Session.SigningRequired MUST be set to FALSE.
-                                m_signingRequired = false;
-                            }
-                            else
-                            {
-                                m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
-                            }
-
-                            if (m_dialect >= SMB2Dialect.SMB300)
-                            {
-                                m_encryptSessionData = (sessionFlags & SessionFlags.EncryptData) > 0;
-                                m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
-                                m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
-                            }
-                        }
-                        return response.Header.Status;
-                    }
+                    return NTStatus.SEC_E_INVALID_TOKEN;
                 }
-                else
-                {
-                    return response.Header.Status;
-                }
+
+                m_sessionID = response.Header.SessionID;
+                request = new SessionSetupRequest();
+                request.SecurityMode = SecurityMode.SigningEnabled;
+                request.SecurityBuffer = authenticateMessage;
+                TrySendCommand(request);
+                response = WaitForCommand(request.MessageID);
             }
-            return NTStatus.STATUS_INVALID_SMB;
+
+            if (response is SessionSetupResponse)
+            {
+                m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
+                if (m_isLoggedIn)
+                {
+                    m_sessionKey = authenticationClient.GetSessionKey();
+                    SessionFlags sessionFlags = ((SessionSetupResponse)response).SessionFlags;
+                    if ((sessionFlags & SessionFlags.IsGuest) > 0)
+                    {
+                        // [MS-SMB2] 3.2.5.3.1 If the SMB2_SESSION_FLAG_IS_GUEST bit is set in the SessionFlags field of the SMB2
+                        // SESSION_SETUP Response and if RequireMessageSigning is FALSE, Session.SigningRequired MUST be set to FALSE.
+                        m_signingRequired = false;
+                    }
+                    else
+                    {
+                        m_signingKey = SMB2Cryptography.GenerateSigningKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
+                    }
+
+                    if (m_dialect >= SMB2Dialect.SMB300)
+                    {
+                        m_encryptSessionData = (sessionFlags & SessionFlags.EncryptData) > 0;
+                        m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
+                        m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
+                    }
+                }
+                return response.Header.Status;
+            }
+            else
+            {
+                return NTStatus.STATUS_INVALID_SMB;
+            }
         }
 
         public NTStatus Logoff()

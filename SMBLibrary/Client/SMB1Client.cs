@@ -316,39 +316,39 @@ namespace SMBLibrary.Client
                 TrySendMessage(request);
                 
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
-                if (reply != null)
+                while (reply != null && reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                 {
-                    if (reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
+                    SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
+                    byte[] authenticateMessage = authenticationClient.InitializeSecurityContext(response.SecurityBlob);
+                    if (authenticateMessage == null)
                     {
-                        SessionSetupAndXResponseExtended response = (SessionSetupAndXResponseExtended)reply.Commands[0];
-                        byte[] authenticateMessage = authenticationClient.InitializeSecurityContext(response.SecurityBlob);
-                        if (authenticateMessage == null)
-                        {
-                            return NTStatus.SEC_E_INVALID_TOKEN;
-                        }
-                        m_sessionKey = authenticationClient.GetSessionKey();
-
-                        m_userID = reply.Header.UID;
-                        request = new SessionSetupAndXRequestExtended();
-                        request.MaxBufferSize = ClientMaxBufferSize;
-                        request.MaxMpxCount = m_maxMpxCount;
-                        request.Capabilities = clientCapabilities;
-                        request.SecurityBlob = authenticateMessage;
-                        TrySendMessage(request);
-
-                        reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
-                        if (reply != null)
-                        {
-                            m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
-                            return reply.Header.Status;
-                        }
+                        return NTStatus.SEC_E_INVALID_TOKEN;
                     }
-                    else
-                    {
-                        return reply.Header.Status;
-                    }
+                    
+                    m_userID = reply.Header.UID;
+                    request = new SessionSetupAndXRequestExtended();
+                    request.MaxBufferSize = ClientMaxBufferSize;
+                    request.MaxMpxCount = m_maxMpxCount;
+                    request.Capabilities = clientCapabilities;
+                    request.SecurityBlob = authenticateMessage;
+                    TrySendMessage(request);
+
+                    reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
-                return NTStatus.STATUS_INVALID_SMB;
+
+                if (reply != null && reply.Commands[0] is SessionSetupAndXResponseExtended)
+                {
+                    m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
+                    if (m_isLoggedIn)
+                    {
+                        m_sessionKey = authenticationClient.GetSessionKey();
+                    }
+                    return reply.Header.Status;
+                }
+                else
+                {
+                    return NTStatus.STATUS_INVALID_SMB;
+                }
             }
         }
 
