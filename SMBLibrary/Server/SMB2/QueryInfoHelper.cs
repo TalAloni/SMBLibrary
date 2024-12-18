@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2019 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -36,7 +36,22 @@ namespace SMBLibrary.Server.SMB2
                 }
 
                 FileInformation fileInformation;
-                NTStatus queryStatus = share.FileStore.GetFileInformation(out fileInformation, openFile.Handle, request.FileInformationClass);
+                NTStatus queryStatus;
+                try
+                {
+                    queryStatus = share.FileStore.GetFileInformation(out fileInformation, openFile.Handle, request.FileInformationClass);
+                }
+                catch (UnsupportedInformationLevelException)
+                {
+                    state.LogToServer(Severity.Verbose, $"GetFileInformation on '{share.Name}{openFile.Path}' failed. Information class: {request.FileInformationClass}, NTStatus: STATUS_INVALID_INFO_CLASS. (FileId: {request.FileId.Volatile})");
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_INVALID_INFO_CLASS);
+                }
+                catch (NotImplementedException)
+                {
+                    state.LogToServer(Severity.Verbose, $"GetFileInformation on '{share.Name}{openFile.Path}' failed. Information class: {request.FileInformationClass}, NTStatus: STATUS_NOT_IMPLEMENTED. (FileId: {request.FileId.Volatile})");
+                    return new ErrorResponse(request.CommandName, NTStatus.STATUS_NOT_IMPLEMENTED);
+                }
+
                 if (queryStatus != NTStatus.STATUS_SUCCESS)
                 {
                     state.LogToServer(Severity.Verbose, "GetFileInformation on '{0}{1}' failed. Information class: {2}, NTStatus: {3}. (FileId: {4})", share.Name, openFile.Path, request.FileInformationClass, queryStatus, request.FileId.Volatile);
