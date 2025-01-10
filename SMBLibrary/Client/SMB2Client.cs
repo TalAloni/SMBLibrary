@@ -273,13 +273,13 @@ namespace SMBLibrary.Client
                 response = WaitForCommand(request.MessageID);
             }
 
-            if (response is SessionSetupResponse)
+            if (response is SessionSetupResponse finalSessionSetupResponse)
             {
                 m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
                 if (m_isLoggedIn)
                 {
                     m_sessionKey = authenticationClient.GetSessionKey();
-                    SessionFlags sessionFlags = ((SessionSetupResponse)response).SessionFlags;
+                    SessionFlags sessionFlags = finalSessionSetupResponse.SessionFlags;
                     if ((sessionFlags & SessionFlags.IsGuest) > 0)
                     {
                         // [MS-SMB2] 3.2.5.3.1 If the SMB2_SESSION_FLAG_IS_GUEST bit is set in the SessionFlags field of the SMB2
