@@ -278,6 +278,7 @@ namespace SMBLibrary.Client
                 m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
                 if (m_isLoggedIn)
                 {
+                    m_sessionID = response.Header.SessionID;
                     m_sessionKey = authenticationClient.GetSessionKey();
                     SessionFlags sessionFlags = finalSessionSetupResponse.SessionFlags;
                     if ((sessionFlags & SessionFlags.IsGuest) > 0)
