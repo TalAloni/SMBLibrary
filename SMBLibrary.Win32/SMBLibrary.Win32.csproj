@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
     <AssemblyName>SMBLibrary.Win32</AssemblyName>
-    <Version>1.5.3</Version>
+    <Version>1.5.4</Version>
     <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary.Win32</RootNamespace>
     <Authors>Tal Aloni</Authors>
-    <Copyright>Copyright © Tal Aloni 2014-2024</Copyright>
+    <Copyright>Copyright © Tal Aloni 2014-2025</Copyright>
     <PackageDescription>Windows specific extensions for SMBLibrary</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>

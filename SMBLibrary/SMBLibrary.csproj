@@ -3,12 +3,12 @@
   <PropertyGroup>
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
     <AssemblyName>SMBLibrary</AssemblyName>
-    <Version>1.5.3.5</Version>
+    <Version>1.5.4</Version>
     <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Tal Aloni</Authors>
-    <Copyright>Copyright © Tal Aloni 2014-2024</Copyright>
+    <Copyright>Copyright © Tal Aloni 2014-2025</Copyright>
     <PackageDescription>SMBLibrary is an open-source C# SMB 1.0/CIFS, SMB 2.0, SMB 2.1 and SMB 3.0 server and client implementation</PackageDescription>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>

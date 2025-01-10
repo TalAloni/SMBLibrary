@@ -510,3 +510,19 @@ Revision History:
         Client: Improve client response time when server disconnects or return invalid data.
         Client: Fix possible NullReferenceException when disconnection occur during directory enumeration.
         Client: SMB1FileStore, SMB2FileStore: Return STATUS_IO_TIMEOUT instead of STATUS_INVALID_SMB when server does not reply and there is no protocol violation.
+
+1.5.4 - Server: SMB2: QueryInfoHelper: Correctly handle UnsupportedInformationLevelException and NotImplementedException
+        Client: Update IsConnected on EndReceive socket exception.
+        Client: NTLMAuthenticationClient: Set MechanismListMIC when applicable.
+        SMB2Client: Correctly handle signing when authenticated as guest.
+        SMB2Client: Updated encryption and signing logic to support SMB 3.0.2.
+        SMB2Client: Added support for single-stage and triple-stage session setup.
+        SMB2: CreateResponse: Bugfix: Write CreateContexts offset and Length.
+        SMB2: CreateContext: Bugfix: Read and Write name as ANSI instead of UTF16.
+        SMB2: CreateContext: Bugfix: Correct Name and Data offset write location.
+        SMB2: CreateContext: Bugfix: Write DataLength.
+        SMB2: NegotiateContext: Fix parsing bugs.
+        SMB2: NegotiateRequest: Parse NegotiateContextList (SMB 3.1.1)
+        SMB2: NegotiateRequest: Do not pad request if NegotiateContextList is empty.
+        SMB2: NegotiateResponse: Bugfix: NegotiateContext was not read from the correct position for non-zero offset.
+        ACL: Bugfix: Use AceSize when parsing ACL.
