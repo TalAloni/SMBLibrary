@@ -265,7 +265,6 @@ namespace SMBLibrary.Client
                     return NTStatus.SEC_E_INVALID_TOKEN;
                 }
 
-                m_sessionID = response.Header.SessionID;
                 request = new SessionSetupRequest();
                 request.SecurityMode = SecurityMode.SigningEnabled;
                 request.SecurityBuffer = authenticateMessage;
@@ -278,6 +277,7 @@ namespace SMBLibrary.Client
                 m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
                 if (m_isLoggedIn)
                 {
+                    m_sessionID = response.Header.SessionID;
                     m_sessionKey = authenticationClient.GetSessionKey();
                     SessionFlags sessionFlags = ((SessionSetupResponse)response).SessionFlags;
                     if ((sessionFlags & SessionFlags.IsGuest) > 0)
