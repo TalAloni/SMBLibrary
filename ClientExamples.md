@@ -137,7 +137,7 @@ FileStatus fileStatus;
 status = fileStore.CreateFile(out fileHandle, out fileStatus, remoteFilePath, AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE, FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_CREATE, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
 if (status == NTStatus.STATUS_SUCCESS)
 {
-    int writeOffset = 0;
+    long writeOffset = 0;
     while (localFileStream.Position < localFileStream.Length)
     {
         byte[] buffer = new byte[(int)client.MaxWriteSize];
