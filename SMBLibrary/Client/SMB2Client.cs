@@ -217,7 +217,10 @@ namespace SMBLibrary.Client
             if (response != null && response.Header.Status == NTStatus.STATUS_SUCCESS)
             {
                 m_dialect = response.DialectRevision;
-                m_signingRequired = (response.SecurityMode & SecurityMode.SigningRequired) > 0;
+                // [MS-SMB2] 3.3.5.7 If Connection.Dialect is "3.1.1" and Session.IsAnonymous and Session.IsGuest
+                // are set to FALSE and the request is not signed or not encrypted, then the server MUST disconnect the connection.
+                m_signingRequired = (response.SecurityMode & SecurityMode.SigningRequired) > 0 ||
+                                    response.DialectRevision == SMB2Dialect.SMB311;
                 m_maxTransactSize = Math.Min(response.MaxTransactSize, ClientMaxTransactSize);
                 m_maxReadSize = Math.Min(response.MaxReadSize, ClientMaxReadSize);
                 m_maxWriteSize = Math.Min(response.MaxWriteSize, ClientMaxWriteSize);
