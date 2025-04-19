@@ -1,11 +1,10 @@
-/* Copyright (C) 2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
 using Utilities;
 
 namespace SMBLibrary
@@ -39,10 +38,10 @@ namespace SMBLibrary
 
         public FileIdBothDirectoryInformation(byte[] buffer, int offset) : base(buffer, offset)
         {
-            CreationTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 8));
-            LastAccessTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 16));
-            LastWriteTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 24));
-            ChangeTime = DateTime.FromFileTimeUtc(LittleEndianConverter.ToInt64(buffer, offset + 32));
+            CreationTime = FileTimeHelper.ReadFileTimeSafe(buffer, offset + 8);
+            LastAccessTime = FileTimeHelper.ReadFileTimeSafe(buffer, offset + 16);
+            LastWriteTime = FileTimeHelper.ReadFileTimeSafe(buffer, offset + 24);
+            ChangeTime = FileTimeHelper.ReadFileTimeSafe(buffer, offset + 32);
             EndOfFile = LittleEndianConverter.ToInt64(buffer, offset + 40);
             AllocationSize = LittleEndianConverter.ToInt64(buffer, offset + 48);
             FileAttributes = (FileAttributes)LittleEndianConverter.ToUInt32(buffer, offset + 56);

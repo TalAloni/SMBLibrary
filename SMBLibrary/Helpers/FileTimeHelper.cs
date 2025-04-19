@@ -1,11 +1,10 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
 using Utilities;
 
 namespace SMBLibrary
@@ -13,6 +12,21 @@ namespace SMBLibrary
     public class FileTimeHelper
     {
         public static readonly DateTime MinFileTimeValue = new DateTime(1601, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        private static readonly long MaxFileTimeIntegerValue = DateTime.MaxValue.ToFileTimeUtc();
+
+        public static DateTime ReadFileTimeSafe(byte[] buffer, int offset)
+        {
+            long span = LittleEndianConverter.ToInt64(buffer, offset);
+            if (span >= 0 && span <= MaxFileTimeIntegerValue)
+            {
+                return DateTime.FromFileTimeUtc(span);
+            }
+            else
+            {
+                return DateTime.MaxValue;
+            }
+        }
 
         public static DateTime ReadFileTime(byte[] buffer, int offset)
         {
