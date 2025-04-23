@@ -82,7 +82,7 @@ namespace SMBLibrary
                 case FileInformationClass.FileNetworkOpenInformation:
                     return new FileNetworkOpenInformation(buffer, offset);
                 case FileInformationClass.FileAttributeTagInformation:
-                    throw new NotImplementedException();
+                    return new FileAttributeTagInformation(buffer, offset);
                 case FileInformationClass.FileValidDataLengthInformation:
                     return new FileValidDataLengthInformation(buffer, offset);
                 case FileInformationClass.FileShortNameInformation:
