@@ -105,7 +105,7 @@ namespace SMBLibrary.SMB2
                 }
                 else
                 {
-                    int paddedSecurityBufferLength = (int)Math.Ceiling((double)SecurityBufferLength / 8) * 8;
+                    int paddedSecurityBufferLength = (int)Math.Ceiling((double)SecurityBuffer.Length / 8) * 8;
                     return FixedSize + paddedSecurityBufferLength + NegotiateContext.GetNegotiateContextListLength(NegotiateContextList);
                 }
             }
