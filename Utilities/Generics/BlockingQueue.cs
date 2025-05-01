@@ -17,6 +17,11 @@ namespace Utilities
 
         public void Enqueue(T item)
         {
+            if (m_stopping)
+            {
+                return;
+            }
+
             lock (m_queue)
             {
                 m_queue.Enqueue(item);
@@ -30,10 +35,11 @@ namespace Utilities
 
         public void Enqueue(List<T> items)
         {
-            if (items.Count == 0)
+            if (m_stopping || items.Count == 0)
             {
                 return;
             }
+
             lock (m_queue)
             {
                 foreach (T item in items)
@@ -60,7 +66,7 @@ namespace Utilities
                         Monitor.Wait(m_queue);
                     }
 
-                    if (m_stopping)
+                    if (m_stopping && m_queue.Count == 0)
                     {
                         item = default(T);
                         return false;
@@ -79,6 +85,15 @@ namespace Utilities
             {
                 m_stopping = true;
                 Monitor.PulseAll(m_queue);
+            }
+        }
+
+        public void Abort()
+        {
+            lock (m_queue)
+            {
+                m_queue.Clear();
+                Stop();
             }
         }
 
