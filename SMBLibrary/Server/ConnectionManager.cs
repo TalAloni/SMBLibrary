@@ -39,7 +39,7 @@ namespace SMBLibrary.Server
 
         public void ReleaseConnection(ConnectionState connection)
         {
-            connection.SendQueue.Stop();
+            connection.SendQueue.Abort();
             SocketUtils.ReleaseSocket(connection.ClientSocket);
             connection.CloseSessions();
             lock (connection.ReceiveBuffer)
