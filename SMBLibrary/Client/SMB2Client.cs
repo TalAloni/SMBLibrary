@@ -1,5 +1,5 @@
 /* Copyright (C) 2017-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
- * 
+ *
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
@@ -59,9 +59,14 @@ namespace SMBLibrary.Client
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
 
+        private byte[] m_sessionSetupResponseMessage;
+
         public SMB2Client()
         {
         }
+
+        public bool SigningRequired { get; set; } = false;
+        public bool DisconnectOnInvalidSignature { get; set; } = false;
 
         /// <param name="serverName">
         /// When a Windows Server host is using Failover Cluster and Cluster Shared Volumes, each of those CSV file shares is associated
@@ -197,7 +202,7 @@ namespace SMBLibrary.Client
         private bool NegotiateDialect()
         {
             NegotiateRequest request = new NegotiateRequest();
-            request.SecurityMode = SecurityMode.SigningEnabled;
+            request.SecurityMode = SigningRequired ? SecurityMode.SigningRequired | SecurityMode.SigningEnabled : SecurityMode.SigningEnabled;
             request.Capabilities = Capabilities.Encryption;
             request.ClientGuid = Guid.NewGuid();
             request.ClientStartTime = DateTime.Now;
@@ -219,7 +224,7 @@ namespace SMBLibrary.Client
                 m_dialect = response.DialectRevision;
                 // [MS-SMB2] 3.3.5.7 If Connection.Dialect is "3.1.1" and Session.IsAnonymous and Session.IsGuest
                 // are set to FALSE and the request is not signed or not encrypted, then the server MUST disconnect the connection.
-                m_signingRequired = (response.SecurityMode & SecurityMode.SigningRequired) > 0 ||
+                m_signingRequired = SigningRequired || (response.SecurityMode & SecurityMode.SigningRequired) > 0 ||
                                     response.DialectRevision == SMB2Dialect.SMB311;
                 m_maxTransactSize = Math.Min(response.MaxTransactSize, ClientMaxTransactSize);
                 m_maxReadSize = Math.Min(response.MaxReadSize, ClientMaxReadSize);
@@ -256,7 +261,7 @@ namespace SMBLibrary.Client
             }
 
             SessionSetupRequest request = new SessionSetupRequest();
-            request.SecurityMode = SecurityMode.SigningEnabled;
+            request.SecurityMode = SigningRequired ? SecurityMode.SigningRequired | SecurityMode.SigningEnabled : SecurityMode.SigningEnabled;
             request.SecurityBuffer = negotiateMessage;
             TrySendCommand(request);
             SMB2Command response = WaitForCommand(request.MessageID);
@@ -270,7 +275,7 @@ namespace SMBLibrary.Client
 
                 m_sessionID = response.Header.SessionID;
                 request = new SessionSetupRequest();
-                request.SecurityMode = SecurityMode.SigningEnabled;
+                request.SecurityMode = SigningRequired ? SecurityMode.SigningRequired | SecurityMode.SigningEnabled : SecurityMode.SigningEnabled;
                 request.SecurityBuffer = authenticateMessage;
                 TrySendCommand(request);
                 response = WaitForCommand(request.MessageID);
@@ -300,6 +305,26 @@ namespace SMBLibrary.Client
                         m_encryptSessionData = (sessionFlags & SessionFlags.EncryptData) > 0;
                         m_encryptionKey = SMB2Cryptography.GenerateClientEncryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
                         m_decryptionKey = SMB2Cryptography.GenerateClientDecryptionKey(m_sessionKey, m_dialect, m_preauthIntegrityHashValue);
+                    }
+
+                    // [MS-SMB2] 3.2.5.1.3 Verifying the Signature
+                    // If signature verification fails, the client MUST discard the received message.
+                    // The client MAY also choose to disconnect the connection.
+                    try
+                    {
+                        if (!VerifySignature(m_sessionSetupResponseMessage, response))
+                        {
+                            m_isLoggedIn = false;
+                            if (DisconnectOnInvalidSignature)
+                            {
+                                Disconnect();
+                            }
+                            return NTStatus.STATUS_INVALID_SMB;
+                        }
+                    }
+                    finally
+                    {
+                        m_sessionSetupResponseMessage = null;
                     }
                 }
                 return response.Header.Status;
@@ -526,13 +551,41 @@ namespace SMBLibrary.Client
                 // and the client MUST NOT attempt to locate the request, but instead process it as follows:
                 // If the command field in the SMB2 header is SMB2 OPLOCK_BREAK, it MUST be processed as specified in 3.2.5.19.
                 // Otherwise, the response MUST be discarded as invalid.
-                if (command.Header.MessageID != 0xFFFFFFFFFFFFFFFF || command.Header.Command == SMB2CommandName.OplockBreak)
+                if (command.Header.MessageID == 0xFFFFFFFFFFFFFFFF && command.Header.Command != SMB2CommandName.OplockBreak)
                 {
-                    lock (m_incomingQueueLock)
+                    return;
+                }
+
+                // [MS-SMB2] 3.2.5.1.3 Verifying the Signature
+                // If signature verification fails, the client MUST discard the received message.
+                // The client MAY also choose to disconnect the connection.
+                if (m_isLoggedIn)
+                {
+                    // This check covers all messages except the final session setup message which is treated seperately
+                    if (!VerifySignature(messageBytes, command))
                     {
-                        m_incomingQueue.Add(command);
-                        m_incomingQueueEventHandle.Set();
+                        if (DisconnectOnInvalidSignature)
+                        {
+                            m_isLoggedIn = false;
+                            Disconnect();
+                        }
+                        return;
                     }
+                }
+                else if ((command.Header.Command == SMB2CommandName.SessionSetup) &&
+                            (command.Header.Status == NTStatus.STATUS_SUCCESS))
+                {
+                    // The final session setup message already has a valid signature, but the session/signing key have not been set yet (m_isLoggedIn is false).
+                    // The message is evaluated within the Login() method, which will then determine the keys and set m_isLoggedIn to true.
+                    // Nevertheless, the signature must be verified. So the raw message is preserved here and the signature is verified later in the
+                    // Login() method, after the keys have been set.
+                    m_sessionSetupResponseMessage = messageBytes;
+                }
+
+                lock (m_incomingQueueLock)
+                {
+                    m_incomingQueue.Add(command);
+                    m_incomingQueueEventHandle.Set();
                 }
             }
             else if ((packet is PositiveSessionResponsePacket || packet is NegativeSessionResponsePacket) && m_transport == SMBTransportType.NetBiosOverTCP)
@@ -550,6 +603,38 @@ namespace SMBLibrary.Client
                 state.ClientSocket.Close();
                 state.ReceiveBuffer.Dispose();
             }
+        }
+
+        // [MS-SMB2] 3.2.5.1.3 Verifying the Signature
+        private bool VerifySignature(byte[] messageBytes, SMB2Command command)
+        {
+            if (!m_signingRequired)
+            {
+                // Client and server require no signing at all
+                return true;
+            }
+
+            if (messageBytes == null)
+            {
+                throw new ArgumentNullException("messageBytes");
+            }
+
+            bool isUnspecifiedMessageId = command.Header.MessageID == 0xFFFFFFFFFFFFFFFF;
+            bool isPendingMessage = command.Header.Status == NTStatus.STATUS_PENDING;
+
+            if (m_encryptSessionData || isUnspecifiedMessageId || isPendingMessage)
+            {
+                // Signing is not required
+                return true;
+            }
+
+            byte[] key = (m_dialect >= SMB2Dialect.SMB300) ? m_signingKey : m_sessionKey;
+
+            Array.Clear(messageBytes, SMB2Header.SignatureOffset, command.Header.Signature.Length);
+            byte[] signature = SMB2Cryptography.CalculateSignature(key, m_dialect, messageBytes, 0, messageBytes.Length);
+            signature = ByteReader.ReadBytes(signature, 0, command.Header.Signature.Length);
+
+            return ByteUtils.AreByteArraysEqual(signature, command.Header.Signature);
         }
 
         internal SMB2Command WaitForCommand(ulong messageID)
