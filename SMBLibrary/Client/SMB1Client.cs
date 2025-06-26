@@ -61,7 +61,8 @@ namespace SMBLibrary.Client
         {
         }
 
-        public bool Connect(string serverName, SMBTransportType transport) => Connect(serverName, transport, true, DefaultResponseTimeoutInMilliseconds);
+        public bool Connect(string serverName, SMBTransportType transport) => 
+            Connect(serverName, transport, true, DefaultResponseTimeoutInMilliseconds);
 
         public bool Connect(string serverName, SMBTransportType transport, int responseTimeoutInMilliseconds) =>
             Connect(serverName, transport, true, responseTimeoutInMilliseconds);
