@@ -13,8 +13,12 @@ namespace SMBLibrary.Client
     public interface ISMBClient
     {
         bool Connect(string serverName, SMBTransportType transport);
-
+        
+        bool Connect(string serverName, SMBTransportType transport, int responseTimeoutInMilliseconds);
+        
         bool Connect(IPAddress serverAddress, SMBTransportType transport);
+
+        bool Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeoutInMilliseconds);
 
         void Disconnect();
 

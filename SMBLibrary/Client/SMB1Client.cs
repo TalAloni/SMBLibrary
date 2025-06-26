@@ -4,17 +4,17 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
+using SMBLibrary.Authentication.NTLM;
+using SMBLibrary.Client.Authentication;
+using SMBLibrary.NetBios;
+using SMBLibrary.Services;
+using SMBLibrary.SMB1;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using SMBLibrary.Authentication.NTLM;
-using SMBLibrary.Client.Authentication;
-using SMBLibrary.NetBios;
-using SMBLibrary.Services;
-using SMBLibrary.SMB1;
 using Utilities;
 
 namespace SMBLibrary.Client
@@ -61,7 +61,12 @@ namespace SMBLibrary.Client
         {
         }
 
-        public bool Connect(string serverName, SMBTransportType transport)
+        public bool Connect(string serverName, SMBTransportType transport) => Connect(serverName, transport, true, DefaultResponseTimeoutInMilliseconds);
+
+        public bool Connect(string serverName, SMBTransportType transport, int responseTimeoutInMilliseconds) =>
+            Connect(serverName, transport, true, responseTimeoutInMilliseconds);
+
+        public bool Connect(string serverName, SMBTransportType transport, bool forceExtendedSecurity, int responseTimeoutInMilliseconds)
         {
             IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
             if (hostAddresses.Length == 0)
@@ -69,18 +74,17 @@ namespace SMBLibrary.Client
                 throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
             }
             IPAddress serverAddress = IPAddressHelper.SelectAddressPreferIPv4(hostAddresses);
-            return Connect(serverAddress, transport);
+            return Connect(serverAddress, transport, forceExtendedSecurity, responseTimeoutInMilliseconds);
         }
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport)
-        {
-            return Connect(serverAddress, transport, true);
-        }
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport) =>
+            Connect(serverAddress, transport, true, DefaultResponseTimeoutInMilliseconds);
 
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
-        {
-            return Connect(serverAddress, transport, forceExtendedSecurity, DefaultResponseTimeoutInMilliseconds);
-        }
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity) =>
+            Connect(serverAddress, transport, forceExtendedSecurity, DefaultResponseTimeoutInMilliseconds);
+
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeoutInMilliseconds) =>
+            Connect(serverAddress, transport, true, responseTimeoutInMilliseconds);
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity, int responseTimeoutInMilliseconds)
         {
@@ -314,7 +318,7 @@ namespace SMBLibrary.Client
                 request.Capabilities = clientCapabilities;
                 request.SecurityBlob = negotiateMessage;
                 TrySendMessage(request);
-                
+
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 while (reply != null && reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                 {
@@ -324,7 +328,7 @@ namespace SMBLibrary.Client
                     {
                         return NTStatus.SEC_E_INVALID_TOKEN;
                     }
-                    
+
                     m_userID = reply.Header.UID;
                     request = new SessionSetupAndXRequestExtended();
                     request.MaxBufferSize = ClientMaxBufferSize;
