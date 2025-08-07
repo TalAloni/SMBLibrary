@@ -1,5 +1,5 @@
 /* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
- * 
+ *
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
@@ -295,6 +295,7 @@ namespace SMBLibrary.Client
                 if (reply != null)
                 {
                     m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
+                    if (m_isLoggedIn) m_userID = reply.Header.UID;
                     return reply.Header.Status;
                 }
                 return NTStatus.STATUS_INVALID_SMB;
@@ -314,7 +315,7 @@ namespace SMBLibrary.Client
                 request.Capabilities = clientCapabilities;
                 request.SecurityBlob = negotiateMessage;
                 TrySendMessage(request);
-                
+
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 while (reply != null && reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                 {
@@ -324,7 +325,7 @@ namespace SMBLibrary.Client
                     {
                         return NTStatus.SEC_E_INVALID_TOKEN;
                     }
-                    
+
                     m_userID = reply.Header.UID;
                     request = new SessionSetupAndXRequestExtended();
                     request.MaxBufferSize = ClientMaxBufferSize;
