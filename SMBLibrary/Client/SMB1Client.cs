@@ -295,6 +295,10 @@ namespace SMBLibrary.Client
                 if (reply != null)
                 {
                     m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
+                    if (m_isLoggedIn)
+                    {
+                        m_userID = reply.Header.UID;
+                    }
                     return reply.Header.Status;
                 }
                 return NTStatus.STATUS_INVALID_SMB;
