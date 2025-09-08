@@ -306,7 +306,7 @@ namespace SMBLibrary.Client
             }
             else
             {
-                return NTStatus.STATUS_INVALID_SMB;
+                return response.Header.Status != null ? response.Header.Status : NTStatus.STATUS_INVALID_SMB;
             }
         }
 
@@ -758,3 +758,4 @@ namespace SMBLibrary.Client
         }
     }
 }
+
