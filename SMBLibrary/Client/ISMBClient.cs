@@ -12,6 +12,7 @@ namespace SMBLibrary.Client
 {
     public interface ISMBClient
     {
+        event EventHandler<AsyncExceptionEventArgs> OnProcessConnectionBufferException;
         bool Connect(string serverName, SMBTransportType transport);
 
         bool Connect(IPAddress serverAddress, SMBTransportType transport);

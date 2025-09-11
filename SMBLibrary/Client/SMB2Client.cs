@@ -59,6 +59,8 @@ namespace SMBLibrary.Client
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
 
+        public event EventHandler<AsyncExceptionEventArgs> OnProcessConnectionBufferException;
+
         public SMB2Client()
         {
         }
@@ -444,26 +446,38 @@ namespace SMBLibrary.Client
 
         private void ProcessConnectionBuffer(ConnectionState state)
         {
-            NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
-            while (receiveBuffer.HasCompletePacket())
+            try
             {
-                SessionPacket packet = null;
-                try
+                NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
+                while (receiveBuffer.HasCompletePacket())
                 {
-                    packet = receiveBuffer.DequeuePacket();
-                }
-                catch (Exception)
-                {
-                    Log("[ProcessConnectionBuffer] Invalid packet");
-                    state.ClientSocket.Close();
-                    state.ReceiveBuffer.Dispose();
-                    break;
-                }
+                    SessionPacket packet = null;
+                    try
+                    {
+                        packet = receiveBuffer.DequeuePacket();
+                    }
+                    catch (Exception)
+                    {
+                        Log("[ProcessConnectionBuffer] Invalid packet");
+                        state.ClientSocket.Close();
+                        state.ReceiveBuffer.Dispose();
+                        break;
+                    }
 
-                if (packet != null)
-                {
-                    ProcessPacket(packet, state);
+                    if (packet != null)
+                    {
+                        ProcessPacket(packet, state);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                state.ClientSocket.Close();
+                state.ReceiveBuffer.Dispose();
+                new Thread(() =>
+                {
+                    OnProcessConnectionBufferException?.Invoke(this, new AsyncExceptionEventArgs() { Exception = ex });
+                }).Start();
             }
         }
 

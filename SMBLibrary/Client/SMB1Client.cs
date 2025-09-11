@@ -57,6 +57,8 @@ namespace SMBLibrary.Client
         private byte[] m_securityBlob;
         private byte[] m_sessionKey;
 
+        public event EventHandler<AsyncExceptionEventArgs> OnProcessConnectionBufferException;
+
         public SMB1Client()
         {
         }
@@ -318,7 +320,7 @@ namespace SMBLibrary.Client
                 request.Capabilities = clientCapabilities;
                 request.SecurityBlob = negotiateMessage;
                 TrySendMessage(request);
-                
+
                 SMB1Message reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 while (reply != null && reply.Header.Status == NTStatus.STATUS_MORE_PROCESSING_REQUIRED && reply.Commands[0] is SessionSetupAndXResponseExtended)
                 {
@@ -328,7 +330,7 @@ namespace SMBLibrary.Client
                     {
                         return NTStatus.SEC_E_INVALID_TOKEN;
                     }
-                    
+
                     m_userID = reply.Header.UID;
                     request = new SessionSetupAndXRequestExtended();
                     request.MaxBufferSize = ClientMaxBufferSize;
@@ -495,26 +497,38 @@ namespace SMBLibrary.Client
 
         private void ProcessConnectionBuffer(ConnectionState state)
         {
-            NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
-            while (receiveBuffer.HasCompletePacket())
+            try
             {
-                SessionPacket packet = null;
-                try
+                NBTConnectionReceiveBuffer receiveBuffer = state.ReceiveBuffer;
+                while (receiveBuffer.HasCompletePacket())
                 {
-                    packet = receiveBuffer.DequeuePacket();
-                }
-                catch (Exception)
-                {
-                    Log("[ProcessConnectionBuffer] Invalid packet");
-                    state.ClientSocket.Close();
-                    state.ReceiveBuffer.Dispose();
-                    break;
-                }
+                    SessionPacket packet = null;
+                    try
+                    {
+                        packet = receiveBuffer.DequeuePacket();
+                    }
+                    catch (Exception)
+                    {
+                        Log("[ProcessConnectionBuffer] Invalid packet");
+                        state.ClientSocket.Close();
+                        state.ReceiveBuffer.Dispose();
+                        break;
+                    }
 
-                if (packet != null)
-                {
-                    ProcessPacket(packet, state);
+                    if (packet != null)
+                    {
+                        ProcessPacket(packet, state);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                state.ClientSocket.Close();
+                state.ReceiveBuffer.Dispose();
+                new Thread(() =>
+                {
+                    OnProcessConnectionBufferException?.Invoke(this, new AsyncExceptionEventArgs() { Exception = ex });
+                }).Start();
             }
         }
 
