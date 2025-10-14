@@ -22,6 +22,8 @@ namespace SMBLibrary.Server.SMB2
             OpenFileObject openFile = session.GetOpenFileObject(request.FileId);
             bool watchTree = (request.Flags & ChangeNotifyFlags.WatchTree) > 0;
             SMB2AsyncContext asyncContext = state.CreateAsyncContext(request.FileId, state, request.Header.SessionID, request.Header.TreeID);
+            // Set MessageID to support synchronous CANCEL requests
+            asyncContext.MessageID = request.Header.MessageID;
             // We have to make sure that we don't send an interim response after the final response.
             lock (asyncContext)
             {

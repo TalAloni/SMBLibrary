@@ -154,6 +154,27 @@ namespace SMBLibrary.Server
             return context;
         }
 
+        /// <summary>
+        /// Get AsyncContext by MessageID, used for handling synchronous CANCEL requests
+        /// </summary>
+        /// <param name="messageID">Original request's MessageID</param>
+        /// <param name="sessionID">Session ID for filtering</param>
+        /// <returns>Found AsyncContext, or null if not found</returns>
+        public SMB2AsyncContext GetAsyncContextByMessageID(ulong messageID, ulong sessionID)
+        {
+            lock (m_pendingRequests)
+            {
+                foreach (var context in m_pendingRequests.Values)
+                {
+                    if (context.MessageID == messageID && context.SessionID == sessionID)
+                    {
+                        return context;
+                    }
+                }
+            }
+            return null;
+        }
+
         public void RemoveAsyncContext(SMB2AsyncContext context)
         {
             lock (m_pendingRequests)

@@ -18,5 +18,10 @@ namespace SMBLibrary.Server
         public ulong SessionID;
         public uint TreeID;
         public object IORequest;
+        
+        /// <summary>
+        /// Original request's MessageID, used to support synchronous CANCEL requests
+        /// </summary>
+        public ulong MessageID;
     }
 }
