@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+﻿/* Copyright (C) 2024-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -42,7 +42,7 @@ namespace SMBLibrary.Tests.IntegrationTests
         {
             // Arrange
             SMB2Client client = new SMB2Client();
-            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, 5000);
+            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort);
 
             // Act
             NTStatus status = client.Login("", "John", "password");
@@ -56,7 +56,7 @@ namespace SMBLibrary.Tests.IntegrationTests
         {
             // Arrange
             SMB2Client client = new SMB2Client();
-            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, 5000);
+            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort);
 
             // Act
             NTStatus status = client.Login("", "John", "password");
@@ -64,7 +64,7 @@ namespace SMBLibrary.Tests.IntegrationTests
             status = client.Logoff();
             Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
             client.Disconnect();
-            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, 5000);
+            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort);
             status = client.Login("", "John", "password");
 
             // Assert
@@ -76,7 +76,7 @@ namespace SMBLibrary.Tests.IntegrationTests
         {
             // Arrange
             SMB2Client client = new SMB2Client();
-            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, 5000);
+            client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort);
 
             // Act
             NTStatus status = client.Login("", "John", "Password");

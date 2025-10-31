@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+﻿/* Copyright (C) 2024-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -48,8 +48,8 @@ namespace SMBLibrary.Tests.Client
         {
             m_tcpListener.BeginAcceptTcpClient(AcceptTcpClient_DoNotReply, null);
 
-            SMB2Client client = new SMB2Client();
             int timeoutInMilliseconds = 1000;
+            SMB2Client client = new SMB2Client(timeoutInMilliseconds);
 
             ManualResetEvent manualResetEvent = new ManualResetEvent(false);
             Stopwatch stopwatch = new Stopwatch();
@@ -57,7 +57,7 @@ namespace SMBLibrary.Tests.Client
             new Thread(() =>
             {
                 stopwatch.Start();
-                isConnected = client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, timeoutInMilliseconds);
+                isConnected = client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort);
                 stopwatch.Stop();
             }).Start();
 
@@ -73,8 +73,8 @@ namespace SMBLibrary.Tests.Client
         public void When_SMB2ClientConnectsAndServerSendNonSmbData_ShouldNotReachTimeout()
         {
             m_tcpListener.BeginAcceptTcpClient(AcceptTcpClient_SendNonSmbData, null);
-            SMB2Client client = new SMB2Client();
             int timeoutInMilliseconds = 1000;
+            SMB2Client client = new SMB2Client(timeoutInMilliseconds);
 
             ManualResetEvent manualResetEvent = new ManualResetEvent(false);
             Stopwatch stopwatch = new Stopwatch();
@@ -82,7 +82,7 @@ namespace SMBLibrary.Tests.Client
             new Thread(() =>
             {
                 stopwatch.Start();
-                isConnected = client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort, timeoutInMilliseconds);
+                isConnected = client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort);
                 stopwatch.Stop();
             }).Start();
 

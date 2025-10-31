@@ -59,8 +59,13 @@ namespace SMBLibrary.Client
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
 
-        public SMB2Client()
+        public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
         {
+        }
+
+        public SMB2Client(int responseTimeoutInMilliseconds)
+        {
+            m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
         }
 
         /// <param name="serverName">
@@ -69,11 +74,6 @@ namespace SMBLibrary.Client
         /// </param>
         public bool Connect(string serverName, SMBTransportType transport)
         {
-            return Connect(serverName, transport, DefaultResponseTimeoutInMilliseconds);
-        }
-
-        public bool Connect(string serverName, SMBTransportType transport, int responseTimeoutInMilliseconds)
-        {
             m_serverName = serverName;
             IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
             if (hostAddresses.Length == 0)
@@ -81,21 +81,16 @@ namespace SMBLibrary.Client
                 throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
             }
             IPAddress serverAddress = IPAddressHelper.SelectAddressPreferIPv4(hostAddresses);
-            return Connect(serverAddress, transport, responseTimeoutInMilliseconds);
+            return Connect(serverAddress, transport);
         }
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
         {
-            return Connect(serverAddress, transport, DefaultResponseTimeoutInMilliseconds);
-        }
-
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport, int responseTimeoutInMilliseconds)
-        {
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-            return Connect(serverAddress, transport, port, responseTimeoutInMilliseconds);
+            return Connect(serverAddress, transport, port);
         }
 
-        protected internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, int responseTimeoutInMilliseconds)
+        protected internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port)
         {
             if (m_serverName == null)
             {
@@ -105,7 +100,6 @@ namespace SMBLibrary.Client
             m_transport = transport;
             if (!m_isConnected)
             {
-                m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
                 if (!ConnectSocket(serverAddress, port))
                 {
                     return false;

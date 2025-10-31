@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -57,8 +57,13 @@ namespace SMBLibrary.Client
         private byte[] m_securityBlob;
         private byte[] m_sessionKey;
 
-        public SMB1Client()
+        public SMB1Client() : this(DefaultResponseTimeoutInMilliseconds)
         {
+        }
+
+        public SMB1Client(int responseTimeoutInMilliseconds)
+        {
+            m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
         }
 
         public bool Connect(string serverName, SMBTransportType transport)
@@ -79,22 +84,16 @@ namespace SMBLibrary.Client
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity)
         {
-            return Connect(serverAddress, transport, forceExtendedSecurity, DefaultResponseTimeoutInMilliseconds);
-        }
-
-        public bool Connect(IPAddress serverAddress, SMBTransportType transport, bool forceExtendedSecurity, int responseTimeoutInMilliseconds)
-        {
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
-            return Connect(serverAddress, transport, port, forceExtendedSecurity, responseTimeoutInMilliseconds);
+            return Connect(serverAddress, transport, port, forceExtendedSecurity);
         }
 
-        protected internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity, int responseTimeoutInMilliseconds)
+        protected internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity)
         {
             m_transport = transport;
             if (!m_isConnected)
             {
                 m_forceExtendedSecurity = forceExtendedSecurity;
-                m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
                 if (!ConnectSocket(serverAddress, port))
                 {
                     return false;
