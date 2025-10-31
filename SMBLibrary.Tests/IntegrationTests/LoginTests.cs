@@ -17,13 +17,15 @@ namespace SMBLibrary.Tests.IntegrationTests
     [TestClass]
     public class LoginTests
     {
+        private static Random s_seedGenerator = new Random();
+
         private int m_serverPort;
         private SMBServer m_server;
 
         [TestInitialize]
         public void Initialize()
         {
-            m_serverPort = 1000 + new Random().Next(50000);
+            m_serverPort = 1000 + new Random(s_seedGenerator.Next()).Next(50000);
             SMBShareCollection shares = new SMBShareCollection();
             IGSSMechanism gssMechanism = new IndependentNTLMAuthenticationProvider((username) => "password");
             GSSProvider gssProvider = new GSSProvider(gssMechanism);
