@@ -276,7 +276,11 @@ namespace SMBLibrary.Client
                 response = WaitForCommand(request.MessageID);
             }
 
-            if (response is SessionSetupResponse finalSessionSetupResponse)
+            if (response is ErrorResponse)
+            {
+                return response.Header.Status;
+            }
+            else if (response is SessionSetupResponse finalSessionSetupResponse)
             {
                 m_isLoggedIn = (response.Header.Status == NTStatus.STATUS_SUCCESS);
                 if (m_isLoggedIn)
