@@ -35,6 +35,7 @@ namespace SMBLibrary.Client
         private Socket m_clientSocket;
         private ConnectionState m_connectionState;
         private int m_responseTimeoutInMilliseconds;
+        private bool m_enableSMB311Support = false;
 
         private object m_incomingQueueLock = new object();
         private List<SMB2Command> m_incomingQueue = new List<SMB2Command>();
@@ -63,9 +64,14 @@ namespace SMBLibrary.Client
         {
         }
 
-        public SMB2Client(int responseTimeoutInMilliseconds)
+        public SMB2Client(int responseTimeoutInMilliseconds) : this(responseTimeoutInMilliseconds, false)
+        {
+        }
+
+        public SMB2Client(int responseTimeoutInMilliseconds, bool enableSMB311Support)
         {
             m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
+            m_enableSMB311Support = enableSMB311Support;
         }
 
         /// <param name="serverName">
@@ -199,11 +205,13 @@ namespace SMBLibrary.Client
             request.Dialects.Add(SMB2Dialect.SMB210);
             request.Dialects.Add(SMB2Dialect.SMB300);
             request.Dialects.Add(SMB2Dialect.SMB302);
-#if SMB311_CLIENT
-            request.Dialects.Add(SMB2Dialect.SMB311);
-            request.NegotiateContextList = GetNegotiateContextList();
-            m_preauthIntegrityHashValue = new byte[64];
-#endif
+            if (m_enableSMB311Support)
+            {
+                request.Dialects.Add(SMB2Dialect.SMB311);
+                request.NegotiateContextList = GetNegotiateContextList();
+                m_preauthIntegrityHashValue = new byte[64];
+            }
+
             TrySendCommand(request);
             NegotiateResponse response = WaitForCommand(request.MessageID) as NegotiateResponse;
             if (response != null && response.Header.Status == NTStatus.STATUS_SUCCESS)
