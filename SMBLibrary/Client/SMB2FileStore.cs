@@ -6,6 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using SMBLibrary.SMB2;
 using Utilities;
 
@@ -18,12 +19,15 @@ namespace SMBLibrary.Client
         private SMB2Client m_client;
         private uint m_treeID;
         private bool m_encryptShareData;
+        private readonly Dictionary<object, bool> _activeNotifies;
+        private readonly object _lock = new object();
 
         public SMB2FileStore(SMB2Client client, uint treeID, bool encryptShareData)
         {
             m_client = client;
             m_treeID = treeID;
             m_encryptShareData = encryptShareData;
+            _activeNotifies = new Dictionary<object, bool>();
         }
 
         public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
@@ -291,12 +295,57 @@ namespace SMBLibrary.Client
 
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
         {
-            throw new NotImplementedException();
+            ChangeNotifyRequest request = new ChangeNotifyRequest
+            {
+                FileId = (FileID)handle,
+                CompletionFilter = completionFilter,
+                WatchTree = watchTree,
+                OutputBufferLength = (uint)outputBufferSize
+            };
+
+            ioRequest = request;
+            lock (_lock)
+            {
+                _activeNotifies[request] = true;
+            }
+
+            TrySendCommand(request);
+
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                SMB2Command response = m_client.WaitForCommand(request.MessageID);
+
+                lock (_lock)
+                {
+                    if (!_activeNotifies.ContainsKey(request))
+                    {
+                        return;
+                    }
+                }
+
+                if (response.Header.Status == NTStatus.STATUS_SUCCESS)
+                {
+                    onNotifyChangeCompleted?.Invoke(response.Header.Status, response.GetBytes(), context);
+                    NotifyChange(out _, handle, completionFilter, watchTree, outputBufferSize, onNotifyChangeCompleted, context);
+                }
+                else
+                {
+                    NTStatus error = response == null ? NTStatus.STATUS_INVALID_SMB : response.Header.Status;
+                    onNotifyChangeCompleted?.Invoke(error, null, context);
+                }
+            });
+
+            return NTStatus.STATUS_PENDING;
         }
 
         public NTStatus Cancel(object ioRequest)
         {
-            throw new NotImplementedException();
+            lock (_lock)
+            {
+                _activeNotifies.Remove(ioRequest);
+            }
+
+            return NTStatus.STATUS_SUCCESS;
         }
 
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
