@@ -115,8 +115,7 @@ namespace SMBLibrary.Client
                             return false;
                         }
 
-                        NameServiceClient nameServiceClient = new NameServiceClient(serverAddress);
-                        string serverName = nameServiceClient.GetServerName();
+                        string serverName = GetNetBiosServerName(serverAddress);
                         if (serverName == null)
                         {
                             return false;
@@ -144,6 +143,12 @@ namespace SMBLibrary.Client
                 }
             }
             return m_isConnected;
+        }
+
+        protected virtual string GetNetBiosServerName(IPAddress serverAddress)
+        {
+            NameServiceClient nameServiceClient = new NameServiceClient(serverAddress);
+            return nameServiceClient.GetServerName();
         }
 
         private bool ConnectSocket(IPAddress serverAddress, int port)
