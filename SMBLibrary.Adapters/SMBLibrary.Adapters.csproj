@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
     <AssemblyName>SMBLibrary.Adapters</AssemblyName>
-    <Version>1.5.4</Version>
+    <Version>1.5.5</Version>
     <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary.Adapters</RootNamespace>
     <Authors>Tal Aloni</Authors>
