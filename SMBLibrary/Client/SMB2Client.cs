@@ -629,8 +629,9 @@ namespace SMBLibrary.Client
                 throw new Exception("Attempted to read or write more data than allowed for this connection");
             }
 
-            if (m_dialect == SMB2Dialect.SMB202 || m_transport == SMBTransportType.NetBiosOverTCP)
+            if (!m_connectionSupportsMultiCredit)
             {
+                // [MS-SMB2] 3.2.4.1.5 If [..] Connection.SupportsMultiCredit is FALSE, CreditCharge SHOULD be set to 0.
                 request.Header.CreditCharge = 0;
                 request.Header.Credits = 1;
                 m_availableCredits -= 1;
@@ -639,6 +640,9 @@ namespace SMBLibrary.Client
             {
                 if (request.Header.CreditCharge == 0)
                 {
+                    // [MS-SMB2] 3.2.4.1.5 If Connection.SupportsMultiCredit is TRUE:
+                    // For READ, WRITE, IOCTL, and QUERY_DIRECTORY requests, CreditCharge field in the SMB2 header SHOULD be set to [..] the value computed.
+                    // For all other requests, the client MUST set CreditCharge to 1.
                     request.Header.CreditCharge = 1;
                 }
 
