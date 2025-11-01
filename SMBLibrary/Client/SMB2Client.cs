@@ -59,6 +59,7 @@ namespace SMBLibrary.Client
         private byte[] m_sessionKey;
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
+        private bool m_connectionSupportsMultiCredit = false;
 
         public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
         {
@@ -191,6 +192,7 @@ namespace SMBLibrary.Client
                 m_messageID = 0;
                 m_sessionID = 0;
                 m_availableCredits = 1;
+                m_connectionSupportsMultiCredit = false;
             }
         }
 
@@ -510,7 +512,8 @@ namespace SMBLibrary.Client
 
                 if (m_transport == SMBTransportType.DirectTCPTransport && command is NegotiateResponse negotiateResponse)
                 {
-                    if ((negotiateResponse.Capabilities & Capabilities.LargeMTU) > 0)
+                    m_connectionSupportsMultiCredit = (negotiateResponse.Capabilities & Capabilities.LargeMTU) > 0;
+                    if (m_connectionSupportsMultiCredit)
                     {
                         // [MS-SMB2] 3.2.5.1 Receiving Any Message - If the message size received exceeds Connection.MaxTransactSize, the client SHOULD disconnect the connection.
                         // Note: Windows clients do not enforce the MaxTransactSize value.
@@ -621,6 +624,11 @@ namespace SMBLibrary.Client
 
         internal void TrySendCommand(SMB2Command request, bool encryptData)
         {
+            if (!m_connectionSupportsMultiCredit && request.Header.CreditCharge > 1)
+            {
+                throw new Exception("Attempted to read or write more data than allowed for this connection");
+            }
+
             if (m_dialect == SMB2Dialect.SMB202 || m_transport == SMBTransportType.NetBiosOverTCP)
             {
                 request.Header.CreditCharge = 0;
