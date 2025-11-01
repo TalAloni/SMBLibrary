@@ -386,6 +386,21 @@ namespace SMBLibrary.Client
             return null;
         }
 
+        public NTStatus Echo()
+        {
+            EchoRequest request = new EchoRequest();
+            TrySendCommand(request);
+            SMB2Command response = WaitForCommand(request.MessageID);
+            if (response != null)
+            {
+                return response.Header.Status;
+            }
+            else
+            {
+                return NTStatus.STATUS_INVALID_SMB;
+            }
+        }
+
         private void OnClientSocketReceive(IAsyncResult ar)
         {
             ConnectionState state = (ConnectionState)ar.AsyncState;
