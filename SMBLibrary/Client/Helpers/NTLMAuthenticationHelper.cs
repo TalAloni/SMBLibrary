@@ -23,6 +23,7 @@ namespace SMBLibrary.Client
                                               NegotiateFlags.NTLMSessionSecurity |
                                               NegotiateFlags.DomainNameSupplied |
                                               NegotiateFlags.WorkstationNameSupplied |
+                                              NegotiateFlags.TargetNameNegotiated |
                                               NegotiateFlags.AlwaysSign |
                                               NegotiateFlags.Version |
                                               NegotiateFlags.Use128BitEncryption |
