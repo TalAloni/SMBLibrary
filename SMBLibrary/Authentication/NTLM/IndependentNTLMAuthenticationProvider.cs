@@ -82,7 +82,7 @@ namespace SMBLibrary.Authentication.NTLM
             // https://msdn.microsoft.com/en-us/library/cc236691.aspx
             challengeMessage.NegotiateFlags = NegotiateFlags.TargetTypeServer |
                                               NegotiateFlags.TargetInfo |
-                                              NegotiateFlags.TargetNameSupplied |
+                                              NegotiateFlags.TargetNameNegotiated |
                                               NegotiateFlags.Version;
             // [MS-NLMP] NTLMSSP_NEGOTIATE_NTLM MUST be set in the [..] CHALLENGE_MESSAGE to the client.
             challengeMessage.NegotiateFlags |= NegotiateFlags.NTLMSessionSecurity;

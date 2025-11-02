@@ -52,7 +52,7 @@ namespace SMBLibrary.Authentication.NTLM
 
         public byte[] GetBytes()
         {
-            if ((NegotiateFlags & NegotiateFlags.TargetNameSupplied) == 0)
+            if ((NegotiateFlags & NegotiateFlags.TargetNameNegotiated) == 0)
             {
                 TargetName = String.Empty;
             }
