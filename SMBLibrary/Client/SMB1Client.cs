@@ -288,9 +288,9 @@ namespace SMBLibrary.Client
                     // https://msdn.microsoft.com/en-us/library/cc236700.aspx
                     request.OEMPassword = NTLMCryptography.ComputeLMv2Response(m_serverChallenge, clientChallenge, password, userName, domainName);
                     NTLMv2ClientChallenge clientChallengeStructure = new NTLMv2ClientChallenge(DateTime.UtcNow, clientChallenge, AVPairUtils.GetAVPairSequence(domainName, Environment.MachineName));
-                    byte[] temp = clientChallengeStructure.GetBytesPadded();
-                    byte[] proofStr = NTLMCryptography.ComputeNTLMv2Proof(m_serverChallenge, temp, password, userName, domainName);
-                    request.UnicodePassword = ByteUtils.Concatenate(proofStr, temp);
+                    byte[] clientChallengeStructurePadded = clientChallengeStructure.GetBytesPadded();
+                    byte[] proofStr = NTLMCryptography.ComputeNTLMv2Proof(m_serverChallenge, clientChallengeStructurePadded, password, userName, domainName);
+                    request.UnicodePassword = ByteUtils.Concatenate(proofStr, clientChallengeStructurePadded);
                 }
 
                 TrySendMessage(request);
