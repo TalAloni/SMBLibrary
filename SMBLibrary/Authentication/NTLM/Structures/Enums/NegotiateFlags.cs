@@ -42,7 +42,7 @@ namespace SMBLibrary.Authentication.NTLM
         /// </summary>
         ExtendedSessionSecurity = 0x00080000, // NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY
         Identify = 0x00100000,                // NTLMSSP_NEGOTIATE_IDENTIFY
-        RequestLMSessionKey = 0x00400000,     // NTLMSSP_REQUEST_NON_NT_SESSION_KEY
+        RequestNonNTSessionKey = 0x00400000,  // NTLMSSP_REQUEST_NON_NT_SESSION_KEY
         TargetInfo = 0x00800000,              // NTLMSSP_NEGOTIATE_TARGET_INFO
         Version = 0x02000000,                 // NTLMSSP_NEGOTIATE_VERSION
         Use128BitEncryption = 0x20000000,     // NTLMSSP_NEGOTIATE_128

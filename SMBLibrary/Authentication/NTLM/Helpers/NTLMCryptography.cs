@@ -239,7 +239,7 @@ namespace SMBLibrary.Authentication.NTLM
                 }
                 else
                 {
-                    if ((negotiateFlags & NegotiateFlags.RequestLMSessionKey) > 0)
+                    if ((negotiateFlags & NegotiateFlags.RequestNonNTSessionKey) > 0)
                     {
                         byte[] keyExchangeKey = ByteUtils.Concatenate(ByteReader.ReadBytes(lmowf, 0, 8), new byte[8]);
                         return keyExchangeKey;
