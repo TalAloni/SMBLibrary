@@ -299,17 +299,6 @@ namespace SMBLibrary.Authentication.NTLM
             }
         }
 
-        private static byte[] ComputeV1KXKey(AuthenticateMessage message, string password, byte[] serverChallenge) {
-            // https://msdn.microsoft.com/en-us/library/cc236699.aspx
-            byte[] sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
-            if (message.LmChallengeResponse.Length == 24) {
-                byte[] lmowf = NTLMCryptography.LMOWFv1(password);
-                return NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
-            } else {
-                return NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, new byte[24], serverChallenge, new byte[16]);
-            }
-        }
-
         public override bool DeleteSecurityContext(ref object context)
         {
             context = null;
