@@ -261,7 +261,8 @@ namespace SMBLibrary.Authentication.NTLM
                     // https://msdn.microsoft.com/en-us/library/cc236699.aspx
                     sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
                     byte[] lmowf = NTLMCryptography.LMOWFv1(password);
-                    keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
+                    byte[] expectedLMResponse = NTLMCryptography.ComputeLMv1Response(serverChallenge, password);
+                    keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, expectedLMResponse, serverChallenge, lmowf);
                 }
             }
 
