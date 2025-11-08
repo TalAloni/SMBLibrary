@@ -260,9 +260,15 @@ namespace SMBLibrary.Authentication.NTLM
                 {
                     // https://msdn.microsoft.com/en-us/library/cc236699.aspx
                     sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
-                    byte[] lmowf = NTLMCryptography.LMOWFv1(password);
-                    byte[] expectedLMResponse = NTLMCryptography.ComputeLMv1Response(serverChallenge, password);
-                    keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, expectedLMResponse, serverChallenge, lmowf);
+                    if (message.LmChallengeResponse.Length == 24)
+                    {
+                        byte[] lmowf = NTLMCryptography.LMOWFv1(password);
+                        keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
+                    }
+                    else
+                    {
+                        keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, new byte[24], serverChallenge, new byte[16]);
+                    }
                 }
             }
 
@@ -290,6 +296,17 @@ namespace SMBLibrary.Authentication.NTLM
                 {
                     return NTStatus.STATUS_ACCOUNT_LOCKED_OUT;
                 }
+            }
+        }
+
+        private static byte[] ComputeV1KXKey(AuthenticateMessage message, string password, byte[] serverChallenge) {
+            // https://msdn.microsoft.com/en-us/library/cc236699.aspx
+            byte[] sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
+            if (message.LmChallengeResponse.Length == 24) {
+                byte[] lmowf = NTLMCryptography.LMOWFv1(password);
+                return NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
+            } else {
+                return NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, new byte[24], serverChallenge, new byte[16]);
             }
         }
 
