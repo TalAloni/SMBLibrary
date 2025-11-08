@@ -344,7 +344,11 @@ namespace SMBLibrary.Client
                     reply = WaitForMessage(CommandName.SMB_COM_SESSION_SETUP_ANDX);
                 }
 
-                if (reply != null && reply.Commands[0] is SessionSetupAndXResponseExtended)
+                if (reply != null && reply.Commands[0] is ErrorResponse)
+                {
+                    return reply.Header.Status;
+                }
+                else if (reply != null && reply.Commands[0] is SessionSetupAndXResponseExtended)
                 {
                     m_isLoggedIn = (reply.Header.Status == NTStatus.STATUS_SUCCESS);
                     if (m_isLoggedIn)
