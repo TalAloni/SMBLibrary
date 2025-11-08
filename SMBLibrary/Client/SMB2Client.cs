@@ -69,6 +69,10 @@ namespace SMBLibrary.Client
         {
         }
 
+        public SMB2Client(bool enableSMB311Support) : this(DefaultResponseTimeoutInMilliseconds, enableSMB311Support)
+        {
+        }
+
         public SMB2Client(int responseTimeoutInMilliseconds, bool enableSMB311Support)
         {
             m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
