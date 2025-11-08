@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -168,7 +168,7 @@ namespace SMBLibrary.Server.SMB1
             {
                 authenticateMessage.NegotiateFlags |= NegotiateFlags.ExtendedSessionSecurity;
             }
-            else
+            else if (lmChallengeResponse.Length == 24) // NTLM v1 non-extended-session-security: if LmChallengeResponse is set to 0 bytes then LanManagerSessionKey is not applicable.
             {
                 authenticateMessage.NegotiateFlags |= NegotiateFlags.LanManagerSessionKey;
             }
