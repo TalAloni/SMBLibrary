@@ -21,21 +21,42 @@ namespace SMBLibrary
         public uint ReferralHeaderFlags;
         public List<DfsReferralEntry> ReferralEntries;
         public List<string> StringBuffer;
-        // Padding
+        // This implementation currently handles only the fixed 8-byte header.
+        // Referral entries and string buffers are not yet parsed or serialized.
 
         public ResponseGetDfsReferral()
         {
-            throw new NotImplementedException();
+            ReferralEntries = new List<DfsReferralEntry>();
+            StringBuffer = new List<string>();
         }
 
         public ResponseGetDfsReferral(byte[] buffer)
         {
-            throw new NotImplementedException();
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (buffer.Length < 8)
+            {
+                throw new ArgumentException("Buffer too small for DFS referral response header", "buffer");
+            }
+
+            PathConsumed = LittleEndianConverter.ToUInt16(buffer, 0);
+            NumberOfReferrals = LittleEndianConverter.ToUInt16(buffer, 2);
+            ReferralHeaderFlags = LittleEndianConverter.ToUInt32(buffer, 4);
+
+            ReferralEntries = new List<DfsReferralEntry>();
+            StringBuffer = new List<string>();
         }
 
         public byte[] GetBytes()
         {
-            throw new NotImplementedException();
+            byte[] buffer = new byte[8];
+            LittleEndianWriter.WriteUInt16(buffer, 0, PathConsumed);
+            LittleEndianWriter.WriteUInt16(buffer, 2, NumberOfReferrals);
+            LittleEndianWriter.WriteUInt32(buffer, 4, ReferralHeaderFlags);
+            return buffer;
         }
     }
 }
