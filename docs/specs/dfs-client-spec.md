@@ -103,6 +103,8 @@ And `DfsResolutionResult` includes:
 - Parse `ResponseGetDfsReferral` and pick a target.
 - Surface failures in a way the adapter can act on (fallback vs error).
 
+> Implementation note (vNext-DFS initial stub): until DFS IOCTL/TRANS2 wiring is implemented, a DFS-enabled resolution attempt MAY return `Status = Error` with `ResolvedPath` equal to the original path. This indicates that DFS resolution is not yet available for that path in the current build, and callers should treat this as a non-fatal lack of DFS support.
+
 ### 3.3 DfsAwareClientAdapter
 
 **Role**: Sits between high-level client operations and the underlying SMB1/SMB2 client, coordinating DFS resolution.
