@@ -21,21 +21,258 @@ namespace SMBLibrary
         public uint ReferralHeaderFlags;
         public List<DfsReferralEntry> ReferralEntries;
         public List<string> StringBuffer;
-        // Padding
+        // This implementation currently handles only the fixed 8-byte header.
+        // Referral entries and string buffers are not yet parsed or serialized.
 
         public ResponseGetDfsReferral()
         {
-            throw new NotImplementedException();
+            ReferralEntries = new List<DfsReferralEntry>();
+            StringBuffer = new List<string>();
         }
 
         public ResponseGetDfsReferral(byte[] buffer)
         {
-            throw new NotImplementedException();
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (buffer.Length < 8)
+            {
+                throw new ArgumentException("Buffer too small for DFS referral response header", "buffer");
+            }
+
+            PathConsumed = LittleEndianConverter.ToUInt16(buffer, 0);
+            NumberOfReferrals = LittleEndianConverter.ToUInt16(buffer, 2);
+            ReferralHeaderFlags = LittleEndianConverter.ToUInt32(buffer, 4);
+
+            if (NumberOfReferrals > 0 && buffer.Length == 8)
+            {
+                throw new ArgumentException("Buffer too small for DFS referral entries", "buffer");
+            }
+
+            ReferralEntries = new List<DfsReferralEntry>();
+            StringBuffer = new List<string>();
+            if (NumberOfReferrals > 0 && buffer.Length > 8)
+            {
+                int entryOffset = 8;
+
+                for (int index = 0; index < NumberOfReferrals; index++)
+                {
+                    // Minimal v1 header is 16 bytes; stop if we do not have enough bytes.
+                    if (buffer.Length < entryOffset + 16)
+                    {
+                        throw new ArgumentException("Buffer too small for DFS referral entry header", "buffer");
+                    }
+
+                    ushort versionNumber = LittleEndianConverter.ToUInt16(buffer, entryOffset + 0);
+                    ushort size = LittleEndianConverter.ToUInt16(buffer, entryOffset + 2);
+                    uint timeToLive = LittleEndianConverter.ToUInt32(buffer, entryOffset + 8);
+
+                    // Size is declared per-entry; ensure it does not exceed the remaining buffer.
+                    if (size == 0 || entryOffset + size > buffer.Length)
+                    {
+                        throw new ArgumentException("Buffer too small for DFS referral entry", "buffer");
+                    }
+
+                    DfsReferralEntry entry;
+                    if (versionNumber == 1)
+                    {
+                        DfsReferralEntryV1 v1 = new DfsReferralEntryV1();
+                        v1.VersionNumber = versionNumber;
+                        v1.Size = size;
+                        v1.TimeToLive = timeToLive;
+
+                        // For v1, DFSPathOffset and NetworkAddressOffset are 2-byte offsets
+                        // from the beginning of the referral entry to the corresponding
+                        // null-terminated UTF-16 strings.
+                        if (size >= 16)
+                        {
+                            ushort dfsPathOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 12);
+                            ushort networkAddressOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 14);
+
+                            int dfsPathAbsoluteOffset = entryOffset + dfsPathOffset;
+                            int networkAddressAbsoluteOffset = entryOffset + networkAddressOffset;
+
+                            if (dfsPathAbsoluteOffset < 0 || dfsPathAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS path offset outside buffer", "buffer");
+                            }
+
+                            if (networkAddressAbsoluteOffset < 0 || networkAddressAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS network address offset outside buffer", "buffer");
+                            }
+
+                            v1.DfsPath = ByteReader.ReadNullTerminatedUTF16String(buffer, dfsPathAbsoluteOffset);
+                            if (v1.DfsPath != null)
+                            {
+                                StringBuffer.Add(v1.DfsPath);
+                            }
+
+                            v1.NetworkAddress = ByteReader.ReadNullTerminatedUTF16String(buffer, networkAddressAbsoluteOffset);
+                            if (v1.NetworkAddress != null)
+                            {
+                                StringBuffer.Add(v1.NetworkAddress);
+                            }
+                        }
+
+                        entry = v1;
+                    }
+                    else if (versionNumber == 2)
+                    {
+                        DfsReferralEntryV2 v2 = new DfsReferralEntryV2();
+                        v2.VersionNumber = versionNumber;
+                        v2.Size = size;
+                        v2.TimeToLive = timeToLive;
+
+                        // For v2, ServerType and ReferralEntryFlags occupy the
+                        // 2 bytes at offsets +4 and +6 from the start of the entry.
+                        ushort serverType = LittleEndianConverter.ToUInt16(buffer, entryOffset + 4);
+                        ushort referralEntryFlags = LittleEndianConverter.ToUInt16(buffer, entryOffset + 6);
+
+                        v2.ServerType = serverType;
+                        v2.ReferralEntryFlags = referralEntryFlags;
+
+                        // For v2, DFSPathOffset, DFSAlternatePathOffset, and NetworkAddressOffset
+                        // are 2-byte offsets from the beginning of the referral entry to the
+                        // corresponding null-terminated UTF-16 strings.
+                        if (size >= 18)
+                        {
+                            ushort dfsPathOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 12);
+                            ushort dfsAlternatePathOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 14);
+                            ushort networkAddressOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 16);
+
+                            int dfsPathAbsoluteOffset = entryOffset + dfsPathOffset;
+                            int dfsAlternatePathAbsoluteOffset = entryOffset + dfsAlternatePathOffset;
+                            int networkAddressAbsoluteOffset = entryOffset + networkAddressOffset;
+
+                            if (dfsPathAbsoluteOffset < 0 || dfsPathAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS path offset outside buffer", "buffer");
+                            }
+
+                            if (dfsAlternatePathAbsoluteOffset < 0 || dfsAlternatePathAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS alternate path offset outside buffer", "buffer");
+                            }
+
+                            if (networkAddressAbsoluteOffset < 0 || networkAddressAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS network address offset outside buffer", "buffer");
+                            }
+
+                            v2.DfsPath = ByteReader.ReadNullTerminatedUTF16String(buffer, dfsPathAbsoluteOffset);
+                            if (v2.DfsPath != null)
+                            {
+                                StringBuffer.Add(v2.DfsPath);
+                            }
+
+                            v2.DfsAlternatePath = ByteReader.ReadNullTerminatedUTF16String(buffer, dfsAlternatePathAbsoluteOffset);
+                            if (v2.DfsAlternatePath != null)
+                            {
+                                StringBuffer.Add(v2.DfsAlternatePath);
+                            }
+
+                            v2.NetworkAddress = ByteReader.ReadNullTerminatedUTF16String(buffer, networkAddressAbsoluteOffset);
+                            if (v2.NetworkAddress != null)
+                            {
+                                StringBuffer.Add(v2.NetworkAddress);
+                            }
+                        }
+
+                        entry = v2;
+                    }
+                    else if (versionNumber == 3)
+                    {
+                        DfsReferralEntryV3 v3 = new DfsReferralEntryV3();
+                        v3.VersionNumber = versionNumber;
+                        v3.Size = size;
+                        v3.TimeToLive = timeToLive;
+
+                        ushort serverType = LittleEndianConverter.ToUInt16(buffer, entryOffset + 4);
+                        ushort referralEntryFlags = LittleEndianConverter.ToUInt16(buffer, entryOffset + 6);
+
+                        v3.ServerType = serverType;
+                        v3.ReferralEntryFlags = referralEntryFlags;
+
+                        // For v3, DFSPathOffset, DFSAlternatePathOffset, and NetworkAddressOffset
+                        // are 2-byte offsets from the beginning of the referral entry to the
+                        // corresponding null-terminated UTF-16 strings.
+                        if (size >= 18)
+                        {
+                            ushort dfsPathOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 12);
+                            ushort dfsAlternatePathOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 14);
+                            ushort networkAddressOffset = LittleEndianConverter.ToUInt16(buffer, entryOffset + 16);
+
+                            int dfsPathAbsoluteOffset = entryOffset + dfsPathOffset;
+                            int dfsAlternatePathAbsoluteOffset = entryOffset + dfsAlternatePathOffset;
+                            int networkAddressAbsoluteOffset = entryOffset + networkAddressOffset;
+
+                            if (dfsPathAbsoluteOffset < 0 || dfsPathAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS path offset outside buffer", "buffer");
+                            }
+
+                            if (dfsAlternatePathAbsoluteOffset < 0 || dfsAlternatePathAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS alternate path offset outside buffer", "buffer");
+                            }
+
+                            if (networkAddressAbsoluteOffset < 0 || networkAddressAbsoluteOffset >= buffer.Length)
+                            {
+                                throw new ArgumentException("DFS network address offset outside buffer", "buffer");
+                            }
+
+                            v3.DfsPath = ByteReader.ReadNullTerminatedUTF16String(buffer, dfsPathAbsoluteOffset);
+                            if (v3.DfsPath != null)
+                            {
+                                StringBuffer.Add(v3.DfsPath);
+                            }
+
+                            v3.DfsAlternatePath = ByteReader.ReadNullTerminatedUTF16String(buffer, dfsAlternatePathAbsoluteOffset);
+                            if (v3.DfsAlternatePath != null)
+                            {
+                                StringBuffer.Add(v3.DfsAlternatePath);
+                            }
+
+                            v3.NetworkAddress = ByteReader.ReadNullTerminatedUTF16String(buffer, networkAddressAbsoluteOffset);
+                            if (v3.NetworkAddress != null)
+                            {
+                                StringBuffer.Add(v3.NetworkAddress);
+                            }
+                        }
+
+                        entry = v3;
+                    }
+                    else
+                    {
+                        entry = new StubDfsReferralEntry();
+                    }
+
+                    ReferralEntries.Add(entry);
+
+                    // Advance by the entry Size; at this point size has been validated.
+                    entryOffset += size;
+                    if (entryOffset >= buffer.Length)
+                    {
+                        break;
+                    }
+                }
+            }
         }
 
         public byte[] GetBytes()
         {
-            throw new NotImplementedException();
+            byte[] buffer = new byte[8];
+            LittleEndianWriter.WriteUInt16(buffer, 0, PathConsumed);
+            LittleEndianWriter.WriteUInt16(buffer, 2, NumberOfReferrals);
+            LittleEndianWriter.WriteUInt32(buffer, 4, ReferralHeaderFlags);
+            return buffer;
+        }
+
+        private class StubDfsReferralEntry : DfsReferralEntry
+        {
         }
     }
 }
