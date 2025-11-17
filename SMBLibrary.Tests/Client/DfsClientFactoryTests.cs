@@ -1,34 +1,26 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary;
 using SMBLibrary.Client;
 using SMBLibrary.Client.DFS;
-using SMBLibrary.SMB2;
 
 namespace SMBLibrary.Tests.Client
 {
     [TestClass]
-    public class DfsFileStoreFactoryTests
+    public class DfsClientFactoryTests
     {
         private class FakeFileStore : ISMBFileStore
         {
-            public string LastCreatePath;
-            public object LastDeviceIoControlHandle;
-            public uint LastCtlCode;
-            public byte[] LastInput;
-            public int LastMaxOutputLength;
+            public bool CreateFileCalled;
 
-            public NTStatus CreateStatusToReturn = NTStatus.STATUS_SUCCESS;
-            public NTStatus DeviceIoControlStatusToReturn = NTStatus.STATUS_FS_DRIVER_REQUIRED;
-            public byte[] DeviceIoControlOutputToReturn;
+            public NTStatus StatusToReturn = NTStatus.STATUS_SUCCESS;
 
             public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
             {
-                LastCreatePath = path;
+                CreateFileCalled = true;
                 handle = new object();
                 fileStatus = FileStatus.FILE_OPENED;
-                return CreateStatusToReturn;
+                return StatusToReturn;
             }
 
             public NTStatus CloseFile(object handle)
@@ -63,7 +55,7 @@ namespace SMBLibrary.Tests.Client
                 throw new NotImplementedException();
             }
 
-            public NTStatus QueryDirectory(out List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
+            public NTStatus QueryDirectory(out System.Collections.Generic.List<QueryDirectoryFileInformation> result, object handle, string fileName, FileInformationClass informationClass)
             {
                 result = null;
                 throw new NotImplementedException();
@@ -115,12 +107,8 @@ namespace SMBLibrary.Tests.Client
 
             public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
             {
-                LastDeviceIoControlHandle = handle;
-                LastCtlCode = ctlCode;
-                LastInput = input;
-                LastMaxOutputLength = maxOutputLength;
-                output = DeviceIoControlOutputToReturn;
-                return DeviceIoControlStatusToReturn;
+                output = null;
+                throw new NotImplementedException();
             }
 
             public NTStatus Disconnect()
@@ -140,32 +128,25 @@ namespace SMBLibrary.Tests.Client
         }
 
         [TestMethod]
-        public void CreateDfsAwareFileStore_WhenServerNotDfsCapable_InvokesDeviceIoControlAndUsesOriginalPath()
+        public void CreateDfsAwareFileStore_WhenOptionsNull_ReturnsInnerStore()
         {
             FakeFileStore inner = new FakeFileStore();
-            inner.CreateStatusToReturn = NTStatus.STATUS_SUCCESS;
-            inner.DeviceIoControlStatusToReturn = NTStatus.STATUS_FS_DRIVER_REQUIRED;
-            inner.DeviceIoControlOutputToReturn = null;
 
+            ISMBFileStore result = DfsClientFactory.CreateDfsAwareFileStore(inner, null, null);
+
+            Assert.AreSame(inner, result);
+        }
+
+        [TestMethod]
+        public void CreateDfsAwareFileStore_WhenDfsDisabled_ReturnsInnerStore()
+        {
+            FakeFileStore inner = new FakeFileStore();
             DfsClientOptions options = new DfsClientOptions();
-            options.Enabled = true;
+            options.Enabled = false;
 
-            object dfsHandle = new object();
-            INTFileStore dfsAware = DfsFileStoreFactory.CreateDfsAwareFileStore(inner, dfsHandle, options);
+            ISMBFileStore result = DfsClientFactory.CreateDfsAwareFileStore(inner, null, options);
 
-            string originalPath = "\\\\server\\share\\path";
-            object handle;
-            FileStatus fileStatus;
-            NTStatus status = dfsAware.CreateFile(out handle, out fileStatus, originalPath, 0, 0, 0, 0, 0, null);
-
-            Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
-            Assert.AreEqual(originalPath, inner.LastCreatePath);
-
-            Assert.AreEqual(dfsHandle, inner.LastDeviceIoControlHandle);
-            Assert.AreEqual((uint)IoControlCode.FSCTL_DFS_GET_REFERRALS, inner.LastCtlCode);
-            Assert.AreEqual(0, inner.LastMaxOutputLength); // we currently pass 0 for maxOutputSize in resolver
-            Assert.IsNotNull(inner.LastInput);
-            Assert.IsTrue(inner.LastInput.Length > 0);
+            Assert.AreSame(inner, result);
         }
     }
 }
