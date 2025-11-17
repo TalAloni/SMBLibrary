@@ -4,12 +4,12 @@ using SMBLibrary;
 namespace SMBLibrary.Client.DFS
 {
     /// <summary>
-    /// Internal helper for composing a DFS-aware INTFileStore from an existing INTFileStore,
+    /// Internal helper for composing a DFS-aware ISMBFileStore from an existing ISMBFileStore,
     /// a DFS handle, and DFS client options.
     /// </summary>
     internal static class DfsFileStoreFactory
     {
-        internal static INTFileStore CreateDfsAwareFileStore(INTFileStore inner, object dfsHandle, DfsClientOptions options)
+        internal static ISMBFileStore CreateDfsAwareFileStore(ISMBFileStore inner, object dfsHandle, DfsClientOptions options)
         {
             if (inner == null)
             {

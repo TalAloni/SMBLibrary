@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
 using SMBLibrary;
+using SMBLibrary.Client;
 
 namespace SMBLibrary.Client.DFS
 {
     /// <summary>
-    /// Minimal DFS-aware INTFileStore adapter that composes an INTFileStore with an IDfsClientResolver.
-    /// For this initial slice, only CreateFile path resolution is customized; other operations are
-    /// delegated directly to the underlying store.
+    /// Minimal DFS-aware ISMBFileStore adapter that composes an ISMBFileStore with an IDfsClientResolver.
+    /// For this initial slice, only CreateFile and QueryDirectory path resolution are customized; other
+    /// operations are delegated directly to the underlying store.
     /// </summary>
-    public class DfsAwareClientAdapter : INTFileStore
+    public class DfsAwareClientAdapter : ISMBFileStore
     {
-        private readonly INTFileStore _inner;
+        private readonly ISMBFileStore _inner;
         private readonly IDfsClientResolver _resolver;
         private readonly DfsClientOptions _options;
 
-        public DfsAwareClientAdapter(INTFileStore inner, IDfsClientResolver resolver, DfsClientOptions options)
+        public DfsAwareClientAdapter(ISMBFileStore inner, IDfsClientResolver resolver, DfsClientOptions options)
         {
             if (inner == null)
             {
@@ -153,6 +154,21 @@ namespace SMBLibrary.Client.DFS
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
         {
             return _inner.DeviceIOControl(handle, ctlCode, input, out output, maxOutputLength);
+        }
+
+        public NTStatus Disconnect()
+        {
+            return _inner.Disconnect();
+        }
+
+        public uint MaxReadSize
+        {
+            get { return _inner.MaxReadSize; }
+        }
+
+        public uint MaxWriteSize
+        {
+            get { return _inner.MaxWriteSize; }
         }
     }
 }

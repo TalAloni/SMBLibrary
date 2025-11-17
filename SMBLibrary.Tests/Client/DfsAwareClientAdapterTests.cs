@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary;
+using SMBLibrary.Client;
 using SMBLibrary.Client.DFS;
 
 namespace SMBLibrary.Tests.Client
@@ -19,7 +20,7 @@ namespace SMBLibrary.Tests.Client
             }
         }
 
-        private class FakeFileStore : INTFileStore
+        private class FakeFileStore : ISMBFileStore
         {
             public string LastPath;
             public string LastQueryFileName;
@@ -113,6 +114,21 @@ namespace SMBLibrary.Tests.Client
             public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
             {
                 throw new NotImplementedException();
+            }
+
+            public NTStatus Disconnect()
+            {
+                throw new NotImplementedException();
+            }
+
+            public uint MaxReadSize
+            {
+                get { return 0; }
+            }
+
+            public uint MaxWriteSize
+            {
+                get { return 0; }
             }
         }
 

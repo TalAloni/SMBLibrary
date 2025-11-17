@@ -53,6 +53,8 @@ This SPEC defines the architecture, interfaces, and behavioral contracts for **D
 
 - Shared DFSC codec stays under `SMBLibrary.DFS` and MUST remain usable by both client and future server code.
 
+- DFS configuration and composition entry points (such as `DfsClientFactory`) MUST also live under `SMBLibrary.Client.DFS` and MUST not require changes to existing `ISMBClient` / `ISMBFileStore` interfaces for vNext-DFS.
+
 ---
 
 ## 3. Interfaces & Contracts
@@ -69,11 +71,11 @@ This SPEC defines the architecture, interfaces, and behavioral contracts for **D
 **Constraints**:
 
 - Must be injectable without breaking existing constructors; patterns may include:
-  - Overloads that accept an options object.
-  - A builder or configuration method.
+  - Factory methods that accept an options object.
+  - Optional future overloads or builders, as long as they do not change existing interfaces.
 - Preferred pattern for vNext-DFS:
-  - Add constructor overloads and/or factory methods that accept a `DfsClientOptions` instance.
-  - Keep existing constructors and default configurations; they should map to `Enabled = false` and preserve current behavior.
+  - Expose DFS configuration via factory methods in `SMBLibrary.Client.DFS` (for example, `DfsClientFactory`) that accept a `DfsClientOptions` instance and wrap existing clients/stores.
+  - Keep existing `SMB2Client` / `ISMBClient` constructors and methods unchanged; they should map to `Enabled = false` and preserve current behavior when used directly.
   - Avoid global/static configuration for DFS; configuration should be per-client or per-connection.
 
 ### 3.2 IDfsClientResolver
@@ -120,6 +122,25 @@ And `DfsResolutionResult` includes:
 
 - MUST be bypassed entirely when DFS is disabled.
 - MUST minimize changes to the public interfaces of `ISMBClient` and `ISMBFileStore`.
+- For vNext-DFS, adapter wiring SHOULD be performed via DFS-specific factories (for example, `DfsClientFactory` and file-store-level composition helpers) rather than by adding new methods to `ISMBClient` / `ISMBFileStore`.
+
+### 3.4 DfsClientFactory (conceptual)
+
+**Role**: Provides the primary public entry point for enabling DFS behavior on top of existing SMB2 clients and file stores without changing their public APIs.
+
+**Conceptual responsibilities**:
+
+- Accept an existing `SMB2Client` (or `ISMBFileStore`) and a `DfsClientOptions` instance.
+- When DFS is disabled (`Enabled == false`):
+  - Return the original file store unchanged, behaving like a normal `TreeConnect`.
+- When DFS is enabled (`Enabled == true`):
+  - Compose DFS-aware behavior using internal DFS building blocks (resolver, transport, adapter), returning a DFS-aware `ISMBFileStore` while keeping the underlying `SMB2FileStore` implementation intact.
+
+**Constraints**:
+
+- MUST live under `SMBLibrary.Client.DFS`.
+- MUST NOT require changes to `ISMBClient` / `ISMBFileStore` interfaces in vNext-DFS.
+- MUST respect `DfsClientOptions` semantics (DFS disabled by default).
 
 ---
 
