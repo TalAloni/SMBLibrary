@@ -83,3 +83,66 @@
 **Tests Added**: 1 unit (`DfsReferralEntryV2Tests`) verifying that the model properties preserve assigned values and that instances are usable via the abstract base type.
 **Files Changed**: `SMBLibrary/DFS/DfsReferralEntryV2.cs`, `SMBLibrary.Tests/DFS/DfsReferralEntryV2Tests.cs`
 **AC Status**: Partially met (Phase A1 – DFSC entry models; v2 header/offset parsing and negative-path tests will follow in later slices).
+
+## [2025-11-16] DFSC-A1-DfsReferralEntryV2-HeaderParsing - DFSC v2 header parsing
+
+**Implemented**: Extended `ResponseGetDfsReferral` to recognize v2 referral entries and populate `DfsReferralEntryV2` header fields (`VersionNumber`, `Size`, `TimeToLive`, `ServerType`, `ReferralEntryFlags`) while reusing the existing v1 bounds checks for entry size. v2 string fields (`DfsPath`, `DfsAlternatePath`, `NetworkAddress`) remain unparsed in this slice.
+**Tests Added**: 1 unit (`ParseResponseGetDfsReferral_SingleReferralV2_ParsesHeaderFields`) in `ResponseGetDfsReferralTests` that constructs a minimal v2 DFSC buffer and asserts that the first referral is a `DfsReferralEntryV2` with the expected header values.
+**Files Changed**: `SMBLibrary/DFS/ResponseGetDfsReferral.cs`, `SMBLibrary.Tests/DFS/ResponseGetDfsReferralTests.cs`
+**AC Status**: Partially met (Phase A1 – v2 header parsing; v2 string offsets, multi-entry behavior, and negative-path tests remain for future slices).
+
+## [2025-11-16] DFSC-A1A2-DfsReferralEntryV2-Strings-And-NegativePaths - DFSC v2 string parsing and bounds checks
+
+**Implemented**: Extended the v2 branch of `ResponseGetDfsReferral` to parse `DfsPath`, `DfsAlternatePath`, and `NetworkAddress` from DFSC buffers using v2-specific offsets (`DFSPathOffset`, `DFSAlternatePathOffset`, `NetworkAddressOffset`) relative to the start of each entry. The implementation mirrors the v1 pattern, reading null-terminated UTF-16 strings via `ByteReader` and populating both the v2 entry and the shared `StringBuffer`. Added strict bounds checks for v2 string offsets and reinforced existing size checks so malformed sizes or offsets outside the buffer surface as predictable `ArgumentException`s.
+**Tests Added**: Three additional tests in `ResponseGetDfsReferralTests`: `ParseResponseGetDfsReferral_SingleReferralV2_ParsesStringFields` (happy path for v2 strings), `Ctor_WhenV2EntrySizeExceedsBuffer_ThrowsArgumentException`, and `Ctor_WhenV2DfsPathOffsetOutsideBuffer_ThrowsArgumentException` to exercise negative paths for v2 sizes and offsets.
+**Files Changed**: `SMBLibrary/DFS/ResponseGetDfsReferral.cs`, `SMBLibrary.Tests/DFS/ResponseGetDfsReferralTests.cs`
+**AC Status**: Partially met (Phase A1/A2 – v2 string parsing and core negative-path coverage; multi-entry v2 behavior and additional malformed scenarios can be added in later sprints as needed).
+
+## [2025-11-16] DFSC-A1-DfsReferralEntryV3-Model - DFSC v3 entry model
+
+**Implemented**: Introduced `DfsReferralEntryV3` as a concrete subclass of `DfsReferralEntry` with header fields (`VersionNumber`, `Size`, `TimeToLive`) and v3-modeled fields mirroring v2 for now (`ServerType`, `ReferralEntryFlags`, `DfsPath`, `DfsAlternatePath`, `NetworkAddress`). No wire-format parsing is performed yet.
+**Tests Added**: 1 unit (`DfsReferralEntryV3Tests`) verifying that the model properties preserve assigned values and that instances are usable via the abstract base type.
+**Files Changed**: `SMBLibrary/DFS/DfsReferralEntryV3.cs`, `SMBLibrary.Tests/DFS/DfsReferralEntryV3Tests.cs`
+**AC Status**: Partially met (Phase A1 – DFSC entry models; v3 header/string parsing and negative-path tests will follow in later slices).
+
+## [2025-11-16] DFSC-A1-DfsReferralEntryV3-HeaderParsing - DFSC v3 header parsing
+
+**Implemented**: Extended `ResponseGetDfsReferral` to recognize v3 referral entries and populate `DfsReferralEntryV3` header fields (`VersionNumber`, `Size`, `TimeToLive`, `ServerType`, `ReferralEntryFlags`) using the same entry-size guardrails already applied for earlier versions. v3 string fields (`DfsPath`, `DfsAlternatePath`, `NetworkAddress`) remain unparsed for this slice.
+**Tests Added**: 1 unit (`ParseResponseGetDfsReferral_SingleReferralV3_ParsesHeaderFields`) in `ResponseGetDfsReferralTests` that constructs a minimal v3 DFSC buffer and asserts that the first referral is a `DfsReferralEntryV3` with the expected header values.
+**Files Changed**: `SMBLibrary/DFS/ResponseGetDfsReferral.cs`, `SMBLibrary.Tests/DFS/ResponseGetDfsReferralTests.cs`
+**AC Status**: Partially met (Phase A1 – v3 header parsing; v3 string offsets, multi-entry behavior, and negative-path tests remain for future slices).
+
+## [2025-11-16] DFS-D2-Smb2DfsReferralTransport-DelegateSender - SMB2 DFS transport seam (no network)
+
+**Implemented**: Added `Smb2DfsReferralTransport` under `SMBLibrary.Client.DFS` as a minimal SMB2-backed `IDfsReferralTransport` that uses `DfsIoctlRequestBuilder.CreateDfsReferralRequest` to construct an `IOCtlRequest` for `FSCTL_DFS_GET_REFERRALS` and delegates sending to an injected `Smb2IoctlSender` delegate. This keeps the transport logic SMB2-aware but testable without a live connection.
+**Tests Added**: 1 unit (`Smb2DfsReferralTransportTests`) using a `CapturingIoctlSender` that verifies the IOCTL shape (CtlCode, FileId, `IsFSCtl`, `MaxOutputResponse`, non-empty input) and ensures that status, buffer, and output count are returned as provided by the sender.
+**Files Changed**: `SMBLibrary/Client/DFS/Smb2DfsReferralTransport.cs`, `SMBLibrary.Tests/Client/Smb2DfsReferralTransportTests.cs`
+**AC Status**: Partially met (Phase D2 – SMB2 transport seam via delegate; wiring into real `SMB2FileStore.DeviceIOControl` and full adapter integration are left for subsequent slices).
+
+## [2025-11-16] DFS-D3-DfsAwareClientAdapter-CreateFile - DFS-aware INTFileStore adapter (CreateFile only)
+
+**Implemented**: Introduced `DfsAwareClientAdapter` under `SMBLibrary.Client.DFS` as a minimal DFS-aware `INTFileStore` wrapper that composes an underlying `INTFileStore` with an `IDfsClientResolver` and `DfsClientOptions`. For this slice, only `CreateFile` participates in DFS resolution: it calls the resolver with the requested path and uses the resolved path when `Status=Success`, otherwise falls back to the original path (or whatever `DfsResolutionResult.OriginalPath` indicates). All other `INTFileStore` members delegate directly to the inner store.
+**Tests Added**: 2 units in `DfsAwareClientAdapterTests` using a fake resolver and fake `INTFileStore`: one verifies that when the resolver returns `NotApplicable`, `CreateFile` routes to the inner store with the original path; the other verifies that when the resolver returns `Success`, `CreateFile` uses the resolved path.
+**Files Changed**: `SMBLibrary/Client/DFS/DfsAwareClientAdapter.cs`, `SMBLibrary.Tests/Client/DfsAwareClientAdapterTests.cs`
+**AC Status**: Partially met (Phase D3 – basic adapter over resolver; only `CreateFile` is DFS-aware for now, and no real SMB client wiring is performed yet).
+
+## [2025-11-16] DFS-D3-DfsAwareClientAdapter-QueryDirectory - DFS-aware directory queries
+
+**Implemented**: Extended `DfsAwareClientAdapter` so that `QueryDirectory` is DFS-aware in the same way as `CreateFile`. The adapter now resolves the `fileName` argument via `IDfsClientResolver` and `DfsClientOptions` before delegating to the inner `INTFileStore`, using the resolved pattern when `Status=Success` and falling back to the original value when the resolver reports `NotApplicable` (or when no usable resolved path is provided).
+**Tests Added**: 2 units in `DfsAwareClientAdapterTests` using the existing fake resolver and a fake `INTFileStore` that captures the last `fileName` passed to `QueryDirectory`. One test verifies that when the resolver returns `NotApplicable`, the adapter calls the inner store with the original `fileName`; the other verifies that when the resolver returns `Success`, the adapter uses the resolved `fileName` instead.
+**Files Changed**: `SMBLibrary/Client/DFS/DfsAwareClientAdapter.cs`, `SMBLibrary.Tests/Client/DfsAwareClientAdapterTests.cs`
+**AC Status**: Partially met (Phase D3 – adapter extended beyond `CreateFile` to directory listing; higher-level SMB client wiring and additional operations remain out of scope for this slice).
+
+## [2025-11-16] DFS-D2-Smb2DfsReferralTransport-DeviceIOControl - SMB2 DFS transport over INTFileStore
+
+**Implemented**: Extended `Smb2DfsReferralTransport` with an internal factory method `CreateUsingDeviceIOControl(INTFileStore fileStore, object handle)` that wires the existing delegate-based transport to `INTFileStore.DeviceIOControl`. The delegate now issues DFS IOCTLs via `DeviceIOControl` using the DFSC payload and `MaxOutputResponse` from `DfsIoctlRequestBuilder.CreateDfsReferralRequest`, returning the resulting status and buffer (with `outputCount` matching the buffer length).
+**Tests Added**: 1 unit (`CreateUsingDeviceIOControl_UsesDeviceIoControlAndReturnsStatusAndBuffer`) in `Smb2DfsReferralTransportTests` using a `FakeFileStore` that captures the last `DeviceIOControl` call. The test verifies that the factory-created transport calls `DeviceIOControl` with the expected `CtlCode` (`FSCTL_DFS_GET_REFERRALS`), `maxOutputLength`, and non-empty input buffer, and that it surfaces the fake store’s status and output bytes back to the caller.
+**Files Changed**: `SMBLibrary/Client/DFS/Smb2DfsReferralTransport.cs`, `SMBLibrary.Tests/Client/Smb2DfsReferralTransportTests.cs`
+**AC Status**: Partially met (Phase D2 – SMB2 DFS transport now has a concrete INTFileStore-based path without real network dependencies; integration into higher-level SMB2 client flows remains for a later slice).
+
+## [2025-11-16] DFS-D3-DfsFileStoreFactory-Composition - DFS-aware INTFileStore factory
+
+**Implemented**: Added an internal `DfsFileStoreFactory` under `SMBLibrary.Client.DFS` that composes a DFS-aware `INTFileStore` from an existing `INTFileStore`, a DFS handle, and `DfsClientOptions`. When DFS is disabled, the factory returns the original store unchanged. When DFS is enabled, it creates an `IDfsReferralTransport` via `Smb2DfsReferralTransport.CreateUsingDeviceIOControl`, wires a `DfsClientResolver` over that transport, and wraps the original store in a `DfsAwareClientAdapter` so that `CreateFile` and `QueryDirectory` become DFS-aware.
+**Tests Added**: 1 unit (`CreateDfsAwareFileStore_WhenServerNotDfsCapable_InvokesDeviceIoControlAndUsesOriginalPath`) in `DfsFileStoreFactoryTests` using a `FakeFileStore`. The test verifies that the factory-produced store issues a DFS IOCTL via `DeviceIOControl` (with the expected `CtlCode`, handle, and non-empty DFSC input) and that, when the server returns `STATUS_FS_DRIVER_REQUIRED`, downstream `CreateFile` calls still succeed using the original path, matching resolver semantics.
+**Files Changed**: `SMBLibrary/Client/DFS/DfsFileStoreFactory.cs`, `SMBLibrary.Tests/Client/DfsFileStoreFactoryTests.cs`
+**AC Status**: Partially met (Phase D3 – internal composition seam established for SMB2 DFS-aware file stores; public client wiring and broader operation coverage remain for future slices).
