@@ -276,4 +276,5 @@ Dates are indicative and should be refined once detailed SPEC and tasks exist.
 - Author DFS PRD and SPEC documents and link them here.
 - Define the `IDfsProvider` abstraction and configuration story in an ADR.
 - Break epics into concrete tasks/tests (see `SMBLibrary.Tests` and new DFS-focused test suites).
+- Maintain the DFS client implementation plan in `docs/versions/vNext-DFS/DFS-Client-Dev-Tasks.md` and keep it aligned with this roadmap.
 - Implement Phase 1 (DFSC codec) following TDD per project rules.

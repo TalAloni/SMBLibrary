@@ -5,6 +5,7 @@ This document breaks down the **vNext-DFS** client-only roadmap into phases, spr
 Related docs:
 - Roadmap: `docs/versions/vNext-DFS/ROADMAP.md`
 - Design: `docs/versions/vNext-DFS/DFS-Client-DESIGN.md`
+- DFS client dev tasks: `docs/versions/vNext-DFS/DFS-Client-Dev-Tasks.md`
 - DFS overview: `docs/dfs-overview.md`
 - DFS enablement (server-focused, future): `docs/dfs-enablement-plan.md`
 - Lab setup: `docs/lab-setup-smb-dfs.md`

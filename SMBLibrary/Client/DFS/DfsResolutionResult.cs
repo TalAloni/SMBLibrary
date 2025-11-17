@@ -15,5 +15,7 @@ namespace SMBLibrary.Client.DFS
         /// when DFS is not applicable.
         /// </summary>
         public string ResolvedPath { get; set; }
+
+        public string OriginalPath { get; set; }
     }
 }

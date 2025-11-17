@@ -158,6 +158,30 @@ And `DfsResolutionResult` includes:
 - DFSC buffers MUST adhere to the layout and alignment requirements from MS-DFSC/MS-SMB2.
 - The DFSC codec is responsible for verifying bounds and alignment when decoding.
 
+### 4.5 DFS transport, OutputCount, and status mapping (conceptual)
+
+- The DFS client resolver uses an internal DFS transport abstraction to:
+  - Send `FSCTL_DFS_GET_REFERRALS{,_EX}` IOCTLs (or SMB1 `TRANS2_GET_DFS_REFERRAL`) against an existing `Session`/`TreeConnect`.
+  - Receive:
+    - The `NTStatus` from the SMB client.
+    - The referral response buffer.
+    - The `OutputCount` indicating how many bytes of the buffer are valid.
+- The resolver MUST apply the following conceptual mapping from transport status to DFS resolution outcome (for example, `DfsResolutionStatus`):
+  - `STATUS_SUCCESS`:
+    - Treat as a successful referral response.
+    - Parse only the first `OutputCount` bytes of the buffer.
+    - On successful parsing/selection, return a successful result and update any in-memory referral cache.
+  - `STATUS_BUFFER_OVERFLOW`:
+    - Attempt to parse the first `OutputCount` bytes.
+    - If a valid target can still be selected, treat the outcome as successful but log as an overflow case.
+    - If parsing or selection fails, treat as an error and do not cache the result.
+  - `STATUS_FS_DRIVER_REQUIRED` (server not DFS-capable):
+    - Treat as "DFS not applicable" for the current server/path.
+    - Return the original path unmodified and do not cache a referral.
+  - Any other non-success status (for example, `STATUS_INVALID_PARAMETER`, timeouts surfaced as status codes):
+    - Treat as a DFS resolution error.
+    - Return the original path unmodified and do not cache a referral.
+
 ---
 
 ## 5. Behavior (SMB1)
@@ -241,7 +265,7 @@ This section maps PRD acceptance criteria to SPEC sections and planned tests.
 ## 9. Open SPEC Questions
 
 - Exact shape of DFS configuration APIs (overloads vs builders vs options objects) within the preferred pattern described in §3.1.
-- For vNext, DFS client will not introduce its own persistent caching layer for referrals beyond any caching inherent in the underlying protocol/runtime. Any future client-side DFS caching beyond simple in-memory, per-connection behavior MUST be introduced via a dedicated ADR.
+- For vNext, the DFS client will implement only simple in-memory, per-connection referral caching (no persistent/on-disk cache). Any future client-side DFS caching beyond this behavior MUST be introduced via a dedicated ADR.
 - Whether SMB1 DFS support beyond basic, best-effort behavior is required for all consumers or can remain optional/experimental.
 
 These questions should be resolved before implementation in the relevant ADRs and/or SPEC revisions.
