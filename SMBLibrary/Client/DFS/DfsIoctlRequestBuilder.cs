@@ -10,6 +10,17 @@ namespace SMBLibrary.Client.DFS
     internal static class DfsIoctlRequestBuilder
     {
         /// <summary>
+        /// Special FileID used for DFS referral IOCTLs that don't require an open file handle.
+        /// Per MS-SMB2 2.2.31, this value (0xFFFFFFFFFFFFFFFF for both parts) indicates
+        /// the FSCTL doesn't need an associated file.
+        /// </summary>
+        public static readonly FileID DfsReferralFileId = new FileID
+        {
+            Persistent = 0xFFFFFFFFFFFFFFFFUL,
+            Volatile = 0xFFFFFFFFFFFFFFFFUL
+        };
+
+        /// <summary>
         /// Create an SMB2 IOCTL request for FSCTL_DFS_GET_REFERRALS.
         /// This helper does not send the request; it only sets up the command.
         /// </summary>
@@ -30,11 +41,7 @@ namespace SMBLibrary.Client.DFS
 
             IOCtlRequest request = new IOCtlRequest();
             request.CtlCode = (uint)IoControlCode.FSCTL_DFS_GET_REFERRALS;
-            request.FileId = new FileID
-            {
-                Persistent = 0xFFFFFFFFFFFFFFFFUL,
-                Volatile = 0xFFFFFFFFFFFFFFFFUL,
-            };
+            request.FileId = DfsReferralFileId;
             request.IsFSCtl = true;
             request.MaxOutputResponse = maxOutputResponse;
             request.Input = inputBuffer;
@@ -66,11 +73,7 @@ namespace SMBLibrary.Client.DFS
 
             IOCtlRequest request = new IOCtlRequest();
             request.CtlCode = (uint)IoControlCode.FSCTL_DFS_GET_REFERRALS_EX;
-            request.FileId = new FileID
-            {
-                Persistent = 0xFFFFFFFFFFFFFFFFUL,
-                Volatile = 0xFFFFFFFFFFFFFFFFUL,
-            };
+            request.FileId = DfsReferralFileId;
             request.IsFSCtl = true;
             request.MaxOutputResponse = maxOutputResponse;
             request.Input = inputBuffer;

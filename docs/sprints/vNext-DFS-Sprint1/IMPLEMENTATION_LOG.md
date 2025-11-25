@@ -366,3 +366,31 @@
 - `SMBLibrary.Tests/DFS/DfsIntegrationTests.cs` (new)
 
 **AC Status**: Milestone 5 complete. All DFS client infrastructure in place. Total: 230 DFS tests passing.
+
+## [2025-11-24] M2-T4/T6-Enhancement - V3/V4 NameListReferral Parsing
+
+**Implemented**: Extended `ResponseGetDfsReferral` V3/V4 parsing to support NameListReferral entries per MS-DFSC 2.2.4.3:
+
+- Added NameListReferral detection via `DfsReferralEntryFlags.NameListReferral` flag check
+- NameListReferral structure parsing:
+  - `ServiceSiteGuid` (16 bytes at offset 12-27)
+  - `NumberOfExpandedNames` (2 bytes at offset 28)
+  - `ExpandedNameOffset` (2 bytes at offset 30)
+  - `SpecialName` (null-terminated UTF-16 string at offset 32)
+  - `ExpandedNames` (list of null-terminated UTF-16 strings at ExpandedNameOffset)
+- Normal referral parsing moved to else branch (unchanged behavior)
+- Zero expanded names edge case handled correctly
+
+**Tests Added**: 4 unit tests
+
+- `ParseResponseGetDfsReferral_V3NameListReferral_ParsesServiceSiteGuid` - Full V3 NameListReferral with GUID, SpecialName, and 2 expanded names
+- `ParseResponseGetDfsReferral_V3NameListReferral_SingleExpandedName` - V3 with single DC
+- `ParseResponseGetDfsReferral_V4NameListReferral_ParsesCorrectly` - V4 NameListReferral support
+- `ParseResponseGetDfsReferral_V3NameListReferral_ZeroExpandedNames` - Edge case with no expanded names
+
+**Files Changed**:
+
+- `SMBLibrary/DFS/ResponseGetDfsReferral.cs` (updated - NameListReferral parsing branch)
+- `SMBLibrary.Tests/DFS/ResponseGetDfsReferralTests.cs` (updated - 4 new tests)
+
+**AC Status**: M2-T4 and M2-T6 now fully complete. NameListReferral parsing enables SYSVOL/NETLOGON DFS resolution. Total: 234 DFS tests passing.

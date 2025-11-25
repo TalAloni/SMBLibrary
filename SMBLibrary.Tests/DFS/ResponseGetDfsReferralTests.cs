@@ -440,5 +440,228 @@ namespace SMBLibrary.Tests.DFS
 
             ResponseGetDfsReferral response = new ResponseGetDfsReferral(buffer);
         }
+
+        #region V3 NameListReferral Tests
+
+        [TestMethod]
+        public void ParseResponseGetDfsReferral_V3NameListReferral_ParsesServiceSiteGuid()
+        {
+            // Arrange - V3 NameListReferral with ServiceSiteGuid
+            // MS-DFSC 2.2.4.3: When NameListReferral flag is set, structure is different:
+            // Offset 12-27: ServiceSiteGuid (16 bytes)
+            // Offset 28-29: NumberOfExpandedNames
+            // Offset 30-31: ExpandedNameOffset (from entry start)
+            // String area: SpecialName + ExpandedNames
+
+            string specialName = "contoso.com";
+            string expandedName1 = "DC1.contoso.com";
+            string expandedName2 = "DC2.contoso.com";
+
+            byte[] specialNameBytes = System.Text.Encoding.Unicode.GetBytes(specialName + "\0");
+            byte[] expandedName1Bytes = System.Text.Encoding.Unicode.GetBytes(expandedName1 + "\0");
+            byte[] expandedName2Bytes = System.Text.Encoding.Unicode.GetBytes(expandedName2 + "\0");
+
+            int entryOffset = 8;
+            int entryHeaderSize = 32; // V3 NameListReferral header is 32 bytes
+            int specialNameOffset = entryHeaderSize;
+            int expandedNamesOffset = entryHeaderSize + specialNameBytes.Length;
+
+            int entrySize = entryHeaderSize + specialNameBytes.Length + expandedName1Bytes.Length + expandedName2Bytes.Length;
+            int totalSize = 8 + entrySize;
+            byte[] buffer = new byte[totalSize];
+
+            // Response header
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 0, 22); // PathConsumed
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 1);  // NumberOfReferrals
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0);  // ReferralHeaderFlags
+
+            // V3 entry header
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 0, 3); // VersionNumber
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 2, (ushort)entrySize); // Size
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 4, 1); // ServerType = Root
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 6, 0x0002); // ReferralEntryFlags = NameListReferral
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset + 8, 600); // TimeToLive
+
+            // ServiceSiteGuid at offset 12 (16 bytes)
+            Guid testGuid = new Guid("12345678-1234-1234-1234-123456789ABC");
+            byte[] guidBytes = testGuid.ToByteArray();
+            Array.Copy(guidBytes, 0, buffer, entryOffset + 12, 16);
+
+            // NumberOfExpandedNames at offset 28
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 28, 2);
+
+            // ExpandedNameOffset at offset 30 (offset from entry start to expanded names)
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 30, (ushort)expandedNamesOffset);
+
+            // SpecialName (string area starts at offset 32)
+            Array.Copy(specialNameBytes, 0, buffer, entryOffset + specialNameOffset, specialNameBytes.Length);
+
+            // ExpandedNames
+            Array.Copy(expandedName1Bytes, 0, buffer, entryOffset + expandedNamesOffset, expandedName1Bytes.Length);
+            Array.Copy(expandedName2Bytes, 0, buffer, entryOffset + expandedNamesOffset + expandedName1Bytes.Length, expandedName2Bytes.Length);
+
+            // Act
+            ResponseGetDfsReferral response = new ResponseGetDfsReferral(buffer);
+
+            // Assert
+            Assert.AreEqual((ushort)1, response.NumberOfReferrals);
+            Assert.AreEqual(1, response.ReferralEntries.Count);
+
+            DfsReferralEntryV3 entry = response.ReferralEntries[0] as DfsReferralEntryV3;
+            Assert.IsNotNull(entry, "Entry should be DfsReferralEntryV3");
+            Assert.IsTrue(entry.IsNameListReferral, "Entry should be a NameListReferral");
+            Assert.AreEqual(testGuid, entry.ServiceSiteGuid, "ServiceSiteGuid should match");
+            Assert.AreEqual(specialName, entry.SpecialName, "SpecialName should match");
+            Assert.IsNotNull(entry.ExpandedNames, "ExpandedNames should not be null");
+            Assert.AreEqual(2, entry.ExpandedNames.Count, "Should have 2 expanded names");
+            Assert.AreEqual(expandedName1, entry.ExpandedNames[0], "First expanded name should match");
+            Assert.AreEqual(expandedName2, entry.ExpandedNames[1], "Second expanded name should match");
+        }
+
+        [TestMethod]
+        public void ParseResponseGetDfsReferral_V3NameListReferral_SingleExpandedName()
+        {
+            // Arrange - V3 NameListReferral with single DC
+            string specialName = "test.local";
+            string expandedName = "DC1.test.local";
+
+            byte[] specialNameBytes = System.Text.Encoding.Unicode.GetBytes(specialName + "\0");
+            byte[] expandedNameBytes = System.Text.Encoding.Unicode.GetBytes(expandedName + "\0");
+
+            int entryOffset = 8;
+            int entryHeaderSize = 32;
+            int specialNameOffset = entryHeaderSize;
+            int expandedNamesOffset = entryHeaderSize + specialNameBytes.Length;
+
+            int entrySize = entryHeaderSize + specialNameBytes.Length + expandedNameBytes.Length;
+            int totalSize = 8 + entrySize;
+            byte[] buffer = new byte[totalSize];
+
+            // Response header
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 0, 20);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 1);
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0);
+
+            // V3 entry header
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 0, 3);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 2, (ushort)entrySize);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 4, 1); // Root
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 6, 0x0002); // NameListReferral
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset + 8, 300);
+
+            // ServiceSiteGuid (all zeros)
+            // NumberOfExpandedNames = 1
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 28, 1);
+            // ExpandedNameOffset
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 30, (ushort)expandedNamesOffset);
+
+            // Strings
+            Array.Copy(specialNameBytes, 0, buffer, entryOffset + specialNameOffset, specialNameBytes.Length);
+            Array.Copy(expandedNameBytes, 0, buffer, entryOffset + expandedNamesOffset, expandedNameBytes.Length);
+
+            // Act
+            ResponseGetDfsReferral response = new ResponseGetDfsReferral(buffer);
+
+            // Assert
+            DfsReferralEntryV3 entry = response.ReferralEntries[0] as DfsReferralEntryV3;
+            Assert.IsNotNull(entry);
+            Assert.IsTrue(entry.IsNameListReferral);
+            Assert.AreEqual(specialName, entry.SpecialName);
+            Assert.AreEqual(1, entry.ExpandedNames.Count);
+            Assert.AreEqual(expandedName, entry.ExpandedNames[0]);
+        }
+
+        [TestMethod]
+        public void ParseResponseGetDfsReferral_V4NameListReferral_ParsesCorrectly()
+        {
+            // Arrange - V4 NameListReferral (same structure as V3)
+            string specialName = "corp.local";
+            string expandedName = "DC1.corp.local";
+
+            byte[] specialNameBytes = System.Text.Encoding.Unicode.GetBytes(specialName + "\0");
+            byte[] expandedNameBytes = System.Text.Encoding.Unicode.GetBytes(expandedName + "\0");
+
+            int entryOffset = 8;
+            int entryHeaderSize = 32;
+            int specialNameOffset = entryHeaderSize;
+            int expandedNamesOffset = entryHeaderSize + specialNameBytes.Length;
+
+            int entrySize = entryHeaderSize + specialNameBytes.Length + expandedNameBytes.Length;
+            int totalSize = 8 + entrySize;
+            byte[] buffer = new byte[totalSize];
+
+            // Response header
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 0, 20);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 1);
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0);
+
+            // V4 entry header
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 0, 4); // Version 4
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 2, (ushort)entrySize);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 4, 1);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 6, 0x0002); // NameListReferral
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset + 8, 600);
+
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 28, 1);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 30, (ushort)expandedNamesOffset);
+
+            Array.Copy(specialNameBytes, 0, buffer, entryOffset + specialNameOffset, specialNameBytes.Length);
+            Array.Copy(expandedNameBytes, 0, buffer, entryOffset + expandedNamesOffset, expandedNameBytes.Length);
+
+            // Act
+            ResponseGetDfsReferral response = new ResponseGetDfsReferral(buffer);
+
+            // Assert
+            DfsReferralEntryV4 entry = response.ReferralEntries[0] as DfsReferralEntryV4;
+            Assert.IsNotNull(entry, "V4 entry should be DfsReferralEntryV4");
+            Assert.IsTrue(entry.IsNameListReferral);
+            Assert.AreEqual(specialName, entry.SpecialName);
+            Assert.AreEqual(1, entry.ExpandedNames.Count);
+        }
+
+        [TestMethod]
+        public void ParseResponseGetDfsReferral_V3NameListReferral_ZeroExpandedNames()
+        {
+            // Arrange - Edge case: NameListReferral with zero expanded names
+            string specialName = "empty.local";
+
+            byte[] specialNameBytes = System.Text.Encoding.Unicode.GetBytes(specialName + "\0");
+
+            int entryOffset = 8;
+            int entryHeaderSize = 32;
+            int specialNameOffset = entryHeaderSize;
+
+            int entrySize = entryHeaderSize + specialNameBytes.Length;
+            int totalSize = 8 + entrySize;
+            byte[] buffer = new byte[totalSize];
+
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 0, 24);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 1);
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0);
+
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 0, 3);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 2, (ushort)entrySize);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 4, 1);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 6, 0x0002); // NameListReferral
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset + 8, 300);
+
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 28, 0); // Zero expanded names
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 30, (ushort)entryHeaderSize);
+
+            Array.Copy(specialNameBytes, 0, buffer, entryOffset + specialNameOffset, specialNameBytes.Length);
+
+            // Act
+            ResponseGetDfsReferral response = new ResponseGetDfsReferral(buffer);
+
+            // Assert
+            DfsReferralEntryV3 entry = response.ReferralEntries[0] as DfsReferralEntryV3;
+            Assert.IsNotNull(entry);
+            Assert.IsTrue(entry.IsNameListReferral);
+            Assert.AreEqual(specialName, entry.SpecialName);
+            Assert.IsNotNull(entry.ExpandedNames);
+            Assert.AreEqual(0, entry.ExpandedNames.Count);
+        }
+
+        #endregion
     }
 }
