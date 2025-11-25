@@ -36,6 +36,7 @@ status = fileStore.Disconnect();
 
 DFS-enabled SMB2 client using DfsClientFactory:
 ==============================================
+> **Note**: For detailed DFS configuration options and troubleshooting, see [docs/dfs-usage.md](docs/dfs-usage.md).
 ```cs
 using System;
 using System.Collections.Generic;
