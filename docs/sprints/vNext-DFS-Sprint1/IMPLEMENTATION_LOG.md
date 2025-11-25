@@ -288,3 +288,46 @@
 - `SMBLibrary.Tests/DFS/DfsPathTests.cs` (updated - fixed expectations for ToUncPath)
 
 **AC Status**: Fully met (Milestone 4 Resolution Algorithm complete; ready for Milestone 5 Integration).
+
+## [2025-11-24] M5-Integration-Part1 - DFS Integration Milestone (Partial)
+
+**Implemented**: Completed Milestone 5 tasks T1-T3 from the DFS implementation plan:
+
+- **M5-T1**: Created `DfsSessionManager` class for cross-server session management
+  - Manages SMB client connections across multiple servers for DFS interlink scenarios
+  - Reuses existing connections to the same server (case-insensitive server name matching)
+  - Uses `SmbClientFactory` delegate for testable client creation
+  - Implements `IDisposable` with proper cleanup of all managed connections
+  - Added `DfsCredentials` class to hold authentication credentials
+
+- **M5-T2**: Updated `DfsClientOptions` with feature flags per implementation plan
+  - `EnableDomainCache` - For domain-based DFS resolution (default: false)
+  - `EnableFullResolution` - For full 14-step algorithm (default: false)
+  - `EnableCrossServerSessions` - For cross-server session management (default: false)
+  - `ReferralCacheTtlSeconds` - Cache TTL (default: 300)
+  - `DomainCacheTtlSeconds` - Domain cache TTL (default: 300)
+  - `MaxRetries` - Failover retry limit (default: 3)
+  - `SiteName` - Optional site name for site-aware referrals
+
+- **M5-T3**: Added `FSCTL_DFS_GET_REFERRALS_EX` support in `DfsIoctlRequestBuilder`
+  - New `CreateDfsReferralRequestEx` method for extended referral requests
+  - Supports optional `SiteName` parameter for site-aware referrals
+  - Uses `RequestGetDfsReferralEx` for building the request payload
+
+**Tests Added**: 21 new unit tests
+
+- `DfsSessionManagerTests` (9)
+- `DfsClientOptionsTests` (8 new, 2 existing)
+- `DfsIoctlRequestBuilderTests` (4 new, 3 existing)
+
+**Files Changed**:
+
+- `SMBLibrary/Client/DFS/DfsSessionManager.cs` (new)
+- `SMBLibrary/Client/DFS/DfsCredentials.cs` (new)
+- `SMBLibrary/Client/DFS/DfsClientOptions.cs` (updated)
+- `SMBLibrary/Client/DFS/DfsIoctlRequestBuilder.cs` (updated)
+- `SMBLibrary.Tests/Client/DfsSessionManagerTests.cs` (new)
+- `SMBLibrary.Tests/Client/DfsClientOptionsTests.cs` (updated)
+- `SMBLibrary.Tests/Client/DfsIoctlRequestBuilderTests.cs` (updated)
+
+**AC Status**: Partially met (Milestone 5 tasks T1-T3 complete; T4-T9 remain for SMB2Client integration, DFS-aware wrappers, and documentation).
