@@ -12,24 +12,39 @@ namespace SMBLibrary.Tests.DFS
             DfsReferralEntryV2 entry = new DfsReferralEntryV2();
             entry.VersionNumber = 2;
             entry.Size = 48;
+            entry.ServerType = DfsServerType.Root;
+            entry.ReferralEntryFlags = DfsReferralEntryFlags.NameListReferral;
+            entry.Proximity = 100;
             entry.TimeToLive = 600;
-            entry.ServerType = 1;
-            entry.ReferralEntryFlags = 0x0002;
-            entry.DfsPath = @"\\\\contoso.com\\Public";
-            entry.DfsAlternatePath = @"\\\\contoso.com\\PublicAlt";
-            entry.NetworkAddress = @"\\\\fs2\\Public";
+            entry.DfsPath = @"\\contoso.com\Public";
+            entry.DfsAlternatePath = @"\\contoso.com\PublicAlt";
+            entry.NetworkAddress = @"\\fs2\Public";
 
             Assert.AreEqual((ushort)2, entry.VersionNumber);
             Assert.AreEqual((ushort)48, entry.Size);
+            Assert.AreEqual(DfsServerType.Root, entry.ServerType);
+            Assert.AreEqual(DfsReferralEntryFlags.NameListReferral, entry.ReferralEntryFlags);
+            Assert.AreEqual((uint)100, entry.Proximity);
             Assert.AreEqual((uint)600, entry.TimeToLive);
-            Assert.AreEqual((ushort)1, entry.ServerType);
-            Assert.AreEqual((ushort)0x0002, entry.ReferralEntryFlags);
-            Assert.AreEqual(@"\\\\contoso.com\\Public", entry.DfsPath);
-            Assert.AreEqual(@"\\\\contoso.com\\PublicAlt", entry.DfsAlternatePath);
-            Assert.AreEqual(@"\\\\fs2\\Public", entry.NetworkAddress);
+            Assert.AreEqual(@"\\contoso.com\Public", entry.DfsPath);
+            Assert.AreEqual(@"\\contoso.com\PublicAlt", entry.DfsAlternatePath);
+            Assert.AreEqual(@"\\fs2\Public", entry.NetworkAddress);
 
             DfsReferralEntry asBase = entry;
             Assert.IsNotNull(asBase);
+        }
+
+        [TestMethod]
+        public void Proximity_ShouldPreserveValue()
+        {
+            // Arrange - V2 has Proximity per MS-DFSC 2.2.4.2
+            DfsReferralEntryV2 entry = new DfsReferralEntryV2();
+
+            // Act
+            entry.Proximity = 0x12345678;
+
+            // Assert
+            Assert.AreEqual((uint)0x12345678, entry.Proximity);
         }
     }
 }

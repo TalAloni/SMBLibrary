@@ -157,8 +157,8 @@ namespace SMBLibrary.Tests.DFS
             Assert.AreEqual((ushort)2, entry.VersionNumber);
             Assert.AreEqual((ushort)16, entry.Size);
             Assert.AreEqual((uint)600, entry.TimeToLive);
-            Assert.AreEqual((ushort)1, entry.ServerType);
-            Assert.AreEqual((ushort)0x0002, entry.ReferralEntryFlags);
+            Assert.AreEqual(DfsServerType.Root, entry.ServerType);
+            Assert.AreEqual(DfsReferralEntryFlags.NameListReferral, entry.ReferralEntryFlags);
         }
 
         [TestMethod]
@@ -187,8 +187,8 @@ namespace SMBLibrary.Tests.DFS
             Assert.AreEqual((ushort)3, entry.VersionNumber);
             Assert.AreEqual((ushort)16, entry.Size);
             Assert.AreEqual((uint)900, entry.TimeToLive);
-            Assert.AreEqual((ushort)2, entry.ServerType);
-            Assert.AreEqual((ushort)0x0004, entry.ReferralEntryFlags);
+            Assert.AreEqual((DfsServerType)2, entry.ServerType);
+            Assert.AreEqual(DfsReferralEntryFlags.TargetSetBoundary, entry.ReferralEntryFlags);
         }
 
         [TestMethod]

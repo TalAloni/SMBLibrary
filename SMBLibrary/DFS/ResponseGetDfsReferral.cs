@@ -81,6 +81,9 @@ namespace SMBLibrary
                         DfsReferralEntryV1 v1 = new DfsReferralEntryV1();
                         v1.VersionNumber = versionNumber;
                         v1.Size = size;
+                        // V1 has ServerType at offset +4 and ReferralEntryFlags at offset +6
+                        v1.ServerType = (DfsServerType)LittleEndianConverter.ToUInt16(buffer, entryOffset + 4);
+                        v1.ReferralEntryFlags = (DfsReferralEntryFlags)LittleEndianConverter.ToUInt16(buffer, entryOffset + 6);
                         v1.TimeToLive = timeToLive;
 
                         // For v1, DFSPathOffset and NetworkAddressOffset are 2-byte offsets
@@ -124,15 +127,13 @@ namespace SMBLibrary
                         DfsReferralEntryV2 v2 = new DfsReferralEntryV2();
                         v2.VersionNumber = versionNumber;
                         v2.Size = size;
+
+                        // V2 layout per MS-DFSC 2.2.4.2:
+                        // ServerType at +4, ReferralEntryFlags at +6, Proximity at +8, TimeToLive at +12
+                        v2.ServerType = (DfsServerType)LittleEndianConverter.ToUInt16(buffer, entryOffset + 4);
+                        v2.ReferralEntryFlags = (DfsReferralEntryFlags)LittleEndianConverter.ToUInt16(buffer, entryOffset + 6);
+                        v2.Proximity = LittleEndianConverter.ToUInt32(buffer, entryOffset + 8);
                         v2.TimeToLive = timeToLive;
-
-                        // For v2, ServerType and ReferralEntryFlags occupy the
-                        // 2 bytes at offsets +4 and +6 from the start of the entry.
-                        ushort serverType = LittleEndianConverter.ToUInt16(buffer, entryOffset + 4);
-                        ushort referralEntryFlags = LittleEndianConverter.ToUInt16(buffer, entryOffset + 6);
-
-                        v2.ServerType = serverType;
-                        v2.ReferralEntryFlags = referralEntryFlags;
 
                         // For v2, DFSPathOffset, DFSAlternatePathOffset, and NetworkAddressOffset
                         // are 2-byte offsets from the beginning of the referral entry to the
@@ -183,18 +184,26 @@ namespace SMBLibrary
 
                         entry = v2;
                     }
-                    else if (versionNumber == 3)
+                    else if (versionNumber == 3 || versionNumber == 4)
                     {
-                        DfsReferralEntryV3 v3 = new DfsReferralEntryV3();
+                        // V3 and V4 share the same wire format; V4 adds TargetSetBoundary semantics
+                        DfsReferralEntryV3 v3;
+                        if (versionNumber == 4)
+                        {
+                            v3 = new DfsReferralEntryV4();
+                        }
+                        else
+                        {
+                            v3 = new DfsReferralEntryV3();
+                        }
                         v3.VersionNumber = versionNumber;
                         v3.Size = size;
+
+                        // V3/V4 layout per MS-DFSC 2.2.4.3/2.2.4.4:
+                        // ServerType at +4, ReferralEntryFlags at +6, TimeToLive at +8
+                        v3.ServerType = (DfsServerType)LittleEndianConverter.ToUInt16(buffer, entryOffset + 4);
+                        v3.ReferralEntryFlags = (DfsReferralEntryFlags)LittleEndianConverter.ToUInt16(buffer, entryOffset + 6);
                         v3.TimeToLive = timeToLive;
-
-                        ushort serverType = LittleEndianConverter.ToUInt16(buffer, entryOffset + 4);
-                        ushort referralEntryFlags = LittleEndianConverter.ToUInt16(buffer, entryOffset + 6);
-
-                        v3.ServerType = serverType;
-                        v3.ReferralEntryFlags = referralEntryFlags;
 
                         // For v3, DFSPathOffset, DFSAlternatePathOffset, and NetworkAddressOffset
                         // are 2-byte offsets from the beginning of the referral entry to the

@@ -178,3 +178,34 @@
 - `SMBLibrary.Tests/DFS/DfsServerTypeTests.cs` (new)
 - `SMBLibrary.Tests/DFS/DfsPathTests.cs` (new)
 **AC Status**: Fully met (Milestone 1 Foundation complete; ready for Milestone 2 Referral Structures).
+
+## [2025-11-24] M2-ReferralStructures - DFS Referral Structures Milestone
+
+**Implemented**: Completed Milestone 2 (Referral Structures) from the DFS implementation plan:
+
+- **M2-T1**: Created test fixtures directory `Tests/DFS/TestData/`
+- **M2-T2**: Fixed V1 structure - added `ServerType` (DfsServerType enum) and `ReferralEntryFlags` (DfsReferralEntryFlags enum)
+- **M2-T3**: Fixed V2 structure - added `Proximity` field, updated `ServerType`/`ReferralEntryFlags` to enum types
+- **M2-T4**: Enhanced V3 structure - added `IsNameListReferral` property, `ServiceSiteGuid`, `SpecialName`, `ExpandedNames` for SYSVOL/NETLOGON support
+- **M2-T5**: Added V4 structure - extends V3 with `IsTargetSetBoundary` property for target set grouping
+- **M2-T6**: Updated `ResponseGetDfsReferral` parser - V1-V4 now use enum types, V4 creates `DfsReferralEntryV4` instances
+- **M2-T7**: Added `RequestGetDfsReferralEx` class for site-aware referral requests with `SiteName` support
+
+**Tests Added**: 26 new tests (3 V1, 2 V2, 6 V3, 4 V4, 4 RequestGetDfsReferralEx, 2 ResponseGetDfsReferral updates, 5 existing test fixes)
+
+**Files Changed**:
+- `SMBLibrary/DFS/DfsReferralEntryV1.cs` (updated)
+- `SMBLibrary/DFS/DfsReferralEntryV2.cs` (updated)
+- `SMBLibrary/DFS/DfsReferralEntryV3.cs` (updated)
+- `SMBLibrary/DFS/DfsReferralEntryV4.cs` (new)
+- `SMBLibrary/DFS/RequestGetDfsReferralEx.cs` (new)
+- `SMBLibrary/DFS/ResponseGetDfsReferral.cs` (updated)
+- `SMBLibrary.Tests/DFS/DfsReferralEntryV1Tests.cs` (updated)
+- `SMBLibrary.Tests/DFS/DfsReferralEntryV2Tests.cs` (updated)
+- `SMBLibrary.Tests/DFS/DfsReferralEntryV3Tests.cs` (updated)
+- `SMBLibrary.Tests/DFS/DfsReferralEntryV4Tests.cs` (new)
+- `SMBLibrary.Tests/DFS/RequestGetDfsReferralExTests.cs` (new)
+- `SMBLibrary.Tests/DFS/ResponseGetDfsReferralTests.cs` (updated)
+- `SMBLibrary.Tests/DFS/TestData/` (new directory)
+
+**AC Status**: Fully met (Milestone 2 Referral Structures complete; ready for Milestone 3 Caching).

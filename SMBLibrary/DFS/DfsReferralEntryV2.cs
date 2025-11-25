@@ -1,14 +1,23 @@
+/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+ * 
+ * You can redistribute this program and/or modify it under the terms of
+ * the GNU Lesser Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ */
+
 namespace SMBLibrary
 {
+    /// <summary>
+    /// [MS-DFSC] 2.2.4.2 DFS_REFERRAL_V2
+    /// </summary>
     public class DfsReferralEntryV2 : DfsReferralEntry
     {
         public ushort VersionNumber { get; set; }
         public ushort Size { get; set; }
+        public DfsServerType ServerType { get; set; }
+        public DfsReferralEntryFlags ReferralEntryFlags { get; set; }
+        public uint Proximity { get; set; }
         public uint TimeToLive { get; set; }
-
-        // v2-specific fields (modeled but not yet parsed from the wire):
-        public ushort ServerType { get; set; }
-        public ushort ReferralEntryFlags { get; set; }
         public string DfsPath { get; set; }
         public string DfsAlternatePath { get; set; }
         public string NetworkAddress { get; set; }
