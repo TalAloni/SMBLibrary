@@ -57,9 +57,6 @@ namespace SMBLibrary.Client.DFS
         /// <summary>
         /// Resolves a UNC path using the 14-step DFS algorithm.
         /// </summary>
-        /// <param name="options">DFS client options.</param>
-        /// <param name="originalPath">The UNC path to resolve.</param>
-        /// <returns>The resolution result.</returns>
         public DfsResolutionResult Resolve(DfsClientOptions options, string originalPath)
         {
             if (options == null)
@@ -67,76 +64,64 @@ namespace SMBLibrary.Client.DFS
                 throw new ArgumentNullException("options");
             }
 
-            // Raise started event
             OnResolutionStarted(new DfsResolutionStartedEventArgs(originalPath));
 
-            DfsResolutionResult result = new DfsResolutionResult();
-            result.OriginalPath = originalPath;
-
-            // DFS disabled: return original path as-is
             if (!options.Enabled)
             {
-                result.Status = DfsResolutionStatus.NotApplicable;
-                result.ResolvedPath = originalPath;
-                result.IsDfsPath = false;
-                OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, originalPath, NTStatus.STATUS_SUCCESS, false));
-                return result;
+                return CreateNotApplicableResult(originalPath);
             }
 
-            // Parse the path
-            DfsPath dfsPath;
+            DfsPath dfsPath = TryParsePath(originalPath);
+            if (dfsPath == null || dfsPath.HasOnlyOneComponent || dfsPath.IsIpc)
+            {
+                return CreateNotApplicableResult(originalPath);
+            }
+
+            DfsResolutionResult cachedResult = TryResolveFromCache(originalPath, dfsPath);
+            if (cachedResult != null)
+            {
+                return cachedResult;
+            }
+
+            if (_transport == null)
+            {
+                return CreateNotApplicableResult(originalPath);
+            }
+
+            return ResolveViaTransport(originalPath, dfsPath);
+        }
+
+        private DfsPath TryParsePath(string originalPath)
+        {
             try
             {
-                dfsPath = new DfsPath(originalPath);
+                return new DfsPath(originalPath);
             }
             catch (ArgumentException)
             {
-                // Invalid path format
-                result.Status = DfsResolutionStatus.NotApplicable;
-                result.ResolvedPath = originalPath;
-                result.IsDfsPath = false;
-                OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, originalPath, NTStatus.STATUS_SUCCESS, false));
-                return result;
+                return null;
             }
+        }
 
-            // Step 1: Single component or IPC$ check
-            if (dfsPath.HasOnlyOneComponent || dfsPath.IsIpc)
-            {
-                result.Status = DfsResolutionStatus.NotApplicable;
-                result.ResolvedPath = originalPath;
-                result.IsDfsPath = false;
-                OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, originalPath, NTStatus.STATUS_SUCCESS, false));
-                return result;
-            }
-
-            // Step 2: Check ReferralCache for matching entry
+        private DfsResolutionResult TryResolveFromCache(string originalPath, DfsPath dfsPath)
+        {
             ReferralCacheEntry cachedEntry = _referralCache.Lookup(originalPath);
-            if (cachedEntry != null)
+            if (cachedEntry == null)
             {
-                // Steps 3-4: Cache hit - ROOT or LINK
-                string resolvedPath = ResolveFromCacheEntry(originalPath, dfsPath, cachedEntry);
-                if (resolvedPath != null)
-                {
-                    result.Status = DfsResolutionStatus.Success;
-                    result.ResolvedPath = resolvedPath;
-                    result.IsDfsPath = true;
-                    OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, resolvedPath, NTStatus.STATUS_SUCCESS, true));
-                    return result;
-                }
+                return null;
             }
 
-            // Steps 5-7: Cache miss - need to issue referral request
-            if (_transport == null)
+            string resolvedPath = ResolveFromCacheEntry(originalPath, dfsPath, cachedEntry);
+            if (resolvedPath == null)
             {
-                // No transport available
-                result.Status = DfsResolutionStatus.NotApplicable;
-                result.ResolvedPath = originalPath;
-                result.IsDfsPath = false;
-                OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, originalPath, NTStatus.STATUS_SUCCESS, false));
-                return result;
+                return null;
             }
 
-            // Issue referral request
+            return CreateSuccessResult(originalPath, resolvedPath);
+        }
+
+        private DfsResolutionResult ResolveViaTransport(string originalPath, DfsPath dfsPath)
+        {
             string serverName = dfsPath.ServerName;
             OnReferralRequested(new DfsReferralRequestedEventArgs(originalPath, DfsRequestType.RootReferral, serverName));
 
@@ -144,78 +129,130 @@ namespace SMBLibrary.Client.DFS
             uint outputCount;
             NTStatus status = _transport.TryGetReferrals(serverName, originalPath, 0, out buffer, out outputCount);
 
-            // Step 12: Server not DFS-capable
             if (status == NTStatus.STATUS_FS_DRIVER_REQUIRED)
             {
-                OnReferralReceived(new DfsReferralReceivedEventArgs(originalPath, status, 0, 0));
-                result.Status = DfsResolutionStatus.NotApplicable;
-                result.ResolvedPath = originalPath;
-                result.IsDfsPath = false;
-                OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, originalPath, status, false));
-                return result;
+                return CreateNotApplicableResult(originalPath, status);
             }
 
-            // Handle successful referral
             if (status == NTStatus.STATUS_SUCCESS && buffer != null && buffer.Length > 0)
             {
-                try
+                DfsResolutionResult result = TryParseReferralResponse(originalPath, buffer, outputCount, status);
+                if (result != null)
                 {
-                    byte[] effectiveBuffer = buffer;
-                    if (outputCount > 0 && outputCount <= (uint)buffer.Length && outputCount != (uint)buffer.Length)
-                    {
-                        effectiveBuffer = new byte[outputCount];
-                        Array.Copy(buffer, effectiveBuffer, (int)outputCount);
-                    }
-
-                    ResponseGetDfsReferral response = new ResponseGetDfsReferral(effectiveBuffer);
-                    int referralCount = response.ReferralEntries != null ? response.ReferralEntries.Count : 0;
-                    int ttlSeconds = 0;
-                    if (referralCount > 0)
-                    {
-                        DfsReferralEntryV1 firstV1 = response.ReferralEntries[0] as DfsReferralEntryV1;
-                        if (firstV1 != null)
-                        {
-                            ttlSeconds = (int)firstV1.TimeToLive;
-                        }
-                    }
-
-                    OnReferralReceived(new DfsReferralReceivedEventArgs(originalPath, status, referralCount, ttlSeconds));
-
-                    if (referralCount > 0)
-                    {
-                        string resolvedPath = DfsReferralSelector.SelectResolvedPath(originalPath, response.PathConsumed, response.ReferralEntries.ToArray());
-                        if (!String.IsNullOrEmpty(resolvedPath))
-                        {
-                            // Cache the result
-                            if (ttlSeconds > 0)
-                            {
-                                ReferralCacheEntry newEntry = new ReferralCacheEntry(originalPath);
-                                newEntry.TtlSeconds = (uint)ttlSeconds;
-                                newEntry.ExpiresUtc = DateTime.UtcNow.AddSeconds(ttlSeconds);
-                                DfsReferralEntryV1 firstEntry = response.ReferralEntries[0] as DfsReferralEntryV1;
-                                if (firstEntry != null)
-                                {
-                                    newEntry.TargetList.Add(new TargetSetEntry(firstEntry.NetworkAddress));
-                                }
-                                _referralCache.Add(newEntry);
-                            }
-
-                            result.Status = DfsResolutionStatus.Success;
-                            result.ResolvedPath = resolvedPath;
-                            result.IsDfsPath = true;
-                            OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, resolvedPath, status, true));
-                            return result;
-                        }
-                    }
-                }
-                catch (ArgumentException)
-                {
-                    // Malformed referral response
+                    return result;
                 }
             }
 
-            // Steps 13-14: Error cases
+            return CreateErrorResult(originalPath, status);
+        }
+
+        private DfsResolutionResult TryParseReferralResponse(string originalPath, byte[] buffer, uint outputCount, NTStatus status)
+        {
+            try
+            {
+                byte[] effectiveBuffer = GetEffectiveBuffer(buffer, outputCount);
+                ResponseGetDfsReferral response = new ResponseGetDfsReferral(effectiveBuffer);
+                
+                int referralCount = response.ReferralEntries != null ? response.ReferralEntries.Count : 0;
+                int ttlSeconds = GetTtlFromResponse(response);
+
+                OnReferralReceived(new DfsReferralReceivedEventArgs(originalPath, status, referralCount, ttlSeconds));
+
+                if (referralCount > 0)
+                {
+                    string resolvedPath = DfsReferralSelector.SelectResolvedPath(originalPath, response.PathConsumed, response.ReferralEntries.ToArray());
+                    if (!String.IsNullOrEmpty(resolvedPath))
+                    {
+                        CacheReferralResult(originalPath, response, ttlSeconds);
+                        return CreateSuccessResult(originalPath, resolvedPath);
+                    }
+                }
+            }
+            catch (ArgumentException)
+            {
+                // Malformed referral response
+            }
+
+            return null;
+        }
+
+        private byte[] GetEffectiveBuffer(byte[] buffer, uint outputCount)
+        {
+            if (outputCount > 0 && outputCount <= (uint)buffer.Length && outputCount != (uint)buffer.Length)
+            {
+                byte[] effectiveBuffer = new byte[outputCount];
+                Array.Copy(buffer, effectiveBuffer, (int)outputCount);
+                return effectiveBuffer;
+            }
+            return buffer;
+        }
+
+        private int GetTtlFromResponse(ResponseGetDfsReferral response)
+        {
+            if (response.ReferralEntries != null && response.ReferralEntries.Count > 0)
+            {
+                DfsReferralEntryV1 firstV1 = response.ReferralEntries[0] as DfsReferralEntryV1;
+                if (firstV1 != null)
+                {
+                    return (int)firstV1.TimeToLive;
+                }
+            }
+            return 0;
+        }
+
+        private void CacheReferralResult(string originalPath, ResponseGetDfsReferral response, int ttlSeconds)
+        {
+            if (ttlSeconds <= 0)
+            {
+                return;
+            }
+
+            ReferralCacheEntry newEntry = new ReferralCacheEntry(originalPath);
+            newEntry.TtlSeconds = (uint)ttlSeconds;
+            newEntry.ExpiresUtc = DateTime.UtcNow.AddSeconds(ttlSeconds);
+
+            DfsReferralEntryV1 firstEntry = response.ReferralEntries[0] as DfsReferralEntryV1;
+            if (firstEntry != null)
+            {
+                newEntry.TargetList.Add(new TargetSetEntry(firstEntry.NetworkAddress));
+            }
+
+            _referralCache.Add(newEntry);
+        }
+
+        private DfsResolutionResult CreateNotApplicableResult(string originalPath)
+        {
+            return CreateNotApplicableResult(originalPath, NTStatus.STATUS_SUCCESS);
+        }
+
+        private DfsResolutionResult CreateNotApplicableResult(string originalPath, NTStatus status)
+        {
             OnReferralReceived(new DfsReferralReceivedEventArgs(originalPath, status, 0, 0));
+            DfsResolutionResult result = new DfsResolutionResult();
+            result.OriginalPath = originalPath;
+            result.Status = DfsResolutionStatus.NotApplicable;
+            result.ResolvedPath = originalPath;
+            result.IsDfsPath = false;
+            OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, originalPath, status, false));
+            return result;
+        }
+
+        private DfsResolutionResult CreateSuccessResult(string originalPath, string resolvedPath)
+        {
+            DfsResolutionResult result = new DfsResolutionResult();
+            result.OriginalPath = originalPath;
+            result.Status = DfsResolutionStatus.Success;
+            result.ResolvedPath = resolvedPath;
+            result.IsDfsPath = true;
+            OnResolutionCompleted(new DfsResolutionCompletedEventArgs(originalPath, resolvedPath, NTStatus.STATUS_SUCCESS, true));
+            return result;
+        }
+
+        private DfsResolutionResult CreateErrorResult(string originalPath, NTStatus status)
+        {
+            OnReferralReceived(new DfsReferralReceivedEventArgs(originalPath, status, 0, 0));
+            DfsResolutionResult result = new DfsResolutionResult();
+            result.OriginalPath = originalPath;
             result.Status = DfsResolutionStatus.Error;
             result.ResolvedPath = originalPath;
             result.IsDfsPath = false;
