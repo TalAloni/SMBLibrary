@@ -153,3 +153,28 @@
 **Tests Added**: 2 unit tests in `DfsClientFactoryTests` covering the pass-through behavior when options are null and when DFS is explicitly disabled. Existing adapter and file-store factory tests were updated to operate on `ISMBFileStore` instead of `INTFileStore`, keeping behavior equivalent while enabling the new public factory surface.
 **Files Changed**: `SMBLibrary/Client/DFS/DfsAwareClientAdapter.cs`, `SMBLibrary/Client/DFS/DfsFileStoreFactory.cs`, `SMBLibrary/Client/DFS/DfsClientFactory.cs`, `SMBLibrary.Tests/Client/DfsAwareClientAdapterTests.cs`, `SMBLibrary.Tests/Client/DfsFileStoreFactoryTests.cs`, `SMBLibrary.Tests/Client/DfsClientFactoryTests.cs`
 **AC Status**: Partially met (Phase E1 – initial DFS client API surface via factory; SMB2/SMB1 client convenience overloads and integration tests remain for future slices).
+
+## [2025-11-24] M1-Foundation - DFS Foundation Milestone
+
+**Implemented**: Completed Milestone 1 (Foundation) from the DFS implementation plan:
+
+- **M1-T1**: Fixed `MaxReferralLevel = 4` in `DfsIoctlRequestBuilder` (was 0) to request V4 referrals for maximum interop per MS-DFSC.
+- **M1-T2**: Added `DfsReferralHeaderFlags` enum with `ReferralServers`, `StorageServers`, `TargetFailback` flags per MS-DFSC 2.2.4.
+- **M1-T3**: Added `DfsReferralEntryFlags` enum with `NameListReferral`, `TargetSetBoundary` flags per MS-DFSC 2.2.4.x.
+- **M1-T4**: Added `DfsServerType` enum with `NonRoot`, `Root` values per MS-DFSC 2.2.4.x.
+- **M1-T5/T6**: Created `DfsPath` helper class with path parsing, component extraction, `IsSysVolOrNetLogon`, `IsIpc` detection, and `ReplacePrefix` for DFS path manipulation.
+
+**Tests Added**: 40 unit tests total (3 DfsIoctlRequestBuilder, 4 DfsReferralHeaderFlags, 3 DfsReferralEntryFlags, 2 DfsServerType, 27 DfsPath + 1 existing updated).
+
+**Files Changed**:
+- `SMBLibrary/Client/DFS/DfsIoctlRequestBuilder.cs` (fix)
+- `SMBLibrary/DFS/DfsReferralHeaderFlags.cs` (new)
+- `SMBLibrary/DFS/DfsReferralEntryFlags.cs` (new)
+- `SMBLibrary/DFS/DfsServerType.cs` (new)
+- `SMBLibrary/Client/DFS/DfsPath.cs` (new)
+- `SMBLibrary.Tests/Client/DfsIoctlRequestBuilderTests.cs` (updated)
+- `SMBLibrary.Tests/DFS/DfsReferralHeaderFlagsTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsReferralEntryFlagsTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsServerTypeTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsPathTests.cs` (new)
+**AC Status**: Fully met (Milestone 1 Foundation complete; ready for Milestone 2 Referral Structures).

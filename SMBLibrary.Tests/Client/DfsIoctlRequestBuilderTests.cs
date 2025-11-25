@@ -35,5 +35,21 @@ namespace SMBLibrary.Tests.Client
             // Act
             IOCtlRequest request = DfsIoctlRequestBuilder.CreateDfsReferralRequest(null, 4096);
         }
+
+        [TestMethod]
+        public void CreateDfsReferralRequest_SetsMaxReferralLevelToFour()
+        {
+            // Arrange
+            string dfsPath = @"\\server\namespace";
+            uint maxOutputResponse = 4096;
+
+            // Act
+            IOCtlRequest request = DfsIoctlRequestBuilder.CreateDfsReferralRequest(dfsPath, maxOutputResponse);
+
+            // Assert - Parse the input buffer to verify MaxReferralLevel
+            // The first 2 bytes of the REQ_GET_DFS_REFERRAL buffer are MaxReferralLevel (LE)
+            ushort maxReferralLevel = (ushort)(request.Input[0] | (request.Input[1] << 8));
+            Assert.AreEqual((ushort)4, maxReferralLevel, "MaxReferralLevel should be 4 for maximum V4 referral support");
+        }
     }
 }

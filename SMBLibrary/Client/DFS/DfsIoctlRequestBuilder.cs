@@ -24,7 +24,7 @@ namespace SMBLibrary.Client.DFS
 
             // Build DFSC request payload
             RequestGetDfsReferral dfsRequest = new RequestGetDfsReferral();
-            dfsRequest.MaxReferralLevel = 0; // let server decide
+            dfsRequest.MaxReferralLevel = 4; // Request V4 referrals for maximum interop
             dfsRequest.RequestFileName = dfsPath;
             byte[] inputBuffer = dfsRequest.GetBytes();
 
