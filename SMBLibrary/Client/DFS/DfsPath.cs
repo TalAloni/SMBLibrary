@@ -136,12 +136,13 @@ namespace SMBLibrary.Client.DFS
         }
 
         /// <summary>
-        /// Converts the path back to a UNC string with single leading backslash.
+        /// Converts the path back to a UNC string with double leading backslash.
         /// </summary>
-        /// <returns>UNC path string (e.g., \server\share\folder).</returns>
+        /// <returns>UNC path string (e.g., \\server\share\folder).</returns>
         public string ToUncPath()
         {
             StringBuilder sb = new StringBuilder();
+            sb.Append('\\'); // First backslash of UNC prefix
             foreach (string component in m_components)
             {
                 sb.Append('\\');

@@ -242,3 +242,49 @@
 - `SMBLibrary.Tests/DFS/DomainCacheTests.cs` (new)
 
 **AC Status**: Fully met (Milestone 3 Caching complete; ready for Milestone 4 Resolution Algorithm).
+
+## [2025-11-24] M4-ResolutionAlgorithm - DFS Resolution Algorithm Milestone
+
+**Implemented**: Completed Milestone 4 (Resolution Algorithm) from the DFS implementation plan:
+
+- **M4-T1**: Added `DfsRequestType` enum with values for Domain, DC, Root, Sysvol, and Link referral requests per MS-DFSC 3.1.4.2.
+- **M4-T2**: Created `DfsResolverState<T>` class to track state through the 14-step resolution algorithm including OriginalPath, CurrentPath, Context, RequestType, IsComplete, IsDfsPath, CachedEntry, and LastStatus.
+- **M4-T3**: Created `DfsException` class for DFS resolution errors with Status and Path properties.
+- **M4-T4**: Created DFS event args classes (`DfsResolutionStartedEventArgs`, `DfsReferralRequestedEventArgs`, `DfsReferralReceivedEventArgs`, `DfsResolutionCompletedEventArgs`) for observability.
+- **M4-T5-T14**: Implemented `DfsPathResolver` class with the 14-step resolution algorithm including:
+  - Step 1: Single component / IPC$ check (not DFS)
+  - Step 2: ReferralCache lookup for longest-prefix match
+  - Steps 3-4: Cache hit handling (ROOT/LINK with target selection)
+  - Steps 5-7: Cache miss with referral request via transport
+  - Step 12: Server not DFS-capable (`STATUS_FS_DRIVER_REQUIRED`) handling
+  - Steps 13-14: Error case handling
+  - Event raising for resolution lifecycle observability
+- **M4-T15**: Added comprehensive tests for DfsPathResolver covering all implemented steps.
+- **Bug fix**: Fixed `DfsPath.ToUncPath()` to return proper UNC format with `\\` prefix.
+- **Enhancement**: Added `IsDfsPath` property to `DfsResolutionResult`.
+
+**Tests Added**: 47 new unit tests
+
+- `DfsRequestTypeTests` (6)
+- `DfsResolverStateTests` (14)
+- `DfsExceptionTests` (7)
+- `DfsEventsTests` (9)
+- `DfsPathResolverTests` (11)
+
+**Files Changed**:
+
+- `SMBLibrary/Client/DFS/DfsRequestType.cs` (new)
+- `SMBLibrary/Client/DFS/DfsResolverState.cs` (new)
+- `SMBLibrary/Client/DFS/DfsException.cs` (new)
+- `SMBLibrary/Client/DFS/DfsEvents.cs` (new)
+- `SMBLibrary/Client/DFS/DfsPathResolver.cs` (new)
+- `SMBLibrary/Client/DFS/DfsResolutionResult.cs` (updated - added IsDfsPath)
+- `SMBLibrary/Client/DFS/DfsPath.cs` (fixed - ToUncPath now returns proper UNC)
+- `SMBLibrary.Tests/DFS/DfsRequestTypeTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsResolverStateTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsExceptionTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsEventsTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsPathResolverTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DfsPathTests.cs` (updated - fixed expectations for ToUncPath)
+
+**AC Status**: Fully met (Milestone 4 Resolution Algorithm complete; ready for Milestone 5 Integration).

@@ -243,7 +243,7 @@ namespace SMBLibrary.Tests.DFS
             string result = dfsPath.ToUncPath();
 
             // Assert
-            Assert.AreEqual(@"\server\share\folder\file.txt", result);
+            Assert.AreEqual(@"\\server\share\folder\file.txt", result);
         }
 
         [TestMethod]
@@ -256,7 +256,7 @@ namespace SMBLibrary.Tests.DFS
             string result = dfsPath.ToUncPath();
 
             // Assert
-            Assert.AreEqual(@"\server", result);
+            Assert.AreEqual(@"\\server", result);
         }
 
         #endregion
@@ -274,7 +274,7 @@ namespace SMBLibrary.Tests.DFS
             var result = originalPath.ReplacePrefix(@"\contoso.com\dfs\share", newPrefix);
 
             // Assert
-            Assert.AreEqual(@"\fileserver1\share\folder\file.txt", result.ToUncPath());
+            Assert.AreEqual(@"\\fileserver1\share\folder\file.txt", result.ToUncPath());
         }
 
         [TestMethod]
@@ -288,7 +288,7 @@ namespace SMBLibrary.Tests.DFS
             var result = originalPath.ReplacePrefix(@"\contoso.com\dfs\share", newPrefix);
 
             // Assert
-            Assert.AreEqual(@"\fileserver1\share", result.ToUncPath());
+            Assert.AreEqual(@"\\fileserver1\share", result.ToUncPath());
         }
 
         [TestMethod]
@@ -302,7 +302,7 @@ namespace SMBLibrary.Tests.DFS
             var result = originalPath.ReplacePrefix(@"\contoso.com\dfs\share", newPrefix);
 
             // Assert
-            Assert.AreEqual(@"\fileserver1\share\folder", result.ToUncPath());
+            Assert.AreEqual(@"\\fileserver1\share\folder", result.ToUncPath());
         }
 
         [TestMethod]
