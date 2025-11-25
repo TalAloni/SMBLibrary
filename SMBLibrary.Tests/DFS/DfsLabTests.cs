@@ -810,6 +810,250 @@ namespace SMBLibrary.Tests.DFS
 
         #endregion
 
+        #region DFS-Aware Adapter End-to-End Tests
+
+        [TestMethod]
+        public void Lab_DfsAwareAdapter_DirectAccessWithDfsDisabled_Succeeds()
+        {
+            // Arrange - DFS disabled should work for direct share access
+            RequireLabEnvironment();
+            ConnectToServer(LabFs1Server);
+
+            ISMBFileStore innerStore = Client.TreeConnect("Sales", out NTStatus treeStatus);
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, treeStatus);
+
+            // Create DFS-aware adapter with DFS disabled
+            DfsClientOptions options = new DfsClientOptions { Enabled = false };
+            ISMBFileStore store = DfsClientFactory.CreateDfsAwareFileStore(innerStore, null, options);
+
+            // Act - Access directory through adapter
+            object handle;
+            FileStatus fileStatus;
+            NTStatus createStatus = store.CreateFile(
+                out handle, out fileStatus, "",
+                AccessMask.GENERIC_READ,
+                FileAttributes.Directory,
+                ShareAccess.Read,
+                CreateDisposition.FILE_OPEN,
+                CreateOptions.FILE_DIRECTORY_FILE,
+                null);
+
+            // Assert
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, createStatus,
+                $"Should access share directly when DFS disabled: {createStatus}");
+
+            store.CloseFile(handle);
+            store.Disconnect();
+        }
+
+        [TestMethod]
+        public void Lab_DfsAwareAdapter_WithDfsEnabled_DirectShareAccess_Succeeds()
+        {
+            // Arrange - DFS enabled but accessing non-DFS path should still work
+            RequireLabEnvironment();
+            ConnectToServer(LabFs1Server);
+
+            ISMBFileStore innerStore = Client.TreeConnect("Sales", out NTStatus treeStatus);
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, treeStatus);
+
+            // Create transport for referrals
+            // Note: In lab tests, innerStore is always SMB2FileStore; transport will be non-null
+            SMB2FileStore smb2Store = innerStore as SMB2FileStore;
+            IDfsReferralTransport transport = null;
+            if (smb2Store != null)
+            {
+                transport = Smb2DfsReferralTransport.CreateUsingDeviceIOControl(smb2Store, DfsReferralFileId);
+            }
+
+            // Create DFS-aware adapter with resolver (transport may be null if not SMB2, resolver handles gracefully)
+            var resolver = new DfsClientResolver(transport);
+            DfsClientOptions options = new DfsClientOptions { Enabled = true };
+
+            ISMBFileStore store = DfsClientFactory.CreateDfsAwareFileStore(innerStore, resolver, options);
+
+            // Act - Access directory (non-DFS path should pass through)
+            object handle;
+            FileStatus fileStatus;
+            NTStatus createStatus = store.CreateFile(
+                out handle, out fileStatus, "",
+                AccessMask.GENERIC_READ,
+                FileAttributes.Directory,
+                ShareAccess.Read,
+                CreateDisposition.FILE_OPEN,
+                CreateOptions.FILE_DIRECTORY_FILE,
+                null);
+
+            // Assert
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, createStatus,
+                $"Direct share access with DFS enabled should work: {createStatus}");
+
+            store.CloseFile(handle);
+            store.Disconnect();
+        }
+
+        [TestMethod]
+        public void Lab_DfsAwareAdapter_FileReadWrite_Succeeds()
+        {
+            // Arrange - Test file operations through DFS-aware adapter
+            RequireLabEnvironment();
+            ConnectToServer(LabFs1Server);
+
+            ISMBFileStore innerStore = Client.TreeConnect("Sales", out NTStatus treeStatus);
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, treeStatus);
+
+            DfsClientOptions options = new DfsClientOptions { Enabled = false };
+            ISMBFileStore store = DfsClientFactory.CreateDfsAwareFileStore(innerStore, null, options);
+
+            string testFileName = $"dfs-adapter-test-{Guid.NewGuid():N}.txt";
+            byte[] testData = System.Text.Encoding.UTF8.GetBytes("DFS Adapter E2E Test Data");
+
+            try
+            {
+                // Act - Create and write file
+                object handle;
+                FileStatus fileStatus;
+                NTStatus createStatus = store.CreateFile(
+                    out handle, out fileStatus, testFileName,
+                    AccessMask.GENERIC_READ | AccessMask.GENERIC_WRITE,
+                    FileAttributes.Normal,
+                    ShareAccess.None,
+                    CreateDisposition.FILE_CREATE,
+                    CreateOptions.FILE_NON_DIRECTORY_FILE,
+                    null);
+
+                Assert.AreEqual(NTStatus.STATUS_SUCCESS, createStatus);
+
+                int bytesWritten;
+                NTStatus writeStatus = store.WriteFile(out bytesWritten, handle, 0, testData);
+                Assert.AreEqual(NTStatus.STATUS_SUCCESS, writeStatus);
+
+                store.CloseFile(handle);
+
+                // Read back
+                NTStatus reopenStatus = store.CreateFile(
+                    out handle, out fileStatus, testFileName,
+                    AccessMask.GENERIC_READ,
+                    FileAttributes.Normal,
+                    ShareAccess.Read,
+                    CreateDisposition.FILE_OPEN,
+                    CreateOptions.FILE_NON_DIRECTORY_FILE,
+                    null);
+
+                Assert.AreEqual(NTStatus.STATUS_SUCCESS, reopenStatus);
+
+                byte[] readData;
+                NTStatus readStatus = store.ReadFile(out readData, handle, 0, testData.Length);
+                Assert.AreEqual(NTStatus.STATUS_SUCCESS, readStatus);
+
+                store.CloseFile(handle);
+
+                // Assert
+                CollectionAssert.AreEqual(testData, readData, "Data should round-trip through DFS adapter");
+                Console.WriteLine($"Successfully read/wrote {testData.Length} bytes through DFS adapter");
+            }
+            finally
+            {
+                // Cleanup
+                object deleteHandle;
+                FileStatus deleteStatus;
+                if (store.CreateFile(out deleteHandle, out deleteStatus, testFileName,
+                    AccessMask.DELETE, FileAttributes.Normal, ShareAccess.None,
+                    CreateDisposition.FILE_OPEN, CreateOptions.FILE_DELETE_ON_CLOSE, null) == NTStatus.STATUS_SUCCESS)
+                {
+                    store.CloseFile(deleteHandle);
+                }
+                store.Disconnect();
+            }
+        }
+
+        [TestMethod]
+        public void Lab_DfsAwareAdapter_QueryDirectory_Succeeds()
+        {
+            // Arrange - Test QueryDirectory through adapter
+            RequireLabEnvironment();
+            ConnectToServer(LabFs1Server);
+
+            ISMBFileStore innerStore = Client.TreeConnect("Sales", out NTStatus treeStatus);
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, treeStatus);
+
+            DfsClientOptions options = new DfsClientOptions { Enabled = false };
+            ISMBFileStore store = DfsClientFactory.CreateDfsAwareFileStore(innerStore, null, options);
+
+            // Act - Open directory and query contents
+            object handle;
+            FileStatus fileStatus;
+            NTStatus createStatus = store.CreateFile(
+                out handle, out fileStatus, "",
+                AccessMask.GENERIC_READ,
+                FileAttributes.Directory,
+                ShareAccess.Read | ShareAccess.Write,
+                CreateDisposition.FILE_OPEN,
+                CreateOptions.FILE_DIRECTORY_FILE,
+                null);
+
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, createStatus);
+
+            List<QueryDirectoryFileInformation> entries;
+            NTStatus queryStatus = store.QueryDirectory(
+                out entries, handle, "*", FileInformationClass.FileDirectoryInformation);
+
+            // Assert
+            Assert.IsTrue(
+                queryStatus == NTStatus.STATUS_SUCCESS || queryStatus == NTStatus.STATUS_NO_MORE_FILES,
+                $"QueryDirectory should succeed: {queryStatus}");
+            Assert.IsNotNull(entries);
+
+            Console.WriteLine($"QueryDirectory returned {entries.Count} entries through DFS adapter");
+
+            store.CloseFile(handle);
+            store.Disconnect();
+        }
+
+        [TestMethod]
+        public void Lab_FullDfsResolution_SysvolPath()
+        {
+            // Arrange - Test full DFS resolution path for SYSVOL
+            RequireLabEnvironment();
+            ConnectToDc();
+
+            // Connect to IPC$ for DFS referrals
+            SMB2FileStore ipcStore = Client.TreeConnect("IPC$", out NTStatus ipcStatus) as SMB2FileStore;
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, ipcStatus);
+
+            // Create full DFS resolver stack
+            var referralCache = new ReferralCache();
+            var domainCache = new DomainCache();
+            var transport = Smb2DfsReferralTransport.CreateUsingDeviceIOControl(ipcStore, DfsReferralFileId);
+            var resolver = new DfsPathResolver(referralCache, domainCache, transport);
+
+            DfsClientOptions options = new DfsClientOptions { Enabled = true };
+
+            // Act - Resolve SYSVOL path (always exists on DC)
+            DfsResolutionResult result = resolver.Resolve(options, SysvolPath);
+
+            // Assert
+            Console.WriteLine($"SYSVOL Resolution:");
+            Console.WriteLine($"  Original: {result.OriginalPath}");
+            Console.WriteLine($"  Resolved: {result.ResolvedPath}");
+            Console.WriteLine($"  Status: {result.Status}");
+            Console.WriteLine($"  IsDfsPath: {result.IsDfsPath}");
+
+            // Resolution should complete (may be success or error, but should return something)
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.ResolvedPath, "ResolvedPath should not be null");
+
+            // Check cache was populated
+            ReferralCacheEntry cached = referralCache.Lookup(SysvolPath);
+            if (cached != null)
+            {
+                Console.WriteLine($"  Cache populated: TTL={cached.TtlSeconds}s, Targets={cached.TargetList.Count}");
+            }
+
+            ipcStore.Disconnect();
+        }
+
+        #endregion
+
         #region Failover Tests
 
         [TestMethod]

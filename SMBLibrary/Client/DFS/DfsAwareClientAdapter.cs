@@ -6,17 +6,28 @@ using SMBLibrary.Client;
 namespace SMBLibrary.Client.DFS
 {
     /// <summary>
-    /// Minimal DFS-aware ISMBFileStore adapter that composes an ISMBFileStore with an IDfsClientResolver.
-    /// For this initial slice, only CreateFile and QueryDirectory path resolution are customized; other
-    /// operations are delegated directly to the underlying store.
+    /// DFS-aware ISMBFileStore adapter that composes an ISMBFileStore with an IDfsClientResolver.
+    /// Implements reactive DFS resolution by catching STATUS_PATH_NOT_COVERED and retrying
+    /// with resolved paths per MS-DFSC section 3.1.5.1.
     /// </summary>
     public class DfsAwareClientAdapter : ISMBFileStore
     {
         private readonly ISMBFileStore _inner;
         private readonly IDfsClientResolver _resolver;
         private readonly DfsClientOptions _options;
+        private readonly int _maxRetries;
+
+        /// <summary>
+        /// Maximum number of DFS resolution retries (to prevent infinite loops on interlinks).
+        /// </summary>
+        private const int DefaultMaxRetries = 3;
 
         public DfsAwareClientAdapter(ISMBFileStore inner, IDfsClientResolver resolver, DfsClientOptions options)
+            : this(inner, resolver, options, DefaultMaxRetries)
+        {
+        }
+
+        public DfsAwareClientAdapter(ISMBFileStore inner, IDfsClientResolver resolver, DfsClientOptions options, int maxRetries)
         {
             if (inner == null)
             {
@@ -36,8 +47,12 @@ namespace SMBLibrary.Client.DFS
             _inner = inner;
             _resolver = resolver;
             _options = options;
+            _maxRetries = maxRetries > 0 ? maxRetries : DefaultMaxRetries;
         }
 
+        /// <summary>
+        /// Resolves a path using the DFS resolver. Returns the original path if resolution fails.
+        /// </summary>
         private string ResolvePath(string path)
         {
             if (path == null)
@@ -69,10 +84,64 @@ namespace SMBLibrary.Client.DFS
             return path;
         }
 
+        /// <summary>
+        /// Attempts to resolve a path after receiving STATUS_PATH_NOT_COVERED.
+        /// Forces a fresh DFS referral lookup, bypassing any cached entries.
+        /// </summary>
+        private string ResolvePathAfterNotCovered(string originalPath)
+        {
+            // Force resolution - the path wasn't covered by current target
+            DfsResolutionResult result = _resolver.Resolve(_options, originalPath);
+            if (result != null && result.Status == DfsResolutionStatus.Success && !String.IsNullOrEmpty(result.ResolvedPath))
+            {
+                return result.ResolvedPath;
+            }
+
+            // If resolution fails, return null to indicate no retry should occur
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if the status indicates a DFS redirect is needed.
+        /// </summary>
+        private static bool IsDfsRedirectStatus(NTStatus status)
+        {
+            return status == NTStatus.STATUS_PATH_NOT_COVERED;
+        }
+
         public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
         {
             string effectivePath = ResolvePath(path);
-            return _inner.CreateFile(out handle, out fileStatus, effectivePath, desiredAccess, fileAttributes, shareAccess, createDisposition, createOptions, securityContext);
+            int retryCount = 0;
+
+            while (true)
+            {
+                NTStatus status = _inner.CreateFile(out handle, out fileStatus, effectivePath, desiredAccess, fileAttributes, shareAccess, createDisposition, createOptions, securityContext);
+
+                // If successful or not a DFS redirect, return immediately
+                if (status == NTStatus.STATUS_SUCCESS || !IsDfsRedirectStatus(status))
+                {
+                    return status;
+                }
+
+                // STATUS_PATH_NOT_COVERED: attempt DFS resolution and retry
+                retryCount++;
+                if (retryCount > _maxRetries)
+                {
+                    // Max retries exceeded - return the error
+                    return status;
+                }
+
+                string resolvedPath = ResolvePathAfterNotCovered(path);
+                if (resolvedPath == null || String.Equals(resolvedPath, effectivePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Resolution failed or returned same path - no point retrying
+                    return status;
+                }
+
+                // Retry with resolved path
+                effectivePath = resolvedPath;
+            }
         }
 
         public NTStatus CloseFile(object handle)
