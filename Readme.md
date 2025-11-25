@@ -69,6 +69,10 @@ A commercial license of SMBLibrary is available for a fee.
 This is intended for companies who are unable to use the LGPL version.  
 Please contact me for additional details.  
 
+Contributions:
+==============
+If you choose to make a contribution to this project, you must agree to irrevocably assign to SMBLibrary and/or Tal Aloni all worldwide copyright and intellectual property rights in and to your contribution, effective upon submission.  
+
 Contact:
 ========
 If you have any question, feel free to contact me.  
