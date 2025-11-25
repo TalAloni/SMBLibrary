@@ -331,3 +331,38 @@
 - `SMBLibrary.Tests/Client/DfsIoctlRequestBuilderTests.cs` (updated)
 
 **AC Status**: Partially met (Milestone 5 tasks T1-T3 complete; T4-T9 remain for SMB2Client integration, DFS-aware wrappers, and documentation).
+
+## [2025-11-24] M5-Integration-Part2 - DFS Integration Milestone (Complete)
+
+**Implemented**: Completed remaining Milestone 5 tasks:
+
+- **M5-T4/T5**: Per SPEC section 3.4 guidance, DFS integration uses the existing `DfsClientFactory` pattern
+  rather than modifying `SMB2Client` directly. The factory approach keeps changes isolated and non-breaking.
+  Existing `DfsClientFactory.CreateDfsAwareFileStore()` and `DfsAwareClientAdapter` provide the recommended
+  integration path.
+
+- **M5-T7**: Created comprehensive DFS integration tests
+  - `DfsClientFactory` integration tests (4 tests)
+  - `DfsPathResolver` end-to-end tests (4 tests) - cache hits, server not DFS-capable, IPC$ skipping, events
+  - `DfsSessionManager` integration test (1 test) - multi-server session management
+
+- **M5-T8**: Created `docs/DFS-Usage.md` comprehensive documentation
+  - Quick start guide with code examples
+  - Configuration options table
+  - Feature flags explanation
+  - Cross-server session management guide
+  - Site-aware referrals section
+  - Troubleshooting guide
+  - Known limitations
+  - Event logging examples
+
+**Tests Added**: 9 new integration tests
+
+- `DfsIntegrationTests` (9 tests)
+
+**Files Changed**:
+
+- `docs/DFS-Usage.md` (new)
+- `SMBLibrary.Tests/DFS/DfsIntegrationTests.cs` (new)
+
+**AC Status**: Milestone 5 complete. All DFS client infrastructure in place. Total: 230 DFS tests passing.
