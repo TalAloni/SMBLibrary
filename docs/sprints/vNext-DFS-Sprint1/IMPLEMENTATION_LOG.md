@@ -209,3 +209,36 @@
 - `SMBLibrary.Tests/DFS/TestData/` (new directory)
 
 **AC Status**: Fully met (Milestone 2 Referral Structures complete; ready for Milestone 3 Caching).
+
+## [2025-11-24] M3-Caching - DFS Caching Milestone
+
+**Implemented**: Completed Milestone 3 (Caching) from the DFS implementation plan:
+
+- **M3-T1**: Created `TargetSetEntry` class to represent DFS referral targets with `TargetPath`, `Priority`, `IsTargetSetBoundary`, and `ServerType` (Root / NonRoot).
+- **M3-T2**: Created `ReferralCacheEntry` class and `ReferralCacheEntryType` enum to model cached DFS root/link referrals with `DfsPathPrefix`, `RootOrLink`, `IsInterlink`, `TtlSeconds`, `ExpiresUtc`, `TargetFailback`, and `TargetList` (`List<TargetSetEntry>`), plus `GetTargetHint`, `NextTargetHint`, and `ResetTargetHint` for round-robin target selection.
+- **M3-T3/T4**: Implemented `ReferralCache` with add/remove/clear, `ClearExpired`, and longest-prefix `Lookup` semantics over DFS paths using case-insensitive matching.
+- **M3-T5**: Created `DomainCacheEntry` class to cache DFS domain referrals with `DomainName`, `DcList`, `ExpiresUtc`, `IsExpired`, and DC round-robin hint helpers.
+- **M3-T6**: Implemented `DomainCache` with add/remove/clear, `ClearExpired`, and case-insensitive `Lookup` for domains.
+
+**Tests Added**: 49 new unit tests
+
+- `TargetSetEntryTests` (7)
+- `ReferralCacheEntryTests` (17)
+- `ReferralCacheTests` (9)
+- `DomainCacheEntryTests` (8)
+- `DomainCacheTests` (8)
+
+**Files Changed**:
+- `SMBLibrary/Client/DFS/TargetSetEntry.cs` (new)
+- `SMBLibrary/Client/DFS/ReferralCacheEntryType.cs` (new)
+- `SMBLibrary/Client/DFS/ReferralCacheEntry.cs` (new)
+- `SMBLibrary/Client/DFS/ReferralCache.cs` (new)
+- `SMBLibrary/Client/DFS/DomainCacheEntry.cs` (new)
+- `SMBLibrary/Client/DFS/DomainCache.cs` (new)
+- `SMBLibrary.Tests/DFS/TargetSetEntryTests.cs` (new)
+- `SMBLibrary.Tests/DFS/ReferralCacheEntryTests.cs` (new)
+- `SMBLibrary.Tests/DFS/ReferralCacheTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DomainCacheEntryTests.cs` (new)
+- `SMBLibrary.Tests/DFS/DomainCacheTests.cs` (new)
+
+**AC Status**: Fully met (Milestone 3 Caching complete; ready for Milestone 4 Resolution Algorithm).
