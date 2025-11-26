@@ -34,61 +34,28 @@ if (status == NTStatus.STATUS_SUCCESS)
 status = fileStore.Disconnect();
 ```
 
-DFS-enabled SMB2 client using DfsClientFactory:
-==============================================
-> **Note**: For detailed DFS configuration options and troubleshooting, see [docs/dfs-usage.md](docs/dfs-usage.md).
+Enable DFS support on a file store:
+===================================
 ```cs
-using System;
-using System.Collections.Generic;
-using System.Net;
-using SMBLibrary;
-using SMBLibrary.Client;
-using SMBLibrary.Client.DFS;
-
-// Connect and login (DFS is still disabled by default)
-SMB2Client client = new SMB2Client();
-bool isConnected = client.Connect(IPAddress.Parse("192.168.1.11"), SMBTransportType.DirectTCPTransport);
-if (!isConnected)
-{
-    throw new Exception("Failed to connect to server");
-}
-
-NTStatus status = client.Login(String.Empty, "Username", "Password");
-if (status != NTStatus.STATUS_SUCCESS)
-{
-    client.Disconnect();
-    throw new Exception("Failed to login");
-}
-
-// Connect to a share as usual
-ISMBFileStore baseStore = client.TreeConnect("Public", out status);
-if (status != NTStatus.STATUS_SUCCESS || baseStore == null)
-{
-    client.Logoff();
-    client.Disconnect();
-    throw new Exception("Failed to tree connect");
-}
-
-// Enable DFS behavior via DfsClientOptions and DfsClientFactory
-DfsClientOptions dfsOptions = new DfsClientOptions();
-dfsOptions.Enabled = true; // DFS remains opt-in
-
-// dfsHandle can be null for default SMB2 DFS IOCTL behavior over the share
-ISMBFileStore dfsStore = DfsClientFactory.CreateDfsAwareFileStore(baseStore, null, dfsOptions);
-
-// Use dfsStore like any other ISMBFileStore; DFS-aware behavior is internal
-object directoryHandle;
-FileStatus fileStatus;
-status = dfsStore.CreateFile(out directoryHandle, out fileStatus, "\\\\contoso.com\\Public", AccessMask.GENERIC_READ, FileAttributes.Directory, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
 if (status == NTStatus.STATUS_SUCCESS)
 {
-    List<QueryDirectoryFileInformation> fileList;
-    status = dfsStore.QueryDirectory(out fileList, directoryHandle, "*", FileInformationClass.FileDirectoryInformation);
-    status = dfsStore.CloseFile(directoryHandle);
-}
+    // Wrap with DFS support (disabled by default)
+    DfsClientOptions options = new DfsClientOptions { Enabled = true };
+    ISMBFileStore dfsStore = DfsClientFactory.CreateDfsAwareFileStore(fileStore, null, options);
 
-client.Logoff();
-client.Disconnect();
+    // Use dfsStore normally - DFS paths are resolved automatically
+    object directoryHandle;
+    FileStatus fileStatus;
+    status = dfsStore.CreateFile(out directoryHandle, out fileStatus, @"\DfsLink\Subfolder", AccessMask.GENERIC_READ, FileAttributes.Directory, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
+    if (status == NTStatus.STATUS_SUCCESS)
+    {
+        List<QueryDirectoryFileInformation> fileList;
+        status = dfsStore.QueryDirectory(out fileList, directoryHandle, "*", FileInformationClass.FileDirectoryInformation);
+        status = dfsStore.CloseFile(directoryHandle);
+    }
+}
+status = fileStore.Disconnect();
 ```
 
 Connect to share and list files and directories - SMB2:
