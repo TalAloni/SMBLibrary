@@ -286,7 +286,20 @@ namespace SMBLibrary.Client
 
         public NTStatus SetSecurityInformation(object handle, SecurityInformation securityInformation, SecurityDescriptor securityDescriptor)
         {
-            return NTStatus.STATUS_NOT_SUPPORTED;
+            SetInfoRequest request = new SetInfoRequest();
+            request.InfoType = InfoType.Security;
+            request.SecurityInformation = securityInformation;
+            request.FileId = (FileID)handle;
+            request.SetSecurityInformation(securityDescriptor);
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID, out bool connectionTerminated);
+            if (response != null)
+            {
+                return response.Header.Status;
+            }
+
+            return connectionTerminated ? NTStatus.STATUS_INVALID_SMB : NTStatus.STATUS_IO_TIMEOUT;
         }
 
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
