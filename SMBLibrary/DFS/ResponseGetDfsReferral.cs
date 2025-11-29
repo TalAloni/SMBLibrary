@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -15,26 +15,76 @@ namespace SMBLibrary.DFS
     /// </summary>
     public class ResponseGetDfsReferral
     {
+        private const int HeaderSize = 8;
+        private const int MinReferralEntryHeaderSize = 16;
+
         public ushort PathConsumed;
-        public ushort NumberOfReferrals;
-        public uint ReferralHeaderFlags;
+        // ushort NumberOfReferrals;
+        public DfsReferralHeaderFlags ReferralHeaderFlags;
         public List<DfsReferralEntry> ReferralEntries;
-        public List<string> StringBuffer;
+        // StringBuffer;
         // Padding
 
         public ResponseGetDfsReferral()
         {
-            throw new NotImplementedException();
+            ReferralEntries = new List<DfsReferralEntry>();
         }
 
         public ResponseGetDfsReferral(byte[] buffer)
         {
-            throw new NotImplementedException();
+            if (buffer.Length < HeaderSize)
+            {
+                throw new ArgumentException("Buffer too small for DFS referral response header", nameof(buffer));
+            }
+
+            PathConsumed = LittleEndianConverter.ToUInt16(buffer, 0);
+            ushort numberOfReferrals = LittleEndianConverter.ToUInt16(buffer, 2);
+            ReferralHeaderFlags = (DfsReferralHeaderFlags)LittleEndianConverter.ToUInt32(buffer, 4);
+
+            if (numberOfReferrals > 0 && buffer.Length == HeaderSize)
+            {
+                throw new ArgumentException("Buffer too small for DFS referral entries", nameof(buffer));
+            }
+
+            ReferralEntries = new List<DfsReferralEntry>();
+            int entryOffset = HeaderSize;
+            for (int index = 0; index < numberOfReferrals; index++)
+            {
+                if (buffer.Length < entryOffset + MinReferralEntryHeaderSize)
+                {
+                    throw new ArgumentException("Buffer too small for DFS referral entry header", nameof(buffer));
+                }
+
+                DfsReferralEntry entry = DfsReferralEntry.ReadEntry(buffer, ref entryOffset);
+                ReferralEntries.Add(entry);
+
+                if (entryOffset > buffer.Length)
+                {
+                    throw new ArgumentException("Buffer too small for next DFS referral", nameof(buffer));
+                }
+            }
         }
 
         public byte[] GetBytes()
         {
-            throw new NotImplementedException();
+            int length = HeaderSize;
+            foreach (DfsReferralEntry entry in ReferralEntries)
+            {
+                length += entry.Length;
+            }
+            
+            byte[] buffer = new byte[length];
+            LittleEndianWriter.WriteUInt16(buffer, 0, PathConsumed);
+            LittleEndianWriter.WriteUInt16(buffer, 2, (ushort)ReferralEntries.Count);
+            LittleEndianWriter.WriteUInt32(buffer, 4, (uint)ReferralHeaderFlags);
+
+            int offset = HeaderSize;
+            foreach (DfsReferralEntry entry in ReferralEntries)
+            {
+                ByteWriter.WriteBytes(buffer, offset, entry.GetBytes());
+                offset += entry.Length;
+            }
+            return buffer;
         }
     }
 }
