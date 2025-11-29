@@ -47,5 +47,48 @@ namespace SMBLibrary.Tests.DFS
             // Assert
             Assert.AreEqual((uint)0x12345678, entry.Proximity);
         }
+
+        [TestMethod]
+        public void GetBytes_RoundTrip_PreservesAllFields()
+        {
+            // Arrange
+            DfsReferralEntryV2 original = new DfsReferralEntryV2();
+            original.ServerType = DfsServerType.NonRoot;
+            original.ReferralEntryFlags = DfsReferralEntryFlags.None;
+            original.Proximity = 100;
+            original.TimeToLive = 600;
+            original.DfsPath = @"\\domain\namespace";
+            original.DfsAlternatePath = @"\\domain\namespace";
+            original.NetworkAddress = @"\\server\share";
+
+            // Act - serialize and parse back
+            byte[] buffer = original.GetBytes();
+            int offset = 0;
+            DfsReferralEntryV2 parsed = new DfsReferralEntryV2(buffer, ref offset);
+
+            // Assert
+            Assert.AreEqual(original.VersionNumber, parsed.VersionNumber);
+            Assert.AreEqual(original.ServerType, parsed.ServerType);
+            Assert.AreEqual(original.ReferralEntryFlags, parsed.ReferralEntryFlags);
+            Assert.AreEqual(original.Proximity, parsed.Proximity);
+            Assert.AreEqual(original.TimeToLive, parsed.TimeToLive);
+            Assert.AreEqual(original.DfsPath, parsed.DfsPath);
+            Assert.AreEqual(original.DfsAlternatePath, parsed.DfsAlternatePath);
+            Assert.AreEqual(original.NetworkAddress, parsed.NetworkAddress);
+            Assert.AreEqual(buffer.Length, offset);
+        }
+
+        [TestMethod]
+        public void Length_CalculatesCorrectly()
+        {
+            // Arrange - V2 FixedLength = 22
+            DfsReferralEntryV2 entry = new DfsReferralEntryV2();
+            entry.DfsPath = "a";           // 1 + null = 2 * 2 = 4 bytes
+            entry.DfsAlternatePath = "b";  // 4 bytes
+            entry.NetworkAddress = "c";    // 4 bytes
+
+            // Assert: 22 + 4 + 4 + 4 = 34
+            Assert.AreEqual(34, entry.Length);
+        }
     }
 }

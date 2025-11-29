@@ -51,5 +51,38 @@ namespace SMBLibrary.Tests.DFS
             // Assert
             Assert.AreEqual(DfsReferralEntryFlags.NameListReferral, entry.ReferralEntryFlags);
         }
+
+        [TestMethod]
+        public void GetBytes_RoundTrip_PreservesAllFields()
+        {
+            // Arrange
+            DfsReferralEntryV1 original = new DfsReferralEntryV1();
+            original.ServerType = DfsServerType.Root;
+            original.ReferralEntryFlags = DfsReferralEntryFlags.None;
+            original.ShareName = @"\\server\share";
+
+            // Act - serialize and parse back
+            byte[] buffer = original.GetBytes();
+            int offset = 0;
+            DfsReferralEntryV1 parsed = new DfsReferralEntryV1(buffer, ref offset);
+
+            // Assert
+            Assert.AreEqual(original.VersionNumber, parsed.VersionNumber);
+            Assert.AreEqual(original.ServerType, parsed.ServerType);
+            Assert.AreEqual(original.ReferralEntryFlags, parsed.ReferralEntryFlags);
+            Assert.AreEqual(original.ShareName, parsed.ShareName);
+            Assert.AreEqual(buffer.Length, offset); // Consumed entire buffer
+        }
+
+        [TestMethod]
+        public void Length_CalculatesCorrectly()
+        {
+            // Arrange - V1 FixedLength = 8, plus ShareName in UTF-16 with null terminator
+            DfsReferralEntryV1 entry = new DfsReferralEntryV1();
+            entry.ShareName = "test"; // 4 chars + null = 5 * 2 = 10 bytes
+
+            // Assert: 8 + 10 = 18
+            Assert.AreEqual(18, entry.Length);
+        }
     }
 }

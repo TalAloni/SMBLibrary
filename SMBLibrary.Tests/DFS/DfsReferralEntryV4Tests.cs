@@ -66,5 +66,32 @@ namespace SMBLibrary.Tests.DFS
             DfsReferralEntryV3 asV3 = entry;
             Assert.IsNotNull(asV3);
         }
+
+        [TestMethod]
+        public void GetBytes_RoundTrip_PreservesAllFields()
+        {
+            // Arrange
+            DfsReferralEntryV4 original = new DfsReferralEntryV4();
+            original.ServerType = DfsServerType.Root;
+            original.ReferralEntryFlags = DfsReferralEntryFlags.TargetSetBoundary;
+            original.TimeToLive = 300;
+            original.DfsPath = @"\\domain\dfs";
+            original.DfsAlternatePath = @"\\domain\dfs";
+            original.NetworkAddress = @"\\server\share";
+            original.ServiceSiteGuid = System.Guid.Empty;
+
+            // Act - serialize and parse back
+            byte[] buffer = original.GetBytes();
+            int offset = 0;
+            DfsReferralEntryV4 parsed = new DfsReferralEntryV4(buffer, ref offset);
+
+            // Assert
+            Assert.AreEqual((ushort)4, parsed.VersionNumber);
+            Assert.AreEqual(original.ServerType, parsed.ServerType);
+            Assert.AreEqual(original.TimeToLive, parsed.TimeToLive);
+            Assert.AreEqual(original.DfsPath, parsed.DfsPath);
+            Assert.AreEqual(original.NetworkAddress, parsed.NetworkAddress);
+            Assert.IsTrue(parsed.IsTargetSetBoundary);
+        }
     }
 }
