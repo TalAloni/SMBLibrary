@@ -43,7 +43,7 @@ namespace SMBLibrary.Tests.DFS
 
             // Assert
             Assert.AreEqual(62, response.PathConsumed);
-            Assert.AreEqual(DfsReferralHeaderFlags.ReferalServers | DfsReferralHeaderFlags.StorageServers , response.ReferralHeaderFlags);
+            Assert.AreEqual(DfsReferralHeaderFlags.ReferralServers | DfsReferralHeaderFlags.StorageServers , response.ReferralHeaderFlags);
             Assert.AreEqual(1, response.ReferralEntries.Count);
             Assert.IsInstanceOfType(response.ReferralEntries[0], typeof(DfsReferralEntryV4));
 
@@ -62,7 +62,7 @@ namespace SMBLibrary.Tests.DFS
             // Arrange
             ResponseGetDfsReferral response = new ResponseGetDfsReferral();
             response.PathConsumed = 62;
-            response.ReferralHeaderFlags = DfsReferralHeaderFlags.ReferalServers | DfsReferralHeaderFlags.StorageServers;
+            response.ReferralHeaderFlags = DfsReferralHeaderFlags.ReferralServers | DfsReferralHeaderFlags.StorageServers;
             response.ReferralEntries = new List<DfsReferralEntry>()
             {
                 new DfsReferralEntryV4()
@@ -81,7 +81,7 @@ namespace SMBLibrary.Tests.DFS
 
             // Assert
             Assert.AreEqual(62, response.PathConsumed);
-            Assert.AreEqual(DfsReferralHeaderFlags.ReferalServers | DfsReferralHeaderFlags.StorageServers, response.ReferralHeaderFlags);
+            Assert.AreEqual(DfsReferralHeaderFlags.ReferralServers | DfsReferralHeaderFlags.StorageServers, response.ReferralHeaderFlags);
             Assert.AreEqual(1, response.ReferralEntries.Count);
             Assert.IsInstanceOfType(response.ReferralEntries[0], typeof(DfsReferralEntryV4));
 
