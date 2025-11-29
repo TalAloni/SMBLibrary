@@ -172,6 +172,132 @@ namespace SMBLibrary.Tests.Client
             Assert.AreEqual(originalPath, result.OriginalPath);
         }
 
-        // TODO: Add tests for multiple V2 referrals and empty referrals when needed
+        [TestMethod]
+        public void Resolve_WhenDfsEnabledAndTransportReturnsSuccessWithMultipleV2Referrals_PicksFirstUsableEntry()
+        {
+            // Arrange
+            DfsClientOptions options = new DfsClientOptions();
+            options.Enabled = true;
+
+            string dfsPath = "\\\\contoso.com\\Public";
+            string originalPath = dfsPath + "\\folder\\file.txt";
+            string firstNetworkAddress = "\\\\fs1\\Public";
+            string secondNetworkAddress = "\\\\fs2\\Public";
+
+            // Build V2 buffer with 2 entries
+            SMBLibrary.DFS.ResponseGetDfsReferral response = new SMBLibrary.DFS.ResponseGetDfsReferral();
+            response.PathConsumed = (ushort)(dfsPath.Length * 2);
+            response.ReferralHeaderFlags = SMBLibrary.DFS.DfsReferralHeaderFlags.ReferralServers;
+            response.ReferralEntries = new System.Collections.Generic.List<SMBLibrary.DFS.DfsReferralEntry>()
+            {
+                new SMBLibrary.DFS.DfsReferralEntryV2()
+                {
+                    TimeToLive = 300,
+                    DfsPath = dfsPath,
+                    DfsAlternatePath = dfsPath,
+                    NetworkAddress = firstNetworkAddress
+                },
+                new SMBLibrary.DFS.DfsReferralEntryV2()
+                {
+                    TimeToLive = 300,
+                    DfsPath = dfsPath,
+                    DfsAlternatePath = dfsPath,
+                    NetworkAddress = secondNetworkAddress
+                }
+            };
+
+            FakeDfsReferralTransport transport = new FakeDfsReferralTransport();
+            transport.StatusToReturn = NTStatus.STATUS_SUCCESS;
+            transport.BufferToReturn = response.GetBytes();
+            transport.OutputCountToReturn = (uint)transport.BufferToReturn.Length;
+
+            IDfsClientResolver resolver = new DfsClientResolver(transport);
+
+            // Act
+            DfsResolutionResult result = resolver.Resolve(options, originalPath);
+
+            // Assert
+            Assert.AreEqual(DfsResolutionStatus.Success, result.Status);
+            Assert.AreEqual("\\\\fs1\\Public\\folder\\file.txt", result.ResolvedPath);
+        }
+
+        [TestMethod]
+        public void Resolve_WhenDfsEnabledAndTransportReturnsSuccessWithEmptyNetworkAddress_ReturnsError()
+        {
+            // Arrange
+            DfsClientOptions options = new DfsClientOptions();
+            options.Enabled = true;
+
+            string dfsPath = "\\\\contoso.com\\Public";
+            string originalPath = dfsPath + "\\folder\\file.txt";
+
+            // Build V2 buffer with empty network addresses
+            SMBLibrary.DFS.ResponseGetDfsReferral response = new SMBLibrary.DFS.ResponseGetDfsReferral();
+            response.PathConsumed = (ushort)(dfsPath.Length * 2);
+            response.ReferralHeaderFlags = SMBLibrary.DFS.DfsReferralHeaderFlags.ReferralServers;
+            response.ReferralEntries = new System.Collections.Generic.List<SMBLibrary.DFS.DfsReferralEntry>()
+            {
+                new SMBLibrary.DFS.DfsReferralEntryV2()
+                {
+                    TimeToLive = 300,
+                    DfsPath = dfsPath,
+                    DfsAlternatePath = dfsPath,
+                    NetworkAddress = ""
+                }
+            };
+
+            FakeDfsReferralTransport transport = new FakeDfsReferralTransport();
+            transport.StatusToReturn = NTStatus.STATUS_SUCCESS;
+            transport.BufferToReturn = response.GetBytes();
+            transport.OutputCountToReturn = (uint)transport.BufferToReturn.Length;
+
+            IDfsClientResolver resolver = new DfsClientResolver(transport);
+
+            // Act
+            DfsResolutionResult result = resolver.Resolve(options, originalPath);
+
+            // Assert
+            Assert.AreEqual(DfsResolutionStatus.Error, result.Status);
+            Assert.AreEqual(originalPath, result.ResolvedPath);
+        }
+
+        [TestMethod]
+        public void Resolve_WhenDfsEnabledAndTransportReturnsSuccessWithV1Referral_UsesShareName()
+        {
+            // Arrange
+            DfsClientOptions options = new DfsClientOptions();
+            options.Enabled = true;
+
+            string dfsPath = "\\\\contoso.com\\Public";
+            string originalPath = dfsPath + "\\folder\\file.txt";
+            string shareName = "\\\\fs1\\Public";
+
+            // Build V1 buffer
+            SMBLibrary.DFS.ResponseGetDfsReferral response = new SMBLibrary.DFS.ResponseGetDfsReferral();
+            response.PathConsumed = (ushort)(dfsPath.Length * 2);
+            response.ReferralHeaderFlags = SMBLibrary.DFS.DfsReferralHeaderFlags.ReferralServers;
+            response.ReferralEntries = new System.Collections.Generic.List<SMBLibrary.DFS.DfsReferralEntry>()
+            {
+                new SMBLibrary.DFS.DfsReferralEntryV1()
+                {
+                    ServerType = SMBLibrary.DFS.DfsServerType.Root,
+                    ShareName = shareName
+                }
+            };
+
+            FakeDfsReferralTransport transport = new FakeDfsReferralTransport();
+            transport.StatusToReturn = NTStatus.STATUS_SUCCESS;
+            transport.BufferToReturn = response.GetBytes();
+            transport.OutputCountToReturn = (uint)transport.BufferToReturn.Length;
+
+            IDfsClientResolver resolver = new DfsClientResolver(transport);
+
+            // Act
+            DfsResolutionResult result = resolver.Resolve(options, originalPath);
+
+            // Assert
+            Assert.AreEqual(DfsResolutionStatus.Success, result.Status);
+            Assert.AreEqual("\\\\fs1\\Public\\folder\\file.txt", result.ResolvedPath);
+        }
     }
 }
