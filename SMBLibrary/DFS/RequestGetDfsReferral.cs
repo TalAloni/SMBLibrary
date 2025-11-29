@@ -4,12 +4,9 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Utilities;
 
-namespace SMBLibrary
+namespace SMBLibrary.DFS
 {
     /// <summary>
     /// [MS-DFSC] REQ_GET_DFS_REFERRAL
