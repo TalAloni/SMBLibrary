@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary;
+using SMBLibrary.DFS;
 
 namespace SMBLibrary.Tests.DFS
 {
@@ -9,20 +10,16 @@ namespace SMBLibrary.Tests.DFS
         [TestMethod]
         public void Ctor_AndFields_ShouldPreserveValues()
         {
-            // Arrange
+            // Arrange - V1 uses ShareName (not DfsPath/NetworkAddress) per MS-DFSC 2.2.5.1
             DfsReferralEntryV1 entry = new DfsReferralEntryV1();
             entry.VersionNumber = 1;
             entry.Size = 32;
-            entry.TimeToLive = 300;
-            entry.DfsPath = @"\\contoso.com\Public";
-            entry.NetworkAddress = @"\\fs1\Public";
+            entry.ShareName = @"\\fs1\Public";
 
             // Assert
             Assert.AreEqual((ushort)1, entry.VersionNumber);
             Assert.AreEqual((ushort)32, entry.Size);
-            Assert.AreEqual((uint)300, entry.TimeToLive);
-            Assert.AreEqual(@"\\contoso.com\Public", entry.DfsPath);
-            Assert.AreEqual(@"\\fs1\Public", entry.NetworkAddress);
+            Assert.AreEqual(@"\\fs1\Public", entry.ShareName);
 
             // And it should be usable via the abstract base type
             DfsReferralEntry asBase = entry;

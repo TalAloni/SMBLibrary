@@ -1,5 +1,6 @@
 using System;
 using SMBLibrary;
+using SMBLibrary.DFS;
 using SMBLibrary.SMB2;
 
 namespace SMBLibrary.Client.DFS

@@ -1,4 +1,5 @@
 using System;
+using SMBLibrary.DFS;
 
 namespace SMBLibrary.Client.DFS
 {
@@ -191,13 +192,29 @@ namespace SMBLibrary.Client.DFS
         {
             if (response.ReferralEntries != null && response.ReferralEntries.Count > 0)
             {
-                DfsReferralEntryV1 firstV1 = response.ReferralEntries[0] as DfsReferralEntryV1;
-                if (firstV1 != null)
-                {
-                    return (int)firstV1.TimeToLive;
-                }
+                return (int)GetTimeToLive(response.ReferralEntries[0]);
             }
             return 0;
+        }
+
+        private static uint GetTimeToLive(DfsReferralEntry entry)
+        {
+            // V3/V4 have TimeToLive
+            DfsReferralEntryV3 v3 = entry as DfsReferralEntryV3;
+            if (v3 != null)
+            {
+                return v3.TimeToLive;
+            }
+
+            // V2 has TimeToLive
+            DfsReferralEntryV2 v2 = entry as DfsReferralEntryV2;
+            if (v2 != null)
+            {
+                return v2.TimeToLive;
+            }
+
+            // V1 has no TimeToLive - use default
+            return 300;
         }
 
         private void CacheReferralResult(string originalPath, ResponseGetDfsReferral response, int ttlSeconds)
@@ -211,13 +228,39 @@ namespace SMBLibrary.Client.DFS
             newEntry.TtlSeconds = (uint)ttlSeconds;
             newEntry.ExpiresUtc = DateTime.UtcNow.AddSeconds(ttlSeconds);
 
-            DfsReferralEntryV1 firstEntry = response.ReferralEntries[0] as DfsReferralEntryV1;
-            if (firstEntry != null)
+            string networkAddress = GetNetworkAddress(response.ReferralEntries[0]);
+            if (!string.IsNullOrEmpty(networkAddress))
             {
-                newEntry.TargetList.Add(new TargetSetEntry(firstEntry.NetworkAddress));
+                newEntry.TargetList.Add(new TargetSetEntry(networkAddress));
             }
 
             _referralCache.Add(newEntry);
+        }
+
+        private static string GetNetworkAddress(DfsReferralEntry entry)
+        {
+            // V3/V4 have NetworkAddress
+            DfsReferralEntryV3 v3 = entry as DfsReferralEntryV3;
+            if (v3 != null)
+            {
+                return v3.NetworkAddress;
+            }
+
+            // V2 has NetworkAddress
+            DfsReferralEntryV2 v2 = entry as DfsReferralEntryV2;
+            if (v2 != null)
+            {
+                return v2.NetworkAddress;
+            }
+
+            // V1 uses ShareName
+            DfsReferralEntryV1 v1 = entry as DfsReferralEntryV1;
+            if (v1 != null)
+            {
+                return v1.ShareName;
+            }
+
+            return null;
         }
 
         private DfsResolutionResult CreateNotApplicableResult(string originalPath)

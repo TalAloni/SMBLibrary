@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary;
 using SMBLibrary.Client;
 using SMBLibrary.Client.DFS;
+using SMBLibrary.DFS;
 using SMBLibrary.SMB2;
 
 namespace SMBLibrary.Tests.DFS
@@ -147,7 +148,7 @@ namespace SMBLibrary.Tests.DFS
                 $"SYSVOL referral failed: {ioctlStatus}");
 
             ResponseGetDfsReferral response = new ResponseGetDfsReferral(output);
-            Assert.IsTrue(response.NumberOfReferrals > 0);
+            Assert.IsTrue(response.ReferralEntries.Count > 0);
 
             // Log SYSVOL referral details
             DfsReferralEntryV3 entry = response.ReferralEntries[0] as DfsReferralEntryV3;
@@ -192,9 +193,9 @@ namespace SMBLibrary.Tests.DFS
                 $"NETLOGON referral failed: {ioctlStatus}");
 
             ResponseGetDfsReferral response = new ResponseGetDfsReferral(output);
-            Assert.IsTrue(response.NumberOfReferrals > 0, "Expected at least one NETLOGON referral");
+            Assert.IsTrue(response.ReferralEntries.Count > 0, "Expected at least one NETLOGON referral");
 
-            Console.WriteLine($"NETLOGON Referral: {response.NumberOfReferrals} entries");
+            Console.WriteLine($"NETLOGON Referral: {response.ReferralEntries.Count} entries");
             foreach (var e in response.ReferralEntries)
             {
                 if (e is DfsReferralEntryV3 v3)
@@ -240,9 +241,9 @@ namespace SMBLibrary.Tests.DFS
             ResponseGetDfsReferral response = new ResponseGetDfsReferral(output);
             Console.WriteLine($"DFS Namespace Referral for {DfsFolderPath}:");
             Console.WriteLine($"  PathConsumed: {response.PathConsumed}");
-            Console.WriteLine($"  NumberOfReferrals: {response.NumberOfReferrals}");
+            Console.WriteLine($"  NumberOfReferrals: {response.ReferralEntries.Count}");
 
-            Assert.AreEqual(2, response.NumberOfReferrals,
+            Assert.AreEqual(2, response.ReferralEntries.Count,
                 "Lab DFS namespace should have 2 targets (FS1 and FS2)");
 
             // Verify both targets are present
@@ -287,7 +288,7 @@ namespace SMBLibrary.Tests.DFS
             Assert.AreEqual(NTStatus.STATUS_SUCCESS, ioctlStatus);
 
             ResponseGetDfsReferral response = new ResponseGetDfsReferral(output);
-            Assert.IsTrue(response.NumberOfReferrals > 0);
+            Assert.IsTrue(response.ReferralEntries.Count > 0);
 
             // Verify we got V3 or V4 (Windows Server 2008+ always returns V3/V4)
             DfsReferralEntry entry = response.ReferralEntries[0];
@@ -368,8 +369,8 @@ namespace SMBLibrary.Tests.DFS
                 $"Extended referral failed: {ioctlStatus}");
 
             ResponseGetDfsReferral response = new ResponseGetDfsReferral(output);
-            Assert.IsTrue(response.NumberOfReferrals > 0);
-            Console.WriteLine($"Extended referral returned {response.NumberOfReferrals} entries");
+            Assert.IsTrue(response.ReferralEntries.Count > 0);
+            Console.WriteLine($"Extended referral returned {response.ReferralEntries.Count} entries");
 
             ipcStore.Disconnect();
         }
