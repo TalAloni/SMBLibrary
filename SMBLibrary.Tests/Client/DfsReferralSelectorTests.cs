@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary;
+using SMBLibrary.DFS;
 using SMBLibrary.Client.DFS;
 
 namespace SMBLibrary.Tests.Client
@@ -8,15 +9,33 @@ namespace SMBLibrary.Tests.Client
     public class DfsReferralSelectorTests
     {
         [TestMethod]
-        public void SelectResolvedPath_SingleV1Referral_RewritesPathUsingNetworkAddress()
+        public void SelectResolvedPath_SingleV1Referral_RewritesPathUsingShareName()
+        {
+            // V1 uses ShareName instead of NetworkAddress
+            string originalPath = "\\\\contoso.com\\Public\\folder\\file.txt";
+            string dfsPath = "\\\\contoso.com\\Public";
+            string shareName = "\\\\fs1\\Public";
+
+            DfsReferralEntryV1 entry = new DfsReferralEntryV1();
+            entry.ShareName = shareName;
+
+            ushort pathConsumed = (ushort)(dfsPath.Length * 2);
+
+            string resolvedPath = DfsReferralSelector.SelectResolvedPath(originalPath, pathConsumed, entry);
+
+            Assert.AreEqual("\\\\fs1\\Public\\folder\\file.txt", resolvedPath);
+        }
+
+        [TestMethod]
+        public void SelectResolvedPath_V2Referral_RewritesPathUsingNetworkAddress()
         {
             string originalPath = "\\\\contoso.com\\Public\\folder\\file.txt";
             string dfsPath = "\\\\contoso.com\\Public";
             string networkAddress = "\\\\fs1\\Public";
 
-            DfsReferralEntryV1 entry = new DfsReferralEntryV1();
-            entry.VersionNumber = 1;
+            DfsReferralEntryV2 entry = new DfsReferralEntryV2();
             entry.DfsPath = dfsPath;
+            entry.DfsAlternatePath = dfsPath;
             entry.NetworkAddress = networkAddress;
 
             ushort pathConsumed = (ushort)(dfsPath.Length * 2);
@@ -27,15 +46,15 @@ namespace SMBLibrary.Tests.Client
         }
 
         [TestMethod]
-        public void SelectResolvedPath_WhenOriginalEqualsDfsPath_ReturnsNetworkAddress()
+        public void SelectResolvedPath_V3Referral_RewritesPathUsingNetworkAddress()
         {
             string originalPath = "\\\\contoso.com\\Public";
             string dfsPath = originalPath;
             string networkAddress = "\\\\fs1\\Public";
 
-            DfsReferralEntryV1 entry = new DfsReferralEntryV1();
-            entry.VersionNumber = 1;
+            DfsReferralEntryV3 entry = new DfsReferralEntryV3();
             entry.DfsPath = dfsPath;
+            entry.DfsAlternatePath = dfsPath;
             entry.NetworkAddress = networkAddress;
 
             ushort pathConsumed = (ushort)(dfsPath.Length * 2);
@@ -53,14 +72,14 @@ namespace SMBLibrary.Tests.Client
             string firstNetworkAddress = "\\\\fs1\\Public";
             string secondNetworkAddress = "\\\\fs2\\Public";
 
-            DfsReferralEntryV1 first = new DfsReferralEntryV1();
-            first.VersionNumber = 1;
+            DfsReferralEntryV2 first = new DfsReferralEntryV2();
             first.DfsPath = dfsPath;
+            first.DfsAlternatePath = dfsPath;
             first.NetworkAddress = firstNetworkAddress;
 
-            DfsReferralEntryV1 second = new DfsReferralEntryV1();
-            second.VersionNumber = 1;
+            DfsReferralEntryV2 second = new DfsReferralEntryV2();
             second.DfsPath = dfsPath;
+            second.DfsAlternatePath = dfsPath;
             second.NetworkAddress = secondNetworkAddress;
 
             DfsReferralEntry[] entries = new DfsReferralEntry[] { first, second };
@@ -78,14 +97,14 @@ namespace SMBLibrary.Tests.Client
             string originalPath = "\\\\contoso.com\\Public\\folder\\file.txt";
             string dfsPath = "\\\\contoso.com\\Public";
 
-            DfsReferralEntryV1 first = new DfsReferralEntryV1();
-            first.VersionNumber = 1;
+            DfsReferralEntryV2 first = new DfsReferralEntryV2();
             first.DfsPath = dfsPath;
+            first.DfsAlternatePath = dfsPath;
             first.NetworkAddress = null;
 
-            DfsReferralEntryV1 second = new DfsReferralEntryV1();
-            second.VersionNumber = 1;
+            DfsReferralEntryV2 second = new DfsReferralEntryV2();
             second.DfsPath = dfsPath;
+            second.DfsAlternatePath = dfsPath;
             second.NetworkAddress = string.Empty;
 
             DfsReferralEntry[] entries = new DfsReferralEntry[] { first, second };

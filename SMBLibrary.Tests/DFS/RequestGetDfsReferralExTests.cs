@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary;
+using SMBLibrary.DFS;
 using Utilities;
 
 namespace SMBLibrary.Tests.DFS

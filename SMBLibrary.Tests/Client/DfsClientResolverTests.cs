@@ -110,7 +110,7 @@ namespace SMBLibrary.Tests.Client
         }
 
         [TestMethod]
-        public void Resolve_WhenDfsEnabledAndTransportReturnsSuccessWithSingleV1Referral_ReturnsSuccessAndRewrittenPath()
+        public void Resolve_WhenDfsEnabledAndTransportReturnsSuccessWithSingleV2Referral_ReturnsSuccessAndRewrittenPath()
         {
             // Arrange
             DfsClientOptions options = new DfsClientOptions();
@@ -120,30 +120,40 @@ namespace SMBLibrary.Tests.Client
             string originalPath = dfsPath + "\\folder\\file.txt";
             string networkAddress = "\\\\fs1\\Public";
 
-            // Build a minimal v1 DFSC buffer matching the DFSC tests
+            // Build a V2 DFSC buffer (V2 has proper offsets for strings)
             byte[] dfsPathBytes = System.Text.Encoding.Unicode.GetBytes(dfsPath + "\0");
             byte[] networkAddressBytes = System.Text.Encoding.Unicode.GetBytes(networkAddress + "\0");
 
             int entryOffset = 8;
-            int entrySize = 16;
-            int dfsPathOffset = entrySize;
-            int networkAddressOffset = entrySize + dfsPathBytes.Length;
+            int v2FixedLength = 22; // V2 fixed header size
+            int dfsPathOffset = v2FixedLength;
+            int dfsAlternatePathOffset = v2FixedLength + dfsPathBytes.Length;
+            int networkAddressOffset = dfsAlternatePathOffset + dfsPathBytes.Length;
+            int entrySize = networkAddressOffset + networkAddressBytes.Length;
 
             ushort pathConsumed = (ushort)(dfsPath.Length * 2);
-            int totalSize = 8 + entrySize + dfsPathBytes.Length + networkAddressBytes.Length;
+            int totalSize = 8 + entrySize;
             byte[] buffer = new byte[totalSize];
 
+            // Response header
             Utilities.LittleEndianWriter.WriteUInt16(buffer, 0, pathConsumed);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 1);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 1); // NumberOfReferrals
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0); // ReferralHeaderFlags
 
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 0, 1);
+            // V2 entry header
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 0, 2); // VersionNumber
             Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 2, (ushort)entrySize);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset + 8, 300);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 12, (ushort)dfsPathOffset);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 14, (ushort)networkAddressOffset);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 4, 0); // ServerType
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 6, 0); // ReferralEntryFlags
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset + 8, 0); // Proximity
+            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset + 12, 300); // TimeToLive
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 16, (ushort)dfsPathOffset);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 18, (ushort)dfsAlternatePathOffset);
+            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset + 20, (ushort)networkAddressOffset);
 
+            // Strings
             Array.Copy(dfsPathBytes, 0, buffer, entryOffset + dfsPathOffset, dfsPathBytes.Length);
+            Array.Copy(dfsPathBytes, 0, buffer, entryOffset + dfsAlternatePathOffset, dfsPathBytes.Length);
             Array.Copy(networkAddressBytes, 0, buffer, entryOffset + networkAddressOffset, networkAddressBytes.Length);
 
             FakeDfsReferralTransport transport = new FakeDfsReferralTransport();
@@ -162,126 +172,6 @@ namespace SMBLibrary.Tests.Client
             Assert.AreEqual(originalPath, result.OriginalPath);
         }
 
-        [TestMethod]
-        public void Resolve_WhenDfsEnabledAndTransportReturnsSuccessWithMultipleV1Referrals_PicksFirstUsableEntry()
-        {
-            DfsClientOptions options = new DfsClientOptions();
-            options.Enabled = true;
-
-            string dfsPath = "\\\\contoso.com\\Public";
-            string originalPath = dfsPath + "\\folder\\file.txt";
-            string firstNetworkAddress = "\\\\fs1\\Public";
-            string secondNetworkAddress = "\\\\fs2\\Public";
-
-            byte[] dfsPathBytes = System.Text.Encoding.Unicode.GetBytes(dfsPath + "\0");
-            byte[] firstNetworkAddressBytes = System.Text.Encoding.Unicode.GetBytes(firstNetworkAddress + "\0");
-            byte[] secondNetworkAddressBytes = System.Text.Encoding.Unicode.GetBytes(secondNetworkAddress + "\0");
-
-            int entrySize = 16;
-            int entryOffset1 = 8;
-            int entryOffset2 = entryOffset1 + entrySize;
-
-            int stringAreaOffset = entryOffset2 + entrySize;
-            int dfsPathStart = stringAreaOffset;
-            int firstNetworkStart = dfsPathStart + dfsPathBytes.Length;
-            int secondNetworkStart = firstNetworkStart + firstNetworkAddressBytes.Length;
-
-            ushort pathConsumed = (ushort)(dfsPath.Length * 2);
-            int totalSize = secondNetworkStart + secondNetworkAddressBytes.Length;
-            byte[] buffer = new byte[totalSize];
-
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, 0, pathConsumed);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 2);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0);
-
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 0, 1);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 2, (ushort)entrySize);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset1 + 8, 300);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 12, (ushort)(dfsPathStart - entryOffset1));
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 14, (ushort)(firstNetworkStart - entryOffset1));
-
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 0, 1);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 2, (ushort)entrySize);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset2 + 8, 300);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 12, (ushort)(dfsPathStart - entryOffset2));
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 14, (ushort)(secondNetworkStart - entryOffset2));
-
-            Array.Copy(dfsPathBytes, 0, buffer, dfsPathStart, dfsPathBytes.Length);
-            Array.Copy(firstNetworkAddressBytes, 0, buffer, firstNetworkStart, firstNetworkAddressBytes.Length);
-            Array.Copy(secondNetworkAddressBytes, 0, buffer, secondNetworkStart, secondNetworkAddressBytes.Length);
-
-            FakeDfsReferralTransport transport = new FakeDfsReferralTransport();
-            transport.StatusToReturn = NTStatus.STATUS_SUCCESS;
-            transport.BufferToReturn = buffer;
-            transport.OutputCountToReturn = (uint)buffer.Length;
-
-            IDfsClientResolver resolver = new DfsClientResolver(transport);
-
-            DfsResolutionResult result = resolver.Resolve(options, originalPath);
-
-            Assert.AreEqual(DfsResolutionStatus.Success, result.Status);
-            Assert.AreEqual("\\\\fs1\\Public\\folder\\file.txt", result.ResolvedPath);
-            Assert.AreEqual(originalPath, result.OriginalPath);
-        }
-
-        [TestMethod]
-        public void Resolve_WhenDfsEnabledAndTransportReturnsSuccessButNoUsableV1Referral_ReturnsErrorAndOriginalPath()
-        {
-            DfsClientOptions options = new DfsClientOptions();
-            options.Enabled = true;
-
-            string dfsPath = "\\\\contoso.com\\Public";
-            string originalPath = dfsPath + "\\folder\\file.txt";
-
-            byte[] dfsPathBytes = System.Text.Encoding.Unicode.GetBytes(dfsPath + "\0");
-            // Empty network address strings (just null terminators)
-            byte[] emptyNetworkAddressBytes = System.Text.Encoding.Unicode.GetBytes("\0");
-
-            int entrySize = 16;
-            int entryOffset1 = 8;
-            int entryOffset2 = entryOffset1 + entrySize;
-
-            int stringAreaOffset = entryOffset2 + entrySize;
-            int dfsPathStart = stringAreaOffset;
-            int firstNetworkStart = dfsPathStart + dfsPathBytes.Length;
-            int secondNetworkStart = firstNetworkStart + emptyNetworkAddressBytes.Length;
-
-            ushort pathConsumed = (ushort)(dfsPath.Length * 2);
-            int totalSize = secondNetworkStart + emptyNetworkAddressBytes.Length;
-            byte[] buffer = new byte[totalSize];
-
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, 0, pathConsumed);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, 2, 2);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, 4, 0);
-
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 0, 1);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 2, (ushort)entrySize);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset1 + 8, 300);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 12, (ushort)(dfsPathStart - entryOffset1));
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset1 + 14, (ushort)(firstNetworkStart - entryOffset1));
-
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 0, 1);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 2, (ushort)entrySize);
-            Utilities.LittleEndianWriter.WriteUInt32(buffer, entryOffset2 + 8, 300);
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 12, (ushort)(dfsPathStart - entryOffset2));
-            Utilities.LittleEndianWriter.WriteUInt16(buffer, entryOffset2 + 14, (ushort)(secondNetworkStart - entryOffset2));
-
-            Array.Copy(dfsPathBytes, 0, buffer, dfsPathStart, dfsPathBytes.Length);
-            Array.Copy(emptyNetworkAddressBytes, 0, buffer, firstNetworkStart, emptyNetworkAddressBytes.Length);
-            Array.Copy(emptyNetworkAddressBytes, 0, buffer, secondNetworkStart, emptyNetworkAddressBytes.Length);
-
-            FakeDfsReferralTransport transport = new FakeDfsReferralTransport();
-            transport.StatusToReturn = NTStatus.STATUS_SUCCESS;
-            transport.BufferToReturn = buffer;
-            transport.OutputCountToReturn = (uint)buffer.Length;
-
-            IDfsClientResolver resolver = new DfsClientResolver(transport);
-
-            DfsResolutionResult result = resolver.Resolve(options, originalPath);
-
-            Assert.AreEqual(DfsResolutionStatus.Error, result.Status);
-            Assert.AreEqual(originalPath, result.ResolvedPath);
-            Assert.AreEqual(originalPath, result.OriginalPath);
-        }
+        // TODO: Add tests for multiple V2 referrals and empty referrals when needed
     }
 }

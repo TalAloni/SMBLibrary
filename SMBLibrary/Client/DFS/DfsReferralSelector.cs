@@ -1,5 +1,6 @@
 using System;
 using SMBLibrary;
+using SMBLibrary.DFS;
 
 namespace SMBLibrary.Client.DFS
 {
@@ -17,13 +18,9 @@ namespace SMBLibrary.Client.DFS
                 throw new ArgumentNullException("entry");
             }
 
-            DfsReferralEntryV1 v1 = entry as DfsReferralEntryV1;
-            if (v1 == null)
-            {
-                return null;
-            }
-
-            if (string.IsNullOrEmpty(v1.NetworkAddress))
+            // Get the network address based on entry version
+            string networkAddress = GetNetworkAddress(entry);
+            if (string.IsNullOrEmpty(networkAddress))
             {
                 return null;
             }
@@ -35,7 +32,33 @@ namespace SMBLibrary.Client.DFS
             }
 
             string suffix = originalPath.Substring(consumedCharacters);
-            return v1.NetworkAddress + suffix;
+            return networkAddress + suffix;
+        }
+
+        private static string GetNetworkAddress(DfsReferralEntry entry)
+        {
+            // V3/V4 have NetworkAddress
+            DfsReferralEntryV3 v3 = entry as DfsReferralEntryV3;
+            if (v3 != null)
+            {
+                return v3.NetworkAddress;
+            }
+
+            // V2 has NetworkAddress
+            DfsReferralEntryV2 v2 = entry as DfsReferralEntryV2;
+            if (v2 != null)
+            {
+                return v2.NetworkAddress;
+            }
+
+            // V1 uses ShareName
+            DfsReferralEntryV1 v1 = entry as DfsReferralEntryV1;
+            if (v1 != null)
+            {
+                return v1.ShareName;
+            }
+
+            return null;
         }
 
         public static string SelectResolvedPath(string originalPath, ushort pathConsumed, DfsReferralEntry[] entries)

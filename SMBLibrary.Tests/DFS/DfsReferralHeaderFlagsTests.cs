@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary;
+using SMBLibrary.DFS;
 
 namespace SMBLibrary.Tests.DFS
 {
@@ -7,10 +8,10 @@ namespace SMBLibrary.Tests.DFS
     public class DfsReferralHeaderFlagsTests
     {
         [TestMethod]
-        public void ReferralServers_HasCorrectValue()
+        public void ReferalServers_HasCorrectValue()
         {
             // MS-DFSC 2.2.4: R bit = 0x00000001
-            Assert.AreEqual((uint)0x00000001, (uint)DfsReferralHeaderFlags.ReferralServers);
+            Assert.AreEqual((uint)0x00000001, (uint)DfsReferralHeaderFlags.ReferalServers);
         }
 
         [TestMethod]
@@ -37,7 +38,7 @@ namespace SMBLibrary.Tests.DFS
             DfsReferralHeaderFlags flags = (DfsReferralHeaderFlags)rawValue;
 
             // Assert
-            Assert.IsTrue((flags & DfsReferralHeaderFlags.ReferralServers) == DfsReferralHeaderFlags.ReferralServers);
+            Assert.IsTrue((flags & DfsReferralHeaderFlags.ReferalServers) == DfsReferralHeaderFlags.ReferalServers);
             Assert.IsTrue((flags & DfsReferralHeaderFlags.StorageServers) == DfsReferralHeaderFlags.StorageServers);
             Assert.IsTrue((flags & DfsReferralHeaderFlags.TargetFailback) == DfsReferralHeaderFlags.TargetFailback);
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SMBLibrary;
+using SMBLibrary.DFS;
 
 namespace SMBLibrary.Client.DFS
 {
@@ -136,12 +137,7 @@ namespace SMBLibrary.Client.DFS
                 return;
             }
 
-            uint ttlSeconds = 0;
-            DfsReferralEntryV1 firstV1 = response.ReferralEntries[0] as DfsReferralEntryV1;
-            if (firstV1 != null)
-            {
-                ttlSeconds = firstV1.TimeToLive;
-            }
+            uint ttlSeconds = GetTimeToLive(response.ReferralEntries[0]);
 
             if (ttlSeconds > 0)
             {
@@ -150,6 +146,26 @@ namespace SMBLibrary.Client.DFS
                 cached.ExpirationUtc = DateTime.UtcNow.AddSeconds(ttlSeconds);
                 _cache[originalPath] = cached;
             }
+        }
+
+        private static uint GetTimeToLive(DfsReferralEntry entry)
+        {
+            // V3/V4 have TimeToLive
+            DfsReferralEntryV3 v3 = entry as DfsReferralEntryV3;
+            if (v3 != null)
+            {
+                return v3.TimeToLive;
+            }
+
+            // V2 has TimeToLive
+            DfsReferralEntryV2 v2 = entry as DfsReferralEntryV2;
+            if (v2 != null)
+            {
+                return v2.TimeToLive;
+            }
+
+            // V1 has no TimeToLive - use default
+            return 300;
         }
 
         private DfsResolutionResult CreateResult(string originalPath, DfsResolutionStatus status)
