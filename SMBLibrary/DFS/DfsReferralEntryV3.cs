@@ -66,9 +66,10 @@ namespace SMBLibrary.DFS
                 ushort numberOfExpandedNames = LittleEndianConverter.ToUInt16(buffer, offset + 14);
                 ushort expandedNameOffset = LittleEndianConverter.ToUInt16(buffer, offset + 16);
 
-                SpecialName = ByteReader.ReadNullTerminatedUTF16String(buffer, specialNameOffset);
+                // Per MS-DFSC: offsets are relative to the start of the referral entry
+                SpecialName = ByteReader.ReadNullTerminatedUTF16String(buffer, offset + specialNameOffset);
                 ExpandedNames = new List<string>();
-                int currentOffset = expandedNameOffset;
+                int currentOffset = offset + expandedNameOffset;
                 for (int nameIndex = 0; nameIndex < numberOfExpandedNames; nameIndex++)
                 {
                     if (currentOffset >= buffer.Length)
