@@ -7,7 +7,7 @@
 using System;
 using Utilities;
 
-namespace SMBLibrary
+namespace SMBLibrary.DFS
 {
     /// <summary>
     /// [MS-DFSC] 2.2.3 REQ_GET_DFS_REFERRAL_EX
