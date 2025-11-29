@@ -99,5 +99,60 @@ namespace SMBLibrary.Tests.DFS
             Assert.AreEqual("DC1.contoso.com", entry.ExpandedNames[0]);
             Assert.AreEqual("DC2.contoso.com", entry.ExpandedNames[1]);
         }
+
+        [TestMethod]
+        public void GetBytes_RoundTrip_NormalReferral_PreservesAllFields()
+        {
+            // Arrange - Normal referral (not NameListReferral)
+            Guid testGuid = Guid.NewGuid();
+            DfsReferralEntryV3 original = new DfsReferralEntryV3();
+            original.ServerType = DfsServerType.Root;
+            original.ReferralEntryFlags = DfsReferralEntryFlags.None;
+            original.TimeToLive = 300;
+            original.DfsPath = @"\\domain\dfs";
+            original.DfsAlternatePath = @"\\domain\dfs";
+            original.NetworkAddress = @"\\server\share";
+            original.ServiceSiteGuid = testGuid;
+
+            // Act - serialize and parse back
+            byte[] buffer = original.GetBytes();
+            int offset = 0;
+            DfsReferralEntryV3 parsed = new DfsReferralEntryV3(buffer, ref offset);
+
+            // Assert
+            Assert.AreEqual(original.VersionNumber, parsed.VersionNumber);
+            Assert.AreEqual(original.ServerType, parsed.ServerType);
+            Assert.AreEqual(original.TimeToLive, parsed.TimeToLive);
+            Assert.AreEqual(original.DfsPath, parsed.DfsPath);
+            Assert.AreEqual(original.DfsAlternatePath, parsed.DfsAlternatePath);
+            Assert.AreEqual(original.NetworkAddress, parsed.NetworkAddress);
+            Assert.AreEqual(original.ServiceSiteGuid, parsed.ServiceSiteGuid);
+            Assert.IsFalse(parsed.IsNameListReferral);
+        }
+
+        [TestMethod]
+        public void GetBytes_RoundTrip_NameListReferral_PreservesAllFields()
+        {
+            // Arrange - NameListReferral for SYSVOL/NETLOGON
+            DfsReferralEntryV3 original = new DfsReferralEntryV3();
+            original.ServerType = DfsServerType.Root;
+            original.ReferralEntryFlags = DfsReferralEntryFlags.NameListReferral;
+            original.TimeToLive = 600;
+            original.SpecialName = "contoso.com";
+            original.ExpandedNames = new List<string> { "DC1.contoso.com", "DC2.contoso.com" };
+
+            // Act - serialize and parse back
+            byte[] buffer = original.GetBytes();
+            int offset = 0;
+            DfsReferralEntryV3 parsed = new DfsReferralEntryV3(buffer, ref offset);
+
+            // Assert
+            Assert.IsTrue(parsed.IsNameListReferral);
+            Assert.AreEqual(original.TimeToLive, parsed.TimeToLive);
+            Assert.AreEqual(original.SpecialName, parsed.SpecialName);
+            Assert.AreEqual(2, parsed.ExpandedNames.Count);
+            Assert.AreEqual("DC1.contoso.com", parsed.ExpandedNames[0]);
+            Assert.AreEqual("DC2.contoso.com", parsed.ExpandedNames[1]);
+        }
     }
 }
