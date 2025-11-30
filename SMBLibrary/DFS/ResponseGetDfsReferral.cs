@@ -72,7 +72,13 @@ namespace SMBLibrary.DFS
             {
                 length += entry.Length;
             }
-            
+
+            int stringsOffset = length;
+            foreach (DfsReferralEntry entry in ReferralEntries)
+            {
+                length += entry.StringsLength;
+            }
+
             byte[] buffer = new byte[length];
             LittleEndianWriter.WriteUInt16(buffer, 0, PathConsumed);
             LittleEndianWriter.WriteUInt16(buffer, 2, (ushort)ReferralEntries.Count);
@@ -81,8 +87,9 @@ namespace SMBLibrary.DFS
             int offset = HeaderSize;
             foreach (DfsReferralEntry entry in ReferralEntries)
             {
-                ByteWriter.WriteBytes(buffer, offset, entry.GetBytes());
+                entry.WriteBytes(buffer, offset, stringsOffset);
                 offset += entry.Length;
+                stringsOffset += entry.StringsLength;
             }
             return buffer;
         }

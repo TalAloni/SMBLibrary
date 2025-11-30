@@ -37,14 +37,13 @@ namespace SMBLibrary.DFS
             offset += Size;
         }
 
-        public override byte[] GetBytes()
+        public override byte[] WriteBytes(byte[] buffer, int offset, int stringsOffset)
         {
-            byte[] buffer = new byte[this.Length];
-            LittleEndianWriter.WriteUInt16(buffer, 0, VersionNumber);
-            LittleEndianWriter.WriteUInt16(buffer, 2, (ushort)buffer.Length);
-            LittleEndianWriter.WriteUInt16(buffer, 4, (ushort)ServerType);
-            LittleEndianWriter.WriteUInt16(buffer, 6, (ushort)ReferralEntryFlags);
-            ByteWriter.WriteNullTerminatedUTF16String(buffer, 8, ShareName);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 0, VersionNumber);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 2, (ushort)this.Length);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 4, (ushort)ServerType);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 6, (ushort)ReferralEntryFlags);
+            ByteWriter.WriteNullTerminatedUTF16String(buffer, offset + 8, ShareName);
             return buffer;
         }
 
@@ -53,6 +52,14 @@ namespace SMBLibrary.DFS
             get
             {
                 return FixedLength + (ShareName.Length + 1) * 2;
+            }
+        }
+
+        public override int StringsLength
+        {
+            get
+            {
+                return 0;
             }
         }
     }

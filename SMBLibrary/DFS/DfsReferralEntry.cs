@@ -11,9 +11,21 @@ namespace SMBLibrary.DFS
 {
     public abstract class DfsReferralEntry
     {
-        public abstract byte[] GetBytes();
+        /// <remarks>
+        /// [MS-DFSC] 2.2.5 - Referral Entry Types
+        /// The strings referenced from the fields of a referral entry MUST follow the last referral entry in the RESP_GET_DFS_REFERRAL message.
+        /// </remarks>
+        public abstract byte[] WriteBytes(byte[] buffer, int offset, int stringsOffset);
 
         public abstract int Length
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Length of referenced strings
+        /// </summary>
+        public abstract int StringsLength
         {
             get;
         }
