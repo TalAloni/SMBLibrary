@@ -42,16 +42,38 @@ namespace SMBLibrary.DFS
             uint requestDataLength = LittleEndianConverter.ToUInt32(buffer, 4);
 
             // RequestData starts at offset 8
-            int dataOffset = 8;
-            RequestFileName = ByteReader.ReadNullTerminatedUTF16String(buffer, dataOffset);
-
-            if ((requestFlags & SiteNameFlag) != 0 && RequestFileName != null)
+            // Per MS-DFSC 2.2.3.1, RequestData contains:
+            //   RequestFileNameLength (2 bytes)
+            //   RequestFileName (variable, Unicode null-terminated)
+            //   SiteNameLength (2 bytes) - only if SiteName flag set
+            //   SiteName (variable, Unicode null-terminated) - only if SiteName flag set
+            int offset = 8;
+            
+            if (buffer.Length < offset + 2)
             {
-                // SiteName follows RequestFileName (after its null terminator)
-                int siteNameOffset = dataOffset + (RequestFileName.Length + 1) * 2;
-                if (siteNameOffset < buffer.Length)
+                throw new ArgumentException("Buffer too small for RequestFileNameLength", "buffer");
+            }
+            
+            ushort requestFileNameLength = LittleEndianConverter.ToUInt16(buffer, offset);
+            offset += 2;
+            
+            // Read RequestFileName (null-terminated Unicode string)
+            RequestFileName = ByteReader.ReadNullTerminatedUTF16String(buffer, offset);
+            // Advance past the string including null terminator
+            int fileNameBytesWithNull = (RequestFileName != null ? RequestFileName.Length + 1 : 1) * 2;
+            offset += fileNameBytesWithNull;
+
+            if ((requestFlags & SiteNameFlag) != 0)
+            {
+                if (buffer.Length >= offset + 2)
                 {
-                    SiteName = ByteReader.ReadNullTerminatedUTF16String(buffer, siteNameOffset);
+                    ushort siteNameLength = LittleEndianConverter.ToUInt16(buffer, offset);
+                    offset += 2;
+                    
+                    if (offset < buffer.Length)
+                    {
+                        SiteName = ByteReader.ReadNullTerminatedUTF16String(buffer, offset);
+                    }
                 }
             }
         }
@@ -61,10 +83,16 @@ namespace SMBLibrary.DFS
             bool hasSiteName = !string.IsNullOrEmpty(SiteName);
             ushort requestFlags = hasSiteName ? SiteNameFlag : (ushort)0;
 
-            // Calculate RequestData length
+            // Calculate RequestData length per MS-DFSC 2.2.3.1:
+            //   RequestFileNameLength (2 bytes)
+            //   RequestFileName (variable, Unicode null-terminated)
+            //   SiteNameLength (2 bytes) - only if SiteName flag set
+            //   SiteName (variable, Unicode null-terminated) - only if SiteName flag set
             int requestFileNameBytes = (RequestFileName != null ? RequestFileName.Length + 1 : 1) * 2;
             int siteNameBytes = hasSiteName ? (SiteName.Length + 1) * 2 : 0;
-            uint requestDataLength = (uint)(requestFileNameBytes + siteNameBytes);
+            
+            // Include length fields in RequestDataLength
+            uint requestDataLength = (uint)(2 + requestFileNameBytes + (hasSiteName ? 2 + siteNameBytes : 0));
 
             int totalLength = 8 + (int)requestDataLength;
             byte[] buffer = new byte[totalLength];
@@ -76,10 +104,16 @@ namespace SMBLibrary.DFS
 
             // RequestData
             int offset = 8;
+            
+            // Write RequestFileNameLength
+            LittleEndianWriter.WriteUInt16(buffer, offset, (ushort)requestFileNameBytes);
+            offset += 2;
+            
+            // Write RequestFileName (null-terminated Unicode)
             if (RequestFileName != null)
             {
                 ByteWriter.WriteUTF16String(buffer, offset, RequestFileName);
-                offset += (RequestFileName.Length + 1) * 2;
+                offset += requestFileNameBytes;
             }
             else
             {
@@ -89,6 +123,11 @@ namespace SMBLibrary.DFS
 
             if (hasSiteName)
             {
+                // Write SiteNameLength
+                LittleEndianWriter.WriteUInt16(buffer, offset, (ushort)siteNameBytes);
+                offset += 2;
+                
+                // Write SiteName (null-terminated Unicode)
                 ByteWriter.WriteUTF16String(buffer, offset, SiteName);
             }
 
