@@ -69,7 +69,11 @@ namespace SMBLibrary.Client.DFS
             RequestGetDfsReferralEx dfsRequest = new RequestGetDfsReferralEx();
             dfsRequest.MaxReferralLevel = 4; // Request V4 referrals for maximum interop
             dfsRequest.RequestFileName = dfsPath;
-            dfsRequest.SiteName = siteName;
+            if (!string.IsNullOrEmpty(siteName))
+            {
+                dfsRequest.Flags = RequestGetDfsReferralExFlags.SiteName;
+                dfsRequest.SiteName = siteName;
+            }
             byte[] inputBuffer = dfsRequest.GetBytes();
 
             IOCtlRequest request = new IOCtlRequest();

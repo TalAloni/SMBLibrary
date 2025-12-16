@@ -64,9 +64,9 @@ namespace SMBLibrary.DFS
             int dfsAlternatePathOffset = (ushort)(dfsPathOffset + (DfsPath.Length + 1) * 2);
             int networkAddressOffset = (ushort)(dfsAlternatePathOffset + (DfsAlternatePath.Length + 1) * 2);
             // offsets are relative to the start of the referral entry
-            LittleEndianWriter.WriteUInt16(buffer, 16, (ushort)(dfsPathOffset - offset));
-            LittleEndianWriter.WriteUInt16(buffer, 18, (ushort)(dfsAlternatePathOffset - offset));
-            LittleEndianWriter.WriteUInt16(buffer, 20, (ushort)(networkAddressOffset - offset));
+            LittleEndianWriter.WriteUInt16(buffer, offset + 16, (ushort)(dfsPathOffset - offset));
+            LittleEndianWriter.WriteUInt16(buffer, offset + 18, (ushort)(dfsAlternatePathOffset - offset));
+            LittleEndianWriter.WriteUInt16(buffer, offset + 20, (ushort)(networkAddressOffset - offset));
 
             ByteWriter.WriteNullTerminatedUTF16String(buffer, dfsPathOffset, DfsPath);
             ByteWriter.WriteNullTerminatedUTF16String(buffer, dfsAlternatePathOffset, DfsAlternatePath);
