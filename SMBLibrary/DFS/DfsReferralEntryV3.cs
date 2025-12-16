@@ -66,7 +66,6 @@ namespace SMBLibrary.DFS
                 ushort numberOfExpandedNames = LittleEndianConverter.ToUInt16(buffer, offset + 14);
                 ushort expandedNameOffset = LittleEndianConverter.ToUInt16(buffer, offset + 16);
 
-                // Per MS-DFSC: offsets are relative to the start of the referral entry
                 SpecialName = ByteReader.ReadNullTerminatedUTF16String(buffer, offset + specialNameOffset);
                 ExpandedNames = new List<string>();
                 int currentOffset = offset + expandedNameOffset;
@@ -93,24 +92,24 @@ namespace SMBLibrary.DFS
             offset += Size;
         }
 
-        public override byte[] GetBytes()
+        public override byte[] WriteBytes(byte[] buffer, int offset, int stringsOffset)
         {
-            byte[] buffer = new byte[Length];
-            LittleEndianWriter.WriteUInt16(buffer, 0, VersionNumber);
-            LittleEndianWriter.WriteUInt16(buffer, 2, (ushort)buffer.Length);
-            LittleEndianWriter.WriteUInt16(buffer, 4, (ushort)ServerType);
-            LittleEndianWriter.WriteUInt16(buffer, 6, (ushort)ReferralEntryFlags);
-            LittleEndianWriter.WriteUInt32(buffer, 8, TimeToLive);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 0, VersionNumber);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 2, (ushort)this.Length);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 4, (ushort)ServerType);
+            LittleEndianWriter.WriteUInt16(buffer, offset + 6, (ushort)ReferralEntryFlags);
+            LittleEndianWriter.WriteUInt32(buffer, offset + 8, TimeToLive);
 
             if (!IsNameListReferral)
             {
-                ushort dfsPathOffset = FixedLength + 6 + 16;
-                ushort dfsAlternatePathOffset = (ushort)(dfsPathOffset + (DfsPath.Length + 1) * 2);
-                ushort networkAddressOffset = (ushort)(dfsAlternatePathOffset + (DfsAlternatePath.Length + 1) * 2);
-                LittleEndianWriter.WriteUInt16(buffer, 12, dfsPathOffset);
-                LittleEndianWriter.WriteUInt16(buffer, 14, dfsAlternatePathOffset);
-                LittleEndianWriter.WriteUInt16(buffer, 16, networkAddressOffset);
-                LittleEndianWriter.WriteGuid(buffer, 18, ServiceSiteGuid);
+                int dfsPathOffset = stringsOffset;
+                int dfsAlternatePathOffset = dfsPathOffset + (DfsPath.Length + 1) * 2;
+                int networkAddressOffset = dfsAlternatePathOffset + (DfsAlternatePath.Length + 1) * 2;
+                // offsets are relative to the start of the referral entry
+                LittleEndianWriter.WriteUInt16(buffer, offset + 12, (ushort)(dfsPathOffset - offset));
+                LittleEndianWriter.WriteUInt16(buffer, offset + 14, (ushort)(dfsAlternatePathOffset - offset));
+                LittleEndianWriter.WriteUInt16(buffer, offset + 16, (ushort)(networkAddressOffset - offset));
+                LittleEndianWriter.WriteGuid(buffer, offset + 18, ServiceSiteGuid);
 
                 ByteWriter.WriteNullTerminatedUTF16String(buffer, dfsPathOffset, DfsPath);
                 ByteWriter.WriteNullTerminatedUTF16String(buffer, dfsAlternatePathOffset, DfsAlternatePath);
@@ -118,11 +117,12 @@ namespace SMBLibrary.DFS
             }
             else
             {
-                ushort specialNameOffset = FixedLength + 6;
-                ushort expandedNameOffset = (ushort)(specialNameOffset + (SpecialName.Length + 1) * 2);
-                LittleEndianWriter.WriteUInt16(buffer, 12, specialNameOffset);
-                LittleEndianWriter.WriteUInt16(buffer, 14, (ushort)ExpandedNames.Count);
-                LittleEndianWriter.WriteUInt16(buffer, 16, expandedNameOffset);
+                int specialNameOffset = stringsOffset;
+                int expandedNameOffset = specialNameOffset + (SpecialName.Length + 1) * 2;
+                // offsets are relative to the start of the referral entry
+                LittleEndianWriter.WriteUInt16(buffer, offset + 12, (ushort)(specialNameOffset - offset));
+                LittleEndianWriter.WriteUInt16(buffer, offset + 14, (ushort)ExpandedNames.Count);
+                LittleEndianWriter.WriteUInt16(buffer, offset + 16, (ushort)(expandedNameOffset - offset));
 
                 ByteWriter.WriteNullTerminatedUTF16String(buffer, specialNameOffset, SpecialName);
                 int currentOffset = expandedNameOffset;
@@ -142,11 +142,26 @@ namespace SMBLibrary.DFS
             {
                 if (!IsNameListReferral)
                 {
-                    return FixedLength + 6 + 16 + (DfsPath.Length + 1 + DfsAlternatePath.Length + 1 + NetworkAddress.Length + 1) * 2;
+                    return FixedLength + 6 + 16;
                 }
                 else
                 {
-                    int length = FixedLength + 6 + (SpecialName.Length + 1) * 2;
+                    return FixedLength + 6;
+                }
+            }
+        }
+
+        public override int StringsLength
+        {
+            get
+            {
+                if (!IsNameListReferral)
+                {
+                    return (DfsPath.Length + 1 + DfsAlternatePath.Length + 1 + NetworkAddress.Length + 1) * 2;
+                }
+                else
+                {
+                    int length = (SpecialName.Length + 1) * 2;
                     for (int nameIndex = 0; nameIndex < ExpandedNames.Count; nameIndex++)
                     {
                         length += (ExpandedNames[nameIndex].Length + 1) * 2;
