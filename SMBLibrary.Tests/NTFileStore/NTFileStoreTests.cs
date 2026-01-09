@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2019-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -20,18 +20,13 @@ namespace SMBLibrary.Tests
         public NTFileStoreTests(INTFileStore fileStore)
         {
             m_fileStore = fileStore;
-
-            object handle;
-            FileStatus fileStatus;
-            NTStatus status = m_fileStore.CreateFile(out handle, out fileStatus, TestDirName, AccessMask.GENERIC_ALL, FileAttributes.Directory, ShareAccess.Read, CreateDisposition.FILE_OPEN_IF, CreateOptions.FILE_DIRECTORY_FILE, null);
-            Assert.IsTrue(status == NTStatus.STATUS_SUCCESS);
-            status = m_fileStore.CloseFile(handle);
-            Assert.IsTrue(status == NTStatus.STATUS_SUCCESS);
         }
 
         [TestMethod]
-        public void TestCancel()
+        public virtual void TestCancel()
         {
+            CreateTestDirectory();
+
             object handle;
             FileStatus fileStatus;
             m_fileStore.CreateFile(out handle, out fileStatus, TestDirName, AccessMask.GENERIC_ALL, FileAttributes.Directory, ShareAccess.Read, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
@@ -53,6 +48,16 @@ namespace SMBLibrary.Tests
         private void OnNotifyChangeCompleted(NTStatus status, byte[] buffer, object context)
         {
             m_notifyChangeStatus = status;
+        }
+
+        private void CreateTestDirectory()
+        {
+            object handle;
+            FileStatus fileStatus;
+            NTStatus status = m_fileStore.CreateFile(out handle, out fileStatus, TestDirName, AccessMask.GENERIC_ALL, FileAttributes.Directory, ShareAccess.Read, CreateDisposition.FILE_OPEN_IF, CreateOptions.FILE_DIRECTORY_FILE, null);
+            Assert.IsTrue(status == NTStatus.STATUS_SUCCESS);
+            status = m_fileStore.CloseFile(handle);
+            Assert.IsTrue(status == NTStatus.STATUS_SUCCESS);
         }
     }
 }
