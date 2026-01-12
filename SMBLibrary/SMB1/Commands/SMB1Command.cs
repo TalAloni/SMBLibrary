@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -154,6 +154,8 @@ namespace SMBLibrary.SMB1
                     return new LogoffAndXRequest(buffer, offset);
                 case CommandName.SMB_COM_TREE_CONNECT_ANDX:
                     return new TreeConnectAndXRequest(buffer, offset, isUnicode);
+                case CommandName.SMB_COM_QUERY_INFORMATION_DISK:
+                    return new QueryInformationDiskRequest(buffer, offset);
                 case CommandName.SMB_COM_NT_TRANSACT:
                     return new NTTransactRequest(buffer, offset);
                 case CommandName.SMB_COM_NT_TRANSACT_SECONDARY:
@@ -433,6 +435,21 @@ namespace SMBLibrary.SMB1
                         if (wordCount * 2 == TreeConnectAndXResponse.ParametersLength)
                         {
                             return new TreeConnectAndXResponse(buffer, offset, isUnicode);
+                        }
+                        else if (wordCount == 0)
+                        {
+                            return new ErrorResponse(commandName);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException();
+                        }
+                    }
+                case CommandName.SMB_COM_QUERY_INFORMATION_DISK:
+                    {
+                        if (wordCount * 2 == QueryInformationResponse.ParameterLength)
+                        {
+                            return new QueryInformationDiskResponse(buffer, offset);
                         }
                         else if (wordCount == 0)
                         {
