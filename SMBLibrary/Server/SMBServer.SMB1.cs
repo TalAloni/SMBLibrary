@@ -243,6 +243,10 @@ namespace SMBLibrary.Server
                     {
                         return TreeConnectHelper.GetTreeDisconnectResponse(header, (TreeDisconnectRequest)command, share, state);
                     }
+                    else if (command is QueryInformationDiskRequest)
+                    {
+                        return FileStoreResponseHelper.GetQueryInformationDiskResponse(header, (QueryInformationDiskRequest)command, share, state);
+                    }
                     else if (command is TransactionRequest) // Both TransactionRequest and Transaction2Request
                     {
                         return TransactionHelper.GetTransactionResponse(header, (TransactionRequest)command, share, state);

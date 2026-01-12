@@ -228,5 +228,24 @@ namespace SMBLibrary.Server.SMB1
             state.LogToServer(Severity.Verbose, "Set Information 2 on '{0}{1}' succeeded.", share.Name, openFile.Path);
             return new SetInformation2Response();
         }
+
+        internal static SMB1Command GetQueryInformationDiskResponse(SMB1Header header, QueryInformationDiskRequest request, ISMBShare share, SMB1ConnectionState state)
+        {
+            header.Status = share.FileStore.GetFileSystemInformation(out FileSystemInformation fileSystemInfo, FileSystemInformationClass.FileFsSizeInformation);
+            if (header.Status != NTStatus.STATUS_SUCCESS)
+            {
+                state.LogToServer(Severity.Verbose, "GetFileSystemInformation on '{0}' failed. NTStatus: {1}", share.Name, header.Status);
+                return new ErrorResponse(request.CommandName);
+            }
+
+            FileFsSizeInformation sizeInformation = (FileFsSizeInformation)fileSystemInfo;
+
+            QueryInformationDiskResponse response = new QueryInformationDiskResponse();
+            response.TotalUnits = (ushort)Math.Min(sizeInformation.TotalAllocationUnits, UInt16.MaxValue);
+            response.BlocksPerUnit = (ushort)sizeInformation.SectorsPerAllocationUnit;
+            response.BlockSize = (ushort)sizeInformation.BytesPerSector;
+            response.FreeUnits = (ushort)Math.Min(sizeInformation.AvailableAllocationUnits, UInt16.MaxValue);
+            return response;
+        }
     }
 }
