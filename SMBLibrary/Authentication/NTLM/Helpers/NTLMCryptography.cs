@@ -78,7 +78,7 @@ namespace SMBLibrary.Authentication.NTLM
             DES des = DES.Create();
             des.Mode = mode;
             ICryptoTransform transform;
-            if (DES.IsWeakKey(rgbKey) || DES.IsSemiWeakKey(rgbKey))            
+            if (DES.IsWeakKey(rgbKey) || DES.IsSemiWeakKey(rgbKey))
             {
 #if NETSTANDARD2_0
                 MethodInfo getTransformCoreMethodInfo = des.GetType().GetMethod("CreateTransformCore", BindingFlags.NonPublic | BindingFlags.Static);
