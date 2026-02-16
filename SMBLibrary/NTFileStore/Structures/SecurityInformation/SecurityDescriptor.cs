@@ -30,6 +30,7 @@ namespace SMBLibrary
         public SecurityDescriptor()
         {
             Revision = 0x01;
+            Control = SecurityDescriptorControl.SelfRelative;
         }
 
         public SecurityDescriptor(byte[] buffer, int offset)
@@ -97,7 +98,7 @@ namespace SMBLibrary
             offset = 0;
             ByteWriter.WriteByte(buffer, ref offset, Revision);
             ByteWriter.WriteByte(buffer, ref offset, Sbz1);
-            LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)Control);
+            LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)(Control | SecurityDescriptorControl.SelfRelative));
             LittleEndianWriter.WriteUInt32(buffer, ref offset, offsetOwner);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, offsetGroup);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, offsetSacl);
