@@ -84,7 +84,7 @@ namespace SMBLibrary.Server
             Start(serverAddress, transport, port, enableSMB1, enableSMB2, enableSMB3, connectionInactivityTimeout);
         }
 
-        protected internal void Start(IPAddress serverAddress, SMBTransportType transport, int port, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
+        public void Start(IPAddress serverAddress, SMBTransportType transport, int port, bool enableSMB1, bool enableSMB2, bool enableSMB3, TimeSpan? connectionInactivityTimeout)
         {
             if (!m_listening)
             {
@@ -490,3 +490,4 @@ namespace SMBLibrary.Server
         }
     }
 }
+
