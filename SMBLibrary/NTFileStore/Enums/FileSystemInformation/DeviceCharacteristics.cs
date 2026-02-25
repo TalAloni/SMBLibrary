@@ -13,8 +13,8 @@ namespace SMBLibrary
         /// FILE_REMOVABLE_MEDIA.
         /// Indicates that the storage device supports removable media.
         /// Notice that this characteristic indicates removable media, not a removable device.
-        /// For example, drivers for JAZ drive devices specify this characteristic,
-        /// but drivers for PCMCIA flash disks do not.
+        /// For example, drivers for DVD-ROM devices specify this characteristic,
+        /// but drivers for USB flash disks do not.
         /// </summary>
         RemovableMedia = 0x0001,
 
