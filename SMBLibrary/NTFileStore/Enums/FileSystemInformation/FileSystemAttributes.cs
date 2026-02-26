@@ -2,6 +2,9 @@ using System;
 
 namespace SMBLibrary
 {
+    /// <summary>
+    /// [MS-FSCC] 2.5.1 - FileFsAttributeInformation
+    /// </summary>
     [Flags]
     public enum FileSystemAttributes : uint
     {
