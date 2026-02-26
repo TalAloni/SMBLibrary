@@ -14,6 +14,8 @@ namespace SMBLibrary
         SupportsSparseFiles = 0x0040,            // FILE_SUPPORTS_SPARSE_FILES
         SupportsReparsePoints = 0x0080,          // FILE_SUPPORTS_REPARSE_POINTS
         SupportsRemoteStorage = 0x0100,          // FILE_SUPPORTS_REMOTE_STORAGE
+        ReturnsCleanupResultInfo = 0x0200,       // FILE_RETURNS_CLEANUP_RESULT_INFO
+        SupportsPOSIXUnlinkRename = 0x0400,      // FILE_SUPPORTS_POSIX_UNLINK_RENAME
         VolumeIsCompressed = 0x8000,             // FILE_VOLUME_IS_COMPRESSED
         SupportsObjectIDs = 0x00010000,          // FILE_SUPPORTS_OBJECT_IDS
         SupportsEncryption = 0x00020000,         // FILE_SUPPORTS_ENCRYPTION
@@ -25,5 +27,8 @@ namespace SMBLibrary
         SupportsExtendedAttributes = 0x00800000, // FILE_SUPPORTS_EXTENDED_ATTRIBUTES
         SupportsOpenByFileID = 0x01000000,       // FILE_SUPPORTS_OPEN_BY_FILE_ID
         SupportsUSNJournal = 0x02000000,         // FILE_SUPPORTS_USN_JOURNAL
+        SupportsIntegrityStreams = 0x04000000,   // FILE_SUPPORT_INTEGRITY_STREAMS
+        SupportsBlockRefCounting = 0x08000000,   // FILE_SUPPORTS_BLOCK_REFCOUNTING
+        SupportsSparseVDL = 0x10000000,          // FILE_SUPPORTS_SPARSE_VDL
     }
 }
