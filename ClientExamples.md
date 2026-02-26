@@ -182,3 +182,36 @@ if (status == NTStatus.STATUS_SUCCESS)
 }
 status = fileStore.Disconnect();
 ```
+
+Cross-platform Kerberos authentication:
+=======================================
+You can have cross-platform Kerberos login support by creating a class that implements IAuthenticationClient.  
+[Kerberos.NET](https://github.com/dotnet/Kerberos.NET) can easily be used to implement IAuthenticationClient.  
+Note that in order for Kerberos.NET to work on non-Windows platforms, you must provide a cross-platform implementation of IKerberosDnsQuery (and register it using DnsQuery.RegisterImplementation)  
+[DnsClient.NET](https://github.com/MichaCo/DnsClient.NET) can easily be used to implement IKerberosDnsQuery.  
+
+```cs
+public class KerberosNetAuthenticationClient : IAuthenticationClient
+{
+    private readonly KerberosClient m_kerberosClient;
+    private readonly string m_spn;
+    private byte[] m_sessionKey;
+
+    public KerberosNetAuthenticationClient(string user, string password, string domain, string host)
+    {
+        m_kerberosClient = new KerberosClient();
+        m_kerberosClient.Authenticate(new KerberosPasswordCredential(user, password, domain)).Wait();
+        m_spn = $"cifs/{host}";
+    }
+
+    public byte[] InitializeSecurityContext(byte[] inputToken)
+    {
+        KrbApReq ticket = m_kerberosClient.GetServiceTicket(m_spn).GetAwaiter().GetResult();
+        KerberosClientCacheEntry cachedItem = (KerberosClientCacheEntry)m_kerberosClient.Cache.GetCacheItem(m_spn);
+        m_sessionKey = cachedItem.SessionKey.KeyValue.ToArray();
+        return ticket.EncodeGssApi().ToArray();
+    }
+
+    public byte[] GetSessionKey() => m_sessionKey;
+}
+```
