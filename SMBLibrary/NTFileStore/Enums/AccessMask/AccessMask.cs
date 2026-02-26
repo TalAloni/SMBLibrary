@@ -3,7 +3,8 @@ using System;
 namespace SMBLibrary
 {
     /// <summary>
-    /// [MS-DTYP] 2.4.3 - ACCESS_MASK
+    /// <see href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/7a53f60e-e730-4dfe-bbe9-b21b62eb790b">
+    /// [MS-DTYP] 2.4.3 - ACCESS_MASK</see>
     /// </summary>
     [Flags]
     public enum AccessMask : uint

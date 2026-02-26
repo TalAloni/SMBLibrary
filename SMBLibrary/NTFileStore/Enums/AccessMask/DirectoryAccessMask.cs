@@ -4,7 +4,8 @@ namespace SMBLibrary
 {
     /// <summary>
     /// [MS-SMB] 2.2.1.4.2 - Directory_Access_Mask
-    /// [MS-SMB2] 2.2.13.1.2 - Directory_Access_Mask
+    /// <see href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/0a5934b1-80f1-4da0-b1bf-5e021c309b71">
+    /// [MS-SMB2] 2.2.13.1.2 - Directory_Access_Mask</see>
     /// </summary>
     [Flags]
     public enum DirectoryAccessMask : uint

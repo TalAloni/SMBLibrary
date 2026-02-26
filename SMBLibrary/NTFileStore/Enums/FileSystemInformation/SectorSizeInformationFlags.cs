@@ -2,6 +2,10 @@ using System;
 
 namespace SMBLibrary
 {
+    /// <summary>
+    /// <see href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/3e75d97f-1d0b-4e47-b435-73c513837a57">
+    /// [MS-FSCC] 2.5.7 - FileFsSectorSizeInformation</see>
+    /// </summary>
     [Flags]
     public enum SectorSizeInformationFlags : uint
     {

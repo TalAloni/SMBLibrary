@@ -1,6 +1,10 @@
 
 namespace SMBLibrary
 {
+    /// <summary>
+    /// <see href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/e5a70738-7ee4-46d9-a5f7-6644daa49a51">
+    /// [MS-FSCC] 2.5.2 - FileFsControlInformation</see>
+    /// </summary>
     public enum FileSystemControlFlags : uint
     {
         QuotaTrack = 0x00000001,              // FILE_VC_QUOTA_TRACK

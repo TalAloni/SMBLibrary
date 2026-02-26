@@ -4,7 +4,8 @@ namespace SMBLibrary
 {
     /// <summary>
     /// [MS-SMB] 2.2.1.4.1 - File_Pipe_Printer_Access_Mask
-    /// [MS-SMB2] 2.2.13.1.1 - File_Pipe_Printer_Access_Mask
+    /// <see href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/77b36d0f-6016-458a-a7a0-0f4a72ae1534">
+    /// [MS-SMB2] 2.2.13.1.1 - File_Pipe_Printer_Access_Mask</see>
     /// </summary>
     [Flags]
     public enum FileAccessMask : uint
@@ -15,6 +16,7 @@ namespace SMBLibrary
         FILE_READ_EA = 0x00000008,
         FILE_WRITE_EA = 0x00000010,
         FILE_EXECUTE = 0x00000020,
+        FILE_DELETE_CHILD = 0x00000040,
         FILE_READ_ATTRIBUTES = 0x00000080,
         FILE_WRITE_ATTRIBUTES = 0x00000100,
         DELETE = 0x00010000,

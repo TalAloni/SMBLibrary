@@ -2,6 +2,10 @@ using System;
 
 namespace SMBLibrary
 {
+    /// <summary>
+    /// <see href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/598f395a-e7a2-4cc8-afb3-ccb30dd2df7c">
+    /// [MS-SMB2] 2.2.35 CHANGE_NOTIFY_REQUEST</see>
+    /// </summary>
     [Flags]
     public enum NotifyChangeFilter : uint
     {
