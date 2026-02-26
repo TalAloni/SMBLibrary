@@ -3,7 +3,8 @@ using System;
 namespace SMBLibrary
 {
     /// <summary>
-    /// [MS-SMB2] 2.2.35 CHANGE_NOTIFY_REQUEST
+    /// [MS-CIFS] 2.2.7.4.1 CompletionFilter
+    /// [MS-SMB2] 2.2.35 CompletionFilter
     /// </summary>
     [Flags]
     public enum NotifyChangeFilter : uint
