@@ -2,6 +2,9 @@ using System;
 
 namespace SMBLibrary
 {
+    /// <summary>
+    /// [MS-SMB2] 2.2.35 CHANGE_NOTIFY_REQUEST
+    /// </summary>
     [Flags]
     public enum NotifyChangeFilter : uint
     {
