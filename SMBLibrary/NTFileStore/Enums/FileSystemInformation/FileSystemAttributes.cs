@@ -6,7 +6,7 @@ namespace SMBLibrary
     public enum FileSystemAttributes : uint
     {
         CaseSensitiveSearch = 0x0001,            // FILE_CASE_SENSITIVE_SEARCH
-        CasePreservedNamed = 0x0002,             // FILE_CASE_PRESERVED_NAMES
+        CasePreservedNames = 0x0002,             // FILE_CASE_PRESERVED_NAMES
         UnicodeOnDisk = 0x0004,                  // FILE_UNICODE_ON_DISK
         PersistentACLs = 0x0008,                 // FILE_PERSISTENT_ACLS
         FileCompression = 0x0010,                // FILE_FILE_COMPRESSION
