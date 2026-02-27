@@ -541,3 +541,21 @@ Revision History:
         Client: Added Echo command support.
         SMB2: Added FileAttributeTagInformation support.
         Server: SMB2: NegotiateResponse: Corrected CommandLength calculation.
+
+1.5.6 - Client: NTLM: Set NTLMSSP_REQUEST_TARGET bit in negotiate message.
+        SMB1Client: Correctly report login error status instead of STATUS_INVALID_SMB.
+        SMB1Client: Compute session key when extended security is set to false.
+        SMB2Client: Simplified enabling SMB 3.1.1
+        SMB2Client: Implemented SetSecurityInformation.
+        NTLM: NegotiateFlags: Renamed TargetNameSupplied to TargetNameNegotiated.
+        NTLM: NegotiateFlags: Renamed RequestLMSessionKey to RequestNonNTSessionKey.
+        DFS: Implemented ResponseGetDfsReferral.
+        DFS: Implemented RequestGetDfsReferralEx.
+        SMB1: Implemented SMB_COM_QUERY_INFORMATION_DISK request and response.
+        Server: SMB1: Add support for SMB_COM_QUERY_INFORMATION_DISK used by Windows 98.
+        Server: SessionSetupHelper: Correctly handle NTLM v1 non-extended-session-security with LmChallengeResponse set to 0 bytes.
+        NTFileStore: SecurityDescriptor: Set SelfRelative bit when applicable.
+        NTFileStore: FileSystemAttributes: Fixed typo, Renamed CasePreservedNamed to CasePreservedNames.
+        NTFileStore: FileAccessMask: Added missing FILE_DELETE_CHILD.
+        NTFileStore: FileSystemAttributes: Added missing enum values.
+        NTFileStore: DeviceCharacteristics: Added additional enum values.
