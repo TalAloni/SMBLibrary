@@ -34,6 +34,30 @@ if (status == NTStatus.STATUS_SUCCESS)
 status = fileStore.Disconnect();
 ```
 
+Enable DFS support on a file store:
+===================================
+```cs
+ISMBFileStore fileStore = client.TreeConnect("Shared", out status);
+if (status == NTStatus.STATUS_SUCCESS)
+{
+    // Wrap with DFS support (disabled by default)
+    DfsClientOptions options = new DfsClientOptions { Enabled = true };
+    ISMBFileStore dfsStore = DfsClientFactory.CreateDfsAwareFileStore(fileStore, null, options);
+
+    // Use dfsStore normally - DFS paths are resolved automatically
+    object directoryHandle;
+    FileStatus fileStatus;
+    status = dfsStore.CreateFile(out directoryHandle, out fileStatus, @"\DfsLink\Subfolder", AccessMask.GENERIC_READ, FileAttributes.Directory, ShareAccess.Read | ShareAccess.Write, CreateDisposition.FILE_OPEN, CreateOptions.FILE_DIRECTORY_FILE, null);
+    if (status == NTStatus.STATUS_SUCCESS)
+    {
+        List<QueryDirectoryFileInformation> fileList;
+        status = dfsStore.QueryDirectory(out fileList, directoryHandle, "*", FileInformationClass.FileDirectoryInformation);
+        status = dfsStore.CloseFile(directoryHandle);
+    }
+}
+status = fileStore.Disconnect();
+```
+
 Connect to share and list files and directories - SMB2:
 =======================================================
 ```cs
