@@ -30,6 +30,14 @@ namespace SMBLibrary.SMB2
             return ByteReader.ReadBytes(hash, 0, SMB2Header.SignatureLength);
         }
 
+        public static bool VerifySignature(byte[] messageBytes, SMB2Dialect dialect, byte[] signingKey)
+        {
+            byte[] signature = ByteReader.ReadBytes(messageBytes, SMB2Header.SignatureOffset, SMB2Header.SignatureLength);
+            Array.Clear(messageBytes, SMB2Header.SignatureOffset, SMB2Header.SignatureLength);
+            byte[] expectedSignature = CalculateSignature(signingKey, dialect, messageBytes, 0, messageBytes.Length);
+            return ByteUtils.AreByteArraysEqual(signature, expectedSignature);
+        }
+
         public static byte[] GenerateSigningKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
         {
             if (dialect == SMB2Dialect.SMB202 || dialect == SMB2Dialect.SMB210)
