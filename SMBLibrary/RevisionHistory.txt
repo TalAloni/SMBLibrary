@@ -528,8 +528,8 @@ Revision History:
         ACL: Bugfix: Use AceSize when parsing ACL.
 
 1.5.5 - SMB1Client: Fix UserID being ignored when extended security is set to false.
-        SMB2Client: Correctly report login error status instead of STATUS_INVALID_SMB: Always sign outgoing messages when dialect is 3.1.1
-        SMB2Client: Correctly report login error status instead of STATUS_INVALID_SMB
+        SMB2Client: Always sign outgoing messages when dialect is 3.1.1
+        SMB2Client: Correctly report login error status instead of STATUS_INVALID_SMB.
         SMB2Client: Enabled SMB 3.0.2 support by default.
         SMB2Client: Added constructor argument to enable SMB 3.1.1
         SMB2Client: Throw exception if attempting to read or write more data than allowed for the connection.
