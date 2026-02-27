@@ -179,8 +179,7 @@ namespace SMBLibrary.SMB2
                 {
                     // [MS-SMB2] Any padding at the end of the message MUST be used in the hash computation.
                     byte[] signature = SMB2Cryptography.CalculateSignature(signingKey, dialect, buffer, offset, paddedLength);
-                    // [MS-SMB2] The first 16 bytes of the hash MUST be copied into the 16-byte signature field of the SMB2 Header.
-                    ByteWriter.WriteBytes(buffer, offset + SMB2Header.SignatureOffset, signature, 16);
+                    ByteWriter.WriteBytes(buffer, offset + SMB2Header.SignatureOffset, signature, SMB2Header.SignatureLength);
                 }
                 offset += paddedLength;
             }

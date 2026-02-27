@@ -1,4 +1,4 @@
-/* Copyright (C) 2020-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2020-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -16,14 +16,18 @@ namespace SMBLibrary.SMB2
 
         public static byte[] CalculateSignature(byte[] signingKey, SMB2Dialect dialect, byte[] buffer, int offset, int paddedLength)
         {
+            byte[] hash;
             if (dialect == SMB2Dialect.SMB202 || dialect == SMB2Dialect.SMB210)
             {
-                return new HMACSHA256(signingKey).ComputeHash(buffer, offset, paddedLength);
+                hash = new HMACSHA256(signingKey).ComputeHash(buffer, offset, paddedLength);
             }
             else
             {
-                return AesCmac.CalculateAesCmac(signingKey, buffer, offset, paddedLength);
+                hash = AesCmac.CalculateAesCmac(signingKey, buffer, offset, paddedLength);
             }
+
+            // [MS-SMB2] The first 16 bytes of the hash MUST be copied into the 16-byte signature field of the SMB2 Header.
+            return ByteReader.ReadBytes(hash, 0, SMB2Header.SignatureLength);
         }
 
         public static byte[] GenerateSigningKey(byte[] sessionKey, SMB2Dialect dialect, byte[] preauthIntegrityHashValue)
