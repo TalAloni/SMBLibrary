@@ -225,7 +225,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is OpenAndXRequest)
                     {
-                        return OpenAndXHelper.GetOpenAndXResponse(header, (OpenAndXRequest)command, share, state);
+                        return OpenAndXHelper.GetOpenAndXResponse(header, (OpenAndXRequest)command, share, state, alwaysGrantReadOplock: AlwaysGrantReadOplock);
                     }
                     else if (command is ReadAndXRequest)
                     {
@@ -265,7 +265,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is NTCreateAndXRequest)
                     {
-                        return NTCreateHelper.GetNTCreateResponse(header, (NTCreateAndXRequest)command, share, state);
+                        return NTCreateHelper.GetNTCreateResponse(header, (NTCreateAndXRequest)command, share, state, alwaysGrantReadOplock: AlwaysGrantReadOplock);
                     }
                     else if (command is NTCancelRequest)
                     {

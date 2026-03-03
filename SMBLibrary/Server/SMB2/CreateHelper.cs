@@ -14,7 +14,7 @@ namespace SMBLibrary.Server.SMB2
 {
     internal class CreateHelper
     {
-        internal static SMB2Command GetCreateResponse(CreateRequest request, ISMBShare share, SMB2ConnectionState state)
+        internal static SMB2Command GetCreateResponse(CreateRequest request, ISMBShare share, SMB2ConnectionState state, bool alwaysGrantReadOplock)
         {
             SMB2Session session = state.GetSession(request.Header.SessionID);
             string path = request.Name;
@@ -64,6 +64,10 @@ namespace SMBLibrary.Server.SMB2
             {
                 FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, handle);
                 CreateResponse response = CreateResponseFromFileSystemEntry(fileInfo, fileID.Value, fileStatus);
+                if (alwaysGrantReadOplock && request.RequestedOplockLevel != OplockLevel.None)
+                {
+                    response.OplockLevel = OplockLevel.Level2;
+                }
                 return response;
             }
         }

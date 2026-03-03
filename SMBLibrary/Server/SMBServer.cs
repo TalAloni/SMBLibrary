@@ -41,6 +41,7 @@ namespace SMBLibrary.Server
         private bool m_enableSMB1;
         private bool m_enableSMB2;
         private bool m_enableSMB3;
+        private SMBServerOptions m_options;
         private Socket m_listenerSocket;
         private bool m_listening;
         private DateTime m_serverStartTime;
@@ -48,10 +49,15 @@ namespace SMBLibrary.Server
         public event EventHandler<ConnectionRequestEventArgs> ConnectionRequested;
         public event EventHandler<LogEntry> LogEntryAdded;
 
-        public SMBServer(SMBShareCollection shares, GSSProvider securityProvider)
+        public SMBServer(SMBShareCollection shares, GSSProvider securityProvider) : this(shares, securityProvider, new SMBServerOptions())
+        {
+        }
+
+        public SMBServer(SMBShareCollection shares, GSSProvider securityProvider, SMBServerOptions options)
         {
             m_shares = shares;
             m_securityProvider = securityProvider;
+            m_options = options ?? throw new ArgumentNullException(nameof(options));
             m_services = new NamedPipeShare(shares.ListShares());
             m_serverGuid = Guid.NewGuid();
             m_connectionManager = new ConnectionManager();
@@ -473,6 +479,10 @@ namespace SMBLibrary.Server
         {
             m_connectionManager.ReleaseConnection(clientEndPoint);
         }
+
+        public SMBServerOptions Options => m_options;
+
+        public bool AlwaysGrantReadOplock => m_options.AlwaysGrantReadOplock;
 
         private void Log(Severity severity, string message)
         {

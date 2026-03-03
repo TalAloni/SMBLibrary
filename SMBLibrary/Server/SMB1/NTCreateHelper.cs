@@ -16,7 +16,7 @@ namespace SMBLibrary.Server.SMB1
 {
     internal class NTCreateHelper
     {
-        internal static SMB1Command GetNTCreateResponse(SMB1Header header, NTCreateAndXRequest request, ISMBShare share, SMB1ConnectionState state)
+        internal static SMB1Command GetNTCreateResponse(SMB1Header header, NTCreateAndXRequest request, ISMBShare share, SMB1ConnectionState state, bool alwaysGrantReadOplock)
         {
             SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & NTCreateFlags.NT_CREATE_REQUEST_EXTENDED_RESPONSE) > 0;
@@ -80,11 +80,19 @@ namespace SMBLibrary.Server.SMB1
                 if (isExtended)
                 {
                     NTCreateAndXResponseExtended response = CreateResponseExtendedFromFileInformation(fileInfo, fileID.Value, fileStatus);
+                    if (alwaysGrantReadOplock && (request.Flags & (NTCreateFlags.NT_CREATE_REQUEST_OPLOCK | NTCreateFlags.NT_CREATE_REQUEST_OPBATCH)) > 0)
+                    {
+                        response.OpLockLevel = OpLockLevel.Level2OpLockGranted;
+                    }
                     return response;
                 }
                 else
                 {
                     NTCreateAndXResponse response = CreateResponseFromFileInformation(fileInfo, fileID.Value, fileStatus);
+                    if (alwaysGrantReadOplock && (request.Flags & (NTCreateFlags.NT_CREATE_REQUEST_OPLOCK | NTCreateFlags.NT_CREATE_REQUEST_OPBATCH)) > 0)
+                    {
+                        response.OpLockLevel = OpLockLevel.Level2OpLockGranted;
+                    }
                     return response;
                 }
             }

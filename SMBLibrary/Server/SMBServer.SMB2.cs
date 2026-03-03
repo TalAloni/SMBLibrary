@@ -167,7 +167,7 @@ namespace SMBLibrary.Server
                     }
                     else if (command is CreateRequest)
                     {
-                        return CreateHelper.GetCreateResponse((CreateRequest)command, share, state);
+                        return CreateHelper.GetCreateResponse((CreateRequest)command, share, state, alwaysGrantReadOplock: AlwaysGrantReadOplock);
                     }
                     else if (command is QueryInfoRequest)
                     {

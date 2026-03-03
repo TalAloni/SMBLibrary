@@ -16,7 +16,7 @@ namespace SMBLibrary.Server.SMB1
 {
     internal class OpenAndXHelper
     {
-        internal static SMB1Command GetOpenAndXResponse(SMB1Header header, OpenAndXRequest request, ISMBShare share, SMB1ConnectionState state)
+        internal static SMB1Command GetOpenAndXResponse(SMB1Header header, OpenAndXRequest request, ISMBShare share, SMB1ConnectionState state, bool alwaysGrantReadOplock)
         {
             SMB1Session session = state.GetSession(header.UID);
             bool isExtended = (request.Flags & OpenFlags.SMB_OPEN_EXTENDED_RESPONSE) > 0;
@@ -91,11 +91,21 @@ namespace SMBLibrary.Server.SMB1
                 FileNetworkOpenInformation fileInfo = NTFileStoreHelper.GetNetworkOpenInformation(share.FileStore, handle);
                 if (isExtended)
                 {
-                    return CreateResponseExtendedFromFileInfo(fileInfo, fileID.Value, openResult);
+                    OpenAndXResponseExtended response = CreateResponseExtendedFromFileInfo(fileInfo, fileID.Value, openResult);
+                    if (alwaysGrantReadOplock && (request.Flags & (OpenFlags.REQ_OPLOCK | OpenFlags.REQ_OPLOCK_BATCH)) > 0)
+                    {
+                        response.OpenResults.OpLockGranted = true;
+                    }
+                    return response;
                 }
                 else
                 {
-                    return CreateResponseFromFileInfo(fileInfo, fileID.Value, openResult);
+                    OpenAndXResponse response = CreateResponseFromFileInfo(fileInfo, fileID.Value, openResult);
+                    if (alwaysGrantReadOplock && (request.Flags & (OpenFlags.REQ_OPLOCK | OpenFlags.REQ_OPLOCK_BATCH)) > 0)
+                    {
+                        response.OpenResults.OpLockGranted = true;
+                    }
+                    return response;
                 }
             }
         }
