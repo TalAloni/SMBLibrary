@@ -312,14 +312,28 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Send an IOCTL/FSCTL request using a file handle.
+        /// </summary>
+        /// <exception cref="NullReferenceException">Thrown when handle is null. Use the FileID overload for DFS referrals.</exception>
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
+        {
+            return DeviceIOControl((FileID)handle, ctlCode, input, out output, maxOutputLength);
+        }
+
+        /// <summary>
+        /// Send an IOCTL/FSCTL request with an explicit FileID.
+        /// Use this overload for FSCTLs that don't require an open file handle,
+        /// such as FSCTL_DFS_GET_REFERRALS which uses the special FileID (0xFFFFFFFFFFFFFFFF).
+        /// </summary>
+        public NTStatus DeviceIOControl(FileID fileId, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
         {
             output = null;
             IOCtlRequest request = new IOCtlRequest();
             request.Header.CreditCharge = (ushort)Math.Ceiling((double)maxOutputLength / BytesPerCredit);
             request.CtlCode = ctlCode;
             request.IsFSCtl = true;
-            request.FileId = (FileID)handle;
+            request.FileId = fileId;
             request.Input = input;
             request.MaxOutputResponse = (uint)maxOutputLength;
             TrySendCommand(request);
