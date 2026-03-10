@@ -6,9 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using SMBLibrary.SMB2;
-using Utilities;
 
 namespace SMBLibrary.Client
 {
@@ -304,6 +302,7 @@ namespace SMBLibrary.Client
             };
 
             ioRequest = request;
+            // Add some reference for cancelation
             lock (_lock)
             {
                 _activeNotifies[request] = true;
@@ -311,31 +310,28 @@ namespace SMBLibrary.Client
 
             TrySendCommand(request);
 
-            ThreadPool.QueueUserWorkItem(_ =>
+            SMB2Command response = m_client.WaitForCommand(request.MessageID);
+
+            lock (_lock)
             {
-                SMB2Command response = m_client.WaitForCommand(request.MessageID);
-
-                lock (_lock)
+                if (!_activeNotifies.ContainsKey(request))
                 {
-                    if (!_activeNotifies.ContainsKey(request))
-                    {
-                        return;
-                    }
+                    return NTStatus.STATUS_CANCELLED;
                 }
+                // Request is finished
+                _activeNotifies.Remove(request);
+            }
 
-                if (response.Header.Status == NTStatus.STATUS_SUCCESS)
-                {
-                    onNotifyChangeCompleted?.Invoke(response.Header.Status, response.GetBytes(), context);
-                    NotifyChange(out _, handle, completionFilter, watchTree, outputBufferSize, onNotifyChangeCompleted, context);
-                }
-                else
-                {
-                    NTStatus error = response == null ? NTStatus.STATUS_INVALID_SMB : response.Header.Status;
-                    onNotifyChangeCompleted?.Invoke(error, null, context);
-                }
-            });
+            // Timeout occurred
+            if (response == null)
+            {
+                onNotifyChangeCompleted?.Invoke(NTStatus.STATUS_IO_TIMEOUT, null, context);
+                return NTStatus.STATUS_IO_TIMEOUT;
+            }
 
-            return NTStatus.STATUS_PENDING;
+            // Normal response
+            onNotifyChangeCompleted?.Invoke(response.Header.Status, response.GetBytes(), context);
+            return response.Header.Status;
         }
 
         public NTStatus Cancel(object ioRequest)
