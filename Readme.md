@@ -47,7 +47,7 @@ SMBLibrary offers a name service of its own.
 
 * if you want localhost access from Windows explorer to work as expected, you must specify the IP address that you selected (\\\\127.0.0.1 or \\\\localhost will not work as expected), in addition, I have observed that when connecting to the first IP address of a given adapter, Windows will only attempt to connect to port 445.
 
-### Method 3: Reserve port 445 as startup
+### Method 3: Reserve port 445 as startup:
 
 Open a console as admin
 
@@ -86,6 +86,18 @@ And you can browse its files by opening explorer to:
 
 ### Method 4: Use an IP address that is invisible to Windows File Sharing:
 Using PCap.Net you can programmatically setup a virtual Network adapter and intercept SMB traffic (similar to how a virtual machine operates), You should use the ARP protocol to notify the network about the new IP address, and then process the incoming SMB traffic using SMBLibrary, good luck!
+
+### Method 5: Use Windows 11 (version 24H2 or later) which supports SMB alternative ports:
+
+Run your SMB server on a custom port (eg. 44500)
+
+Map it to a drive letter:
+
+`NET USE S: \\127.0.0.1\share /TCPPORT:44500`
+
+Browse the drive letter using Windows Explorer.
+
+Source: [Microsoft](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-ports?tabs=command-line#map-an-alternative-port)
 
 Using SMBLibrary:
 =================
