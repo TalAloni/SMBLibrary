@@ -52,6 +52,45 @@ Method 3: Use an IP address that is invisible to Windows File Sharing:
 ----------------------------------------------------------------------
 Using PCap.Net you can programmatically setup a virtual Network adapter and intercept SMB traffic (similar to how a virtual machine operates), You should use the ARP protocol to notify the network about the new IP address, and then process the incoming SMB traffic using SMBLibrary, good luck! 
 
+Method 4: Reserve port 445 at startup:
+----------------------------------------------------------------------
+Open a console as admin
+    Allow binding to 127.0.0.2
+        netsh interface ipv4 add address "Loopback Pseudo-Interface 1" 127.0.0.2
+
+    The following steps configure Port Forwarding to run before LAN Man Service, which will let us reserve 127.0.0.2:445 for our own use.
+
+        Inspect the current dependencies for 'Server' service
+            sc qc lanmanserver
+
+        Add 'iphlpsvc' as a dependency. Note - the space after 'depend' is important.
+            sc config lanmanserver depend= samss/srv2/iphlpsvc
+
+        Create a Port Forward between 127.0.0.2:445 and 127.0.0.1:44500. (Since the Port Forwarding Service now runs first, it means it'll be reserved for our use and not automatically taken by the Windows SMB Component).
+            netsh interface portproxy add v4tov4 listenaddress=127.0.0.2 listenport=445 connectaddress=127.0.0.1 connectport=44500
+
+Reboot, check:
+    netstat -an | find ":445"
+
+        Expect:
+            TCP 127.0.0.2:445 0.0.0.0:0 LISTENING
+
+You can now run your SMB server to listen on 127.0.0.1:44500
+
+And you can browse its files by opening explorer to:
+    \\127.0.0.2
+
+Method 5: Use Windows 11 (version 24H2 or later) which supports SMB alternative ports:
+----------------------------------------------------------------------
+Run your SMB server on a custom port (eg. 44500)
+
+Map it to a drive letter:
+    NET USE S: \\127.0.0.1\share /TCPPORT:44500
+
+Browse the drive letter using Windows Explorer.
+
+Source: https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-ports?tabs=powershell#map-an-alternative-port
+
 Using SMBLibrary:
 =================
 Any directory / filesystem / object you wish to share must implement the IFileSystem interface (or the lower-level INTFileStore interface).
