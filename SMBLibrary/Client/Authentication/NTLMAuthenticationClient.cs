@@ -83,7 +83,7 @@ namespace SMBLibrary.Client.Authentication
 
         protected virtual byte[] CreateNegotiateMessage()
         {
-            return NTLMAuthenticationHelper.GetNegotiateMessage(m_domainName, m_userName, m_password, m_authenticationMethod);
+            return NTLMAuthenticationHelper.GetNegotiateMessage(m_userName, m_password, m_authenticationMethod);
         }
 
         protected virtual byte[] GetAuthenticateMessage(byte[] securityBlob)

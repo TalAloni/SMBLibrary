@@ -13,21 +13,19 @@ namespace SMBLibrary.Client
 {
     public class NTLMAuthenticationHelper
     {
-        public static byte[] GetNegotiateMessage(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
+        public static byte[] GetNegotiateMessage(string userName, string password, AuthenticationMethod authenticationMethod)
         {
             bool isAnonymous = (userName == String.Empty && password == String.Empty);
-            return GetNegotiateMessage(domainName, isAnonymous, authenticationMethod, false);
+            return GetNegotiateMessage(isAnonymous, authenticationMethod, false);
         }
 
-        public static byte[] GetNegotiateMessage(string domainName, bool isAnonymous, AuthenticationMethod authenticationMethod, bool requestSeal)
+        public static byte[] GetNegotiateMessage(bool isAnonymous, AuthenticationMethod authenticationMethod, bool requestSeal)
         {
             NegotiateMessage negotiateMessage = new NegotiateMessage();
             negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
                                               NegotiateFlags.OEMEncoding |
                                               NegotiateFlags.Sign |
                                               NegotiateFlags.NTLMSessionSecurity |
-                                              NegotiateFlags.DomainNameSupplied |
-                                              NegotiateFlags.WorkstationNameSupplied |
                                               NegotiateFlags.TargetNameNegotiated |
                                               NegotiateFlags.AlwaysSign |
                                               NegotiateFlags.Version |
@@ -54,8 +52,6 @@ namespace SMBLibrary.Client
             }
 
             negotiateMessage.Version = NTLMVersion.Server2003;
-            negotiateMessage.DomainName = domainName;
-            negotiateMessage.Workstation = Environment.MachineName;
             return negotiateMessage.GetBytes();
         }
 
