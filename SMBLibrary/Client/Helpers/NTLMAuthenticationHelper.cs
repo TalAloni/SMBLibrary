@@ -16,10 +16,10 @@ namespace SMBLibrary.Client
         public static byte[] GetNegotiateMessage(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
         {
             bool isAnonymous = (userName == String.Empty && password == String.Empty);
-            return GetNegotiateMessage(domainName, isAnonymous, authenticationMethod);
+            return GetNegotiateMessage(domainName, isAnonymous, authenticationMethod, false);
         }
 
-        public static byte[] GetNegotiateMessage(string domainName, bool isAnonymous, AuthenticationMethod authenticationMethod)
+        public static byte[] GetNegotiateMessage(string domainName, bool isAnonymous, AuthenticationMethod authenticationMethod, bool requestSeal)
         {
             NegotiateMessage negotiateMessage = new NegotiateMessage();
             negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
@@ -33,6 +33,11 @@ namespace SMBLibrary.Client
                                               NegotiateFlags.Version |
                                               NegotiateFlags.Use128BitEncryption |
                                               NegotiateFlags.Use56BitEncryption;
+
+            if (requestSeal)
+            {
+                negotiateMessage.NegotiateFlags |= NegotiateFlags.Seal;
+            }
 
             if (!isAnonymous)
             {
@@ -83,6 +88,11 @@ namespace SMBLibrary.Client
             else
             {
                 authenticateMessage.NegotiateFlags |= NegotiateFlags.OEMEncoding;
+            }
+
+            if ((challengeMessage.NegotiateFlags & NegotiateFlags.Seal) > 0)
+            {
+                authenticateMessage.NegotiateFlags |= NegotiateFlags.Seal;
             }
 
             if ((challengeMessage.NegotiateFlags & NegotiateFlags.KeyExchange) > 0)
