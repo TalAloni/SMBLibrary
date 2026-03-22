@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -15,6 +15,12 @@ namespace SMBLibrary.Client
     {
         public static byte[] GetNegotiateMessage(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
         {
+            bool isAnonymous = (userName == String.Empty && password == String.Empty);
+            return GetNegotiateMessage(domainName, isAnonymous, authenticationMethod);
+        }
+
+        public static byte[] GetNegotiateMessage(string domainName, bool isAnonymous, AuthenticationMethod authenticationMethod)
+        {
             NegotiateMessage negotiateMessage = new NegotiateMessage();
             negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
                                               NegotiateFlags.OEMEncoding |
@@ -28,7 +34,7 @@ namespace SMBLibrary.Client
                                               NegotiateFlags.Use128BitEncryption |
                                               NegotiateFlags.Use56BitEncryption;
 
-            if (!(userName == String.Empty && password == String.Empty))
+            if (!isAnonymous)
             {
                 negotiateMessage.NegotiateFlags |= NegotiateFlags.KeyExchange;
             }
