@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+﻿/* Copyright (C) 2017-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -66,7 +66,7 @@ namespace SMBLibrary.Client.Authentication
                 useGSSAPI = true;
             }
 
-            m_negotiateMessageBytes = NTLMAuthenticationHelper.GetNegotiateMessage(m_domainName, m_userName, m_password, m_authenticationMethod);
+            m_negotiateMessageBytes = CreateNegotiateMessage();
             if (useGSSAPI)
             {
                 SimpleProtectedNegotiationTokenInit outputToken = new SimpleProtectedNegotiationTokenInit();
@@ -79,6 +79,11 @@ namespace SMBLibrary.Client.Authentication
             {
                 return m_negotiateMessageBytes;
             }
+        }
+
+        protected virtual byte[] CreateNegotiateMessage()
+        {
+            return NTLMAuthenticationHelper.GetNegotiateMessage(m_domainName, m_userName, m_password, m_authenticationMethod);
         }
 
         protected virtual byte[] GetAuthenticateMessage(byte[] securityBlob)
