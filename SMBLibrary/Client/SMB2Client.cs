@@ -85,6 +85,21 @@ namespace SMBLibrary.Client
         /// </param>
         public bool Connect(string serverName, SMBTransportType transport)
         {
+            if (serverName == null)
+            {
+                throw new ArgumentNullException(nameof(serverName));
+            }
+
+            if (serverName.Trim() == "")
+            {
+                throw new ArgumentException(String.Format("'{0}' cannot be null or whitespace.", nameof(serverName)), nameof(serverName));
+            }
+
+            if (!Enum.IsDefined(typeof(SMBTransportType), transport))
+            {
+                throw new ArgumentOutOfRangeException(nameof(transport));
+            }
+
             m_serverName = serverName;
             IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
             if (hostAddresses.Length == 0)
@@ -97,6 +112,16 @@ namespace SMBLibrary.Client
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
         {
+            if (serverAddress is null)
+            {
+                throw new ArgumentNullException(nameof(serverAddress));
+            }
+
+            if (!Enum.IsDefined(typeof(SMBTransportType), transport))
+            {
+                throw new ArgumentOutOfRangeException(nameof(transport));
+            }
+
             int port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
             return Connect(serverAddress, transport, port);
         }
