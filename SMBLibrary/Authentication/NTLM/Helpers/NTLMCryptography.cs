@@ -337,12 +337,17 @@ namespace SMBLibrary.Authentication.NTLM
 
         public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message, uint seqNum)
         {
-            // [MS-NLMP] 3.4.4.2
             byte[] signKey = ComputeClientSignKey(exportedSessionKey);
-            byte[] hash = ComputeMessageHash(signKey, message, seqNum);
-
             byte[] sealKey = ComputeClientSealKey(exportedSessionKey);
-            byte[] encryptedHash = RC4.Encrypt(sealKey, hash);
+            RC4KeyState sealKeyState = RC4.InitializeStateFromKey(sealKey);
+            return ComputeMessageSignature(signKey, sealKeyState, message, seqNum);
+        }
+
+        public static byte[] ComputeMessageSignature(byte[] signKey, RC4KeyState sealKeyState, byte[] message, uint seqNum)
+        {
+            // [MS-NLMP] 3.4.4.2
+            byte[] hash = ComputeMessageHash(signKey, message, seqNum);
+            byte[] encryptedHash = RC4.Encrypt(sealKeyState, hash);
 
             byte[] version = new byte[] { 0x01, 0x00, 0x00, 0x00 };
             byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
