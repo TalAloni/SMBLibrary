@@ -339,16 +339,22 @@ namespace SMBLibrary.Authentication.NTLM
         {
             // [MS-NLMP] 3.4.4.2
             byte[] signKey = ComputeClientSignKey(exportedSessionKey);
-            byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
-            byte[] concatenated = ByteUtils.Concatenate(sequenceNumberBytes, message);
-            byte[] fullHash = new HMACMD5(signKey).ComputeHash(concatenated);
-            byte[] hash = ByteReader.ReadBytes(fullHash, 0, 8);
+            byte[] hash = ComputeMessageHash(signKey, message, seqNum);
 
             byte[] sealKey = ComputeClientSealKey(exportedSessionKey);
             byte[] encryptedHash = RC4.Encrypt(sealKey, hash);
 
             byte[] version = new byte[] { 0x01, 0x00, 0x00, 0x00 };
+            byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
             return ByteUtils.Concatenate(ByteUtils.Concatenate(version, encryptedHash), sequenceNumberBytes);
+        }
+
+        private static byte[] ComputeMessageHash(byte[] signKey, byte[] message, uint seqNum)
+        {
+            byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
+            byte[] concatenated = ByteUtils.Concatenate(sequenceNumberBytes, message);
+            byte[] fullHash = new HMACMD5(signKey).ComputeHash(concatenated);
+            return ByteReader.ReadBytes(fullHash, 0, 8);
         }
     }
 }
