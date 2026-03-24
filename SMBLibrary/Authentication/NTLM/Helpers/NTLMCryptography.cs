@@ -298,8 +298,8 @@ namespace SMBLibrary.Authentication.NTLM
             }
             byte[] encodedString = Encoding.GetEncoding(28591).GetBytes(str);
             byte[] nullTerminatedEncodedString = ByteUtils.Concatenate(encodedString, new byte[1]);
-            byte[] concatendated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
-            return MD5.Create().ComputeHash(concatendated);
+            byte[] concatenated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
+            return MD5.Create().ComputeHash(concatenated);
         }
 
         public static byte[] ComputeClientSealKey(byte[] exportedSessionKey)
@@ -326,8 +326,8 @@ namespace SMBLibrary.Authentication.NTLM
             }
             byte[] encodedString = Encoding.GetEncoding(28591).GetBytes(str);
             byte[] nullTerminatedEncodedString = ByteUtils.Concatenate(encodedString, new byte[1]);
-            byte[] concatendated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
-            return MD5.Create().ComputeHash(concatendated);
+            byte[] concatenated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
+            return MD5.Create().ComputeHash(concatenated);
         }
 
         public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message)
@@ -340,8 +340,8 @@ namespace SMBLibrary.Authentication.NTLM
             // [MS-NLMP] 3.4.4.2
             byte[] signKey = ComputeClientSignKey(exportedSessionKey);
             byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
-            byte[] concatendated = ByteUtils.Concatenate(sequenceNumberBytes, message);
-            byte[] fullHash = new HMACMD5(signKey).ComputeHash(concatendated);
+            byte[] concatenated = ByteUtils.Concatenate(sequenceNumberBytes, message);
+            byte[] fullHash = new HMACMD5(signKey).ComputeHash(concatenated);
             byte[] hash = ByteReader.ReadBytes(fullHash, 0, 8);
 
             byte[] sealKey = ComputeClientSealKey(exportedSessionKey);
