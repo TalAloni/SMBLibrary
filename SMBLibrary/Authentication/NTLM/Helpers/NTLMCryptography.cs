@@ -354,6 +354,12 @@ namespace SMBLibrary.Authentication.NTLM
             return ByteUtils.Concatenate(ByteUtils.Concatenate(version, encryptedHash), sequenceNumberBytes);
         }
 
+        public static bool VerifyMessageHash(byte[] signKey, byte[] message, uint seqNum, byte[] expectedHash)
+        {
+            byte[] hash = ComputeMessageHash(signKey, message, seqNum);
+            return ByteUtils.AreByteArraysEqual(hash, expectedHash);
+        }
+
         private static byte[] ComputeMessageHash(byte[] signKey, byte[] message, uint seqNum)
         {
             byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
