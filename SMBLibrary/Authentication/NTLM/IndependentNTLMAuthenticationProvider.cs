@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -78,6 +78,13 @@ namespace SMBLibrary.Authentication.NTLM
             byte[] serverChallenge = GenerateServerChallenge();
             context = new AuthContext(serverChallenge);
 
+            ChallengeMessage challengeMessage = CreateChallengeMessage(negotiateMessage, serverChallenge);
+            challengeMessageBytes = challengeMessage.GetBytes();
+            return NTStatus.SEC_I_CONTINUE_NEEDED;
+        }
+
+        protected virtual ChallengeMessage CreateChallengeMessage(NegotiateMessage negotiateMessage, byte[] serverChallenge)
+        {
             ChallengeMessage challengeMessage = new ChallengeMessage();
             // https://msdn.microsoft.com/en-us/library/cc236691.aspx
             challengeMessage.NegotiateFlags = NegotiateFlags.TargetTypeServer |
@@ -147,8 +154,7 @@ namespace SMBLibrary.Authentication.NTLM
             challengeMessage.ServerChallenge = serverChallenge;
             challengeMessage.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
             challengeMessage.Version = NTLMVersion.Server2003;
-            challengeMessageBytes = challengeMessage.GetBytes();
-            return NTStatus.SEC_I_CONTINUE_NEEDED;
+            return challengeMessage;
         }
 
         public override NTStatus Authenticate(object context, byte[] authenticateMessageBytes)
