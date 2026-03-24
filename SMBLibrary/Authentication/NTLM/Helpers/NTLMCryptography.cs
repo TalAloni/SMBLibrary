@@ -335,7 +335,7 @@ namespace SMBLibrary.Authentication.NTLM
             return ComputeMechListMIC(exportedSessionKey, message, 0);
         }
 
-        public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message, int seqNum)
+        public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message, uint seqNum)
         {
             // [MS-NLMP] 3.4.4.2
             byte[] signKey = ComputeClientSignKey(exportedSessionKey);
