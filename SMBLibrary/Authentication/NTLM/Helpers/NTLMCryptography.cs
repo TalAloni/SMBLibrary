@@ -284,7 +284,7 @@ namespace SMBLibrary.Authentication.NTLM
             return ComputeSignKey(exportedSessionKey, false);
         }
 
-        private static byte[] ComputeSignKey(byte[] exportedSessionKey, bool isClient)
+        public static byte[] ComputeSignKey(byte[] exportedSessionKey, bool isClient)
         {
             // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
             string str;
@@ -312,7 +312,7 @@ namespace SMBLibrary.Authentication.NTLM
             return ComputeSealKey(exportedSessionKey, false);
         }
 
-        private static byte[] ComputeSealKey(byte[] exportedSessionKey, bool isClient)
+        public static byte[] ComputeSealKey(byte[] exportedSessionKey, bool isClient)
         {
             // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
             string str;
