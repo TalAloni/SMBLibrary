@@ -69,13 +69,18 @@ namespace SMBLibrary.Client
 
         public bool Connect(string serverName, SMBTransportType transport)
         {
+            return Connect(serverName, transport, 0);
+        }
+
+        public bool Connect(string serverName, SMBTransportType transport, int port)
+        {
             IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
             if (hostAddresses.Length == 0)
             {
                 throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
             }
             IPAddress serverAddress = IPAddressHelper.SelectAddressPreferIPv4(hostAddresses);
-            return Connect(serverAddress, transport);
+            return Connect(serverAddress, transport, port);
         }
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
@@ -89,7 +94,16 @@ namespace SMBLibrary.Client
             return Connect(serverAddress, transport, port, forceExtendedSecurity);
         }
 
-        protected internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, int port)
+        {
+            if (port == 0)
+            {
+                port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
+            }
+            return Connect(serverAddress, transport, port, true);
+        }
+
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, int port, bool forceExtendedSecurity)
         {
             m_transport = transport;
             if (!m_isConnected)
@@ -152,7 +166,7 @@ namespace SMBLibrary.Client
             return nameServiceClient.GetServerName();
         }
 
-        private bool ConnectSocket(IPAddress serverAddress, int port)
+        protected virtual bool ConnectSocket(IPAddress serverAddress, int port)
         {
             m_clientSocket = new Socket(serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 

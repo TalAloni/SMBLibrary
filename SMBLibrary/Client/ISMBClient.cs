@@ -14,7 +14,11 @@ namespace SMBLibrary.Client
     {
         bool Connect(string serverName, SMBTransportType transport);
 
+        bool Connect(string serverName, SMBTransportType transport, int port);
+
         bool Connect(IPAddress serverAddress, SMBTransportType transport);
+
+        bool Connect(IPAddress serverAddress, SMBTransportType transport, int port);
 
         void Disconnect();
 

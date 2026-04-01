@@ -85,6 +85,11 @@ namespace SMBLibrary.Client
         /// </param>
         public bool Connect(string serverName, SMBTransportType transport)
         {
+            return Connect(serverName, transport, 0);
+        }
+
+        public bool Connect(string serverName, SMBTransportType transport, int port)
+        {
             m_serverName = serverName;
             IPAddress[] hostAddresses = Dns.GetHostAddresses(serverName);
             if (hostAddresses.Length == 0)
@@ -92,7 +97,12 @@ namespace SMBLibrary.Client
                 throw new Exception(String.Format("Cannot resolve host name {0} to an IP address", serverName));
             }
             IPAddress serverAddress = IPAddressHelper.SelectAddressPreferIPv4(hostAddresses);
-            return Connect(serverAddress, transport);
+            if (port == 0)
+            {
+                port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
+            }
+
+            return Connect(serverAddress, transport, port);
         }
 
         public bool Connect(IPAddress serverAddress, SMBTransportType transport)
@@ -101,11 +111,16 @@ namespace SMBLibrary.Client
             return Connect(serverAddress, transport, port);
         }
 
-        protected internal bool Connect(IPAddress serverAddress, SMBTransportType transport, int port)
+        public bool Connect(IPAddress serverAddress, SMBTransportType transport, int port)
         {
             if (m_serverName == null)
             {
                 m_serverName = serverAddress.ToString();
+            }
+
+            if (port == 0)
+            {
+                port = (transport == SMBTransportType.DirectTCPTransport ? DirectTCPPort : NetBiosOverTCPPort);
             }
 
             m_transport = transport;
@@ -168,7 +183,7 @@ namespace SMBLibrary.Client
             return nameServiceClient.GetServerName();
         }
 
-        private bool ConnectSocket(IPAddress serverAddress, int port)
+        protected virtual bool ConnectSocket(IPAddress serverAddress, int port)
         {
             m_clientSocket = new Socket(serverAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
