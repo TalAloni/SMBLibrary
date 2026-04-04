@@ -10,22 +10,37 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Threading;
 
 namespace SMBLibrary.Tests.Client
 {
     [TestClass]
     public class SMB2ClientTests
-    {
-        private int m_serverPort;
+    {        
+        // ensure that multiple tests run at the same instant in time receive different port numbers
+        // by incrementing the port number for each test
+        private static readonly int minPort = 1025;
+        private static readonly int maxPort = 65535;
+        private static int m_serverPort = minPort + new Random().Next(maxPort - minPort);
+        
         private TcpListener m_tcpListener;
         private bool m_clientConnected;
+        
+        private static int GetNextPortNumber()
+        {
+            var next = Interlocked.Increment(ref m_serverPort);
+            
+            if (next > maxPort) 
+                next = minPort;
 
+            return next;
+        }
+        
         [TestInitialize]
         public void Initialize()
         {
-            m_serverPort = 1000 + new Random().Next(50000);
-            m_tcpListener = new TcpListener(IPAddress.Loopback, m_serverPort);
+            m_tcpListener = new TcpListener(IPAddress.Loopback, GetNextPortNumber());
             m_tcpListener.Start();
         }
 

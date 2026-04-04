@@ -14,7 +14,7 @@ namespace SMBLibrary.Tests
     [TestClass]
     public class NTDirectoryFileSystemTests : NTFileStoreTests
     {
-        private static readonly string TestDirectoryPath = @"C:\Tests";
+        private static readonly string TestDirectoryPath = Path.Combine(Path.GetTempPath(), "SMBLibraryTests");
 
         static NTDirectoryFileSystemTests()
         {
