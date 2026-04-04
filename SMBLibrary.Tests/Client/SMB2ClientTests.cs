@@ -29,12 +29,12 @@ namespace SMBLibrary.Tests.Client
         
         private static int GetNextPortNumber()
         {
-            Interlocked.Increment(ref m_serverPort);
+            var next = Interlocked.Increment(ref m_serverPort);
             
-            if (m_serverPort > maxPort) 
-                m_serverPort = minPort;
+            if (next > maxPort) 
+                next = minPort;
 
-            return m_serverPort;
+            return next;
         }
         
         [TestInitialize]
