@@ -17,45 +17,30 @@ namespace SMBLibrary.Tests.Client
 {
     [TestClass]
     public class SMB2ClientTests
-    {
-        private int m_serverPort;
+    {        
+        // ensure that multiple tests run at the same instant in time receive different port numbers
+        // by incrementing the port number for each test
+        private static readonly int minPort = 1025;
+        private static readonly int maxPort = 65535;
+        private static int m_serverPort = minPort + new Random().Next(maxPort - minPort);
+        
         private TcpListener m_tcpListener;
         private bool m_clientConnected;
         
-        // ensure that multiple tests run at the same instant in time receive different port numbers
-        // by using a random number generator that is NOT seeded solely by current time
-        private RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-        
-        private int GetRandomPortNumber(int lowerBound, int upperBound)
+        private static int GetNextPortNumber()
         {
-            if (lowerBound < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(lowerBound), "lowerBound must be greater than 0");
-            }
+            Interlocked.Increment(ref m_serverPort);
             
-            if (upperBound < lowerBound || upperBound > 65535)
-            {
-                throw new ArgumentOutOfRangeException(nameof(upperBound), "upperBound must be greater-or-equal to lowerBound and less than 65536");
-            }
-            
-            // rejection sampling is overkill for this application, but whatever, at least the tests pass now.
-            // use 2 bytes to generate a random number in the range 0 to 65535
-            var bytes = new byte[2];
-            int portNumber;
-            do
-            {
-                rng.GetBytes(bytes);
-                portNumber = BitConverter.ToUInt16(bytes, 0);
-            } while (portNumber < lowerBound || portNumber > upperBound);
+            if (m_serverPort > maxPort) 
+                m_serverPort = minPort;
 
-            return portNumber;
+            return m_serverPort;
         }
         
         [TestInitialize]
         public void Initialize()
         {
-            m_serverPort = GetRandomPortNumber(1025, 65535);
-            m_tcpListener = new TcpListener(IPAddress.Loopback, m_serverPort);
+            m_tcpListener = new TcpListener(IPAddress.Loopback, GetNextPortNumber());
             m_tcpListener.Start();
         }
 
