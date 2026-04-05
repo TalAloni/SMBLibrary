@@ -149,11 +149,17 @@ namespace SMBLibrary.Authentication.NTLM
                 challengeMessage.NegotiateFlags |= NegotiateFlags.KeyExchange;
             }
 
-            challengeMessage.TargetName = Environment.MachineName;
+            string serverName = GetServerName();
+            challengeMessage.TargetName = serverName;
             challengeMessage.ServerChallenge = serverChallenge;
-            challengeMessage.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
+            challengeMessage.TargetInfo = AVPairUtils.GetAVPairSequence(serverName, serverName);
             challengeMessage.Version = NTLMVersion.Server2003;
             return challengeMessage;
+        }
+
+        public virtual string GetServerName()
+        {
+            return Environment.MachineName;
         }
 
         public override NTStatus Authenticate(object context, byte[] authenticateMessageBytes)
