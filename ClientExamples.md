@@ -34,6 +34,15 @@ if (status == NTStatus.STATUS_SUCCESS)
 status = fileStore.Disconnect();
 ```
 
+Enable DFS support via client property (recommended):
+======================================================
+```cs
+SMB2Client client = new SMB2Client();
+client.DfsClientOptions = new DfsClientOptions { Enabled = true };
+// TreeConnect automatically wraps DFS-enabled shares with DfsAwareClientAdapter
+ISMBFileStore fileStore = client.TreeConnect("DfsShare", out status);
+```
+
 Enable DFS support on a file store:
 ===================================
 ```cs
