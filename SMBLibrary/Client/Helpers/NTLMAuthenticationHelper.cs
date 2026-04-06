@@ -1,11 +1,10 @@
-/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using SMBLibrary.Authentication.NTLM;
 using Utilities;
@@ -14,22 +13,31 @@ namespace SMBLibrary.Client
 {
     public class NTLMAuthenticationHelper
     {
-        public static byte[] GetNegotiateMessage(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
+        public static byte[] GetNegotiateMessage(string userName, string password, AuthenticationMethod authenticationMethod)
+        {
+            bool isAnonymous = (userName == String.Empty && password == String.Empty);
+            return GetNegotiateMessage(isAnonymous, authenticationMethod, false);
+        }
+
+        public static byte[] GetNegotiateMessage(bool isAnonymous, AuthenticationMethod authenticationMethod, bool requestSeal)
         {
             NegotiateMessage negotiateMessage = new NegotiateMessage();
             negotiateMessage.NegotiateFlags = NegotiateFlags.UnicodeEncoding |
                                               NegotiateFlags.OEMEncoding |
                                               NegotiateFlags.Sign |
                                               NegotiateFlags.NTLMSessionSecurity |
-                                              NegotiateFlags.DomainNameSupplied |
-                                              NegotiateFlags.WorkstationNameSupplied |
                                               NegotiateFlags.TargetNameNegotiated |
                                               NegotiateFlags.AlwaysSign |
                                               NegotiateFlags.Version |
                                               NegotiateFlags.Use128BitEncryption |
                                               NegotiateFlags.Use56BitEncryption;
 
-            if (!(userName == String.Empty && password == String.Empty))
+            if (requestSeal)
+            {
+                negotiateMessage.NegotiateFlags |= NegotiateFlags.Seal;
+            }
+
+            if (!isAnonymous)
             {
                 negotiateMessage.NegotiateFlags |= NegotiateFlags.KeyExchange;
             }
@@ -44,8 +52,6 @@ namespace SMBLibrary.Client
             }
 
             negotiateMessage.Version = NTLMVersion.Server2003;
-            negotiateMessage.DomainName = domainName;
-            negotiateMessage.Workstation = Environment.MachineName;
             return negotiateMessage.GetBytes();
         }
 
@@ -78,6 +84,11 @@ namespace SMBLibrary.Client
             else
             {
                 authenticateMessage.NegotiateFlags |= NegotiateFlags.OEMEncoding;
+            }
+
+            if ((challengeMessage.NegotiateFlags & NegotiateFlags.Seal) > 0)
+            {
+                authenticateMessage.NegotiateFlags |= NegotiateFlags.Seal;
             }
 
             if ((challengeMessage.NegotiateFlags & NegotiateFlags.KeyExchange) > 0)

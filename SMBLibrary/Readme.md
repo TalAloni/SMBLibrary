@@ -57,6 +57,22 @@ You can share anything from actual directories to custom objects, as long as the
 
 Client code examples can be found [here](../ClientExamples.md).
 
+NuGet Packages:
+===============
+[SMBLibrary](https://www.nuget.org/packages/SMBLibrary/) - Cross-platform server and client implementation.  
+[SMBLibrary.Win32](https://www.nuget.org/packages/SMBLibrary.Win32/) - Allows utilizing Integrated Windows Authentication and/or the Windows storage subsystem on a Windows host.  
+[SMBLibrary.Adapters](https://www.nuget.org/packages/SMBLibrary.Adapters/) - IFileSystem to INTFileStore adapter for SMBLibrary.  
+
+Licensing:
+==========
+A commercial license of SMBLibrary is available for a fee.  
+This is intended for companies who are unable to use the LGPL version.  
+Please contact me for additional details.  
+
+Contributions:
+==============
+If you choose to make a contribution to this project, you must agree to irrevocably assign to SMBLibrary and/or Tal Aloni all worldwide copyright and intellectual property rights in and to your contribution, effective upon submission.  
+
 Contact:
 ========
 If you have any question, feel free to contact me.  

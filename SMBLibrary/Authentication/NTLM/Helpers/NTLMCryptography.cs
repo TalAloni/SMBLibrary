@@ -78,7 +78,7 @@ namespace SMBLibrary.Authentication.NTLM
             DES des = DES.Create();
             des.Mode = mode;
             ICryptoTransform transform;
-            if (DES.IsWeakKey(rgbKey) || DES.IsSemiWeakKey(rgbKey))            
+            if (DES.IsWeakKey(rgbKey) || DES.IsSemiWeakKey(rgbKey))
             {
 #if NETSTANDARD2_0
                 MethodInfo getTransformCoreMethodInfo = des.GetType().GetMethod("CreateTransformCore", BindingFlags.NonPublic | BindingFlags.Static);
@@ -284,7 +284,7 @@ namespace SMBLibrary.Authentication.NTLM
             return ComputeSignKey(exportedSessionKey, false);
         }
 
-        private static byte[] ComputeSignKey(byte[] exportedSessionKey, bool isClient)
+        public static byte[] ComputeSignKey(byte[] exportedSessionKey, bool isClient)
         {
             // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
             string str;
@@ -298,8 +298,8 @@ namespace SMBLibrary.Authentication.NTLM
             }
             byte[] encodedString = Encoding.GetEncoding(28591).GetBytes(str);
             byte[] nullTerminatedEncodedString = ByteUtils.Concatenate(encodedString, new byte[1]);
-            byte[] concatendated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
-            return MD5.Create().ComputeHash(concatendated);
+            byte[] concatenated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
+            return MD5.Create().ComputeHash(concatenated);
         }
 
         public static byte[] ComputeClientSealKey(byte[] exportedSessionKey)
@@ -312,7 +312,7 @@ namespace SMBLibrary.Authentication.NTLM
             return ComputeSealKey(exportedSessionKey, false);
         }
 
-        private static byte[] ComputeSealKey(byte[] exportedSessionKey, bool isClient)
+        public static byte[] ComputeSealKey(byte[] exportedSessionKey, bool isClient)
         {
             // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/524cdccb-563e-4793-92b0-7bc321fce096
             string str;
@@ -326,8 +326,8 @@ namespace SMBLibrary.Authentication.NTLM
             }
             byte[] encodedString = Encoding.GetEncoding(28591).GetBytes(str);
             byte[] nullTerminatedEncodedString = ByteUtils.Concatenate(encodedString, new byte[1]);
-            byte[] concatendated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
-            return MD5.Create().ComputeHash(concatendated);
+            byte[] concatenated = ByteUtils.Concatenate(exportedSessionKey, nullTerminatedEncodedString);
+            return MD5.Create().ComputeHash(concatenated);
         }
 
         public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message)
@@ -335,20 +335,37 @@ namespace SMBLibrary.Authentication.NTLM
             return ComputeMechListMIC(exportedSessionKey, message, 0);
         }
 
-        public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message, int seqNum)
+        public static byte[] ComputeMechListMIC(byte[] exportedSessionKey, byte[] message, uint seqNum)
+        {
+            byte[] signKey = ComputeClientSignKey(exportedSessionKey);
+            byte[] sealKey = ComputeClientSealKey(exportedSessionKey);
+            RC4KeyState sealKeyState = RC4.InitializeStateFromKey(sealKey);
+            return ComputeMessageSignature(signKey, sealKeyState, message, seqNum);
+        }
+
+        public static byte[] ComputeMessageSignature(byte[] signKey, RC4KeyState sealKeyState, byte[] message, uint seqNum)
         {
             // [MS-NLMP] 3.4.4.2
-            byte[] signKey = ComputeClientSignKey(exportedSessionKey);
-            byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
-            byte[] concatendated = ByteUtils.Concatenate(sequenceNumberBytes, message);
-            byte[] fullHash = new HMACMD5(signKey).ComputeHash(concatendated);
-            byte[] hash = ByteReader.ReadBytes(fullHash, 0, 8);
-
-            byte[] sealKey = ComputeClientSealKey(exportedSessionKey);
-            byte[] encryptedHash = RC4.Encrypt(sealKey, hash);
+            byte[] hash = ComputeMessageHash(signKey, message, seqNum);
+            byte[] encryptedHash = RC4.Encrypt(sealKeyState, hash);
 
             byte[] version = new byte[] { 0x01, 0x00, 0x00, 0x00 };
+            byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
             return ByteUtils.Concatenate(ByteUtils.Concatenate(version, encryptedHash), sequenceNumberBytes);
+        }
+
+        public static bool VerifyMessageHash(byte[] signKey, byte[] message, uint seqNum, byte[] expectedHash)
+        {
+            byte[] hash = ComputeMessageHash(signKey, message, seqNum);
+            return ByteUtils.AreByteArraysEqual(hash, expectedHash);
+        }
+
+        private static byte[] ComputeMessageHash(byte[] signKey, byte[] message, uint seqNum)
+        {
+            byte[] sequenceNumberBytes = LittleEndianConverter.GetBytes(seqNum);
+            byte[] concatenated = ByteUtils.Concatenate(sequenceNumberBytes, message);
+            byte[] fullHash = new HMACMD5(signKey).ComputeHash(concatenated);
+            return ByteReader.ReadBytes(fullHash, 0, 8);
         }
     }
 }

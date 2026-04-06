@@ -4,7 +4,6 @@
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
-using System;
 using Utilities;
 
 namespace SMBLibrary.SMB2
@@ -13,6 +12,7 @@ namespace SMBLibrary.SMB2
     {
         public const int Length = 64;
         public const int SignatureOffset = 48;
+        public const int SignatureLength = 16;
 
         public static readonly byte[] ProtocolSignature = new byte[] { 0xFE, 0x53, 0x4D, 0x42 };
 
@@ -36,7 +36,7 @@ namespace SMBLibrary.SMB2
             ProtocolId = ProtocolSignature;
             StructureSize = Length;
             Command = commandName;
-            Signature = new byte[16];
+            Signature = new byte[SignatureLength];
         }
 
         public SMB2Header(byte[] buffer, int offset)
@@ -62,7 +62,7 @@ namespace SMBLibrary.SMB2
             SessionID = LittleEndianConverter.ToUInt64(buffer, offset + 40);
             if ((Flags & SMB2PacketHeaderFlags.Signed) > 0)
             {
-                Signature = ByteReader.ReadBytes(buffer, offset + 48, 16);
+                Signature = ByteReader.ReadBytes(buffer, offset + 48, SignatureLength);
             }
         }
 

@@ -1,11 +1,9 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
-using System;
-using System.Collections.Generic;
 using Utilities;
 
 namespace SMBLibrary
@@ -32,6 +30,7 @@ namespace SMBLibrary
         public SecurityDescriptor()
         {
             Revision = 0x01;
+            Control = SecurityDescriptorControl.SelfRelative;
         }
 
         public SecurityDescriptor(byte[] buffer, int offset)
@@ -99,7 +98,7 @@ namespace SMBLibrary
             offset = 0;
             ByteWriter.WriteByte(buffer, ref offset, Revision);
             ByteWriter.WriteByte(buffer, ref offset, Sbz1);
-            LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)Control);
+            LittleEndianWriter.WriteUInt16(buffer, ref offset, (ushort)(Control | SecurityDescriptorControl.SelfRelative));
             LittleEndianWriter.WriteUInt32(buffer, ref offset, offsetOwner);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, offsetGroup);
             LittleEndianWriter.WriteUInt32(buffer, ref offset, offsetSacl);

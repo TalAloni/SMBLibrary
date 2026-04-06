@@ -125,5 +125,20 @@ namespace SMBLibrary.Tests
             byte[] cipher = RC4.Encrypt(key, text);
             Assert.IsTrue(ByteUtils.AreByteArraysEqual(cipher, expectedCipher));
         }
+
+        [TestMethod]
+        public void TestStreaming()
+        {
+            byte[] key = new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF };
+            byte[] text = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            byte[] expectedCipher = new byte[] { 0x74, 0x94, 0xC2, 0xE7, 0x10, 0x4B, 0x08, 0x79 };
+
+            RC4KeyState keyState = RC4.InitializeStateFromKey(key);
+            byte[] cipherPart1 = RC4.Encrypt(keyState, ByteReader.ReadBytes(text, 0, 2));
+            byte[] cipherPart2 = RC4.Encrypt(keyState, ByteReader.ReadBytes(text, 2, text.Length - 2));
+
+            byte[] cipher = ByteUtils.Concatenate(cipherPart1, cipherPart2);
+            Assert.IsTrue(ByteUtils.AreByteArraysEqual(cipher, expectedCipher));
+        }
     }
 }

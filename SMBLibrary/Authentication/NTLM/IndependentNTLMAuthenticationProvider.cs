@@ -1,11 +1,10 @@
-/* Copyright (C) 2014-2020 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
  * either version 3 of the License, or (at your option) any later version.
  */
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using SMBLibrary.Authentication.GSSAPI;
 using Utilities;
@@ -78,6 +77,13 @@ namespace SMBLibrary.Authentication.NTLM
             byte[] serverChallenge = GenerateServerChallenge();
             context = new AuthContext(serverChallenge);
 
+            ChallengeMessage challengeMessage = CreateChallengeMessage(negotiateMessage, serverChallenge);
+            challengeMessageBytes = challengeMessage.GetBytes();
+            return NTStatus.SEC_I_CONTINUE_NEEDED;
+        }
+
+        protected virtual ChallengeMessage CreateChallengeMessage(NegotiateMessage negotiateMessage, byte[] serverChallenge)
+        {
             ChallengeMessage challengeMessage = new ChallengeMessage();
             // https://msdn.microsoft.com/en-us/library/cc236691.aspx
             challengeMessage.NegotiateFlags = NegotiateFlags.TargetTypeServer |
@@ -143,12 +149,17 @@ namespace SMBLibrary.Authentication.NTLM
                 challengeMessage.NegotiateFlags |= NegotiateFlags.KeyExchange;
             }
 
-            challengeMessage.TargetName = Environment.MachineName;
+            string serverName = GetServerName();
+            challengeMessage.TargetName = serverName;
             challengeMessage.ServerChallenge = serverChallenge;
-            challengeMessage.TargetInfo = AVPairUtils.GetAVPairSequence(Environment.MachineName, Environment.MachineName);
+            challengeMessage.TargetInfo = AVPairUtils.GetAVPairSequence(serverName, serverName);
             challengeMessage.Version = NTLMVersion.Server2003;
-            challengeMessageBytes = challengeMessage.GetBytes();
-            return NTStatus.SEC_I_CONTINUE_NEEDED;
+            return challengeMessage;
+        }
+
+        public virtual string GetServerName()
+        {
+            return Environment.MachineName;
         }
 
         public override NTStatus Authenticate(object context, byte[] authenticateMessageBytes)
