@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using SMBLibrary.Client.Authentication;
+using SMBLibrary.Client.DFS;
 using SMBLibrary.NetBios;
 using SMBLibrary.SMB2;
 using Utilities;
@@ -60,6 +61,7 @@ namespace SMBLibrary.Client
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
         private bool m_connectionSupportsMultiCredit = false;
+        private DfsClientOptions m_dfsClientOptions;
 
         public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
         {
@@ -379,8 +381,17 @@ namespace SMBLibrary.Client
                 status = response.Header.Status;
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is TreeConnectResponse)
                 {
-                    bool encryptShareData = (((TreeConnectResponse)response).ShareFlags & ShareFlags.EncryptData) > 0;
-                    return new SMB2FileStore(this, response.Header.TreeID, m_encryptSessionData || encryptShareData);
+                    TreeConnectResponse treeConnectResponse = (TreeConnectResponse)response;
+                    bool encryptShareData = (treeConnectResponse.ShareFlags & ShareFlags.EncryptData) > 0;
+                    ISMBFileStore fileStore = new SMB2FileStore(this, response.Header.TreeID, m_encryptSessionData || encryptShareData);
+
+                    if (m_dfsClientOptions != null && m_dfsClientOptions.Enabled &&
+                        (treeConnectResponse.ShareFlags & ShareFlags.Dfs) != 0)
+                    {
+                        fileStore = DfsFileStoreFactory.CreateDfsAwareFileStore(fileStore, null, m_dfsClientOptions);
+                    }
+
+                    return fileStore;
                 }
             }
             else
@@ -768,6 +779,12 @@ namespace SMBLibrary.Client
             {
                 return m_isConnected;
             }
+        }
+
+        public DfsClientOptions DfsClientOptions
+        {
+            get { return m_dfsClientOptions; }
+            set { m_dfsClientOptions = value; }
         }
 
         private void TrySendCommand(Socket socket, SMB2Command request, byte[] encryptionKey)
