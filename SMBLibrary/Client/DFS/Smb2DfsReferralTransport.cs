@@ -33,10 +33,14 @@ namespace SMBLibrary.Client.DFS
                 throw new ArgumentNullException("fileStore");
             }
 
+            // Default to the well-known DFS referral FileID when no handle is provided.
+            // DFS referral IOCTLs use FileID 0xFFFFFFFFFFFFFFFF per MS-SMB2 §2.2.31.
+            object effectiveHandle = handle ?? (object)DfsIoctlRequestBuilder.DfsReferralFileId;
+
             Smb2IoctlSender sender = delegate (IOCtlRequest request, out byte[] output, out uint outputCount)
             {
                 byte[] deviceOutput;
-                NTStatus status = fileStore.DeviceIOControl(handle, request.CtlCode, request.Input, out deviceOutput, (int)request.MaxOutputResponse);
+                NTStatus status = fileStore.DeviceIOControl(effectiveHandle, request.CtlCode, request.Input, out deviceOutput, (int)request.MaxOutputResponse);
 
                 if (deviceOutput != null)
                 {
