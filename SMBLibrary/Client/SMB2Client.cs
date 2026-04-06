@@ -377,9 +377,9 @@ namespace SMBLibrary.Client
             if (response != null)
             {
                 status = response.Header.Status;
-                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is TreeConnectResponse)
+                if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is TreeConnectResponse treeConnectResponse)
                 {
-                    bool encryptShareData = (((TreeConnectResponse)response).ShareFlags & ShareFlags.EncryptData) > 0;
+                    bool encryptShareData = (treeConnectResponse.ShareFlags & ShareFlags.EncryptData) > 0;
                     return new SMB2FileStore(this, response.Header.TreeID, m_encryptSessionData || encryptShareData);
                 }
             }
