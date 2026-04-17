@@ -443,7 +443,7 @@ namespace SMBLibrary.Client
                     m_isConnected = false;
                     state.ReceiveBuffer.Dispose();
                 }
-                else
+                else if (clientSocket.Connected)
                 {
                     NBTConnectionReceiveBuffer buffer = state.ReceiveBuffer;
                     buffer.SetNumberOfBytesReceived(numberOfBytesReceived);
