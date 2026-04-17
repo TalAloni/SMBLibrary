@@ -20,7 +20,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="DiskAccessLibrary" Version="1.6.1" />
+    <PackageReference Include="DiskAccessLibrary" Version="1.6.6" />
   </ItemGroup>
 
 </Project>
