@@ -248,8 +248,7 @@ namespace SMBLibrary.Client
 
         public NTStatus Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
         {
-            string spn = string.Format("cifs/{0}", m_serverName);
-            NTLMAuthenticationClient authenticationClient = new NTLMAuthenticationClient(domainName, userName, password, spn, authenticationMethod);
+            NTLMAuthenticationClient authenticationClient = new NTLMAuthenticationClient(domainName, userName, password, m_serverName, authenticationMethod);
             return Login(authenticationClient);
         }
 

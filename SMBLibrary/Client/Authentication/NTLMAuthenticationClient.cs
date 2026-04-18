@@ -23,12 +23,12 @@ namespace SMBLibrary.Client.Authentication
 
         private bool m_isNegotiationMessageAcquired = false;
 
-        public NTLMAuthenticationClient(string domainName, string userName, string password, string spn, AuthenticationMethod authenticationMethod)
+        public NTLMAuthenticationClient(string domainName, string userName, string password, string serverAddress, AuthenticationMethod authenticationMethod)
         {
             m_domainName = domainName;
             m_userName = userName;
             m_password = password;
-            m_spn = spn;
+            m_spn = CreateSPN(serverAddress);
             m_authenticationMethod = authenticationMethod;
         }
 
@@ -128,6 +128,16 @@ namespace SMBLibrary.Client.Authentication
         public virtual byte[] GetSessionKey()
         {
             return m_sessionKey;
+        }
+
+        protected virtual string CreateSPN(string serverAddress)
+        {
+            if (serverAddress != null)
+            {
+                return string.Format("cifs/{0}", serverAddress);
+            }
+
+            return null;
         }
 
         private static bool ContainsMechanism(SimpleProtectedNegotiationTokenInit token, byte[] mechanismIdentifier)
