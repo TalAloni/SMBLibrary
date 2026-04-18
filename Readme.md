@@ -21,6 +21,10 @@ Server notes can be found [here](ServerNotes.md).
 
 Client code examples can be found [here](ClientExamples.md).
 
+DFS Client Support:
+===================
+SMBLibrary provides opt-in DFS (Distributed File System) client support. Wrap any `ISMBFileStore` with `DfsClientFactory.CreateDfsAwareFileStore()` to enable automatic DFS path resolution. See [ClientExamples.md](ClientExamples.md) for usage.
+
 NuGet Packages:
 ===============
 [SMBLibrary](https://www.nuget.org/packages/SMBLibrary/) - Cross-platform server and client implementation.  
