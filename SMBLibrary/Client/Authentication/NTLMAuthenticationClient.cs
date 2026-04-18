@@ -130,6 +130,14 @@ namespace SMBLibrary.Client.Authentication
             return m_sessionKey;
         }
 
+        public virtual void ResetSecurityContext(string host)
+        {
+            m_spn = string.Format("cifs/{0}", host);
+            m_isNegotiationMessageAcquired = false;
+            m_negotiateMessageBytes = null;
+            m_sessionKey = null;
+        }
+
         private static bool ContainsMechanism(SimpleProtectedNegotiationTokenInit token, byte[] mechanismIdentifier)
         {
             for (int index = 0; index < token.MechanismTypeList.Count; index++)

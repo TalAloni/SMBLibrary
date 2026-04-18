@@ -60,6 +60,7 @@ namespace SMBLibrary.Client
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
         private bool m_connectionSupportsMultiCredit = false;
+        private IAuthenticationClient m_authenticationClient;
 
         public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
         {
@@ -202,6 +203,7 @@ namespace SMBLibrary.Client
                 m_sessionID = 0;
                 m_availableCredits = 1;
                 m_connectionSupportsMultiCredit = false;
+                m_authenticationClient = null;
             }
         }
 
@@ -298,6 +300,7 @@ namespace SMBLibrary.Client
                 {
                     m_sessionID = response.Header.SessionID;
                     m_sessionKey = authenticationClient.GetSessionKey();
+                    m_authenticationClient = authenticationClient;
                     SessionFlags sessionFlags = finalSessionSetupResponse.SessionFlags;
                     if ((sessionFlags & SessionFlags.IsGuest) > 0)
                     {
@@ -339,6 +342,10 @@ namespace SMBLibrary.Client
             if (response != null)
             {
                 m_isLoggedIn = (response.Header.Status != NTStatus.STATUS_SUCCESS);
+                if (!m_isLoggedIn)
+                {
+                    m_authenticationClient = null;
+                }
                 return response.Header.Status;
             }
             return NTStatus.STATUS_INVALID_SMB;
@@ -767,6 +774,14 @@ namespace SMBLibrary.Client
             get
             {
                 return m_isConnected;
+            }
+        }
+
+        public SMBTransportType Transport
+        {
+            get
+            {
+                return m_transport;
             }
         }
 
