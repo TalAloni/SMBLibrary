@@ -130,6 +130,14 @@ namespace SMBLibrary.Client.Authentication
             return m_sessionKey;
         }
 
+        public virtual void ResetSecurityContext(string serverAddress)
+        {
+            m_spn = CreateSPN(serverAddress);
+            m_isNegotiationMessageAcquired = false;
+            m_negotiateMessageBytes = null;
+            m_sessionKey = null;
+        }
+
         protected virtual string CreateSPN(string serverAddress)
         {
             if (serverAddress != null)
