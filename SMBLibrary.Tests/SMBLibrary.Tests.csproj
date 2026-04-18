@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net9.0</TargetFrameworks>
     <AssemblyName>SMBLibrary.Tests</AssemblyName>
     <RootNamespace>SMBLibrary.Tests</RootNamespace>
     <OutputType>Library</OutputType>
@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
