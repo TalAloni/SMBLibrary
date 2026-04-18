@@ -12,5 +12,7 @@ namespace SMBLibrary.Client.Authentication
         byte[] InitializeSecurityContext(byte[] securityBlob);
 
         byte[] GetSessionKey();
+
+        void ResetSecurityContext(string host);
     }
 }
