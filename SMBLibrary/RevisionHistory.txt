@@ -559,3 +559,17 @@ Revision History:
         NTFileStore: FileAccessMask: Added missing FILE_DELETE_CHILD.
         NTFileStore: FileSystemAttributes: Added missing enum values.
         NTFileStore: DeviceCharacteristics: Added additional enum values.
+
+1.5.7 - Client: NTLMAuthenticationClient: Added virtual CreateNegotiateMessage method.
+        Client: NTLMAuthenticationHelper: Added GetNegotiateMessage overload.
+        Client: NTLMAuthenticationHelper: GetNegotiateMessage: Added ability to set NTLMSSP_NEGOTIATE_SEAL.
+        Client: NTLMAuthenticationClient: Bugfix: DomainName and Workstation must be empty when Version is set.
+        RC4: Added Encrypt/Decrypt overload accepting RC4KeyState to allow encrypting streams.
+        NTLMCryptography: ComputeMechListMIC: Update seqNum type to uint.
+        NTLMCryptography: Extracted ComputeMessageHash method.
+        NTLMCryptography: Extracted ComputeMessageSignature.
+        NTLMCryptography: Added VerifyMessageHash method.
+        NTLMCryptography: Marked ComputeSignKey and ComputeSealKey as public.
+        IndependentNTLMAuthenticationProvider: Extracted virtual CreateChallengeMessage method.
+        IndependentNTLMAuthenticationProvider: Extract GetServerName method.
+        Client: Fix rare racing condition when Disconnect is called before response has been received.

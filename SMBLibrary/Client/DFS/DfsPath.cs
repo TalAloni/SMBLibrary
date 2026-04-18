@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -6,37 +6,36 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SMBLibrary.Client.DFS
 {
-    /// <summary>
-    /// Helper class for parsing and manipulating DFS UNC paths.
-    /// Handles path component extraction, special share detection, and prefix replacement.
-    /// </summary>
     public class DfsPath
     {
-        private readonly List<string> m_components;
+        private List<string> m_components;
 
-        /// <summary>
-        /// Creates a new DfsPath from a UNC path string.
-        /// </summary>
-        /// <param name="uncPath">The UNC path (e.g., \\server\share\folder).</param>
-        /// <exception cref="ArgumentNullException">Thrown when uncPath is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when uncPath is empty.</exception>
         public DfsPath(string uncPath)
         {
             if (uncPath == null)
             {
-                throw new ArgumentNullException("uncPath");
+                throw new ArgumentNullException(nameof(uncPath));
             }
 
             if (uncPath.Length == 0)
             {
-                throw new ArgumentException("UNC path cannot be empty", "uncPath");
+                throw new ArgumentException("UNC path must not be empty.", nameof(uncPath));
             }
 
-            m_components = SplitPath(uncPath);
+            m_components = new List<string>();
+            string[] parts = uncPath.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string part in parts)
+            {
+                m_components.Add(part);
+            }
+
+            if (m_components.Count == 0)
+            {
+                throw new ArgumentException("UNC path contains no components.", nameof(uncPath));
+            }
         }
 
         private DfsPath(List<string> components)
@@ -44,64 +43,71 @@ namespace SMBLibrary.Client.DFS
             m_components = components;
         }
 
-        /// <summary>
-        /// Splits a UNC path into its component parts, handling both forward and back slashes.
-        /// </summary>
-        private static List<string> SplitPath(string path)
+        public string ToUncPath()
         {
-            List<string> components = new List<string>();
-            
-            // Normalize slashes and split
-            char[] separators = new char[] { '\\', '/' };
-            string[] parts = path.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            return @"\\" + String.Join(@"\", m_components.ToArray());
+        }
 
-            foreach (string part in parts)
+        public DfsPath ReplacePrefix(DfsPath oldPrefix, DfsPath newPrefix)
+        {
+            List<string> oldComponents = oldPrefix.m_components;
+            List<string> newComponents = newPrefix.m_components;
+
+            if (oldComponents.Count > m_components.Count)
             {
-                if (part.Length > 0)
+                return this;
+            }
+
+            for (int i = 0; i < oldComponents.Count; i++)
+            {
+                if (!String.Equals(m_components[i], oldComponents[i], StringComparison.OrdinalIgnoreCase))
                 {
-                    components.Add(part);
+                    return this;
                 }
             }
 
-            return components;
+            List<string> result = new List<string>(newComponents);
+            for (int i = oldComponents.Count; i < m_components.Count; i++)
+            {
+                result.Add(m_components[i]);
+            }
+
+            return new DfsPath(result);
         }
 
-        /// <summary>
-        /// Gets the path components (server, share, folders, file).
-        /// </summary>
-        public IList<string> PathComponents
+        public override string ToString()
         {
-            get { return m_components; }
+            return ToUncPath();
         }
 
-        /// <summary>
-        /// Gets the server name (first component).
-        /// </summary>
         public string ServerName
         {
-            get { return m_components.Count > 0 ? m_components[0] : null; }
+            get
+            {
+                return m_components[0];
+            }
         }
 
-        /// <summary>
-        /// Gets the share name (second component), or null if not present.
-        /// </summary>
         public string ShareName
         {
-            get { return m_components.Count > 1 ? m_components[1] : null; }
+            get
+            {
+                if (m_components.Count > 1)
+                {
+                    return m_components[1];
+                }
+                return null;
+            }
         }
 
-        /// <summary>
-        /// Returns true if the path has only one component (server name only).
-        /// </summary>
         public bool HasOnlyOneComponent
         {
-            get { return m_components.Count == 1; }
+            get
+            {
+                return m_components.Count == 1;
+            }
         }
 
-        /// <summary>
-        /// Returns true if the share component is SYSVOL or NETLOGON (case-insensitive).
-        /// These shares require special DFS handling per MS-DFSC.
-        /// </summary>
         public bool IsSysVolOrNetLogon
         {
             get
@@ -112,15 +118,11 @@ namespace SMBLibrary.Client.DFS
                 }
 
                 string share = m_components[1];
-                return string.Equals(share, "SYSVOL", StringComparison.OrdinalIgnoreCase) ||
-                       string.Equals(share, "NETLOGON", StringComparison.OrdinalIgnoreCase);
+                return String.Equals(share, "SYSVOL", StringComparison.OrdinalIgnoreCase) ||
+                       String.Equals(share, "NETLOGON", StringComparison.OrdinalIgnoreCase);
             }
         }
 
-        /// <summary>
-        /// Returns true if the share component is IPC$ (case-insensitive).
-        /// IPC$ is excluded from DFS resolution.
-        /// </summary>
         public bool IsIpc
         {
             get
@@ -130,74 +132,8 @@ namespace SMBLibrary.Client.DFS
                     return false;
                 }
 
-                string share = m_components[1];
-                return string.Equals(share, "IPC$", StringComparison.OrdinalIgnoreCase);
+                return String.Equals(m_components[1], "IPC$", StringComparison.OrdinalIgnoreCase);
             }
-        }
-
-        /// <summary>
-        /// Converts the path back to a UNC string with double leading backslash.
-        /// </summary>
-        /// <returns>UNC path string (e.g., \\server\share\folder).</returns>
-        public string ToUncPath()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append('\\'); // First backslash of UNC prefix
-            foreach (string component in m_components)
-            {
-                sb.Append('\\');
-                sb.Append(component);
-            }
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Replaces the specified prefix with a new path prefix.
-        /// </summary>
-        /// <param name="prefixToReplace">The prefix to match and replace (e.g., \server\share).</param>
-        /// <param name="newPrefix">The new prefix to use.</param>
-        /// <returns>A new DfsPath with the prefix replaced.</returns>
-        /// <exception cref="ArgumentException">Thrown when the prefix does not match.</exception>
-        public DfsPath ReplacePrefix(string prefixToReplace, DfsPath newPrefix)
-        {
-            // Parse the prefix to replace
-            List<string> prefixComponents = SplitPath(prefixToReplace);
-
-            // Validate prefix matches
-            if (prefixComponents.Count > m_components.Count)
-            {
-                throw new ArgumentException("Prefix does not match the current path", "prefixToReplace");
-            }
-
-            for (int i = 0; i < prefixComponents.Count; i++)
-            {
-                if (!string.Equals(m_components[i], prefixComponents[i], StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new ArgumentException("Prefix does not match the current path", "prefixToReplace");
-                }
-            }
-
-            // Build new component list: new prefix + remaining components from original
-            List<string> newComponents = new List<string>();
-            foreach (string component in newPrefix.m_components)
-            {
-                newComponents.Add(component);
-            }
-
-            for (int i = prefixComponents.Count; i < m_components.Count; i++)
-            {
-                newComponents.Add(m_components[i]);
-            }
-
-            return new DfsPath(newComponents);
-        }
-
-        /// <summary>
-        /// Returns the UNC path representation.
-        /// </summary>
-        public override string ToString()
-        {
-            return ToUncPath();
         }
     }
 }

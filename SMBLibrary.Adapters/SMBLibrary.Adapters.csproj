@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
     <AssemblyName>SMBLibrary.Adapters</AssemblyName>
-    <Version>1.5.6</Version>
+    <Version>1.5.7</Version>
     <NoWarn>1573;1591</NoWarn>
     <RootNamespace>SMBLibrary.Adapters</RootNamespace>
     <Authors>Tal Aloni</Authors>
@@ -20,7 +20,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="DiskAccessLibrary" Version="1.6.1" />
+    <PackageReference Include="DiskAccessLibrary" Version="1.6.6" />
   </ItemGroup>
 
 </Project>
