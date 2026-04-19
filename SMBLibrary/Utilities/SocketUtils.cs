@@ -6,7 +6,7 @@
  */
 using System;
 using System.Net.Sockets;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
 using System.Runtime.InteropServices;
 #endif
 
@@ -14,7 +14,7 @@ namespace Utilities
 {
     public class SocketUtils
     {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
         private static bool IsDotNetFramework()
         {
             const string DotnetFrameworkDescription = ".NET Framework";
@@ -34,7 +34,7 @@ namespace Utilities
         public static void SetKeepAlive(Socket socket, bool enable, TimeSpan timeout, TimeSpan interval)
         {
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
             if (IsDotNetFramework())
             {
 #endif
@@ -44,7 +44,7 @@ namespace Utilities
                 LittleEndianWriter.WriteUInt32(tcp_keepalive, 4, (uint)timeout.TotalMilliseconds);
                 LittleEndianWriter.WriteUInt32(tcp_keepalive, 8, (uint)interval.TotalMilliseconds);
                 socket.IOControl(IOControlCode.KeepAliveValues, tcp_keepalive, null);
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0_OR_GREATER || NET5_0_OR_GREATER
             }
             else
             {
