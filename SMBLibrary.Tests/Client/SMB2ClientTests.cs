@@ -70,6 +70,7 @@ namespace SMBLibrary.Tests.Client
         }
 
         [TestMethod]
+        // WARN: Inconsistent result
         public void When_SMB2ClientConnectsAndServerSendNonSmbData_ShouldNotReachTimeout()
         {
             m_tcpListener.BeginAcceptTcpClient(AcceptTcpClient_SendNonSmbData, null);

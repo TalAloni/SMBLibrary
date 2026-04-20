@@ -65,7 +65,8 @@ namespace SMBLibrary.Client
 
         public SMB2Client(ILogger logger = null) : this(DefaultResponseTimeoutInMilliseconds)
         {
-        }_logger = logger;
+            _logger = logger;
+        }
 
         public SMB2Client(int responseTimeoutInMilliseconds, ILogger logger = null) : this(responseTimeoutInMilliseconds, false)
         {
