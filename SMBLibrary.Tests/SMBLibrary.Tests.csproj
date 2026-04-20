@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <TargetFrameworks>net4.6.1</TargetFrameworks>
     <AssemblyName>SMBLibrary.Tests</AssemblyName>
     <RootNamespace>SMBLibrary.Tests</RootNamespace>
     <OutputType>Library</OutputType>

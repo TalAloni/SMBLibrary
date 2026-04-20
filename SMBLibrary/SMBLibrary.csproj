@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net20;net40;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net4.6.1;netstandard2.0</TargetFrameworks>
     <AssemblyName>SMBLibrary</AssemblyName>
     <Version>1.5.7</Version>
     <NoWarn>1573;1591</NoWarn>
@@ -31,9 +31,5 @@
       <_Parameter1>SMBLibrary.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
-
-  <Target Name="ILRepack" Condition="'$(Configuration)' == 'Release'" AfterTargets="AfterBuild">
-    <Exec Command="&quot;$(ProgramW6432)\ILRepack\ILRepack.exe&quot; /out=&quot;$(OutputPath)\SMBLibrary.dll&quot; &quot;$(OutputPath)\SMBLibrary.dll&quot; &quot;$(OutputPath)\Utilities.dll&quot;"></Exec>
-  </Target>
 
 </Project>

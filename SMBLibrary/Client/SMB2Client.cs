@@ -28,6 +28,8 @@ namespace SMBLibrary.Client
         private static readonly ushort DesiredCredits = 16;
         public static readonly int DefaultResponseTimeoutInMilliseconds = 5000;
 
+        private readonly ILogger _logger;
+        
         private string m_serverName;
         private SMBTransportType m_transport;
         private bool m_isConnected;
@@ -61,22 +63,25 @@ namespace SMBLibrary.Client
         private ushort m_availableCredits = 1;
         private bool m_connectionSupportsMultiCredit = false;
 
-        public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
+        public SMB2Client(ILogger logger = null) : this(DefaultResponseTimeoutInMilliseconds)
         {
+        }_logger = logger;
+
+        public SMB2Client(int responseTimeoutInMilliseconds, ILogger logger = null) : this(responseTimeoutInMilliseconds, false)
+        {
+            _logger = logger;
         }
 
-        public SMB2Client(int responseTimeoutInMilliseconds) : this(responseTimeoutInMilliseconds, false)
+        public SMB2Client(bool enableSMB311Support, ILogger logger = null) : this(DefaultResponseTimeoutInMilliseconds, enableSMB311Support)
         {
+            _logger = logger;
         }
 
-        public SMB2Client(bool enableSMB311Support) : this(DefaultResponseTimeoutInMilliseconds, enableSMB311Support)
-        {
-        }
-
-        public SMB2Client(int responseTimeoutInMilliseconds, bool enableSMB311Support)
+        public SMB2Client(int responseTimeoutInMilliseconds, bool enableSMB311Support, ILogger logger = null)
         {
             m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
             m_enableSMB311Support = enableSMB311Support;
+            _logger = logger;
         }
 
         /// <param name="serverName">
@@ -241,19 +246,19 @@ namespace SMBLibrary.Client
             return false;
         }
 
-        public NTStatus Login(string domainName, string userName, string password)
+        public NTStatus Login(string domainName, string userName, string password, ulong previousSessionId)
         {
-            return Login(domainName, userName, password, AuthenticationMethod.NTLMv2);
+            return Login(domainName, userName, password, previousSessionId, AuthenticationMethod.NTLMv2);
         }
 
-        public NTStatus Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
+        public NTStatus Login(string domainName, string userName, string password, ulong previousSessionId, AuthenticationMethod authenticationMethod)
         {
             string spn = string.Format("cifs/{0}", m_serverName);
             NTLMAuthenticationClient authenticationClient = new NTLMAuthenticationClient(domainName, userName, password, spn, authenticationMethod);
-            return Login(authenticationClient);
+            return Login(previousSessionId, authenticationClient);
         }
 
-        public NTStatus Login(IAuthenticationClient authenticationClient)
+        public NTStatus Login(ulong previousSessionId, IAuthenticationClient authenticationClient)
         {
             if (!m_isConnected)
             {
@@ -268,6 +273,7 @@ namespace SMBLibrary.Client
 
             SessionSetupRequest request = new SessionSetupRequest();
             request.SecurityMode = SecurityMode.SigningEnabled;
+            request.PreviousSessionId = previousSessionId;
             request.SecurityBuffer = negotiateMessage;
             TrySendCommand(request);
             SMB2Command response = WaitForCommand(request.MessageID);
@@ -282,11 +288,18 @@ namespace SMBLibrary.Client
                 m_sessionID = response.Header.SessionID;
                 request = new SessionSetupRequest();
                 request.SecurityMode = SecurityMode.SigningEnabled;
+                request.PreviousSessionId = previousSessionId;
                 request.SecurityBuffer = authenticateMessage;
                 TrySendCommand(request);
                 response = WaitForCommand(request.MessageID);
             }
 
+            if (response == null)
+            {
+                _logger.LogError("Login error: returned response is null");
+                return NTStatus.STATUS_INVALID_SMB;
+            }
+            
             if (response is ErrorResponse)
             {
                 return response.Header.Status;
@@ -319,8 +332,21 @@ namespace SMBLibrary.Client
                 }
                 return response.Header.Status;
             }
+            else if(response.Header.Status == NTStatus.STATUS_LOGON_FAILURE)
+            {
+                return NTStatus.STATUS_LOGON_FAILURE;
+            }
             else
             {
+                _logger?.LogError($"Error occured during login. Response details: \n" +
+                                  $"Status: {response.Header.Status}\n" +
+                                  $"Response type: {response.GetType()}\n" +
+                                  $"Credits: {response.Header.Credits}\n" +
+                                  $"Credits charge: {response.Header.CreditCharge}");
+
+                if (response.Header.Status == NTStatus.STATUS_REQUEST_NOT_ACCEPTED)
+                    return NTStatus.STATUS_REQUEST_NOT_ACCEPTED;
+
                 return NTStatus.STATUS_INVALID_SMB;
             }
         }
@@ -736,6 +762,14 @@ namespace SMBLibrary.Client
                 preAuthIntegrityCapabilities,
                 encryptionCapabilities
             };
+        }
+
+        public ulong SessionID
+        {
+            get
+            {
+                return m_sessionID;
+            }
         }
 
         public uint MaxTransactSize

@@ -18,9 +18,9 @@ namespace SMBLibrary.Client
 
         void Disconnect();
 
-        NTStatus Login(string domainName, string userName, string password);
+        NTStatus Login(string domainName, string userName, string password, ulong previousSessionId);
 
-        NTStatus Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod);
+        NTStatus Login(string domainName, string userName, string password, ulong previousSessionId, AuthenticationMethod authenticationMethod);
 
         NTStatus Logoff();
 

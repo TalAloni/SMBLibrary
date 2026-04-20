@@ -236,12 +236,12 @@ namespace SMBLibrary.Client
             }
         }
 
-        public NTStatus Login(string domainName, string userName, string password)
+        public NTStatus Login(string domainName, string userName, string password, ulong previousSessionId)
         {
-            return Login(domainName, userName, password, AuthenticationMethod.NTLMv2);
+            return Login(domainName, userName, password, previousSessionId, AuthenticationMethod.NTLMv2);
         }
 
-        public NTStatus Login(string domainName, string userName, string password, AuthenticationMethod authenticationMethod)
+        public NTStatus Login(string domainName, string userName, string password, ulong previousSessionId, AuthenticationMethod authenticationMethod)
         {
             if (!m_isConnected)
             {
