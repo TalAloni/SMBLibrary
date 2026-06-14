@@ -90,7 +90,31 @@ namespace SMBLibrary.Client
                 : throw new IOException($"Could not set SMB file position. Error status: {result}");
         }
 
-        public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+        public override int Read(byte[] destination, int offset, int count)
+        {
+            if (m_disposed)
+                throw new ObjectDisposedException(nameof(SMBFileStream));
+
+            if (count == 0)
+                return 0;
+
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            if (destination.Length - offset < count)
+                throw new ArgumentException("Offset and count exceed destination bounds.");
+
+            if (!CanRead)
+                throw new NotSupportedException();
+
+            throw new NotImplementedException();
+        }
 
         public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
 
