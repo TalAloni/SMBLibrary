@@ -11,7 +11,7 @@ namespace SMBLibrary.Client
 
         public override bool CanSeek => throw new NotImplementedException();
 
-        public override long Length => throw new NotImplementedException();
+        public override long Length => GetFileInformation<FileStandardInformation>().EndOfFile;
 
         public override long Position
         {
