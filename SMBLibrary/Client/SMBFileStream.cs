@@ -10,6 +10,8 @@ namespace SMBLibrary.Client
         private const AccessMask FileReadData = (AccessMask)0x01;
         private const AccessMask FileWriteData = (AccessMask)0x02;
 
+        private const CreateOptions RequiredCreateFlags = CreateOptions.FILE_NON_DIRECTORY_FILE;
+
         private static readonly Dictionary<FileMode, CreateDisposition> _fileModeToCreateDispositionMap =
             new Dictionary<FileMode, CreateDisposition>(6)
             {
