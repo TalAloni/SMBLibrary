@@ -19,6 +19,8 @@ namespace SMBLibrary.Client
             set => throw new NotImplementedException();
         }
 
+        private bool m_disposed;
+
         public override void Flush() => throw new NotImplementedException();
 
         public override void SetLength(long value) => throw new NotImplementedException();
@@ -28,5 +30,15 @@ namespace SMBLibrary.Client
         public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
 
         public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+
+        protected override void Dispose(bool disposeManaged)
+        {
+            if (m_disposed)
+                return;
+
+            m_disposed = true;
+
+            base.Dispose(disposeManaged);
+        }
     }
 }
