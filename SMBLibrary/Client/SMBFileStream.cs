@@ -49,5 +49,28 @@ namespace SMBLibrary.Client
 
             base.Dispose(disposeManaged);
         }
+
+        private T GetFileInformation<T>() where T : FileInformation
+        {
+            if (m_disposed)
+                throw new ObjectDisposedException(GetType().FullName);
+
+            FileInformationClass fileInformationClass;
+
+            try
+            {
+                fileInformationClass = (FileInformationClass)Enum.Parse(typeof(FileInformationClass), typeof(T).Name);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Invalid file information class: {typeof(T)}", e);
+            }
+
+            var status = m_store.GetFileInformation(out var result, m_handle, fileInformationClass);
+
+            return status == NTStatus.STATUS_SUCCESS
+                ? (T)result
+                : throw new IOException($"Could not get file information from SMB file. Error status: {status}");
+        }
     }
 }
