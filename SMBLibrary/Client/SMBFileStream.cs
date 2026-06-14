@@ -19,6 +19,9 @@ namespace SMBLibrary.Client
             set => throw new NotImplementedException();
         }
 
+        private readonly object m_handle;
+        private readonly ISMBFileStore m_store;
+
         private bool m_disposed;
 
         public override void Flush() => throw new NotImplementedException();
