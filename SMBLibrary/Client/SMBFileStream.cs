@@ -8,9 +8,9 @@ namespace SMBLibrary.Client
         private const AccessMask FileReadData = (AccessMask)0x01;
         private const AccessMask FileWriteData = (AccessMask)0x02;
 
-        public override bool CanRead => throw new NotImplementedException();
+        public override bool CanRead => !m_disposed && (AccessMask & FileReadData) != 0;
 
-        public override bool CanWrite => throw new NotImplementedException();
+        public override bool CanWrite => !m_disposed && (AccessMask & FileWriteData) != 0;
 
         public override bool CanSeek => throw new NotImplementedException();
 
