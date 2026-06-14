@@ -117,7 +117,26 @@ namespace SMBLibrary.Client
             if (!CanRead)
                 throw new NotSupportedException();
 
-            throw new NotImplementedException();
+            var startingPosition = GetFileInformation<FilePositionInformation>().CurrentByteOffset;
+
+            var maxBytes = Math.Min(MaxReadSize, destination.Length);
+            var read = 0;
+
+            while (read < maxBytes)
+            {
+                var status = m_store.ReadFile(out var bytes, m_handle, startingPosition + read, maxBytes - read);
+
+                if ((status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE) || bytes.Length == 0)
+                    break;
+
+                Array.Copy(bytes, 0, destination, offset + read, bytes.Length);
+                read += bytes.Length;
+
+                if (status == NTStatus.STATUS_END_OF_FILE)
+                    break;
+            }
+
+            return read;
         }
 
         public override void Write(byte[] source, int offset, int count)
