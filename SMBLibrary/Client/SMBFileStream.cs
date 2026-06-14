@@ -116,7 +116,31 @@ namespace SMBLibrary.Client
             throw new NotImplementedException();
         }
 
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+        public override void Write(byte[] source, int offset, int count)
+        {
+            if (m_disposed)
+                throw new ObjectDisposedException(nameof(SMBFileStream));
+
+            if (count == 0)
+                return;
+
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            if (source.Length - offset < count)
+                throw new ArgumentException("Offset and count exceed source bounds.");
+
+            if (!CanWrite)
+                throw new NotSupportedException();
+
+            throw new NotImplementedException();
+        }
 
         protected override void Dispose(bool disposeManaged)
         {
