@@ -19,7 +19,7 @@ namespace SMBLibrary.Client
                 { FileMode.Create, CreateDisposition.FILE_SUPERSEDE },
                 { FileMode.Open, CreateDisposition.FILE_OPEN },
                 { FileMode.OpenOrCreate, CreateDisposition.FILE_OPEN_IF },
-                //{ FileMode.Truncate, CreateDisposition. },
+                { FileMode.Truncate, CreateDisposition.FILE_SUPERSEDE },
                 { FileMode.Append, CreateDisposition.FILE_OPEN_IF },
             };
 
@@ -69,6 +69,11 @@ namespace SMBLibrary.Client
 
             if (Path.IsPathRooted(path))
                 throw new ArgumentException("Path must be relative", nameof(path));
+
+            if (fileMode == FileMode.Truncate)
+            {
+                //TODO: throw FileNotFoundException if file does not exist
+            }
 
             throw new NotImplementedException();
         }
