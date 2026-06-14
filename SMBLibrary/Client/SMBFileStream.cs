@@ -89,7 +89,15 @@ namespace SMBLibrary.Client
                 if ((fileOptions & entry.Key) != FileOptions.None)
                     createOptions |= entry.Value;
 
-            throw new NotImplementedException();
+            var status = store.CreateFile(out var handle, out var fileStatus, path, accessMask, fileAttributes,
+                shareAccess, createDisposition, createOptions, null);
+
+            if (status != NTStatus.STATUS_SUCCESS)
+                throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
+
+            m_handle = handle;
+            m_store = store;
+            m_disposed = false;
         }
 
         public override void Flush()
