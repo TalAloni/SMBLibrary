@@ -5,6 +5,9 @@ namespace SMBLibrary.Client
 {
     public sealed class SMBFileStream : Stream
     {
+        private const AccessMask FileReadData = (AccessMask)0x01;
+        private const AccessMask FileWriteData = (AccessMask)0x02;
+
         public override bool CanRead => throw new NotImplementedException();
 
         public override bool CanWrite => throw new NotImplementedException();
