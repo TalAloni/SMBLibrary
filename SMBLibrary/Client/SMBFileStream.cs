@@ -23,6 +23,10 @@ namespace SMBLibrary.Client
             set => Seek(value, SeekOrigin.Begin);
         }
 
+        public int MaxReadSize => (int)Math.Min(int.MaxValue, m_store.MaxReadSize);
+
+        public int MaxWriteSize => (int)Math.Min(int.MaxValue, m_store.MaxWriteSize);
+
         public string Name => GetFileInformation<FileAlternateNameInformation>().FileName;
 
         private AccessMask AccessMask => GetFileInformation<FileAccessInformation>().AccessFlags;
