@@ -24,7 +24,13 @@ namespace SMBLibrary.Client
 
         private bool m_disposed;
 
-        public override void Flush() => throw new NotImplementedException();
+        public override void Flush()
+        {
+            if (m_disposed)
+                throw new ObjectDisposedException(nameof(SMBFileStream));
+
+            m_store.FlushFileBuffers(m_handle);
+        }
 
         public override void SetLength(long value) => throw new NotImplementedException();
 
