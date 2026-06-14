@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 
@@ -8,6 +9,17 @@ namespace SMBLibrary.Client
     {
         private const AccessMask FileReadData = (AccessMask)0x01;
         private const AccessMask FileWriteData = (AccessMask)0x02;
+
+        private static readonly Dictionary<FileMode, CreateDisposition> _fileModeToCreateDispositionMap =
+            new Dictionary<FileMode, CreateDisposition>(6)
+            {
+                { FileMode.CreateNew, CreateDisposition.FILE_CREATE },
+                { FileMode.Create, CreateDisposition.FILE_SUPERSEDE },
+                { FileMode.Open, CreateDisposition.FILE_OPEN },
+                { FileMode.OpenOrCreate, CreateDisposition.FILE_OPEN_IF },
+                //{ FileMode.Truncate, CreateDisposition. },
+                { FileMode.Append, CreateDisposition.FILE_OPEN_IF },
+            };
 
         public override bool CanRead => !m_disposed && (AccessMask & FileReadData) != 0;
 
