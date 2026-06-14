@@ -23,6 +23,16 @@ namespace SMBLibrary.Client
                 { FileMode.Append, CreateDisposition.FILE_OPEN_IF },
             };
 
+        private static readonly Dictionary<FileOptions, CreateOptions> _fileOptionsToCreateOptionsMap =
+            new Dictionary<FileOptions, CreateOptions>(5)
+            {
+                { FileOptions.WriteThrough, CreateOptions.FILE_WRITE_THROUGH },
+                { FileOptions.DeleteOnClose, CreateOptions.FILE_DELETE_ON_CLOSE },
+                //{ FileOptions.SequentialScan, CreateOptions.FILE_SEQUENTIAL_ONLY },
+                //{ FileOptions.RandomAccess, CreateOptions.FILE_RANDOM_ACCESS },
+                //{ FileOptions.Asynchronous, CreateOptions. },
+            };
+
         public override bool CanRead => !m_disposed && (AccessMask & FileReadData) != 0;
 
         public override bool CanWrite => !m_disposed && (AccessMask & FileWriteData) != 0;
