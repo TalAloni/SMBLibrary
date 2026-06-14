@@ -75,6 +75,14 @@ namespace SMBLibrary.Client
                 //TODO: throw FileNotFoundException if file does not exist
             }
 
+            var createDisposition = _fileModeToCreateDispositionMap[fileMode];
+
+            var createOptions = RequiredCreateFlags;
+
+            foreach (var entry in _fileOptionsToCreateOptionsMap)
+                if ((fileOptions & entry.Key) != FileOptions.None)
+                    createOptions |= entry.Value;
+
             throw new NotImplementedException();
         }
 
