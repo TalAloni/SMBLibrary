@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.IO;
 
 namespace SMBLibrary.Client
@@ -12,14 +13,14 @@ namespace SMBLibrary.Client
 
         public override bool CanWrite => !m_disposed && (AccessMask & FileWriteData) != 0;
 
-        public override bool CanSeek => throw new NotImplementedException();
+        public override bool CanSeek => !m_disposed;
 
         public override long Length => GetFileInformation<FileStandardInformation>().EndOfFile;
 
         public override long Position
         {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
+            get => GetFileInformation<FilePositionInformation>().CurrentByteOffset;
+            set => Seek(value, SeekOrigin.Begin);
         }
 
         public string Name => GetFileInformation<FileAlternateNameInformation>().FileName;
@@ -39,9 +40,55 @@ namespace SMBLibrary.Client
             m_store.FlushFileBuffers(m_handle);
         }
 
-        public override void SetLength(long value) => throw new NotImplementedException();
+        public override void SetLength(long value)
+        {
+            if (m_disposed)
+                throw new ObjectDisposedException(nameof(SMBFileStream));
 
-        public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
+            if (!CanWrite)
+                throw new NotSupportedException();
+
+            if (value < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), "The length of the file must be 0 or greater.");
+
+            m_store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            var length = Length;
+            var target = offset;
+
+            switch (origin)
+            {
+                case SeekOrigin.Begin:
+                    // Do nothing
+                    break;
+
+                case SeekOrigin.Current:
+                    target += Position;
+                    break;
+
+                case SeekOrigin.End:
+                    target += length;
+                    break;
+
+                default:
+                    throw new InvalidEnumArgumentException(nameof(origin), (int)origin, typeof(SeekOrigin));
+            }
+
+            if (target < 0)
+                throw new IOException("Cannot seek before beginning of stream.");
+
+            if (target > length)
+                throw new IOException("Cannot seek past end of stream.");
+
+            var result = m_store.SetFileInformation(m_handle, new FilePositionInformation { CurrentByteOffset = target });
+
+            return result == NTStatus.STATUS_SUCCESS
+                ? target
+                : throw new IOException($"Could not set SMB file position. Error status: {result}");
+        }
 
         public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
 
