@@ -10,6 +10,8 @@ namespace SMBLibrary.Client
         private const AccessMask FileReadData = (AccessMask)0x01;
         private const AccessMask FileWriteData = (AccessMask)0x02;
 
+        private const ShareAccess SupportedShareAccessFlags = ShareAccess.Read | ShareAccess.Write | ShareAccess.Delete;
+
         private const CreateOptions RequiredCreateFlags = CreateOptions.FILE_NON_DIRECTORY_FILE;
 
         private static readonly Dictionary<FileMode, CreateDisposition> _fileModeToCreateDispositionMap =
@@ -79,7 +81,7 @@ namespace SMBLibrary.Client
 
             var fileAttributes = (FileAttributes)0; //TODO
 
-            var shareAccess = (ShareAccess)0; //TODO
+            var shareAccess = (ShareAccess)fileShare & SupportedShareAccessFlags;
 
             var createDisposition = _fileModeToCreateDispositionMap[fileMode];
 
