@@ -64,6 +64,12 @@ namespace SMBLibrary.Client
             FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.Read,
             FileOptions fileOptions = FileOptions.None)
         {
+            if (store == null)
+                throw new ArgumentNullException(nameof(store));
+
+            if (Path.IsPathRooted(path))
+                throw new ArgumentException("Path must be relative", nameof(path));
+
             throw new NotImplementedException();
         }
 
