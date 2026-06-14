@@ -54,6 +54,9 @@ namespace SMBLibrary.Client
 
             m_disposed = true;
 
+            if (disposeManaged)
+                m_store.CloseFile(m_handle);
+
             base.Dispose(disposeManaged);
         }
 
