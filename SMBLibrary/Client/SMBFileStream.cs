@@ -143,6 +143,11 @@ namespace SMBLibrary.Client
             if (!CanWrite)
                 throw new NotSupportedException();
 
+            var maxWriteSize = MaxWriteSize;
+
+            if (source.Length > MaxWriteSize)
+                throw new IOException($"Write size exceeds maximum write size of {maxWriteSize} bytes.");
+
             throw new NotImplementedException();
         }
 
