@@ -14,7 +14,7 @@ namespace SMBLibrary.Client
 
         private const CreateOptions RequiredCreateFlags = CreateOptions.FILE_NON_DIRECTORY_FILE;
 
-        private static readonly Dictionary<FileMode, CreateDisposition> _fileModeToCreateDispositionMap =
+        private static readonly Dictionary<FileMode, CreateDisposition> FileModeToCreateDispositionMap =
             new Dictionary<FileMode, CreateDisposition>(6)
             {
                 { FileMode.CreateNew, CreateDisposition.FILE_CREATE },
@@ -25,7 +25,7 @@ namespace SMBLibrary.Client
                 { FileMode.Append, CreateDisposition.FILE_OPEN_IF },
             };
 
-        private static readonly Dictionary<FileOptions, CreateOptions> _fileOptionsToCreateOptionsMap =
+        private static readonly Dictionary<FileOptions, CreateOptions> FileOptionsToCreateOptionsMap =
             new Dictionary<FileOptions, CreateOptions>(5)
             {
                 { FileOptions.WriteThrough, CreateOptions.FILE_WRITE_THROUGH },
@@ -83,11 +83,11 @@ namespace SMBLibrary.Client
 
             var shareAccess = (ShareAccess)fileShare & SupportedShareAccessFlags;
 
-            var createDisposition = _fileModeToCreateDispositionMap[fileMode];
+            var createDisposition = FileModeToCreateDispositionMap[fileMode];
 
             var createOptions = RequiredCreateFlags;
 
-            foreach (var entry in _fileOptionsToCreateOptionsMap)
+            foreach (var entry in FileOptionsToCreateOptionsMap)
                 if ((fileOptions & entry.Key) != FileOptions.None)
                     createOptions |= entry.Value;
 
