@@ -24,6 +24,8 @@ namespace SMBLibrary.Client
 
         public string Name => GetFileInformation<FileAlternateNameInformation>().FileName;
 
+        private AccessMask AccessMask => GetFileInformation<FileAccessInformation>().AccessFlags;
+
         private readonly object m_handle;
         private readonly ISMBFileStore m_store;
 
