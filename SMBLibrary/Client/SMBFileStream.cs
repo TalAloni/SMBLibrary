@@ -75,6 +75,12 @@ namespace SMBLibrary.Client
                 //TODO: throw FileNotFoundException if file does not exist
             }
 
+            var accessMask = (AccessMask)0; //TODO
+
+            var fileAttributes = (FileAttributes)0; //TODO
+
+            var shareAccess = (ShareAccess)0; //TODO
+
             var createDisposition = _fileModeToCreateDispositionMap[fileMode];
 
             var createOptions = RequiredCreateFlags;
