@@ -36,6 +36,13 @@ namespace SMBLibrary.Client
 
         private bool m_disposed;
 
+        public SMBFileStream(ISMBFileStore store, string path, FileMode fileMode,
+            FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.Read,
+            FileOptions fileOptions = FileOptions.None)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Flush()
         {
             if (m_disposed)
