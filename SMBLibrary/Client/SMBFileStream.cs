@@ -19,6 +19,8 @@ namespace SMBLibrary.Client
             set => throw new NotImplementedException();
         }
 
+        public string Name => GetFileInformation<FileAlternateNameInformation>().FileName;
+
         private readonly object m_handle;
         private readonly ISMBFileStore m_store;
 
