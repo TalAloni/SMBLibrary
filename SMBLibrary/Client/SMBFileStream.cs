@@ -9,6 +9,7 @@ namespace SMBLibrary.Client
     {
         private const AccessMask FileReadData = (AccessMask)0x01;
         private const AccessMask FileWriteData = (AccessMask)0x02;
+        private const AccessMask FileAppendData = (AccessMask)0x04;
 
         private const ShareAccess SupportedShareAccessFlags = ShareAccess.Read | ShareAccess.Write | ShareAccess.Delete;
 
