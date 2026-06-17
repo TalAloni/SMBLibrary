@@ -257,6 +257,17 @@ namespace SMBLibrary.Client
             if (source.Length > MaxWriteSize)
                 throw new IOException($"Write size exceeds maximum write size of {maxWriteSize} bytes.");
 
+            byte[] data;
+
+            if (offset == 0 && count == source.Length)
+                data = source;
+
+            else
+            {
+                data = new byte[count];
+                Array.Copy(source, offset, data, 0, count);
+            }
+
             throw new NotImplementedException();
         }
 
