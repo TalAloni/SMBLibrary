@@ -58,13 +58,14 @@ namespace SMBLibrary.Client
         private AccessMask AccessMask => GetFileInformation<FileAccessInformation>().AccessFlags;
 
         private readonly object m_handle;
+        private readonly bool m_ownsStore;
         private readonly ISMBFileStore m_store;
 
         private bool m_disposed;
 
         public SMBFileStream(ISMBFileStore store, string path, FileMode fileMode,
             FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.Read,
-            FileOptions fileOptions = FileOptions.None)
+            FileOptions fileOptions = FileOptions.None, bool ownsStore = false)
         {
             if (store == null)
                 throw new ArgumentNullException(nameof(store));
@@ -98,6 +99,7 @@ namespace SMBLibrary.Client
                 throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
 
             m_handle = handle;
+            m_ownsStore = ownsStore;
             m_store = store;
             m_disposed = false;
         }
@@ -244,7 +246,12 @@ namespace SMBLibrary.Client
             m_disposed = true;
 
             if (disposeManaged)
+            {
                 m_store.CloseFile(m_handle);
+
+                if (m_ownsStore)
+                    m_store.Disconnect();
+            }
 
             base.Dispose(disposeManaged);
         }
