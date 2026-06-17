@@ -86,7 +86,19 @@ namespace SMBLibrary.Client
                 //TODO: throw FileNotFoundException if file does not exist
             }
 
-            var accessMask = (AccessMask)0; //TODO
+            var accessMask = (AccessMask)0;
+
+            if (fileMode == FileMode.Append)
+            {
+                if ((fileAccess & FileAccess.Write) == 0)
+                    throw new ArgumentException("FileMode.Append must be combined with FileAccess.Write");
+
+                accessMask |= FileAppendData;
+            }
+
+            foreach (var entry in FileAccessToAccessMaskMap)
+                if ((fileAccess & entry.Key) != 0)
+                    accessMask |= entry.Value;
 
             var fileAttributes = (FileAttributes)0; //TODO
 
