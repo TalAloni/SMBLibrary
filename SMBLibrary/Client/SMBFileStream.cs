@@ -14,6 +14,13 @@ namespace SMBLibrary.Client
 
         private const CreateOptions RequiredCreateFlags = CreateOptions.FILE_NON_DIRECTORY_FILE;
 
+        private static readonly Dictionary<FileAccess, AccessMask> FileAccessToAccessMaskMap =
+            new Dictionary<FileAccess, AccessMask>(2)
+            {
+                { FileAccess.Read, FileReadData },
+                { FileAccess.Write, FileWriteData },
+            };
+
         private static readonly Dictionary<FileMode, CreateDisposition> FileModeToCreateDispositionMap =
             new Dictionary<FileMode, CreateDisposition>(6)
             {
