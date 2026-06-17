@@ -100,7 +100,9 @@ namespace SMBLibrary.Client
                 if ((fileAccess & entry.Key) != 0)
                     accessMask |= entry.Value;
 
-            var fileAttributes = (FileAttributes)0; //TODO
+            var fileAttributes = (fileOptions & FileOptions.Encrypted) != 0
+                ? FileAttributes.Encrypted
+                : FileAttributes.Normal;
 
             var shareAccess = (ShareAccess)fileShare & SupportedShareAccessFlags;
 
