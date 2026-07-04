@@ -60,6 +60,7 @@ namespace SMBLibrary.Client
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
         private bool m_connectionSupportsMultiCredit = false;
+        private IAuthenticationClient m_authenticationClient;
 
         public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
         {
@@ -298,6 +299,7 @@ namespace SMBLibrary.Client
                 {
                     m_sessionID = response.Header.SessionID;
                     m_sessionKey = authenticationClient.GetSessionKey();
+                    m_authenticationClient = authenticationClient;
                     SessionFlags sessionFlags = finalSessionSetupResponse.SessionFlags;
                     if ((sessionFlags & SessionFlags.IsGuest) > 0)
                     {
