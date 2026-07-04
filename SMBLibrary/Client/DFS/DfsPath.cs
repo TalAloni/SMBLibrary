@@ -100,6 +100,18 @@ namespace SMBLibrary.Client.DFS
             }
         }
 
+        public string PathWithinShare
+        {
+            get
+            {
+                if (m_components.Count > 2)
+                {
+                    return String.Join(@"\", m_components.GetRange(2, m_components.Count - 2).ToArray());
+                }
+                return String.Empty;
+            }
+        }
+
         public bool HasOnlyOneComponent
         {
             get

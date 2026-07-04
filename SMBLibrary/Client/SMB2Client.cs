@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using SMBLibrary.Client.Authentication;
+using SMBLibrary.Client.DFS;
 using SMBLibrary.NetBios;
 using SMBLibrary.SMB2;
 using Utilities;
@@ -382,7 +383,13 @@ namespace SMBLibrary.Client
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is TreeConnectResponse treeConnectResponse)
                 {
                     bool encryptShareData = (treeConnectResponse.ShareFlags & ShareFlags.EncryptData) > 0;
-                    return new SMB2FileStore(this, response.Header.TreeID, m_encryptSessionData || encryptShareData);
+                    SMB2FileStore fileStore = new SMB2FileStore(this, response.Header.TreeID, m_encryptSessionData || encryptShareData);
+                    if ((treeConnectResponse.ShareFlags & ShareFlags.DfsRoot) > 0)
+                    {
+                        // [MS-DFSC] The share is a DFS namespace root; wrap the file store so that DFS referrals are followed transparently.
+                        return new SMB2DfsFileStore(this, m_serverName, shareName, fileStore);
+                    }
+                    return fileStore;
                 }
             }
             else
@@ -819,6 +826,42 @@ namespace SMBLibrary.Client
         private static string CreateSpn(string serverAddress)
         {
             return $"cifs/{serverAddress}";
+        }
+
+        /// <summary>
+        /// Connects to a DFS referral target server and logs in by reusing this client's authentication client,
+        /// rebinding its security context to the target server (see IAuthenticationClient.ResetSecurityContext).
+        /// </summary>
+        internal SMB2Client ConnectAndLoginToDfsTarget(string serverName)
+        {
+            if (m_authenticationClient == null)
+            {
+                return null;
+            }
+
+            SMB2Client targetClient = new SMB2Client(m_responseTimeoutInMilliseconds, m_enableSMB311Support);
+            try
+            {
+                if (!targetClient.Connect(serverName, m_transport))
+                {
+                    return null;
+                }
+            }
+            catch
+            {
+                // Connect throws when the server name cannot be resolved
+                return null;
+            }
+
+            m_authenticationClient.ResetSecurityContext(CreateSpn(serverName));
+            NTStatus loginStatus = targetClient.Login(m_authenticationClient);
+            if (loginStatus != NTStatus.STATUS_SUCCESS)
+            {
+                targetClient.Disconnect();
+                return null;
+            }
+
+            return targetClient;
         }
     }
 }

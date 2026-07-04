@@ -194,7 +194,7 @@ Note that in order for Kerberos.NET to work on non-Windows platforms, you must p
 public class KerberosNetAuthenticationClient : IAuthenticationClient
 {
     private readonly KerberosClient m_kerberosClient;
-    private readonly string m_spn;
+    private string m_spn;
     private byte[] m_sessionKey;
 
     public KerberosNetAuthenticationClient(string user, string password, string domain, string host)
@@ -213,5 +213,11 @@ public class KerberosNetAuthenticationClient : IAuthenticationClient
     }
 
     public byte[] GetSessionKey() => m_sessionKey;
+
+    public void ResetSecurityContext(string spn)
+    {
+        m_spn = spn;
+        m_sessionKey = null;
+    }
 }
 ```
