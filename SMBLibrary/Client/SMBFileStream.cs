@@ -129,7 +129,7 @@ namespace SMBLibrary.Client
         public override void Flush()
         {
             if (m_disposed)
-                throw new ObjectDisposedException(nameof(SMBFileStream));
+                throw new ObjectDisposedException(GetType().FullName);
 
             m_store.FlushFileBuffers(m_handle);
         }
@@ -137,7 +137,7 @@ namespace SMBLibrary.Client
         public override void SetLength(long value)
         {
             if (m_disposed)
-                throw new ObjectDisposedException(nameof(SMBFileStream));
+                throw new ObjectDisposedException(GetType().FullName);
 
             if (!CanWrite)
                 throw new NotSupportedException();
@@ -187,7 +187,7 @@ namespace SMBLibrary.Client
         public override int Read(byte[] destination, int offset, int count)
         {
             if (m_disposed)
-                throw new ObjectDisposedException(nameof(SMBFileStream));
+                throw new ObjectDisposedException(GetType().FullName);
 
             if (count == 0)
                 return 0;
@@ -232,7 +232,7 @@ namespace SMBLibrary.Client
         public override void Write(byte[] source, int offset, int count)
         {
             if (m_disposed)
-                throw new ObjectDisposedException(nameof(SMBFileStream));
+                throw new ObjectDisposedException(GetType().FullName);
 
             if (count == 0)
                 return;
