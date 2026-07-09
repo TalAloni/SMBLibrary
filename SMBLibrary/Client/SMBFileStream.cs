@@ -128,10 +128,8 @@ namespace SMBLibrary.Client
 
         public override void Flush()
         {
-            if (m_disposed)
-                throw new ObjectDisposedException(GetType().FullName);
-
-            m_store.FlushFileBuffers(m_handle);
+            if (!m_disposed)
+                m_store.FlushFileBuffers(m_handle);
         }
 
         public override void SetLength(long value)
