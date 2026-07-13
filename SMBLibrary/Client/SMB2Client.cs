@@ -511,7 +511,6 @@ namespace SMBLibrary.Client
             if (packet is SessionMessagePacket)
             {
                 byte[] messageBytes;
-
                 bool isEncrypted = m_dialect >= SMB2Dialect.SMB300 && SMB2TransformHeader.IsTransformHeader(packet.Trailer, 0);
                 if (isEncrypted)
                 {
