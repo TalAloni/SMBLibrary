@@ -511,7 +511,9 @@ namespace SMBLibrary.Client
             if (packet is SessionMessagePacket)
             {
                 byte[] messageBytes;
-                if (m_dialect >= SMB2Dialect.SMB300 && SMB2TransformHeader.IsTransformHeader(packet.Trailer, 0))
+
+                bool isEncrypted = m_dialect >= SMB2Dialect.SMB300 && SMB2TransformHeader.IsTransformHeader(packet.Trailer, 0);
+                if (isEncrypted)
                 {
                     SMB2TransformHeader transformHeader = new SMB2TransformHeader(packet.Trailer, 0);
                     byte[] encryptedMessage = ByteReader.ReadBytes(packet.Trailer, SMB2TransformHeader.Length, (int)transformHeader.OriginalMessageSize);
@@ -568,7 +570,7 @@ namespace SMBLibrary.Client
                 if (command.Header.MessageID != 0xFFFFFFFFFFFFFFFF || command.Header.Command == SMB2CommandName.OplockBreak)
                 {
                     bool isInterimResponse = ((command.Header.Flags & SMB2PacketHeaderFlags.AsyncCommand) != 0) && command.Header.Status == NTStatus.STATUS_PENDING;
-                    bool shouldBeSigned = m_isLoggedIn && m_signingRequired && !m_encryptSessionData && !isInterimResponse;
+                    bool shouldBeSigned = m_isLoggedIn && m_signingRequired && !isEncrypted && !isInterimResponse;
 
                     // [MS-SMB2] 3.2.5.1.3 If signature verification fails, the client MUST discard the received message. The client MAY also choose to disconnect the connection
                     if (shouldBeSigned && !SMB2Cryptography.VerifySignature(messageBytes, m_dialect, m_signingKey))
