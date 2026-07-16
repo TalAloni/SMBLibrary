@@ -253,18 +253,20 @@ namespace SMBLibrary.Client
             if (!CanWrite)
                 throw new NotSupportedException();
 
-            byte[] data;
+            var written = 0;
 
-            if (offset == 0 && count == source.Length)
-                data = source;
-
-            else
+            while (written < count)
             {
-                data = new byte[count];
-                Array.Copy(source, offset, data, 0, count);
-            }
+                var bytes = new byte[Math.Min(MaxWriteSize, count - written)];
+                Array.Copy(source, offset + written, bytes, 0, bytes.Length);
+                var status = m_store.WriteFile(out var writtenThisRound, m_handle, m_position + written, bytes);
 
-            throw new NotImplementedException();
+                if (status != NTStatus.STATUS_SUCCESS)
+                    throw new IOException(
+                        $"Could not write to SMB file. Bytes successfully written: {written}. Error status: {status}");
+
+                written += writtenThisRound;
+            }
 
             m_position += count;
         }
