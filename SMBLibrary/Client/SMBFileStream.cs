@@ -209,7 +209,7 @@ namespace SMBLibrary.Client
             if (!CanRead)
                 throw new NotSupportedException();
 
-            var maxBytes = Math.Min(MaxReadSize, destination.Length);
+            var maxBytes = Math.Min(MaxReadSize, count);
             var read = 0;
 
             while (read < maxBytes)
