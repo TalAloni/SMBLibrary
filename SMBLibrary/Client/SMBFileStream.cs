@@ -124,6 +124,8 @@ namespace SMBLibrary.Client
             m_handle = handle;
             m_ownsStore = ownsStore;
             m_store = store;
+
+            m_position = 0;
             m_disposed = false;
 
             Name = GetFileInformation<FileAlternateNameInformation>().FileName;
