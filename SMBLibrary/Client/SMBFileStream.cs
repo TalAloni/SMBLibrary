@@ -61,7 +61,7 @@ namespace SMBLibrary.Client
 
         public int MaxWriteSize => (int)Math.Min(int.MaxValue, m_store.MaxWriteSize);
 
-        public string Name => GetFileInformation<FileAlternateNameInformation>().FileName;
+        public string Name { get; }
 
         private AccessMask AccessMask => GetFileInformation<FileAccessInformation>().AccessFlags;
 
@@ -125,6 +125,8 @@ namespace SMBLibrary.Client
             m_ownsStore = ownsStore;
             m_store = store;
             m_disposed = false;
+
+            Name = GetFileInformation<FileAlternateNameInformation>().FileName;
         }
 
         public override void Flush()
