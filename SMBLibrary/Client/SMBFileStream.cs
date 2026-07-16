@@ -43,9 +43,9 @@ namespace SMBLibrary.Client
                 //{ FileOptions.Asynchronous, CreateOptions. },
             };
 
-        public override bool CanRead => !m_disposed && (AccessMask & FileReadData) != 0;
+        public override bool CanRead => !m_disposed && (m_accessMask & FileReadData) != 0;
 
-        public override bool CanWrite => !m_disposed && (AccessMask & FileWriteData) != 0;
+        public override bool CanWrite => !m_disposed && (m_accessMask & FileWriteData) != 0;
 
         public override bool CanSeek => !m_disposed;
 
@@ -63,10 +63,9 @@ namespace SMBLibrary.Client
 
         public string Name { get; }
 
-        private AccessMask AccessMask => GetFileInformation<FileAccessInformation>().AccessFlags;
-
         private readonly object m_handle;
         private readonly bool m_ownsStore;
+        private readonly AccessMask m_accessMask;
         private readonly ISMBFileStore m_store;
 
         private long m_position;
@@ -129,6 +128,7 @@ namespace SMBLibrary.Client
             m_disposed = false;
 
             Name = GetFileInformation<FileAlternateNameInformation>().FileName;
+            m_accessMask = GetFileInformation<FileAccessInformation>().AccessFlags;
         }
 
         public override void Flush()
