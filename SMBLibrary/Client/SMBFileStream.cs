@@ -265,6 +265,8 @@ namespace SMBLibrary.Client
             }
 
             throw new NotImplementedException();
+
+            m_position += count;
         }
 
         protected override void Dispose(bool disposeManaged)
