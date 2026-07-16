@@ -129,8 +129,13 @@ namespace SMBLibrary.Client
 
         public override void Flush()
         {
-            if (!m_disposed)
-                m_store.FlushFileBuffers(m_handle);
+            if (m_disposed)
+                return;
+
+            var status = m_store.FlushFileBuffers(m_handle);
+
+            if (status != NTStatus.STATUS_SUCCESS)
+                throw new IOException($"Could not flush SMB stream. Error status: {status}");
         }
 
         public override void SetLength(long value)
