@@ -261,6 +261,10 @@ namespace SMBLibrary.Client
                 Array.Copy(source, offset + written, bytes, 0, bytes.Length);
                 var status = m_store.WriteFile(out var writtenThisRound, m_handle, m_position + written, bytes);
 
+                if (writtenThisRound == 0)
+                    throw new IOException(
+                        $"SMB server reported a successful write of zero bytes. Bytes successfully written: {written}");
+
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException(
                         $"Could not write to SMB file. Bytes successfully written: {written}. Error status: {status}");
