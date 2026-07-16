@@ -53,7 +53,7 @@ namespace SMBLibrary.Client
 
         public override long Position
         {
-            get => GetFileInformation<FilePositionInformation>().CurrentByteOffset;
+            get => m_disposed ? throw new ObjectDisposedException(GetType().FullName) : m_position;
             set => Seek(value, SeekOrigin.Begin);
         }
 
@@ -69,6 +69,7 @@ namespace SMBLibrary.Client
         private readonly bool m_ownsStore;
         private readonly ISMBFileStore m_store;
 
+        private long m_position;
         private bool m_disposed;
 
         public SMBFileStream(ISMBFileStore store, string path, FileMode fileMode,
@@ -143,7 +144,10 @@ namespace SMBLibrary.Client
             if (value < 0)
                 throw new ArgumentOutOfRangeException(nameof(value), "The length of the file must be 0 or greater.");
 
-            m_store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
+            var status = m_store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
+
+            if (status == NTStatus.STATUS_SUCCESS && m_position > value)
+                m_position = value;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -175,11 +179,8 @@ namespace SMBLibrary.Client
             if (target > length)
                 throw new IOException("Cannot seek past end of stream.");
 
-            var result = m_store.SetFileInformation(m_handle, new FilePositionInformation { CurrentByteOffset = target });
-
-            return result == NTStatus.STATUS_SUCCESS
-                ? target
-                : throw new IOException($"Could not set SMB file position. Error status: {result}");
+            m_position = target;
+            return m_position;
         }
 
         public override int Read(byte[] destination, int offset, int count)
@@ -205,14 +206,12 @@ namespace SMBLibrary.Client
             if (!CanRead)
                 throw new NotSupportedException();
 
-            var startingPosition = GetFileInformation<FilePositionInformation>().CurrentByteOffset;
-
             var maxBytes = Math.Min(MaxReadSize, destination.Length);
             var read = 0;
 
             while (read < maxBytes)
             {
-                var status = m_store.ReadFile(out var bytes, m_handle, startingPosition + read, maxBytes - read);
+                var status = m_store.ReadFile(out var bytes, m_handle, m_position + read, maxBytes - read);
 
                 if ((status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE) || bytes.Length == 0)
                     break;
@@ -224,6 +223,7 @@ namespace SMBLibrary.Client
                     break;
             }
 
+            m_position += read;
             return read;
         }
 
