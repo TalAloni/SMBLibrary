@@ -146,7 +146,10 @@ namespace SMBLibrary.Client
 
             var status = m_store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
 
-            if (status == NTStatus.STATUS_SUCCESS && m_position > value)
+            if (status != NTStatus.STATUS_SUCCESS)
+                throw new IOException($"Could not set file length. Error status: {status}");
+
+            if (m_position > value)
                 m_position = value;
         }
 
