@@ -97,29 +97,18 @@ namespace SMBLibrary.Client
             if (Path.IsPathRooted(path))
                 throw new ArgumentException("Path must be relative", nameof(path));
 
-            if (fileMode == FileMode.Truncate)
+            var append = fileMode == FileMode.Append;
+
+            if (append || fileMode == FileMode.Truncate)
             {
                 if ((fileAccess & FileAccess.Read) != 0)
-                    throw new ArgumentException("FileMode.Truncate cannot be combined with FileAccess.Read");
+                    throw new ArgumentException($"{fileMode} cannot be combined with FileAccess.Read");
 
                 if ((fileAccess & FileAccess.Write) == 0)
-                    throw new ArgumentException("FileMode.Truncate must be combined with FileAccess.Write");
-
-                //TODO: throw FileNotFoundException if file does not exist
+                    throw new ArgumentException($"{fileMode} must be combined with FileAccess.Write");
             }
 
-            var accessMask = (AccessMask)0;
-
-            if (fileMode == FileMode.Append)
-            {
-                if ((fileAccess & FileAccess.Read) != 0)
-                    throw new ArgumentException("FileMode.Append cannot be combined with FileAccess.Read");
-
-                if ((fileAccess & FileAccess.Write) == 0)
-                    throw new ArgumentException("FileMode.Append must be combined with FileAccess.Write");
-
-                accessMask |= FileAppendData;
-            }
+            var accessMask = append ? FileAppendData : 0;
 
             foreach (var entry in FileAccessToAccessMaskMap)
                 if ((fileAccess & entry.Key) != 0)
@@ -154,7 +143,7 @@ namespace SMBLibrary.Client
 
             Name = GetFileInformation<FileAlternateNameInformation>().FileName;
             m_length = GetFileInformation<FileStandardInformation>().EndOfFile;
-            m_earliestSeekablePosition = fileMode == FileMode.Append ? m_length : 0;
+            m_earliestSeekablePosition = append ? m_length : 0;
             m_accessMask = GetFileInformation<FileAccessInformation>().AccessFlags;
         }
 
