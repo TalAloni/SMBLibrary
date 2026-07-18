@@ -83,9 +83,9 @@ namespace SMBLibrary.Client
         private readonly AccessMask m_accessMask;
         private readonly ISMBFileStore m_store;
 
+        private bool m_disposed;
         private long m_length;
         private long m_position;
-        private bool m_disposed;
 
         public SMBFileStream(ISMBFileStore store, string path, FileMode fileMode,
             FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.Read,
