@@ -79,6 +79,7 @@ namespace SMBLibrary.Client
 
         private readonly object m_handle;
         private readonly bool m_ownsStore;
+        private readonly long m_earliestSeekablePosition;
         private readonly AccessMask m_accessMask;
         private readonly ISMBFileStore m_store;
 
@@ -145,9 +146,11 @@ namespace SMBLibrary.Client
 
             m_handle = handle;
             m_ownsStore = ownsStore;
+            m_earliestSeekablePosition =
+                fileMode == FileMode.Append ? GetFileInformation<FileStandardInformation>().EndOfFile : 0;
             m_store = store;
 
-            m_position = 0;
+            m_position = m_earliestSeekablePosition;
             m_disposed = false;
 
             Name = GetFileInformation<FileAlternateNameInformation>().FileName;
@@ -173,8 +176,9 @@ namespace SMBLibrary.Client
             if (!CanWrite)
                 throw new NotSupportedException();
 
-            if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), "The length of the file must be 0 or greater.");
+            if (value < m_earliestSeekablePosition)
+                throw new ArgumentOutOfRangeException(nameof(value),
+                    $"The length of the file must be {m_earliestSeekablePosition} or greater.");
 
             var status = m_store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
 
@@ -208,7 +212,7 @@ namespace SMBLibrary.Client
                     throw new InvalidEnumArgumentException(nameof(origin), (int)origin, typeof(SeekOrigin));
             }
 
-            if (target < 0)
+            if (target < m_earliestSeekablePosition)
                 throw new IOException("Cannot seek before beginning of stream.");
 
             if (target > length)
