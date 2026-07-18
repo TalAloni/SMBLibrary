@@ -29,7 +29,7 @@ namespace SMBLibrary.Client
                 { FileMode.Create, CreateDisposition.FILE_SUPERSEDE },
                 { FileMode.Open, CreateDisposition.FILE_OPEN },
                 { FileMode.OpenOrCreate, CreateDisposition.FILE_OPEN_IF },
-                { FileMode.Truncate, CreateDisposition.FILE_SUPERSEDE },
+                { FileMode.Truncate, CreateDisposition.FILE_OVERWRITE },
                 { FileMode.Append, CreateDisposition.FILE_OPEN_IF },
             };
 
