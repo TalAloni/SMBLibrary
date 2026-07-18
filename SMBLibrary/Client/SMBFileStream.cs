@@ -49,7 +49,7 @@ namespace SMBLibrary.Client
 
         public override bool CanSeek => !m_disposed;
 
-        public override long Length => GetFileInformation<FileStandardInformation>().EndOfFile;
+        public override long Length => m_disposed ? throw new ObjectDisposedException(GetType().FullName) : m_length;
 
         public override long Position
         {
@@ -83,6 +83,7 @@ namespace SMBLibrary.Client
         private readonly AccessMask m_accessMask;
         private readonly ISMBFileStore m_store;
 
+        private long m_length;
         private long m_position;
         private bool m_disposed;
 
@@ -152,8 +153,8 @@ namespace SMBLibrary.Client
             m_disposed = false;
 
             Name = GetFileInformation<FileAlternateNameInformation>().FileName;
-            m_earliestSeekablePosition =
-                fileMode == FileMode.Append ? GetFileInformation<FileStandardInformation>().EndOfFile : 0;
+            m_length = GetFileInformation<FileStandardInformation>().EndOfFile;
+            m_earliestSeekablePosition = fileMode == FileMode.Append ? m_length : 0;
             m_accessMask = GetFileInformation<FileAccessInformation>().AccessFlags;
         }
 
@@ -185,13 +186,17 @@ namespace SMBLibrary.Client
             if (status != NTStatus.STATUS_SUCCESS)
                 throw new IOException($"Could not set file length. Error status: {status}");
 
+            m_length = value;
+
             if (m_position > value)
                 m_position = value;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            var length = Length;
+            if (m_disposed)
+                throw new ObjectDisposedException(GetType().FullName);
+
             var target = offset;
 
             switch (origin)
@@ -205,7 +210,7 @@ namespace SMBLibrary.Client
                     break;
 
                 case SeekOrigin.End:
-                    target += length;
+                    target += m_length;
                     break;
 
                 default:
@@ -215,7 +220,7 @@ namespace SMBLibrary.Client
             if (target < m_earliestSeekablePosition)
                 throw new IOException("Cannot seek before beginning of stream.");
 
-            if (target > length)
+            if (target > m_length)
                 throw new IOException("Cannot seek past end of stream.");
 
             m_position = target;
@@ -309,6 +314,9 @@ namespace SMBLibrary.Client
             }
 
             m_position += count;
+
+            if (m_length < m_position)
+                m_length = m_position;
         }
 
         protected override void Dispose(bool disposeManaged)
