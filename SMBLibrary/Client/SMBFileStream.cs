@@ -104,6 +104,9 @@ namespace SMBLibrary.Client
 
             if (fileMode == FileMode.Append)
             {
+                if ((fileAccess & FileAccess.Read) != 0)
+                    throw new ArgumentException("FileMode.Append cannot be combined with FileAccess.Read");
+
                 if ((fileAccess & FileAccess.Write) == 0)
                     throw new ArgumentException("FileMode.Append must be combined with FileAccess.Write");
 
