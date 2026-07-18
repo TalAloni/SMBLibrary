@@ -97,6 +97,12 @@ namespace SMBLibrary.Client
 
             if (fileMode == FileMode.Truncate)
             {
+                if ((fileAccess & FileAccess.Read) != 0)
+                    throw new ArgumentException("FileMode.Truncate cannot be combined with FileAccess.Read");
+
+                if ((fileAccess & FileAccess.Write) == 0)
+                    throw new ArgumentException("FileMode.Truncate must be combined with FileAccess.Write");
+
                 //TODO: throw FileNotFoundException if file does not exist
             }
 
