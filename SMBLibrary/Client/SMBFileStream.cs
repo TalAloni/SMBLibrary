@@ -146,14 +146,14 @@ namespace SMBLibrary.Client
 
             m_handle = handle;
             m_ownsStore = ownsStore;
-            m_earliestSeekablePosition =
-                fileMode == FileMode.Append ? GetFileInformation<FileStandardInformation>().EndOfFile : 0;
             m_store = store;
 
             m_position = m_earliestSeekablePosition;
             m_disposed = false;
 
             Name = GetFileInformation<FileAlternateNameInformation>().FileName;
+            m_earliestSeekablePosition =
+                fileMode == FileMode.Append ? GetFileInformation<FileStandardInformation>().EndOfFile : 0;
             m_accessMask = GetFileInformation<FileAccessInformation>().AccessFlags;
         }
 
