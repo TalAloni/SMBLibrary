@@ -328,10 +328,15 @@ namespace SMBLibrary.Client
 
             if (disposeManaged)
             {
-                m_store.CloseFile(m_handle);
-
-                if (m_ownsStore)
-                    m_store.Disconnect();
+                try
+                {
+                    m_store.CloseFile(m_handle);
+                }
+                finally
+                {
+                    if (m_ownsStore)
+                        m_store.Disconnect();
+                }
             }
 
             base.Dispose(disposeManaged);
