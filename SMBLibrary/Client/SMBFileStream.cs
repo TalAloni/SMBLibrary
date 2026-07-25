@@ -217,9 +217,6 @@ namespace SMBLibrary.Client
             if (target < m_earliestSeekablePosition)
                 throw new IOException("Cannot seek before beginning of stream.");
 
-            if (target > m_length)
-                throw new IOException("Cannot seek past end of stream.");
-
             m_position = target;
             return m_position;
         }
