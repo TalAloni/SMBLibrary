@@ -141,10 +141,18 @@ namespace SMBLibrary.Client
             m_position = m_earliestSeekablePosition;
             m_disposed = false;
 
-            Name = GetFileInformation<FileAlternateNameInformation>().FileName;
-            m_length = GetFileInformation<FileStandardInformation>().EndOfFile;
+            var result = m_store.GetFileInformation(out var info, m_handle,
+                FileInformationClass.FileAllInformation);
+
+            if (result != NTStatus.STATUS_SUCCESS)
+                throw new IOException($"Could not get file information from SMB file. Error status: {status}");
+
+            var fileInfo = (FileAllInformation)info;
+
+            Name = fileInfo.NameInformation.FileName;
+            m_length = fileInfo.StandardInformation.EndOfFile;
             m_earliestSeekablePosition = append ? m_length : 0;
-            m_accessMask = GetFileInformation<FileAccessInformation>().AccessFlags;
+            m_accessMask = fileInfo.AccessInformation.AccessFlags;
         }
 
         public override void Flush()
@@ -330,7 +338,7 @@ namespace SMBLibrary.Client
 
             base.Dispose(disposeManaged);
         }
-
+        /*
         private T GetFileInformation<T>() where T : FileInformation
         {
             if (m_disposed)
@@ -353,5 +361,6 @@ namespace SMBLibrary.Client
                 ? (T)result
                 : throw new IOException($"Could not get file information from SMB file. Error status: {status}");
         }
+        //*/
     }
 }
