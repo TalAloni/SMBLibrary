@@ -22,17 +22,6 @@ namespace SMBLibrary.Client
                 { FileAccess.Write, FileWriteData },
             };
 
-        private static readonly Dictionary<FileMode, CreateDisposition> FileModeToCreateDispositionMap =
-            new Dictionary<FileMode, CreateDisposition>(6)
-            {
-                { FileMode.CreateNew, CreateDisposition.FILE_CREATE },
-                { FileMode.Create, CreateDisposition.FILE_SUPERSEDE },
-                { FileMode.Open, CreateDisposition.FILE_OPEN },
-                { FileMode.OpenOrCreate, CreateDisposition.FILE_OPEN_IF },
-                { FileMode.Truncate, CreateDisposition.FILE_OVERWRITE },
-                { FileMode.Append, CreateDisposition.FILE_OPEN_IF },
-            };
-
         private static readonly Dictionary<FileOptions, CreateOptions> FileOptionsToCreateOptionsMap =
             new Dictionary<FileOptions, CreateOptions>(5)
             {
@@ -119,7 +108,34 @@ namespace SMBLibrary.Client
 
             var shareAccess = (ShareAccess)fileShare & SupportedShareAccessFlags;
 
-            var createDisposition = FileModeToCreateDispositionMap[fileMode];
+            CreateDisposition createDisposition;
+
+            switch (fileMode)
+            {
+                case FileMode.CreateNew:
+                    createDisposition = CreateDisposition.FILE_CREATE;
+                    break;
+
+                case FileMode.Create:
+                    createDisposition = CreateDisposition.FILE_SUPERSEDE;
+                    break;
+
+                case FileMode.Open:
+                    createDisposition = CreateDisposition.FILE_OPEN;
+                    break;
+
+                case FileMode.OpenOrCreate:
+                case FileMode.Append:
+                    createDisposition = CreateDisposition.FILE_OPEN_IF;
+                    break;
+
+                case FileMode.Truncate:
+                    createDisposition = CreateDisposition.FILE_OVERWRITE;
+                    break;
+
+                default:
+                    throw new InvalidEnumArgumentException(nameof(fileMode), (int)fileMode, typeof(FileMode));
+            }
 
             var createOptions = RequiredCreateFlags;
 
