@@ -308,12 +308,10 @@ namespace SMBLibrary.Client
                         $"SMB server reported a successful write of zero bytes. Bytes successfully written: {written}");
 
                 written += writtenThisRound;
+                m_length = Math.Max(m_length, m_position + written);
             }
 
             m_position += count;
-
-            if (m_length < m_position)
-                m_length = m_position;
         }
 
         protected override void Dispose(bool disposeManaged)
