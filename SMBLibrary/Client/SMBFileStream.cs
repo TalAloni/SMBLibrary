@@ -155,10 +155,10 @@ namespace SMBLibrary.Client
                 m_ownsStore = ownsStore;
                 m_store = store;
 
-                var result = m_store.GetFileInformation(out var info, m_handle,
+                status = m_store.GetFileInformation(out var info, m_handle,
                     FileInformationClass.FileAllInformation);
 
-                if (result != NTStatus.STATUS_SUCCESS)
+                if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException($"Could not get file information from SMB file. Error status: {status}");
 
                 var fileInfo = (FileAllInformation)info;
