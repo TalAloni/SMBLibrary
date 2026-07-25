@@ -146,28 +146,40 @@ namespace SMBLibrary.Client
             var status = store.CreateFile(out var handle, out var fileStatus, path, accessMask, fileAttributes,
                 shareAccess, createDisposition, createOptions, null);
 
-            if (status != NTStatus.STATUS_SUCCESS)
-                throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
+            try
+            {
+                if (status != NTStatus.STATUS_SUCCESS)
+                    throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
 
-            m_handle = handle;
-            m_ownsStore = ownsStore;
-            m_store = store;
+                m_handle = handle;
+                m_ownsStore = ownsStore;
+                m_store = store;
 
-            var result = m_store.GetFileInformation(out var info, m_handle,
-                FileInformationClass.FileAllInformation);
+                var result = m_store.GetFileInformation(out var info, m_handle,
+                    FileInformationClass.FileAllInformation);
 
-            if (result != NTStatus.STATUS_SUCCESS)
-                throw new IOException($"Could not get file information from SMB file. Error status: {status}");
+                if (result != NTStatus.STATUS_SUCCESS)
+                    throw new IOException($"Could not get file information from SMB file. Error status: {status}");
 
-            var fileInfo = (FileAllInformation)info;
+                var fileInfo = (FileAllInformation)info;
 
-            Name = fileInfo.NameInformation.FileName;
-            m_length = fileInfo.StandardInformation.EndOfFile;
-            m_earliestSeekablePosition = append ? m_length : 0;
-            m_accessMask = fileInfo.AccessInformation.AccessFlags;
+                Name = fileInfo.NameInformation.FileName;
+                m_length = fileInfo.StandardInformation.EndOfFile;
+                m_earliestSeekablePosition = append ? m_length : 0;
+                m_accessMask = fileInfo.AccessInformation.AccessFlags;
 
-            m_position = m_earliestSeekablePosition;
-            m_disposed = false;
+                m_position = m_earliestSeekablePosition;
+                m_disposed = false;
+            }
+            catch
+            {
+                store.CloseFile(handle);
+
+                if (ownsStore)
+                    store.Disconnect();
+
+                throw;
+            }
         }
 
         public override void Flush()
