@@ -38,7 +38,7 @@ namespace SMBLibrary.Client
             {
                 { FileOptions.WriteThrough, CreateOptions.FILE_WRITE_THROUGH },
                 { FileOptions.DeleteOnClose, CreateOptions.FILE_DELETE_ON_CLOSE },
-                //{ FileOptions.SequentialScan, CreateOptions.FILE_SEQUENTIAL_ONLY },
+                { FileOptions.SequentialScan, CreateOptions.FILE_SEQUENTIAL_ONLY },
                 { FileOptions.RandomAccess, CreateOptions.FILE_RANDOM_ACCESS },
             };
 
