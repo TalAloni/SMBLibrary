@@ -102,7 +102,7 @@ namespace SMBLibrary.Client
                 if ((fileAccess & entry.Key) != 0)
                     accessMask |= entry.Value;
 
-            var fileAttributes = (fileOptions & FileOptions.Encrypted) != 0
+            var fileAttributes = (fileOptions & FileOptions.Encrypted) != FileOptions.None
                 ? FileAttributes.Encrypted
                 : FileAttributes.Normal;
 
