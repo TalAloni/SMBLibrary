@@ -137,9 +137,6 @@ namespace SMBLibrary.Client
             m_ownsStore = ownsStore;
             m_store = store;
 
-            m_position = m_earliestSeekablePosition;
-            m_disposed = false;
-
             var result = m_store.GetFileInformation(out var info, m_handle,
                 FileInformationClass.FileAllInformation);
 
@@ -152,6 +149,9 @@ namespace SMBLibrary.Client
             m_length = fileInfo.StandardInformation.EndOfFile;
             m_earliestSeekablePosition = append ? m_length : 0;
             m_accessMask = fileInfo.AccessInformation.AccessFlags;
+
+            m_position = m_earliestSeekablePosition;
+            m_disposed = false;
         }
 
         public override void Flush()
