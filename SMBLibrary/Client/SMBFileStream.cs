@@ -59,17 +59,18 @@ namespace SMBLibrary.Client
             set => throw new InvalidOperationException();
         }
 
-        public int MaxReadSize => (int)Math.Min(int.MaxValue, m_store.MaxReadSize);
+        public int MaxReadSize => (int)Math.Min(int.MaxValue, Store.MaxReadSize);
 
-        public int MaxWriteSize => (int)Math.Min(int.MaxValue, m_store.MaxWriteSize);
+        public int MaxWriteSize => (int)Math.Min(int.MaxValue, Store.MaxWriteSize);
 
         public string Name { get; }
+
+        public ISMBFileStore Store { get; }
 
         private readonly object m_handle;
         private readonly bool m_ownsStore;
         private readonly long m_earliestSeekablePosition;
         private readonly AccessMask m_accessMask;
-        private readonly ISMBFileStore m_store;
 
         private bool m_disposed;
         private long m_length;
@@ -151,11 +152,11 @@ namespace SMBLibrary.Client
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
 
+                Store = store;
                 m_handle = handle;
                 m_ownsStore = ownsStore;
-                m_store = store;
 
-                status = m_store.GetFileInformation(out var info, m_handle,
+                status = Store.GetFileInformation(out var info, m_handle,
                     FileInformationClass.FileAllInformation);
 
                 if (status != NTStatus.STATUS_SUCCESS)
@@ -187,7 +188,7 @@ namespace SMBLibrary.Client
             if (m_disposed)
                 return;
 
-            var status = m_store.FlushFileBuffers(m_handle);
+            var status = Store.FlushFileBuffers(m_handle);
 
             if (status != NTStatus.STATUS_SUCCESS)
                 throw new IOException($"Could not flush SMB stream. Error status: {status}");
@@ -205,7 +206,7 @@ namespace SMBLibrary.Client
                 throw new ArgumentOutOfRangeException(nameof(value),
                     $"The length of the file must be {m_earliestSeekablePosition} or greater.");
 
-            var status = m_store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
+            var status = Store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
 
             if (status != NTStatus.STATUS_SUCCESS)
                 throw new IOException($"Could not set file length. Error status: {status}");
@@ -276,7 +277,7 @@ namespace SMBLibrary.Client
 
             while (read < maxBytes)
             {
-                var status = m_store.ReadFile(out var bytes, m_handle, m_position + read, maxBytes - read);
+                var status = Store.ReadFile(out var bytes, m_handle, m_position + read, maxBytes - read);
 
                 if ((status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE) || bytes.Length == 0)
                     break;
@@ -321,7 +322,7 @@ namespace SMBLibrary.Client
             {
                 var bytes = new byte[Math.Min(MaxWriteSize, count - written)];
                 Array.Copy(source, offset + written, bytes, 0, bytes.Length);
-                var status = m_store.WriteFile(out var writtenThisRound, m_handle, m_position + written, bytes);
+                var status = Store.WriteFile(out var writtenThisRound, m_handle, m_position + written, bytes);
 
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException(
@@ -349,12 +350,12 @@ namespace SMBLibrary.Client
             {
                 try
                 {
-                    m_store.CloseFile(m_handle);
+                    Store.CloseFile(m_handle);
                 }
                 finally
                 {
                     if (m_ownsStore)
-                        m_store.Disconnect();
+                        Store.Disconnect();
                 }
             }
 
@@ -377,7 +378,7 @@ namespace SMBLibrary.Client
                 throw new ArgumentException($"Invalid file information class: {typeof(T)}", e);
             }
 
-            var status = m_store.GetFileInformation(out var result, m_handle, fileInformationClass);
+            var status = Store.GetFileInformation(out var result, m_handle, fileInformationClass);
 
             return status == NTStatus.STATUS_SUCCESS
                 ? (T)result
