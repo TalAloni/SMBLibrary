@@ -23,7 +23,7 @@ namespace SMBLibrary.Client
             };
 
         private static readonly Dictionary<FileOptions, CreateOptions> FileOptionsToCreateOptionsMap =
-            new Dictionary<FileOptions, CreateOptions>(5)
+            new Dictionary<FileOptions, CreateOptions>(4)
             {
                 { FileOptions.WriteThrough, CreateOptions.FILE_WRITE_THROUGH },
                 { FileOptions.DeleteOnClose, CreateOptions.FILE_DELETE_ON_CLOSE },
