@@ -232,7 +232,7 @@ namespace SMBLibrary.Client
                     break;
 
                 case SeekOrigin.Current:
-                    target += Position;
+                    target += m_position;
                     break;
 
                 case SeekOrigin.End:
