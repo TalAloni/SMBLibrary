@@ -59,10 +59,6 @@ namespace SMBLibrary.Client
             set => throw new InvalidOperationException();
         }
 
-        public int MaxReadSize => (int)Math.Min(int.MaxValue, Store.MaxReadSize);
-
-        public int MaxWriteSize => (int)Math.Min(int.MaxValue, Store.MaxWriteSize);
-
         public string Name { get; }
 
         public ISMBFileStore Store { get; }
@@ -277,7 +273,7 @@ namespace SMBLibrary.Client
             if (!CanRead)
                 throw new NotSupportedException();
 
-            var maxBytes = Math.Min(MaxReadSize, count);
+            var maxBytes = Math.Min((int)Math.Min(int.MaxValue, Store.MaxReadSize), count);
             var read = 0;
 
             while (read < maxBytes)
@@ -325,7 +321,7 @@ namespace SMBLibrary.Client
 
             while (written < count)
             {
-                var bytes = new byte[Math.Min(MaxWriteSize, count - written)];
+                var bytes = new byte[Math.Min((int)Math.Min(int.MaxValue, Store.MaxWriteSize), count - written)];
                 Array.Copy(source, offset + written, bytes, 0, bytes.Length);
                 var status = Store.WriteFile(out var writtenThisRound, m_handle, m_position + written, bytes);
 
