@@ -179,10 +179,6 @@ namespace SMBLibrary.Client
             catch
             {
                 store.CloseFile(handle);
-
-                if (ownsStore)
-                    store.Disconnect();
-
                 throw;
             }
         }
