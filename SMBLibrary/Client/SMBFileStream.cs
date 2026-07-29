@@ -5,6 +5,9 @@ using System.IO;
 
 namespace SMBLibrary.Client
 {
+    /// <summary>
+    /// TODO
+    /// </summary>
     public sealed class SMBFileStream : Stream
     {
         private const AccessMask FileReadData = (AccessMask)0x01;
@@ -59,8 +62,14 @@ namespace SMBLibrary.Client
             set => throw new InvalidOperationException();
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
         public ISMBFileStore Store { get; }
 
         private readonly object m_handle;
@@ -72,6 +81,20 @@ namespace SMBLibrary.Client
         private long m_length;
         private long m_position;
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="store">TODO</param>
+        /// <param name="path">TODO</param>
+        /// <param name="fileMode">TODO</param>
+        /// <param name="fileAccess">TODO</param>
+        /// <param name="fileShare">TODO</param>
+        /// <param name="fileOptions">TODO</param>
+        /// <param name="ownsStore">TODO</param>
+        /// <exception cref="ArgumentNullException">TODO</exception>
+        /// <exception cref="ArgumentException">TODO</exception>
+        /// <exception cref="InvalidEnumArgumentException">TODO</exception>
+        /// <exception cref="IOException">TODO</exception>
         public SMBFileStream(ISMBFileStore store, string path, FileMode fileMode,
             FileAccess fileAccess = FileAccess.ReadWrite, FileShare fileShare = FileShare.Read,
             FileOptions fileOptions = FileOptions.None, bool ownsStore = false)
