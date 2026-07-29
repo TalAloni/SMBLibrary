@@ -79,6 +79,9 @@ namespace SMBLibrary.Client
             if (store == null)
                 throw new ArgumentNullException(nameof(store));
 
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException(nameof(path));
+
             if (Path.IsPathRooted(path))
                 throw new ArgumentException("Path must be relative", nameof(path));
 
