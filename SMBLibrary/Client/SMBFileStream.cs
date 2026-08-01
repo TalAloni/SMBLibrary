@@ -6,7 +6,7 @@ using System.IO;
 namespace SMBLibrary.Client
 {
     /// <summary>
-    /// TODO a single SMB-shared file.
+    /// Provides a <see cref="Stream"/> for a single SMB-shared file.
     /// This class cannot be inherited.
     /// </summary>
     public sealed class SMBFileStream : Stream
