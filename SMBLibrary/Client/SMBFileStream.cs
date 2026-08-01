@@ -179,12 +179,7 @@ namespace SMBLibrary.Client
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
 
-                Store = store;
-                m_handle = handle;
-                m_ownsStore = ownsStore;
-
-                status = Store.GetFileInformation(out var info, m_handle,
-                    FileInformationClass.FileAllInformation);
+                status = store.GetFileInformation(out var info, handle, FileInformationClass.FileAllInformation);
 
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException($"Could not get file information from SMB file. Error status: {status}");
@@ -192,10 +187,12 @@ namespace SMBLibrary.Client
                 var fileInfo = (FileAllInformation)info;
 
                 Name = fileInfo.NameInformation.FileName;
+                Store = store;
+                m_handle = handle;
+                m_ownsStore = ownsStore;
                 m_length = fileInfo.StandardInformation.EndOfFile;
                 m_earliestSeekablePosition = append ? m_length : 0;
                 m_accessMask = fileInfo.AccessInformation.AccessFlags;
-
                 m_position = m_earliestSeekablePosition;
                 m_disposed = false;
             }
