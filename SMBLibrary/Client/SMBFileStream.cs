@@ -49,20 +49,6 @@ namespace SMBLibrary.Client
             set => Seek(value, SeekOrigin.Begin);
         }
 
-        public override bool CanTimeout => false;
-
-        public override int ReadTimeout
-        {
-            get => throw new InvalidOperationException();
-            set => throw new InvalidOperationException();
-        }
-
-        public override int WriteTimeout
-        {
-            get => throw new InvalidOperationException();
-            set => throw new InvalidOperationException();
-        }
-
         /// <summary>
         /// TODO
         /// </summary>
