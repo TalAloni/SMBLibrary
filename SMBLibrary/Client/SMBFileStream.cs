@@ -86,7 +86,7 @@ namespace SMBLibrary.Client
         /// </summary>
         /// <param name="store">TODO</param>
         /// <param name="path">TODO</param>
-        /// <param name="fileMode">TODO</param>
+        /// <param name="fileMode">One of the enumeration values that determines how to open or create the file.</param>
         /// <param name="fileAccess">TODO Default: <see cref="FileAccess.ReadWrite"/></param>
         /// <param name="fileShare">TODO Default: <see cref="FileShare.Read"/></param>
         /// <param name="fileOptions">A bitwise combination of the enumeration values that specifies additional file options. Default: <see cref="FileOptions.None"/></param>
