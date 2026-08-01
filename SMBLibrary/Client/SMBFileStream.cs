@@ -68,7 +68,7 @@ namespace SMBLibrary.Client
         public string Name { get; }
 
         /// <summary>
-        /// TODO
+        /// The <see cref="ISMBFileStore"/> with which this stream was created.
         /// </summary>
         public ISMBFileStore Store { get; }
 
