@@ -92,7 +92,7 @@ namespace SMBLibrary.Client
         /// <param name="fileOptions">A bitwise combination of the enumeration values that specifies additional file options. Default: <see cref="FileOptions.None"/></param>
         /// <param name="ownsStore">True to disconnect <paramref name="store"/> when the stream is disposed; otherwise, false. Default: false</param>
         /// <exception cref="ArgumentNullException"><paramref name="store"/> is null, or <paramref name="path"/> is null or an empty string.</exception>
-        /// <exception cref="ArgumentException"><paramref name="path"/> is an absolute path, or <paramref name="fileMode"/> is <see cref="FileMode.Append"/> or <see cref="FileMode.Truncate"/>> while <paramref name="fileAccess"/> is not <see cref="FileAccess.Write"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="path"/> is an absolute path, or <paramref name="fileMode"/> is <see cref="FileMode.Append"/> or <see cref="FileMode.Truncate"/> while <paramref name="fileAccess"/> is not <see cref="FileAccess.Write"/>.</exception>
         /// <exception cref="InvalidEnumArgumentException"><paramref name="fileMode"/> contains an invalid value.</exception>
         /// <exception cref="IOException">An error occured while attempting to either create the file handle or read its information.</exception>
         public SMBFileStream(ISMBFileStore store, string path, FileMode fileMode,
