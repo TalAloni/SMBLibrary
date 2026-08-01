@@ -88,7 +88,7 @@ namespace SMBLibrary.Client
         /// <param name="path">A relative path to the file that the stream will encapsulate.</param>
         /// <param name="fileMode">One of the enumeration values that determines how to open or create the file.</param>
         /// <param name="fileAccess">A bitwise combination of the enumeration values that determines how the file can be accessed by the stream. Default: <see cref="FileAccess.ReadWrite"/></param>
-        /// <param name="fileShare">TODO Default: <see cref="FileShare.Read"/></param>
+        /// <param name="fileShare">A bitwise combination of the enumeration values that determines how the file will be shared by processes. Default: <see cref="FileShare.Read"/></param>
         /// <param name="fileOptions">A bitwise combination of the enumeration values that specifies additional file options. Default: <see cref="FileOptions.None"/></param>
         /// <param name="ownsStore">True to disconnect <paramref name="store"/> when the stream is disposed; otherwise, false. Default: false</param>
         /// <exception cref="ArgumentNullException"><paramref name="store"/> is null, or <paramref name="path"/> is null or an empty string.</exception>
