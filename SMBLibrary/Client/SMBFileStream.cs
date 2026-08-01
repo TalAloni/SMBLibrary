@@ -85,7 +85,7 @@ namespace SMBLibrary.Client
         /// TODO
         /// </summary>
         /// <param name="store">TODO</param>
-        /// <param name="path">TODO</param>
+        /// <param name="path">A relative path to the file that the stream will encapsulate.</param>
         /// <param name="fileMode">One of the enumeration values that determines how to open or create the file.</param>
         /// <param name="fileAccess">TODO Default: <see cref="FileAccess.ReadWrite"/></param>
         /// <param name="fileShare">TODO Default: <see cref="FileShare.Read"/></param>
