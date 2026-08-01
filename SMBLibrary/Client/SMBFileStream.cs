@@ -90,7 +90,7 @@ namespace SMBLibrary.Client
         /// <param name="fileAccess">TODO Default: <see cref="FileAccess.ReadWrite"/></param>
         /// <param name="fileShare">TODO Default: <see cref="FileShare.Read"/></param>
         /// <param name="fileOptions">TODO Default <see cref="FileOptions.None"/></param>
-        /// <param name="ownsStore">TODO Default: false</param>
+        /// <param name="ownsStore">True to disconnect <paramref name="store"/> when the stream is disposed; otherwise, false. Default: false</param>
         /// <exception cref="ArgumentNullException"><paramref name="store"/> is null, or <paramref name="path"/> is null or an empty string.</exception>
         /// <exception cref="ArgumentException"><paramref name="path"/> is an absolute path, or <paramref name="fileMode"/> is <see cref="FileMode.Append"/> or <see cref="FileMode.Truncate"/>> while <paramref name="fileAccess"/> is not <see cref="FileAccess.Write"/>.</exception>
         /// <exception cref="InvalidEnumArgumentException"><paramref name="fileMode"/> contains an invalid value.</exception>
