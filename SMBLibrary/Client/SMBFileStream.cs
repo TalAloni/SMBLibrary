@@ -50,7 +50,7 @@ namespace SMBLibrary.Client
         }
 
         /// <summary>
-        /// TODO
+        /// The relative path of the opened file.
         /// </summary>
         public string Name { get; }
 
