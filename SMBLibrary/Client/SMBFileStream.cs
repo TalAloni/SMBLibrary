@@ -31,6 +31,26 @@ namespace SMBLibrary.Client
                 { FileOptions.RandomAccess, CreateOptions.FILE_RANDOM_ACCESS },
             };
 
+        private static T GetFileInformation<T>(ISMBFileStore store, object handle) where T : FileInformation
+        {
+            FileInformationClass fileInformationClass;
+
+            try
+            {
+                fileInformationClass = (FileInformationClass)Enum.Parse(typeof(FileInformationClass), typeof(T).Name);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Invalid file information class: {typeof(T)}", e);
+            }
+
+            var status = store.GetFileInformation(out var result, handle, fileInformationClass);
+
+            return status == NTStatus.STATUS_SUCCESS
+                ? (T)result
+                : throw new IOException($"Could not get file information from SMB file. Error status: {status}");
+        }
+
         public override bool CanRead => !m_disposed && (m_accessMask & AccessMask.FILE_READ_DATA) != 0;
 
         public override bool CanWrite => !m_disposed && (m_accessMask & AccessMask.FILE_WRITE_DATA) != 0;
@@ -165,12 +185,7 @@ namespace SMBLibrary.Client
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
 
-                status = store.GetFileInformation(out var info, handle, FileInformationClass.FileAllInformation);
-
-                if (status != NTStatus.STATUS_SUCCESS)
-                    throw new IOException($"Could not get file information from SMB file. Error status: {status}");
-
-                var fileInfo = (FileAllInformation)info;
+                var fileInfo = GetFileInformation<FileAllInformation>(store, handle);
 
                 Name = fileInfo.NameInformation.FileName;
                 Store = store;
@@ -368,29 +383,5 @@ namespace SMBLibrary.Client
 
             base.Dispose(disposeManaged);
         }
-        /*
-        private T GetFileInformation<T>() where T : FileInformation
-        {
-            if (m_disposed)
-                throw new ObjectDisposedException(GetType().FullName);
-
-            FileInformationClass fileInformationClass;
-
-            try
-            {
-                fileInformationClass = (FileInformationClass)Enum.Parse(typeof(FileInformationClass), typeof(T).Name);
-            }
-            catch (Exception e)
-            {
-                throw new ArgumentException($"Invalid file information class: {typeof(T)}", e);
-            }
-
-            var status = Store.GetFileInformation(out var result, m_handle, fileInformationClass);
-
-            return status == NTStatus.STATUS_SUCCESS
-                ? (T)result
-                : throw new IOException($"Could not get file information from SMB file. Error status: {status}");
-        }
-        //*/
     }
 }
