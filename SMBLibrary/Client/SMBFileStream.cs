@@ -76,6 +76,7 @@ namespace SMBLibrary.Client
         public ISMBFileStore Store { get; }
 
         private readonly object m_handle;
+        private readonly bool m_ownsHandle;
         private readonly bool m_ownsStore;
         private readonly long m_earliestSeekablePosition;
         private readonly AccessMask m_accessMask;
@@ -190,6 +191,7 @@ namespace SMBLibrary.Client
                 Name = fileInfo.NameInformation.FileName;
                 Store = store;
                 m_handle = handle;
+                m_ownsHandle = true;
                 m_ownsStore = ownsStore;
                 m_length = fileInfo.StandardInformation.EndOfFile;
                 m_earliestSeekablePosition = append ? m_length : 0;
@@ -372,7 +374,8 @@ namespace SMBLibrary.Client
             {
                 try
                 {
-                    Store.CloseFile(m_handle);
+                    if (m_ownsHandle)
+                        Store.CloseFile(m_handle);
                 }
                 finally
                 {
