@@ -86,6 +86,44 @@ namespace SMBLibrary.Client
         private long m_position;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="SMBFileStream"/> class using a pre-existing file handle.
+        /// </summary>
+        /// <param name="store">The store to use in this stream.</param>
+        /// <param name="handle">The file handle to use in this stream.</param>
+        /// <param name="ownsHandle">True to close <paramref name="handle"/> when the stream is disposed; otherwise, false.</param>
+        /// <param name="ownsStore">True to disconnect <paramref name="store"/> when the stream is disposed; otherwise, false. Default: false</param>
+        /// <exception cref="ArgumentNullException"><paramref name="store"/> or <paramref name="handle"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="handle"/> is a directory, or <paramref name="ownsHandle"/> is false while <paramref name="ownsStore"/> is true.</exception>
+        /// <exception cref="IOException">An error occured while attempting to read the file's information.</exception>
+        public SMBFileStream(ISMBFileStore store, object handle, bool ownsHandle, bool ownsStore = false)
+        {
+            if (store == null)
+                throw new ArgumentNullException(nameof(store));
+
+            if (handle == null)
+                throw new ArgumentNullException(nameof(handle));
+
+            if (ownsStore && !ownsHandle)
+                throw new ArgumentException("A stream that owns the store must also own the handle.");
+
+            var fileInfo = GetFileInformation<FileAllInformation>(store, handle);
+
+            if (fileInfo.StandardInformation.Directory)
+                throw new ArgumentException("Cannot construct a stream with a directory handle.", nameof(handle));
+
+            Name = fileInfo.NameInformation.FileName;
+            Store = store;
+            m_handle = handle;
+            m_ownsHandle = ownsHandle;
+            m_ownsStore = ownsStore;
+            m_earliestSeekablePosition = 0;
+            m_accessMask = fileInfo.AccessInformation.AccessFlags;
+            m_length = fileInfo.StandardInformation.EndOfFile;
+            m_position = m_earliestSeekablePosition;
+            m_disposed = false;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SMBFileStream"/> class using a relative path string.
         /// </summary>
         /// <param name="store">The store to use in this stream.</param>
