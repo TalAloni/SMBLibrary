@@ -11,10 +11,6 @@ namespace SMBLibrary.Client
     /// </summary>
     public sealed class SMBFileStream : Stream
     {
-        private const AccessMask FileReadData = (AccessMask)0x01;
-        private const AccessMask FileWriteData = (AccessMask)0x02;
-        private const AccessMask FileAppendData = (AccessMask)0x04;
-
         private const ShareAccess SupportedShareAccessFlags = ShareAccess.Read | ShareAccess.Write | ShareAccess.Delete;
 
         private const CreateOptions RequiredCreateFlags = CreateOptions.FILE_NON_DIRECTORY_FILE;
@@ -22,8 +18,8 @@ namespace SMBLibrary.Client
         private static readonly Dictionary<FileAccess, AccessMask> FileAccessToAccessMaskMap =
             new Dictionary<FileAccess, AccessMask>(2)
             {
-                { FileAccess.Read, FileReadData },
-                { FileAccess.Write, FileWriteData },
+                { FileAccess.Read, AccessMask.FILE_READ_DATA },
+                { FileAccess.Write, AccessMask.FILE_WRITE_DATA },
             };
 
         private static readonly Dictionary<FileOptions, CreateOptions> FileOptionsToCreateOptionsMap =
@@ -35,9 +31,9 @@ namespace SMBLibrary.Client
                 { FileOptions.RandomAccess, CreateOptions.FILE_RANDOM_ACCESS },
             };
 
-        public override bool CanRead => !m_disposed && (m_accessMask & FileReadData) != 0;
+        public override bool CanRead => !m_disposed && (m_accessMask & AccessMask.FILE_READ_DATA) != 0;
 
-        public override bool CanWrite => !m_disposed && (m_accessMask & FileWriteData) != 0;
+        public override bool CanWrite => !m_disposed && (m_accessMask & AccessMask.FILE_WRITE_DATA) != 0;
 
         public override bool CanSeek => !m_disposed;
 
@@ -106,7 +102,7 @@ namespace SMBLibrary.Client
                     throw new ArgumentException($"{fileMode} must be combined with FileAccess.Write");
             }
 
-            var accessMask = append ? FileAppendData : 0;
+            var accessMask = append ? AccessMask.FILE_APPEND_DATA : 0;
 
             foreach (var entry in FileAccessToAccessMaskMap)
                 if ((fileAccess & entry.Key) != 0)

@@ -8,6 +8,10 @@ namespace SMBLibrary
     [Flags]
     public enum AccessMask : uint
     {
+        FILE_READ_DATA = 0x00000001,
+        FILE_WRITE_DATA = 0x00000002,
+        FILE_APPEND_DATA = 0x00000004,
+
         // The bits in positions 16 through 31 are object specific.
         DELETE = 0x00010000,
         READ_CONTROL = 0x00020000,
