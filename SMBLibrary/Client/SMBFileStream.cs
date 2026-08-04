@@ -69,7 +69,7 @@ namespace SMBLibrary.Client
         private long m_position;
 
         /// <summary>
-        /// TODO
+        /// Initializes a new instance of the <see cref="SMBFileStream"/> class.
         /// </summary>
         /// <param name="store">The store to use in this stream.</param>
         /// <param name="path">A relative path to the file that the stream will encapsulate.</param>
