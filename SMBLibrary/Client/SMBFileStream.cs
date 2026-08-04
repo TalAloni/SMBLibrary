@@ -102,7 +102,10 @@ namespace SMBLibrary.Client
                     throw new ArgumentException($"{fileMode} must be combined with FileAccess.Write");
             }
 
-            var accessMask = append ? AccessMask.FILE_APPEND_DATA : 0;
+            var accessMask = AccessMask.FILE_READ_ATTRIBUTES;
+
+            if (append)
+                accessMask |= AccessMask.FILE_APPEND_DATA;
 
             foreach (var entry in FileAccessToAccessMaskMap)
                 if ((fileAccess & entry.Key) != 0)
