@@ -86,7 +86,7 @@ namespace SMBLibrary.Client
         private long m_position;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SMBFileStream"/> class.
+        /// Initializes a new instance of the <see cref="SMBFileStream"/> class using a relative path string.
         /// </summary>
         /// <param name="store">The store to use in this stream.</param>
         /// <param name="path">A relative path to the file that the stream will encapsulate.</param>
