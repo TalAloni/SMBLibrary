@@ -286,7 +286,8 @@ namespace SMBLibrary.Client
             {
                 var status = Store.ReadFile(out var bytes, m_handle, m_position + read, maxBytes - read);
 
-                if ((status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE) || bytes.Length == 0)
+                if ((status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_END_OF_FILE) ||
+                    bytes == null || bytes.Length == 0)
                     break;
 
                 Array.Copy(bytes, 0, destination, offset + read, bytes.Length);
