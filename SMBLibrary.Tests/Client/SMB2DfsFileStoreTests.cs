@@ -62,11 +62,83 @@ namespace SMBLibrary.Tests.Client
             // Assert
             Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
             Assert.AreEqual(0, dfsFileStore.ConnectRequests.Count);
-            Assert.AreEqual(@"folder\file.txt", rootStore.LastCreateFilePath);
+            // [MS-SMB2] 2.2.13 - a request against the namespace root is a DFS operation, so the name is subject to
+            // DFS name normalization and must be a full path rather than a share-relative one.
+            Assert.AreEqual(@"SERVER1\DfsRoot\folder\file.txt", rootStore.LastCreateFilePath);
 
             byte[] data;
             dfsFileStore.ReadFile(out data, handle, 0, 3);
             Assert.AreEqual(1, rootStore.ReadFileCount);
+        }
+
+        [TestMethod]
+        public void CreateFile_WhenPathIsShareRoot_SendsSharePathWithoutTrailingSeparator()
+        {
+            // Opening the share root using a single backslash is the idiom used in ClientExamples.md;
+            // String.Empty is the other spelling. Neither may produce a trailing separator.
+            foreach (string shareRoot in new string[] { @"\", String.Empty })
+            {
+                FakeFileStore rootStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_SUCCESS };
+                TestableDfsFileStore dfsFileStore = new TestableDfsFileStore(new SMB2Client(), "SERVER1", "DfsRoot", rootStore, new Dictionary<string, ISMBFileStore>());
+
+                object handle;
+                FileStatus fileStatus;
+                NTStatus status = dfsFileStore.CreateFile(out handle, out fileStatus, shareRoot, (AccessMask)0, (FileAttributes)0, (ShareAccess)0, (CreateDisposition)0, (CreateOptions)0, null);
+
+                Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
+                Assert.AreEqual(@"SERVER1\DfsRoot", rootStore.LastCreateFilePath);
+            }
+        }
+
+        [TestMethod]
+        public void CreateFile_WhenPathHasLeadingBackslash_DoesNotDoubleSeparator()
+        {
+            FakeFileStore rootStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_SUCCESS };
+            TestableDfsFileStore dfsFileStore = new TestableDfsFileStore(new SMB2Client(), "SERVER1", "DfsRoot", rootStore, new Dictionary<string, ISMBFileStore>());
+
+            object handle;
+            FileStatus fileStatus;
+            dfsFileStore.CreateFile(out handle, out fileStatus, @"\folder\file.txt", (AccessMask)0, (FileAttributes)0, (ShareAccess)0, (CreateDisposition)0, (CreateOptions)0, null);
+
+            Assert.AreEqual(@"SERVER1\DfsRoot\folder\file.txt", rootStore.LastCreateFilePath);
+        }
+
+        [TestMethod]
+        public void CreateFile_WhenConnectedByIPAddress_KeepsPathShareRelative()
+        {
+            // [MS-DFSC] The server normalizes a DFS path against the namespace name, which an IP address can never
+            // match. Sending a DFS path here would break callers that connect by address to a share that happens to
+            // carry SMB2_SHAREFLAG_DFS_ROOT and work today.
+            FakeFileStore rootStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_SUCCESS };
+            TestableDfsFileStore dfsFileStore = new TestableDfsFileStore(new SMB2Client(), "10.0.0.5", "Namespace", rootStore, new Dictionary<string, ISMBFileStore>());
+
+            object handle;
+            FileStatus fileStatus;
+            dfsFileStore.CreateFile(out handle, out fileStatus, @"folder\file.txt", (AccessMask)0, (FileAttributes)0, (ShareAccess)0, (CreateDisposition)0, (CreateOptions)0, null);
+
+            Assert.AreEqual(@"folder\file.txt", rootStore.LastCreateFilePath);
+        }
+
+        [TestMethod]
+        public void Constructor_WhenServerIsName_MarksUnderlyingStoreAsDfsOperation()
+        {
+            SMB2Client client = new SMB2Client();
+            SMB2FileStore fileStore = new SMB2FileStore(client, 1, false);
+
+            new SMB2DfsFileStore(client, "SERVER1", "DfsRoot", fileStore);
+
+            Assert.IsTrue(fileStore.IsDfsOperation, "Requests against a DFS namespace root must be marked as DFS operations.");
+        }
+
+        [TestMethod]
+        public void Constructor_WhenServerIsIPAddress_DoesNotMarkUnderlyingStoreAsDfsOperation()
+        {
+            SMB2Client client = new SMB2Client();
+            SMB2FileStore fileStore = new SMB2FileStore(client, 1, false);
+
+            new SMB2DfsFileStore(client, "10.0.0.5", "Namespace", fileStore);
+
+            Assert.IsFalse(fileStore.IsDfsOperation);
         }
 
         [TestMethod]

@@ -383,13 +383,8 @@ namespace SMBLibrary.Client
                 if (response.Header.Status == NTStatus.STATUS_SUCCESS && response is TreeConnectResponse treeConnectResponse)
                 {
                     bool encryptShareData = (treeConnectResponse.ShareFlags & ShareFlags.EncryptData) > 0;
-                    bool isDfsShare = (treeConnectResponse.ShareFlags & ShareFlags.DfsRoot) > 0;
-                    // A DFS share requires its requests to be marked as DFS operations and to carry a full path.
-                    // [MS-DFSC] The server normalizes that path against the namespace name, an IP address will never
-                    // match a namespace, so a client that connected by address keeps using share-relative paths.
-                    string dfsSharePath = (isDfsShare && !IsIPAddress(m_serverName)) ? String.Format(@"{0}\{1}", m_serverName, shareName) : null;
-                    SMB2FileStore fileStore = new SMB2FileStore(this, response.Header.TreeID, m_encryptSessionData || encryptShareData, dfsSharePath);
-                    if (isDfsShare)
+                    SMB2FileStore fileStore = new SMB2FileStore(this, response.Header.TreeID, m_encryptSessionData || encryptShareData);
+                    if ((treeConnectResponse.ShareFlags & ShareFlags.DfsRoot) > 0)
                     {
                         // [MS-DFSC] The share is a DFS namespace root; wrap the file store so that DFS referrals are followed transparently.
                         return new SMB2DfsFileStore(this, m_serverName, shareName, fileStore);
@@ -402,12 +397,6 @@ namespace SMBLibrary.Client
                 status = NTStatus.STATUS_INVALID_SMB;
             }
             return null;
-        }
-
-        private static bool IsIPAddress(string serverName)
-        {
-            IPAddress serverAddress;
-            return IPAddress.TryParse(serverName, out serverAddress);
         }
 
         public NTStatus Echo()
@@ -618,7 +607,7 @@ namespace SMBLibrary.Client
             return WaitForCommand(messageID, out bool _);
         }
 
-        internal virtual SMB2Command WaitForCommand(ulong messageID, out bool connectionTerminated)
+        internal SMB2Command WaitForCommand(ulong messageID, out bool connectionTerminated)
         {
             connectionTerminated = false;
             Stopwatch stopwatch = new Stopwatch();
@@ -677,7 +666,7 @@ namespace SMBLibrary.Client
             TrySendCommand(request, m_encryptSessionData);
         }
 
-        internal virtual void TrySendCommand(SMB2Command request, bool encryptData)
+        internal void TrySendCommand(SMB2Command request, bool encryptData)
         {
             if (!m_connectionSupportsMultiCredit && request.Header.CreditCharge > 1)
             {

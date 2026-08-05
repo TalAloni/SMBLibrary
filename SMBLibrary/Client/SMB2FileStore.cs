@@ -18,19 +18,30 @@ namespace SMBLibrary.Client
         private SMB2Client m_client;
         private uint m_treeID;
         private bool m_encryptShareData;
-        private string m_dfsSharePath;
+        private bool m_isDfsOperation;
 
-        public SMB2FileStore(SMB2Client client, uint treeID, bool encryptShareData) : this(client, treeID, encryptShareData, null)
-        {
-        }
-
-        // dfsSharePath is 'server\share' when the share is a DFS namespace root, null otherwise
-        internal SMB2FileStore(SMB2Client client, uint treeID, bool encryptShareData, string dfsSharePath)
+        public SMB2FileStore(SMB2Client client, uint treeID, bool encryptShareData)
         {
             m_client = client;
             m_treeID = treeID;
             m_encryptShareData = encryptShareData;
-            m_dfsSharePath = dfsSharePath;
+        }
+
+        /// <summary>
+        /// When set, requests are marked with SMB2_FLAGS_DFS_OPERATIONS.
+        /// Set by SMB2DfsFileStore for a DFS namespace root; the name passed to CreateFile is then expected
+        /// to already be in the form required by [MS-SMB2] 2.2.13.
+        /// </summary>
+        internal bool IsDfsOperation
+        {
+            get
+            {
+                return m_isDfsOperation;
+            }
+            set
+            {
+                m_isDfsOperation = value;
+            }
         }
 
         public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
@@ -38,20 +49,13 @@ namespace SMBLibrary.Client
             handle = null;
             fileStatus = FileStatus.FILE_DOES_NOT_EXIST;
             CreateRequest request = new CreateRequest();
-            if (!String.IsNullOrEmpty(m_dfsSharePath))
+            if (m_isDfsOperation)
             {
                 // [MS-SMB2] 3.2.4.1.4 - The client MUST set SMB2_FLAGS_DFS_OPERATIONS when sending a DFS operation,
                 // otherwise the server will not return STATUS_PATH_NOT_COVERED and no DFS referral will be requested.
                 request.Header.Flags |= SMB2PacketHeaderFlags.DfsOperations;
-                // [MS-SMB2] 2.2.13 - The name is subject to DFS name normalization and must be a full path in the form <server>\<share>\<path>.
-                // A caller may express the share root as an empty string or as a single backslash, both must not result in a trailing separator.
-                string pathWithinShare = (path != null) ? path.TrimStart('\\') : String.Empty;
-                request.Name = (pathWithinShare.Length > 0) ? m_dfsSharePath + @"\" + pathWithinShare : m_dfsSharePath;
             }
-            else
-            {
-                request.Name = path;
-            }
+            request.Name = path;
             request.DesiredAccess = desiredAccess;
             request.FileAttributes = fileAttributes;
             request.ShareAccess = shareAccess;
