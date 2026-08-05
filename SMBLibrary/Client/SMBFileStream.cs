@@ -41,14 +41,14 @@ namespace SMBLibrary.Client
             }
             catch (Exception e)
             {
-                throw new ArgumentException($"Invalid file information class: {typeof(T)}", e);
+                throw new ArgumentException($"Invalid file information class: {typeof(T)}.", e);
             }
 
             var status = store.GetFileInformation(out var result, handle, fileInformationClass);
 
             return status == NTStatus.STATUS_SUCCESS
                 ? (T)result
-                : throw new IOException($"Could not get file information from SMB file. Error status: {status}");
+                : throw new IOException($"Could not get file information from SMB file. Error status: {status}.");
         }
 
         public override bool CanRead => !m_disposed && (m_accessMask & AccessMask.FILE_READ_DATA) != 0;
@@ -148,17 +148,17 @@ namespace SMBLibrary.Client
                 throw new ArgumentNullException(nameof(path));
 
             if (Path.IsPathRooted(path))
-                throw new ArgumentException("Path must be relative", nameof(path));
+                throw new ArgumentException("Path must be relative.", nameof(path));
 
             var append = fileMode == FileMode.Append;
 
             if (append || fileMode == FileMode.Truncate)
             {
                 if ((fileAccess & FileAccess.Read) != 0)
-                    throw new ArgumentException($"{fileMode} cannot be combined with FileAccess.Read");
+                    throw new ArgumentException($"{fileMode} cannot be combined with FileAccess.Read.");
 
                 if ((fileAccess & FileAccess.Write) == 0)
-                    throw new ArgumentException($"{fileMode} must be combined with FileAccess.Write");
+                    throw new ArgumentException($"{fileMode} must be combined with FileAccess.Write.");
             }
 
             var accessMask = AccessMask.FILE_READ_ATTRIBUTES;
@@ -222,7 +222,7 @@ namespace SMBLibrary.Client
             try
             {
                 if (status != NTStatus.STATUS_SUCCESS)
-                    throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}");
+                    throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}.");
 
                 var fileInfo = GetFileInformation<FileAllInformation>(store, handle);
 
@@ -252,7 +252,7 @@ namespace SMBLibrary.Client
             var status = Store.FlushFileBuffers(m_handle);
 
             if (status != NTStatus.STATUS_SUCCESS)
-                throw new IOException($"Could not flush SMB stream. Error status: {status}");
+                throw new IOException($"Could not flush SMB stream. Error status: {status}.");
         }
 
         public override void SetLength(long value)
@@ -270,7 +270,7 @@ namespace SMBLibrary.Client
             var status = Store.SetFileInformation(m_handle, new FileEndOfFileInformation { EndOfFile = value });
 
             if (status != NTStatus.STATUS_SUCCESS)
-                throw new IOException($"Could not set file length. Error status: {status}");
+                throw new IOException($"Could not set file length. Error status: {status}.");
 
             m_length = value;
 
@@ -388,11 +388,11 @@ namespace SMBLibrary.Client
 
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException(
-                        $"Could not write to SMB file. Bytes successfully written: {written}. Error status: {status}");
+                        $"Could not write to SMB file. Bytes successfully written: {written}. Error status: {status}.");
 
                 if (writtenThisRound == 0)
                     throw new IOException(
-                        $"SMB server reported a successful write of zero bytes. Bytes successfully written: {written}");
+                        $"SMB server reported a successful write of zero bytes. Bytes successfully written: {written}.");
 
                 written += writtenThisRound;
                 m_length = Math.Max(m_length, m_position + written);
