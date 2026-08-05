@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2024-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+﻿/* Copyright (C) 2024-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -17,6 +17,10 @@ namespace SMBLibrary.Tests.Client
     [TestClass]
     public class SMB2ClientTests
     {
+        private static readonly int s_minPort = 1025;
+        private static readonly int s_maxPort = 50000;
+        private static int s_nextServerPort = s_minPort + new Random().Next(s_maxPort - s_minPort);
+
         private int m_serverPort;
         private TcpListener m_tcpListener;
         private bool m_clientConnected;
@@ -24,7 +28,7 @@ namespace SMBLibrary.Tests.Client
         [TestInitialize]
         public void Initialize()
         {
-            m_serverPort = 1000 + new Random().Next(50000);
+            m_serverPort = Interlocked.Increment(ref s_nextServerPort);
             m_tcpListener = new TcpListener(IPAddress.Loopback, m_serverPort);
             m_tcpListener.Start();
         }

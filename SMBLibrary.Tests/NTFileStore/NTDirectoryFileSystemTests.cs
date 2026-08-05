@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2025 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2019-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -14,7 +14,7 @@ namespace SMBLibrary.Tests
     [TestClass]
     public class NTDirectoryFileSystemTests : NTFileStoreTests
     {
-        private static readonly string TestDirectoryPath = @"C:\Tests";
+        private static readonly string TestDirectoryPath = Path.Combine(Path.GetTempPath(), "SMBLibraryTests");
 
         static NTDirectoryFileSystemTests()
         {
