@@ -27,23 +27,6 @@ namespace SMBLibrary.Client
             m_encryptShareData = encryptShareData;
         }
 
-        /// <summary>
-        /// When set, requests are marked with SMB2_FLAGS_DFS_OPERATIONS.
-        /// Set by SMB2DfsFileStore for a DFS namespace root; the name passed to CreateFile is then expected
-        /// to already be in the form required by [MS-SMB2] 2.2.13.
-        /// </summary>
-        internal bool IsDfsOperation
-        {
-            get
-            {
-                return m_isDfsOperation;
-            }
-            set
-            {
-                m_isDfsOperation = value;
-            }
-        }
-
         public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
         {
             handle = null;
@@ -396,6 +379,23 @@ namespace SMBLibrary.Client
             get
             {
                 return m_client.MaxWriteSize;
+            }
+        }
+
+        /// <summary>
+        /// When set, requests are marked with SMB2_FLAGS_DFS_OPERATIONS.
+        /// Set by SMB2DfsFileStore for a DFS namespace root; the name passed to CreateFile is then expected
+        /// to already be in the form required by [MS-SMB2] 2.2.13.
+        /// </summary>
+        internal bool IsDfsOperation
+        {
+            get
+            {
+                return m_isDfsOperation;
+            }
+            set
+            {
+                m_isDfsOperation = value;
             }
         }
 
