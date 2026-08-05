@@ -99,19 +99,22 @@ namespace SMBLibrary.Client
             if (ownsStore && !ownsHandle)
                 throw new ArgumentException("A stream that owns the store must also own the handle.");
 
-            var fileInfo = GetFileInformation<FileAllInformation>(store, handle);
+            var standardInfo = GetFileInformation<FileStandardInformation>(store, handle);
 
-            if (fileInfo.StandardInformation.Directory)
+            if (standardInfo.Directory)
                 throw new ArgumentException("Cannot construct a stream with a directory handle.", nameof(handle));
 
-            Name = fileInfo.NameInformation.FileName;
+            var nameInfo = GetFileInformation<FileAlternateNameInformation>(store, handle);
+            var accessInfo = GetFileInformation<FileAccessInformation>(store, handle);
+
+            Name = nameInfo.FileName;
             Store = store;
             m_handle = handle;
             m_ownsHandle = ownsHandle;
             m_ownsStore = ownsStore;
             m_earliestSeekablePosition = 0;
-            m_accessMask = fileInfo.AccessInformation.AccessFlags;
-            m_length = fileInfo.StandardInformation.EndOfFile;
+            m_accessMask = accessInfo.AccessFlags;
+            m_length = standardInfo.EndOfFile;
             m_position = m_earliestSeekablePosition;
             m_disposed = false;
         }
@@ -156,7 +159,7 @@ namespace SMBLibrary.Client
 
             //FILE_APPEND_DATA is not requested even when fileMode == FileMode.Append because
             //the stream will enforce append constraints by itself.
-            var accessMask = (AccessMask)(fileAccess & FileAccess.ReadWrite) | AccessMask.FILE_READ_ATTRIBUTES;
+            var accessMask = (AccessMask)(fileAccess & FileAccess.ReadWrite);
 
             //Possibly replace this with commented code below
             const FileAttributes fileAttributes = FileAttributes.Normal;
@@ -212,16 +215,18 @@ namespace SMBLibrary.Client
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}.");
 
-                var fileInfo = GetFileInformation<FileAllInformation>(store, handle);
+                var nameInfo = GetFileInformation<FileAlternateNameInformation>(store, handle);
+                var standardInfo = GetFileInformation<FileStandardInformation>(store, handle);
+                var accessInfo = GetFileInformation<FileAccessInformation>(store, handle);
 
-                Name = fileInfo.NameInformation.FileName;
+                Name = nameInfo.FileName;
                 Store = store;
                 m_handle = handle;
                 m_ownsHandle = true;
                 m_ownsStore = ownsStore;
-                m_length = fileInfo.StandardInformation.EndOfFile;
+                m_length = standardInfo.EndOfFile;
                 m_earliestSeekablePosition = append ? m_length : 0;
-                m_accessMask = fileInfo.AccessInformation.AccessFlags;
+                m_accessMask = accessInfo.AccessFlags;
                 m_position = m_earliestSeekablePosition;
                 m_disposed = false;
             }

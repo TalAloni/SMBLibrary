@@ -10,7 +10,6 @@ namespace SMBLibrary
     {
         FILE_READ_DATA = 0x00000001,
         FILE_WRITE_DATA = 0x00000002,
-        FILE_READ_ATTRIBUTES = 0x00000080,
 
         // The bits in positions 16 through 31 are object specific.
         DELETE = 0x00010000,
