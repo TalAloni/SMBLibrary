@@ -154,6 +154,8 @@ namespace SMBLibrary.Client
                     throw new ArgumentException($"{fileMode} must be combined with FileAccess.Write.");
             }
 
+            //FILE_APPEND_DATA is not requested even when fileMode == FileMode.Append because
+            //the stream will enforce append constraints by itself.
             var accessMask = (AccessMask)(fileAccess & FileAccess.ReadWrite) | AccessMask.FILE_READ_ATTRIBUTES;
 
             //Possibly replace this with commented code below
