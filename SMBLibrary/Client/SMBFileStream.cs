@@ -15,13 +15,6 @@ namespace SMBLibrary.Client
 
         private const CreateOptions RequiredCreateFlags = CreateOptions.FILE_NON_DIRECTORY_FILE;
 
-        private static readonly Dictionary<FileAccess, AccessMask> FileAccessToAccessMaskMap =
-            new Dictionary<FileAccess, AccessMask>(2)
-            {
-                { FileAccess.Read, AccessMask.FILE_READ_DATA },
-                { FileAccess.Write, AccessMask.FILE_WRITE_DATA },
-            };
-
         private static readonly Dictionary<FileOptions, CreateOptions> FileOptionsToCreateOptionsMap =
             new Dictionary<FileOptions, CreateOptions>(4)
             {
@@ -161,14 +154,10 @@ namespace SMBLibrary.Client
                     throw new ArgumentException($"{fileMode} must be combined with FileAccess.Write.");
             }
 
-            var accessMask = AccessMask.FILE_READ_ATTRIBUTES;
+            var accessMask = (AccessMask)(fileAccess & FileAccess.ReadWrite) | AccessMask.FILE_READ_ATTRIBUTES;
 
             if (append)
                 accessMask |= AccessMask.FILE_APPEND_DATA;
-
-            foreach (var entry in FileAccessToAccessMaskMap)
-                if ((fileAccess & entry.Key) != 0)
-                    accessMask |= entry.Value;
 
             //Possibly replace this with commented code below
             const FileAttributes fileAttributes = FileAttributes.Normal;
