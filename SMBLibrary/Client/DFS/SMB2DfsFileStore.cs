@@ -6,6 +6,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Net;
 using SMBLibrary.DFS;
 
 namespace SMBLibrary.Client.DFS
@@ -25,10 +26,13 @@ namespace SMBLibrary.Client.DFS
         private string m_serverName;
         private string m_shareName;
         private ISMBFileStore m_dfsFileStore;
+        private bool m_useDfsPaths;
 
         // Connections and tree connections established while following referrals to other targets.
         private Dictionary<string, SMB2Client> m_targetClients;
         private Dictionary<string, ISMBFileStore> m_targetFileStores;
+        // Whether each target above is itself a DFS namespace root, and so expects DFS paths too.
+        private Dictionary<string, bool> m_dfsRootTargets;
 
         internal SMB2DfsFileStore(SMB2Client client, string serverName, string shareName, ISMBFileStore dfsFileStore)
         {
@@ -38,6 +42,53 @@ namespace SMBLibrary.Client.DFS
             m_dfsFileStore = dfsFileStore;
             m_targetClients = new Dictionary<string, SMB2Client>(StringComparer.OrdinalIgnoreCase);
             m_targetFileStores = new Dictionary<string, ISMBFileStore>(StringComparer.OrdinalIgnoreCase);
+            m_dfsRootTargets = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+            // [MS-DFSC] The server normalizes a DFS path against the namespace name, which an IP address can never
+            // match. A caller that connected by address therefore keeps using share-relative paths, so that access
+            // to a share that happens to carry SMB2_SHAREFLAG_DFS_ROOT keeps working exactly as it did before.
+            m_useDfsPaths = !IsIPAddress(serverName);
+            SetDfsOperations(m_dfsFileStore, m_useDfsPaths);
+        }
+
+        private static bool IsIPAddress(string serverName)
+        {
+            IPAddress serverAddress;
+            return IPAddress.TryParse(serverName, out serverAddress);
+        }
+
+        private static void SetDfsOperations(ISMBFileStore fileStore, bool isDfsOperation)
+        {
+            SMB2FileStore smb2FileStore = fileStore as SMB2FileStore;
+            if (smb2FileStore != null)
+            {
+                smb2FileStore.IsDfsOperation = isDfsOperation;
+            }
+        }
+
+        /// <summary>
+        /// A caller may express the share root as an empty string or as a single backslash, and may include a
+        /// leading or trailing separator on any path. The CREATE name and the DFS referral path are built from
+        /// the same caller-supplied value, so both go through this to stay consistent with each other.
+        /// </summary>
+        private static string NormalizePathWithinShare(string pathWithinShare)
+        {
+            if (pathWithinShare == null)
+            {
+                return String.Empty;
+            }
+            return pathWithinShare.Trim('\\');
+        }
+
+        /// <summary>
+        /// [MS-SMB2] 2.2.13 - When SMB2_FLAGS_DFS_OPERATIONS is set the name is subject to DFS name normalization
+        /// and must be a full path in the form 'server\share\path', with no leading separator.
+        /// </summary>
+        private static string GetDfsName(string serverName, string shareName, string pathWithinShare)
+        {
+            string sharePath = serverName + @"\" + shareName;
+            string relativePath = NormalizePathWithinShare(pathWithinShare);
+            return (relativePath.Length > 0) ? sharePath + @"\" + relativePath : sharePath;
         }
 
         public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
@@ -49,11 +100,15 @@ namespace SMBLibrary.Client.DFS
             string currentServer = m_serverName;
             string currentShare = m_shareName;
             string effectivePath = path;
+            // This instance only ever wraps a DFS namespace root, so the first hop takes DFS paths unless the
+            // caller connected by IP address. A referral target only does when it is a namespace root itself.
+            bool currentIsDfsRoot = m_useDfsPaths;
 
             for (int hopCount = 0; ; hopCount++)
             {
                 object innerHandle;
-                NTStatus status = fileStore.CreateFile(out innerHandle, out fileStatus, effectivePath, desiredAccess, fileAttributes, shareAccess, createDisposition, createOptions, securityContext);
+                string name = currentIsDfsRoot ? GetDfsName(currentServer, currentShare, effectivePath) : effectivePath;
+                NTStatus status = fileStore.CreateFile(out innerHandle, out fileStatus, name, desiredAccess, fileAttributes, shareAccess, createDisposition, createOptions, securityContext);
                 if (status != NTStatus.STATUS_PATH_NOT_COVERED)
                 {
                     if (status == NTStatus.STATUS_SUCCESS)
@@ -68,7 +123,9 @@ namespace SMBLibrary.Client.DFS
                     return status;
                 }
 
-                string dfsPath = BuildUncPath(currentServer, currentShare, effectivePath);
+                // Same normalization as the CREATE name above: a leading separator here would produce
+                // \\server\share\\path and the server would fail to resolve the referral.
+                string dfsPath = BuildUncPath(currentServer, currentShare, NormalizePathWithinShare(effectivePath));
                 List<DfsPath> targets;
                 if (!TryGetReferralTargets(fileStore, dfsPath, out targets))
                 {
@@ -78,9 +135,10 @@ namespace SMBLibrary.Client.DFS
                 // MS-DFSC 3.1.5.4.3: targets are listed in order of preference, try the next target when a target is unreachable
                 ISMBFileStore targetFileStore = null;
                 DfsPath target = null;
+                bool targetIsDfsRoot = false;
                 foreach (DfsPath referralTarget in targets)
                 {
-                    targetFileStore = GetOrConnectFileStore(referralTarget.ServerName, referralTarget.ShareName);
+                    targetFileStore = GetOrConnectFileStore(referralTarget.ServerName, referralTarget.ShareName, out targetIsDfsRoot);
                     if (targetFileStore != null)
                     {
                         target = referralTarget;
@@ -97,6 +155,7 @@ namespace SMBLibrary.Client.DFS
                 currentServer = target.ServerName;
                 currentShare = target.ShareName;
                 effectivePath = target.PathWithinShare;
+                currentIsDfsRoot = targetIsDfsRoot;
             }
         }
 
@@ -143,28 +202,35 @@ namespace SMBLibrary.Client.DFS
             return targets.Count > 0;
         }
 
-        private ISMBFileStore GetOrConnectFileStore(string serverName, string shareName)
+        private ISMBFileStore GetOrConnectFileStore(string serverName, string shareName, out bool isDfsRoot)
         {
             string key = BuildUncPath(serverName, shareName, null);
             ISMBFileStore fileStore;
             if (m_targetFileStores.TryGetValue(key, out fileStore))
             {
+                isDfsRoot = m_dfsRootTargets[key];
                 return fileStore;
             }
 
             fileStore = ConnectToTarget(serverName, shareName);
             if (fileStore == null)
             {
+                isDfsRoot = false;
                 return null;
             }
 
+            isDfsRoot = false;
             if (fileStore is SMB2DfsFileStore dfsFileStore)
             {
-                // Use the underlying file store, referrals from the target are followed (and hop-limited) by this instance
+                // Use the underlying file store, referrals from the target are followed (and hop-limited) by this instance.
+                // The target is a namespace root of its own, so it expects DFS paths just like the root we started from,
+                // unless it decided otherwise (a target addressed by IP).
+                isDfsRoot = dfsFileStore.m_useDfsPaths;
                 fileStore = dfsFileStore.m_dfsFileStore;
             }
 
             m_targetFileStores.Add(key, fileStore);
+            m_dfsRootTargets.Add(key, isDfsRoot);
             return fileStore;
         }
 

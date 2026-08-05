@@ -18,6 +18,7 @@ namespace SMBLibrary.Client
         private SMB2Client m_client;
         private uint m_treeID;
         private bool m_encryptShareData;
+        private bool m_isDfsOperation;
 
         public SMB2FileStore(SMB2Client client, uint treeID, bool encryptShareData)
         {
@@ -31,6 +32,12 @@ namespace SMBLibrary.Client
             handle = null;
             fileStatus = FileStatus.FILE_DOES_NOT_EXIST;
             CreateRequest request = new CreateRequest();
+            if (m_isDfsOperation)
+            {
+                // [MS-SMB2] 3.2.4.1.4 - The client MUST set SMB2_FLAGS_DFS_OPERATIONS when sending a DFS operation,
+                // otherwise the server will not return STATUS_PATH_NOT_COVERED and no DFS referral will be requested.
+                request.Header.Flags |= SMB2PacketHeaderFlags.DfsOperations;
+            }
             request.Name = path;
             request.DesiredAccess = desiredAccess;
             request.FileAttributes = fileAttributes;
@@ -372,6 +379,23 @@ namespace SMBLibrary.Client
             get
             {
                 return m_client.MaxWriteSize;
+            }
+        }
+
+        /// <summary>
+        /// When set, requests are marked with SMB2_FLAGS_DFS_OPERATIONS.
+        /// Set by SMB2DfsFileStore for a DFS namespace root; the name passed to CreateFile is then expected
+        /// to already be in the form required by [MS-SMB2] 2.2.13.
+        /// </summary>
+        internal bool IsDfsOperation
+        {
+            get
+            {
+                return m_isDfsOperation;
+            }
+            set
+            {
+                m_isDfsOperation = value;
             }
         }
 
