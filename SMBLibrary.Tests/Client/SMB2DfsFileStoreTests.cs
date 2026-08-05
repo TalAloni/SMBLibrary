@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SMBLibrary.Client;
 using SMBLibrary.Client.DFS;
 using SMBLibrary.DFS;
+using SMBLibrary.SMB2;
 
 namespace SMBLibrary.Tests.Client
 {
@@ -78,6 +79,7 @@ namespace SMBLibrary.Tests.Client
             // String.Empty is the other spelling. Neither may produce a trailing separator.
             foreach (string shareRoot in new string[] { @"\", String.Empty })
             {
+                string spelling = (shareRoot.Length == 0) ? "String.Empty" : "a single backslash";
                 FakeFileStore rootStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_SUCCESS };
                 TestableDfsFileStore dfsFileStore = new TestableDfsFileStore(new SMB2Client(), "SERVER1", "DfsRoot", rootStore, new Dictionary<string, ISMBFileStore>());
 
@@ -85,9 +87,67 @@ namespace SMBLibrary.Tests.Client
                 FileStatus fileStatus;
                 NTStatus status = dfsFileStore.CreateFile(out handle, out fileStatus, shareRoot, (AccessMask)0, (FileAttributes)0, (ShareAccess)0, (CreateDisposition)0, (CreateOptions)0, null);
 
-                Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
-                Assert.AreEqual(@"SERVER1\DfsRoot", rootStore.LastCreateFilePath);
+                Assert.AreEqual(NTStatus.STATUS_SUCCESS, status, "Share root expressed as " + spelling);
+                Assert.AreEqual(@"SERVER1\DfsRoot", rootStore.LastCreateFilePath, "Share root expressed as " + spelling);
             }
+        }
+
+        [TestMethod]
+        public void CreateFile_WhenPathHasLeadingBackslash_RequestsReferralForTheNormalizedPath()
+        {
+            // The CREATE name and the referral path are built from the same caller-supplied value. If only the
+            // former is normalized the server is asked to resolve \\SERVER1\DfsRoot\\Link\file.txt and the
+            // referral fails, so the link is never followed.
+            byte[] referralBytes = BuildReferral(@"\SERVER1\DfsRoot\Link", @"\SERVER2\Share");
+            FakeFileStore rootStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_PATH_NOT_COVERED, ReferralResponseBytes = referralBytes };
+            FakeFileStore targetStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_SUCCESS };
+            Dictionary<string, ISMBFileStore> targets = new Dictionary<string, ISMBFileStore>(StringComparer.OrdinalIgnoreCase)
+            {
+                { @"SERVER2\Share", targetStore }
+            };
+            TestableDfsFileStore dfsFileStore = new TestableDfsFileStore(new SMB2Client(), "SERVER1", "DfsRoot", rootStore, targets);
+
+            object handle;
+            FileStatus fileStatus;
+            NTStatus status = dfsFileStore.CreateFile(out handle, out fileStatus, @"\Link\file.txt", (AccessMask)0, (FileAttributes)0, (ShareAccess)0, (CreateDisposition)0, (CreateOptions)0, null);
+
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
+            Assert.AreEqual(@"\\SERVER1\DfsRoot\Link\file.txt", rootStore.LastReferralRequestPath);
+            Assert.AreEqual("file.txt", targetStore.LastCreateFilePath);
+        }
+
+        [TestMethod]
+        public void CreateFile_WhenReferralTargetIsItselfADfsRoot_SendsDfsPathToTheTarget()
+        {
+            // An interlink: the referral target is a namespace root of its own, so requests against it are DFS
+            // operations too and must carry a full path rather than a share-relative one.
+            byte[] referralBytes = BuildReferral(@"\SERVER1\DfsRoot\Link", @"\SERVER2\Nested");
+            FakeFileStore rootStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_PATH_NOT_COVERED, ReferralResponseBytes = referralBytes };
+            FakeFileStore nestedRootStore = new FakeFileStore() { CreateFileStatus = NTStatus.STATUS_SUCCESS };
+            // TreeConnect returns an SMB2DfsFileStore when the target share is a namespace root.
+            SMB2DfsFileStore nestedDfsStore = new SMB2DfsFileStore(new SMB2Client(), "SERVER2", "Nested", nestedRootStore);
+            Dictionary<string, ISMBFileStore> targets = new Dictionary<string, ISMBFileStore>(StringComparer.OrdinalIgnoreCase)
+            {
+                { @"SERVER2\Nested", nestedDfsStore }
+            };
+            TestableDfsFileStore dfsFileStore = new TestableDfsFileStore(new SMB2Client(), "SERVER1", "DfsRoot", rootStore, targets);
+
+            object handle;
+            FileStatus fileStatus;
+            NTStatus status = dfsFileStore.CreateFile(out handle, out fileStatus, @"Link\file.txt", (AccessMask)0, (FileAttributes)0, (ShareAccess)0, (CreateDisposition)0, (CreateOptions)0, null);
+
+            Assert.AreEqual(NTStatus.STATUS_SUCCESS, status);
+            Assert.AreEqual(@"SERVER2\Nested\file.txt", nestedRootStore.LastCreateFilePath);
+        }
+
+        [TestMethod]
+        public void SMB2FileStore_ByDefault_IsNotADfsOperation()
+        {
+            // A share that is not a DFS namespace root is never wrapped, so its store must leave the flag clear
+            // and keep sending share-relative names.
+            SMB2FileStore fileStore = new SMB2FileStore(new SMB2Client(), 1, false);
+
+            Assert.IsFalse(fileStore.IsDfsOperation);
         }
 
         [TestMethod]
@@ -237,6 +297,7 @@ namespace SMBLibrary.Tests.Client
             public NTStatus CreateFileStatus = NTStatus.STATUS_SUCCESS;
             public byte[] ReferralResponseBytes;
             public string LastCreateFilePath;
+            public string LastReferralRequestPath;
             public int ReadFileCount;
 
             public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
@@ -255,6 +316,10 @@ namespace SMBLibrary.Tests.Client
 
             public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
             {
+                if (ctlCode == (uint)IoControlCode.FSCTL_DFS_GET_REFERRALS && input != null)
+                {
+                    LastReferralRequestPath = new RequestGetDfsReferral(input).RequestFileName;
+                }
                 output = ReferralResponseBytes;
                 return (ReferralResponseBytes != null) ? NTStatus.STATUS_SUCCESS : NTStatus.STATUS_NOT_SUPPORTED;
             }
