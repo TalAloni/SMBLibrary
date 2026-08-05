@@ -104,7 +104,7 @@ namespace SMBLibrary.Client
             if (standardInfo.Directory)
                 throw new ArgumentException("Cannot construct a stream with a directory handle.", nameof(handle));
 
-            var nameInfo = GetFileInformation<FileAlternateNameInformation>(store, handle);
+            var nameInfo = GetFileInformation<FileNameInformation>(store, handle);
             var accessInfo = GetFileInformation<FileAccessInformation>(store, handle);
 
             Name = nameInfo.FileName;
@@ -215,7 +215,7 @@ namespace SMBLibrary.Client
                 if (status != NTStatus.STATUS_SUCCESS)
                     throw new IOException($"Could not create SMB handle. Error status: {status}. File status: {fileStatus}.");
 
-                var nameInfo = GetFileInformation<FileAlternateNameInformation>(store, handle);
+                var nameInfo = GetFileInformation<FileNameInformation>(store, handle);
                 var standardInfo = GetFileInformation<FileStandardInformation>(store, handle);
                 var accessInfo = GetFileInformation<FileAccessInformation>(store, handle);
 
