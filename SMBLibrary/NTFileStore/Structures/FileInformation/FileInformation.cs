@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -45,6 +45,8 @@ namespace SMBLibrary
                     return new FileEaInformation(buffer, offset);
                 case FileInformationClass.FileAccessInformation:
                     return new FileAccessInformation(buffer, offset);
+                case FileInformationClass.FileNameInformation:
+                    return new FileNameInformation(buffer, offset);
                 case FileInformationClass.FileRenameInformation:
                     return new FileRenameInformationType2(buffer, offset);
                 case FileInformationClass.FileLinkInformation:

@@ -14,7 +14,7 @@ namespace SMBLibrary
         FileInternalInformation = 0x06,        // Uses: Query
         FileEaInformation = 0x07,              // Uses: Query
         FileAccessInformation = 0x08,          // Uses: Query
-        FileNameInformation = 0x09,            // Uses: LOCAL
+        FileNameInformation = 0x09,            // Uses: Query
         FileRenameInformation = 0x0A,          // Uses: Set
         FileLinkInformation = 0x0B,            // Uses: Set
         FileNamesInformation = 0x0C,           // Uses: Query
