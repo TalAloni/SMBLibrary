@@ -82,7 +82,7 @@ namespace SMBLibrary.Client.DFS
 
         /// <summary>
         /// [MS-SMB2] 2.2.13 - When SMB2_FLAGS_DFS_OPERATIONS is set the name is subject to DFS name normalization
-        /// and must be a full path in the form &lt;server&gt;\&lt;share&gt;\&lt;path&gt;, with no leading separator.
+        /// and must be a full path in the form 'server\share\path', with no leading separator.
         /// </summary>
         private static string GetDfsName(string serverName, string shareName, string pathWithinShare)
         {
