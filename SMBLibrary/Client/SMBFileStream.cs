@@ -156,9 +156,6 @@ namespace SMBLibrary.Client
 
             var accessMask = (AccessMask)(fileAccess & FileAccess.ReadWrite) | AccessMask.FILE_READ_ATTRIBUTES;
 
-            if (append)
-                accessMask |= AccessMask.FILE_APPEND_DATA;
-
             //Possibly replace this with commented code below
             const FileAttributes fileAttributes = FileAttributes.Normal;
 
