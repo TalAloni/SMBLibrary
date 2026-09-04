@@ -240,6 +240,7 @@ namespace SMBLibrary.Authentication.NTLM
             {
                 if (AuthenticationMessageUtils.IsNTLMv1ExtendedSessionSecurity(message.LmChallengeResponse))
                 {
+#if ENABLE_NTLMV1
                     // NTLM v1 Extended Session Security:
                     success = AuthenticateV1Extended(password, serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
                     if (success)
@@ -249,6 +250,9 @@ namespace SMBLibrary.Authentication.NTLM
                         byte[] lmowf = NTLMCryptography.LMOWFv1(password);
                         keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
                     }
+#else
+                    success = false;
+#endif
                 }
                 else
                 {
@@ -266,6 +270,7 @@ namespace SMBLibrary.Authentication.NTLM
             }
             else
             {
+#if ENABLE_NTLMV1
                 success = AuthenticateV1(password, serverChallenge, message.LmChallengeResponse, message.NtChallengeResponse);
                 if (success)
                 {
@@ -274,6 +279,9 @@ namespace SMBLibrary.Authentication.NTLM
                     byte[] lmowf = NTLMCryptography.LMOWFv1(password);
                     keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, message.NegotiateFlags, message.LmChallengeResponse, serverChallenge, lmowf);
                 }
+#else
+                success = false;
+#endif
             }
 
             if (success)
@@ -342,6 +350,7 @@ namespace SMBLibrary.Authentication.NTLM
             }
         }
 
+#if ENABLE_NTLMV1
         /// <summary>
         /// LM v1 / NTLM v1
         /// </summary>
@@ -367,6 +376,7 @@ namespace SMBLibrary.Authentication.NTLM
 
             return ByteUtils.AreByteArraysEqual(expectedNTLMv1Response, ntResponse);
         }
+#endif
 
         /// <summary>
         /// LM v2 / NTLM v2

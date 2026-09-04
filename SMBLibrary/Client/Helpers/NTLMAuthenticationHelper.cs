@@ -117,6 +117,7 @@ namespace SMBLibrary.Client
             byte[] keyExchangeKey;
             if (authenticationMethod == AuthenticationMethod.NTLMv1 || authenticationMethod == AuthenticationMethod.NTLMv1ExtendedSessionSecurity)
             {
+#if ENABLE_NTLMV1
                 // https://msdn.microsoft.com/en-us/library/cc236699.aspx
                 if (userName == String.Empty && password == String.Empty)
                 {
@@ -137,6 +138,9 @@ namespace SMBLibrary.Client
                 sessionBaseKey = new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password));
                 byte[] lmowf = NTLMCryptography.LMOWFv1(password);
                 keyExchangeKey = NTLMCryptography.KXKey(sessionBaseKey, authenticateMessage.NegotiateFlags, authenticateMessage.LmChallengeResponse, challengeMessage.ServerChallenge, lmowf);
+#else
+                throw new NotSupportedException("NTLM v1 support has not been enabled");
+#endif
             }
             else // NTLMv2
             {

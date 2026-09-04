@@ -275,8 +275,12 @@ namespace SMBLibrary.Client
                 byte[] proofStr = null;
                 if (authenticationMethod == AuthenticationMethod.NTLMv1)
                 {
+#if ENABLE_NTLMV1
                     request.OEMPassword = NTLMCryptography.ComputeLMv1Response(m_serverChallenge, password);
                     request.UnicodePassword = NTLMCryptography.ComputeNTLMv1Response(m_serverChallenge, password);
+#else
+                    throw new NotSupportedException("NTLM v1 support has not been enabled");
+#endif
                 }
                 else if (authenticationMethod == AuthenticationMethod.NTLMv1ExtendedSessionSecurity)
                 {
@@ -304,9 +308,13 @@ namespace SMBLibrary.Client
                     if (m_isLoggedIn)
                     {
                         m_userID = reply.Header.UID;
+#if ENABLE_NTLMV1
                         m_sessionKey = (authenticationMethod == AuthenticationMethod.NTLMv1) ?
                             new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password)) :
                             new HMACMD5(NTLMCryptography.NTOWFv2(password, userName, domainName)).ComputeHash(proofStr);
+#else
+                        m_sessionKey = new HMACMD5(NTLMCryptography.NTOWFv2(password, userName, domainName)).ComputeHash(proofStr);
+#endif
                     }
                     return reply.Header.Status;
                 }

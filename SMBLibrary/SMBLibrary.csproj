@@ -14,6 +14,7 @@
     <PackageProjectUrl>https://github.com/TalAloni/SMBLibrary</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TalAloni/SMBLibrary</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DefineConstants>ENABLE_NTLMV1</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

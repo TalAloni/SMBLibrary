@@ -15,6 +15,7 @@ namespace SMBLibrary.Authentication.NTLM
 {
     public class NTLMCryptography
     {
+#if ENABLE_NTLMV1
         public static byte[] ComputeLMv1Response(byte[] challenge, string password)
         {
             byte[] hash = LMOWFv1(password);
@@ -215,6 +216,7 @@ namespace SMBLibrary.Authentication.NTLM
                 return keyExchangeKey;
             }
         }
+#endif
 
         public static byte[] ComputeLMv2Response(byte[] serverChallenge, byte[] clientChallenge, string password, string user, string domain)
         {
