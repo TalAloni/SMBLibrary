@@ -36,30 +36,6 @@ namespace SMBLibrary.Authentication.NTLM
             return DesLongEncrypt(passwordHash, challengeHashShort);
         }
 
-        public static byte[] ComputeLMv2Response(byte[] serverChallenge, byte[] clientChallenge, string password, string user, string domain)
-        {
-            byte[] key = LMOWFv2(password, user, domain);
-            byte[] bytes = ByteUtils.Concatenate(serverChallenge, clientChallenge);
-            HMACMD5 hmac = new HMACMD5(key);
-            byte[] hash = hmac.ComputeHash(bytes, 0, bytes.Length);
-
-            return ByteUtils.Concatenate(hash, clientChallenge);
-        }
-
-        /// <summary>
-        /// [MS-NLMP] https://msdn.microsoft.com/en-us/library/cc236700.aspx
-        /// </summary>
-        /// <param name="clientChallengeStructurePadded">ClientChallengeStructure with 4 zero bytes padding, a.k.a. temp</param>
-        public static byte[] ComputeNTLMv2Proof(byte[] serverChallenge, byte[] clientChallengeStructurePadded, string password, string user, string domain)
-        {
-            byte[] key = NTOWFv2(password, user, domain);
-            byte[] temp = clientChallengeStructurePadded;
-
-            HMACMD5 hmac = new HMACMD5(key);
-            byte[] _NTProof = hmac.ComputeHash(ByteUtils.Concatenate(serverChallenge, temp), 0, serverChallenge.Length + temp.Length);
-            return _NTProof;
-        }
-
         public static byte[] DesEncrypt(byte[] key, byte[] plainText)
         {
             return DesEncrypt(key, plainText, 0, plainText.Length);
@@ -175,24 +151,6 @@ namespace SMBLibrary.Authentication.NTLM
         }
 
         /// <summary>
-        /// LMOWFv2 is identical to NTOWFv2
-        /// </summary>
-        public static byte[] LMOWFv2(string password, string user, string domain)
-        {
-            return NTOWFv2(password, user, domain);
-        }
-
-        public static byte[] NTOWFv2(string password, string user, string domain)
-        {
-            byte[] passwordBytes = UnicodeEncoding.Unicode.GetBytes(password);
-            byte[] key = new MD4().GetByteHashFromBytes(passwordBytes);
-            string text = user.ToUpper() + domain;
-            byte[] bytes = UnicodeEncoding.Unicode.GetBytes(text);
-            HMACMD5 hmac = new HMACMD5(key);
-            return hmac.ComputeHash(bytes, 0, bytes.Length);
-        }
-
-        /// <summary>
         /// Extends a 7-byte key into an 8-byte key.
         /// Note: The DES key ostensibly consists of 64 bits, however, only 56 of these are actually used by the algorithm.
         /// Eight bits are used solely for checking parity, and are thereafter discarded
@@ -256,6 +214,48 @@ namespace SMBLibrary.Authentication.NTLM
                 byte[] keyExchangeKey = new HMACMD5(sessionBaseKey).ComputeHash(buffer);
                 return keyExchangeKey;
             }
+        }
+
+        public static byte[] ComputeLMv2Response(byte[] serverChallenge, byte[] clientChallenge, string password, string user, string domain)
+        {
+            byte[] key = LMOWFv2(password, user, domain);
+            byte[] bytes = ByteUtils.Concatenate(serverChallenge, clientChallenge);
+            HMACMD5 hmac = new HMACMD5(key);
+            byte[] hash = hmac.ComputeHash(bytes, 0, bytes.Length);
+
+            return ByteUtils.Concatenate(hash, clientChallenge);
+        }
+
+        /// <summary>
+        /// [MS-NLMP] https://msdn.microsoft.com/en-us/library/cc236700.aspx
+        /// </summary>
+        /// <param name="clientChallengeStructurePadded">ClientChallengeStructure with 4 zero bytes padding, a.k.a. temp</param>
+        public static byte[] ComputeNTLMv2Proof(byte[] serverChallenge, byte[] clientChallengeStructurePadded, string password, string user, string domain)
+        {
+            byte[] key = NTOWFv2(password, user, domain);
+            byte[] temp = clientChallengeStructurePadded;
+
+            HMACMD5 hmac = new HMACMD5(key);
+            byte[] _NTProof = hmac.ComputeHash(ByteUtils.Concatenate(serverChallenge, temp), 0, serverChallenge.Length + temp.Length);
+            return _NTProof;
+        }
+
+        /// <summary>
+        /// LMOWFv2 is identical to NTOWFv2
+        /// </summary>
+        public static byte[] LMOWFv2(string password, string user, string domain)
+        {
+            return NTOWFv2(password, user, domain);
+        }
+
+        public static byte[] NTOWFv2(string password, string user, string domain)
+        {
+            byte[] passwordBytes = UnicodeEncoding.Unicode.GetBytes(password);
+            byte[] key = new MD4().GetByteHashFromBytes(passwordBytes);
+            string text = user.ToUpper() + domain;
+            byte[] bytes = UnicodeEncoding.Unicode.GetBytes(text);
+            HMACMD5 hmac = new HMACMD5(key);
+            return hmac.ComputeHash(bytes, 0, bytes.Length);
         }
 
         /// <remarks>
