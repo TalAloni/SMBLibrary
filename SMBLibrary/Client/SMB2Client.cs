@@ -299,6 +299,16 @@ namespace SMBLibrary.Client
                 if (m_isLoggedIn)
                 {
                     m_sessionID = response.Header.SessionID;
+                    if (finalSessionSetupResponse.SecurityBuffer != null && finalSessionSetupResponse.SecurityBuffer.Length > 0)
+                    {
+                        // Some authentication mechanisms (e.g. Kerberos) embed acceptor-provider
+                        // context data (such as an AP-REP subkey) in the final, successful
+                        // SESSION_SETUP response. Give the authentication client a chance to
+                        // process it before deriving the session key, since it may override
+                        // the key negotiated so far.
+                        authenticationClient.InitializeSecurityContext(finalSessionSetupResponse.SecurityBuffer);
+                    }
+
                     m_sessionKey = authenticationClient.GetSessionKey();
                     m_authenticationClient = authenticationClient;
                     SessionFlags sessionFlags = finalSessionSetupResponse.SessionFlags;

@@ -109,6 +109,10 @@ namespace SMBLibrary.Client.Authentication
                 challengeMessageBytes = securityBlob;
             }
 
+            // When NegState is AcceptCompleted or Reject, the SPNEGO token may not contain a Response Token
+            if (challengeMessageBytes == null)
+                return null;
+
             byte[] authenticateMessageBytes = NTLMAuthenticationHelper.GetAuthenticateMessage(m_negotiateMessageBytes, challengeMessageBytes, m_domainName, m_userName, m_password, m_spn, m_authenticationMethod, out m_sessionKey);
             if (useGSSAPI && authenticateMessageBytes != null)
             {
