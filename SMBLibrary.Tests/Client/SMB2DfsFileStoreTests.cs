@@ -244,6 +244,60 @@ namespace SMBLibrary.Tests.Client
             Assert.AreEqual("file.txt", targetStore.LastCreateFilePath);
         }
 
+        [TestMethod]
+        public void GetNamespaceTargets_ReturnsTargetsInReferralOrder()
+        {
+            // MS-DFSC 3.1.5.4.3: referral targets are listed in order of preference, so the order
+            // the server gave them in has to be preserved.
+            ResponseGetDfsReferral referral = new ResponseGetDfsReferral();
+            referral.ReferralEntries.Add(new DfsReferralEntryV4() { ServerType = DfsServerType.Root, DfsPath = @"\lab.local\Namespace", NetworkAddress = @"\NS1.lab.local\Namespace" });
+            referral.ReferralEntries.Add(new DfsReferralEntryV4() { ServerType = DfsServerType.Root, DfsPath = @"\lab.local\Namespace", NetworkAddress = @"\NS2.lab.local\Namespace" });
+
+            List<DfsPath> targets = DfsNamespaceResolver.GetNamespaceTargets(referral);
+
+            Assert.AreEqual(2, targets.Count);
+            // A root referral names the namespace server by FQDN, not by short name.
+            Assert.AreEqual("NS1.lab.local", targets[0].ServerName);
+            Assert.AreEqual("Namespace", targets[0].ShareName);
+            Assert.AreEqual("NS2.lab.local", targets[1].ServerName);
+        }
+
+        [TestMethod]
+        public void GetNamespaceTargets_SkipsEntriesThatAreNotRootTargets()
+        {
+            // MS-DFSC 2.2.4.3: only a root target names a namespace server. Resolution runs ahead
+            // of every tree connect, so treating a link target as a namespace server would divert
+            // an ordinary tree connect to a server it was never asked to reach.
+            ResponseGetDfsReferral referral = new ResponseGetDfsReferral();
+            referral.ReferralEntries.Add(new DfsReferralEntryV4() { ServerType = DfsServerType.NonRoot, NetworkAddress = @"\LINK-TARGET\Share" });
+            referral.ReferralEntries.Add(new DfsReferralEntryV4() { ServerType = DfsServerType.Root, NetworkAddress = @"\NS1\Namespace" });
+
+            List<DfsPath> targets = DfsNamespaceResolver.GetNamespaceTargets(referral);
+
+            Assert.AreEqual(1, targets.Count);
+            Assert.AreEqual("NS1", targets[0].ServerName);
+        }
+
+        [TestMethod]
+        public void IsSameServer_MatchesOnlyTheSameHost()
+        {
+            // A root referral names its target by FQDN while the caller will often have connected
+            // by short name, so both spellings have to name one host. Treating distinct hosts as
+            // one would skip a target the referral named, which is how a namespace becomes
+            // unreachable, so anything less certain than that has to be treated as a second host.
+            Assert.IsTrue(DfsNamespaceResolver.IsSameServer("NS1", "NS1.lab.local"));
+            Assert.IsTrue(DfsNamespaceResolver.IsSameServer("NS1.lab.local", "NS1"));
+            Assert.IsTrue(DfsNamespaceResolver.IsSameServer("ns1", "NS1"));
+            Assert.IsTrue(DfsNamespaceResolver.IsSameServer("10.0.0.5", "10.0.0.5"));
+
+            Assert.IsFalse(DfsNamespaceResolver.IsSameServer("10.0.0.5", "10.0.0.9"));
+            Assert.IsFalse(DfsNamespaceResolver.IsSameServer("192.168.1.10", "192.168.1.20"));
+            Assert.IsFalse(DfsNamespaceResolver.IsSameServer("NS1.a.local", "NS1.b.local"));
+            Assert.IsFalse(DfsNamespaceResolver.IsSameServer("NS1", "NS2.lab.local"));
+            Assert.IsFalse(DfsNamespaceResolver.IsSameServer("NS1", "NS10.lab.local"));
+            Assert.IsFalse(DfsNamespaceResolver.IsSameServer("NS1", null));
+        }
+
         private static byte[] BuildReferral(string dfsPath, params string[] networkAddresses)
         {
             ResponseGetDfsReferral referral = new ResponseGetDfsReferral();
