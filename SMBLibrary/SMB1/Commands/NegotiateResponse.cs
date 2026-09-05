@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -60,7 +60,13 @@ namespace SMBLibrary.SMB1
             // [MS-CIFS] <90> Padding is not added before DomainName
             // DomainName and ServerName are always in Unicode
             DomainName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, true);
-            ServerName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, true);
+            // [MS-SMB] 2.2.4.5.2.2 In order to determine whether the SMB_Data.Bytes.ServerName field is present,
+            // the client MUST check the SMB_Data.ByteCount field to determine whether additional data is present
+            // beyond the NULL terminator of the SMB_Data.Bytes.DomainName string.
+            if (dataOffset < this.SMBData.Length)
+            {
+                ServerName = SMB1Helper.ReadSMBString(this.SMBData, ref dataOffset, true);
+            }
         }
 
         public override byte[] GetBytes(bool isUnicode)
