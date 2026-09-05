@@ -308,13 +308,11 @@ namespace SMBLibrary.Client
                     if (m_isLoggedIn)
                     {
                         m_userID = reply.Header.UID;
+                        m_sessionKey =
 #if ENABLE_NTLMV1
-                        m_sessionKey = (authenticationMethod == AuthenticationMethod.NTLMv1) ?
-                            new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password)) :
-                            new HMACMD5(NTLMCryptography.NTOWFv2(password, userName, domainName)).ComputeHash(proofStr);
-#else
-                        m_sessionKey = new HMACMD5(NTLMCryptography.NTOWFv2(password, userName, domainName)).ComputeHash(proofStr);
+                            (authenticationMethod == AuthenticationMethod.NTLMv1) ? new MD4().GetByteHashFromBytes(NTLMCryptography.NTOWFv1(password)) :
 #endif
+                            new HMACMD5(NTLMCryptography.NTOWFv2(password, userName, domainName)).ComputeHash(proofStr);
                     }
                     return reply.Header.Status;
                 }
