@@ -27,6 +27,10 @@ namespace SMBLibrary.Client.DFS
         private string m_shareName;
         private ISMBFileStore m_dfsFileStore;
         private bool m_useDfsPaths;
+        // The connection to a namespace server, opened on the caller's behalf while resolving a
+        // root referral. The caller holds no reference to it, so this store releases it on
+        // Disconnect, exactly as it does for the connections opened to follow a link referral.
+        private SMB2Client m_ownedClient;
 
         // Connections and tree connections established while following referrals to other targets.
         private Dictionary<string, SMB2Client> m_targetClients;
@@ -49,6 +53,11 @@ namespace SMBLibrary.Client.DFS
             // to a share that happens to carry SMB2_SHAREFLAG_DFS_ROOT keeps working exactly as it did before.
             m_useDfsPaths = !IsIPAddress(serverName);
             SetDfsOperations(m_dfsFileStore, m_useDfsPaths);
+        }
+
+        internal void TakeOwnershipOf(SMB2Client client)
+        {
+            m_ownedClient = client;
         }
 
         private static bool IsIPAddress(string serverName)
@@ -246,7 +255,9 @@ namespace SMBLibrary.Client.DFS
             }
 
             NTStatus status;
-            ISMBFileStore fileStore = client.TreeConnect(shareName, out status);
+            // A referral is already being followed here, so a target share that is not found is a
+            // dead end to move past rather than the start of another referral chain.
+            ISMBFileStore fileStore = client.TreeConnect(shareName, false, out status);
             if (status != NTStatus.STATUS_SUCCESS)
             {
                 return null;
@@ -401,18 +412,24 @@ namespace SMBLibrary.Client.DFS
 
             foreach (SMB2Client client in m_targetClients.Values)
             {
-                try
-                {
-                    client.Logoff();
-                }
-                catch (InvalidOperationException)
-                {
-                }
-                client.Disconnect();
+                client.LogoffAndDisconnect();
             }
             m_targetClients.Clear();
 
-            return m_dfsFileStore.Disconnect();
+            try
+            {
+                return m_dfsFileStore.Disconnect();
+            }
+            finally
+            {
+                // In a finally because the disconnect above throws when the connection is already
+                // gone, which is exactly when the client still needs closing.
+                if (m_ownedClient != null)
+                {
+                    m_ownedClient.LogoffAndDisconnect();
+                    m_ownedClient = null;
+                }
+            }
         }
 
         private DfsHandle GetDfsHandle(object handle)

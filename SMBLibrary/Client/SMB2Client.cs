@@ -37,6 +37,7 @@ namespace SMBLibrary.Client
         private ConnectionState m_connectionState;
         private int m_responseTimeoutInMilliseconds;
         private bool m_enableSMB311Support = false;
+        private bool m_resolveDfsNamespace = true;
 
         private object m_incomingQueueLock = new object();
         private List<SMB2Command> m_incomingQueue = new List<SMB2Command>();
@@ -75,10 +76,20 @@ namespace SMBLibrary.Client
         {
         }
 
-        public SMB2Client(int responseTimeoutInMilliseconds, bool enableSMB311Support)
+        public SMB2Client(int responseTimeoutInMilliseconds, bool enableSMB311Support) : this(responseTimeoutInMilliseconds, enableSMB311Support, true)
+        {
+        }
+
+        /// <param name="resolveDfsNamespace">
+        /// Request a DFS referral for a share before connecting to it, and tree connect to the
+        /// namespace server the referral names. When false, every tree connect goes to the server
+        /// this client is connected to. Referrals below a namespace root are followed either way.
+        /// </param>
+        public SMB2Client(int responseTimeoutInMilliseconds, bool enableSMB311Support, bool resolveDfsNamespace)
         {
             m_responseTimeoutInMilliseconds = responseTimeoutInMilliseconds;
             m_enableSMB311Support = enableSMB311Support;
+            m_resolveDfsNamespace = resolveDfsNamespace;
         }
 
         /// <param name="serverName">
@@ -347,6 +358,34 @@ namespace SMBLibrary.Client
             return NTStatus.STATUS_INVALID_SMB;
         }
 
+        /// <summary>
+        /// Releases a connection that is being abandoned, without reporting how it went. Neither
+        /// call may throw: connections opened while following DFS referrals are released during a
+        /// tree connect, where an exception would surface on a path that has never thrown.
+        /// </summary>
+        internal void LogoffAndDisconnect()
+        {
+            try
+            {
+                Logoff();
+            }
+            catch
+            {
+                // Logoff can also fail when a timed-out request consumed the last SMB credit.
+            }
+            finally
+            {
+                try
+                {
+                    Disconnect();
+                }
+                catch
+                {
+                    // Socket.Disconnect throws once the socket is gone
+                }
+            }
+        }
+
         public List<string> ListShares(out NTStatus status)
         {
             if (!m_isConnected || !m_isLoggedIn)
@@ -354,7 +393,8 @@ namespace SMBLibrary.Client
                 throw new InvalidOperationException("A login session must be successfully established before retrieving share list");
             }
 
-            ISMBFileStore namedPipeShare = TreeConnect("IPC$", out status);
+            // IPC$ is never a DFS namespace, so there is nothing to resolve.
+            ISMBFileStore namedPipeShare = TreeConnect("IPC$", false, out status);
             if (namedPipeShare == null)
             {
                 return null;
@@ -367,9 +407,31 @@ namespace SMBLibrary.Client
 
         public ISMBFileStore TreeConnect(string shareName, out NTStatus status)
         {
+            return TreeConnect(shareName, m_resolveDfsNamespace, out status);
+        }
+
+        /// <param name="resolveDfsNamespace">
+        /// Request a DFS referral for the share before connecting, and connect to the namespace
+        /// server it names. Suppressed while already resolving one, so a referral cannot chain
+        /// indefinitely.
+        /// </param>
+        internal ISMBFileStore TreeConnect(string shareName, bool resolveDfsNamespace, out NTStatus status)
+        {
             if (!m_isConnected || !m_isLoggedIn)
             {
                 throw new InvalidOperationException("A login session must be successfully established before connecting to a share");
+            }
+
+            if (resolveDfsNamespace)
+            {
+                // [MS-DFSC] The share may name a DFS namespace rather than a share on this host.
+                // Anything short of a referral naming another server returns null and leaves the
+                // direct tree connect below to answer, as it did before any of this was attempted.
+                ISMBFileStore namespaceStore = DfsNamespaceResolver.TryResolveNamespace(this, m_serverName, shareName, out status);
+                if (namespaceStore != null)
+                {
+                    return namespaceStore;
+                }
             }
 
             string sharePath = String.Format(@"\\{0}\{1}", m_serverName, shareName);
@@ -840,7 +902,7 @@ namespace SMBLibrary.Client
                 return null;
             }
 
-            SMB2Client targetClient = new SMB2Client(m_responseTimeoutInMilliseconds, m_enableSMB311Support);
+            SMB2Client targetClient = new SMB2Client(m_responseTimeoutInMilliseconds, m_enableSMB311Support, m_resolveDfsNamespace);
             try
             {
                 if (!targetClient.Connect(serverName, m_transport))
