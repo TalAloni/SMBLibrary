@@ -137,8 +137,16 @@ namespace SMBLibrary
             {
                 int numberOfBytesWritten;
                 NTStatus writeStatus = WriteFile(out numberOfBytesWritten, handle, 0, input);
+                if (writeStatus != NTStatus.STATUS_SUCCESS)
+                {
+                    return writeStatus;
+                }
                 int messageLength = ((RPCPipeStream)((FileHandle)handle).Stream).MessageLength;
                 NTStatus readStatus = ReadFile(out output, handle, 0, maxOutputLength);
+                if (readStatus != NTStatus.STATUS_SUCCESS)
+                {
+                    return readStatus;
+                }
 
                 if (output.Length < messageLength)
                 {

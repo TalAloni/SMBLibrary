@@ -16,7 +16,7 @@ namespace SMBLibrary.SMB1
         public static DateTime? ReadNullableFileTime(byte[] buffer, int offset)
         {
             long span = LittleEndianConverter.ToInt64(buffer, offset);
-            if (span > 0)
+            if (span >= 0)
             {
                 return DateTime.FromFileTimeUtc(span);
             }
