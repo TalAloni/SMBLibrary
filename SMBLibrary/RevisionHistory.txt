@@ -573,3 +573,11 @@ Revision History:
         IndependentNTLMAuthenticationProvider: Extracted virtual CreateChallengeMessage method.
         IndependentNTLMAuthenticationProvider: Extract GetServerName method.
         Client: Fix rare racing condition when Disconnect is called before response has been received.
+
+1.5.8 - Client: Added Transport property.
+        Client: ServerServiceHelper: Correctly handle STATUS_BUFFER_OVERFLOW returned by recent macOS versions when listing shares.
+        SMB2Client: Fix incorrect signature verification on share-level encrypted packets.
+        SMB2Client: DFS support: Request DFS referrals as a preceding step to TreeConnect.
+        Server: SMB1: NegotiateResponse: Fix IndexOutOfRangeException if ServerName is not present.
+        Added ACCESS_ALLOWED_CALLBACK_ACE and ACCESS_DENIED_CALLBACK_ACE implementations.
+        Allow compilation with newer target frameworks.
