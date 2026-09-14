@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2021 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2014-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -51,7 +51,8 @@ namespace SMBLibrary.Client
             byte[] output;
             int maxOutputLength = maxTransmitFragmentSize;
             status = namedPipeShare.DeviceIOControl(pipeHandle, (uint)IoControlCode.FSCTL_PIPE_TRANSCEIVE, input, out output, maxOutputLength);
-            if (status != NTStatus.STATUS_SUCCESS)
+            // [MS-SMB2] 3.3.4.4 clarifies that STATUS_BUFFER_OVERFLOW response to a FSCTL_PIPE_TRANSCEIVE request does not indicate an error
+            if (status != NTStatus.STATUS_SUCCESS && status != NTStatus.STATUS_BUFFER_OVERFLOW)
             {
                 return null;
             }
