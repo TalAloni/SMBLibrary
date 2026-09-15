@@ -70,23 +70,47 @@ namespace SMBLibrary
 
         public NTStatus ReadFile(out byte[] data, object handle, long offset, int maxCount)
         {
-            Stream stream = ((FileHandle)handle).Stream;
-            data = new byte[maxCount];
-            int bytesRead = stream.Read(data, 0, maxCount);
-            if (bytesRead < maxCount)
+            data = null;
+            try
             {
-                // EOF, we must trim the response data array
-                data = ByteReader.ReadBytes(data, 0, bytesRead);
+                Stream stream = ((FileHandle)handle).Stream;
+                data = new byte[maxCount];
+                int bytesRead = stream.Read(data, 0, maxCount);
+                if (bytesRead < maxCount)
+                {
+                    // EOF, we must trim the response data array
+                    data = ByteReader.ReadBytes(data, 0, bytesRead);
+                }
+                return NTStatus.STATUS_SUCCESS;
             }
-            return NTStatus.STATUS_SUCCESS;
+            catch (IOException)
+            {
+                return NTStatus.STATUS_DATA_ERROR;
+            }
+            catch (ObjectDisposedException)
+            {
+                return NTStatus.STATUS_INVALID_HANDLE;
+            }
         }
 
         public NTStatus WriteFile(out int numberOfBytesWritten, object handle, long offset, byte[] data)
         {
-            Stream stream = ((FileHandle)handle).Stream;
-            stream.Write(data, 0, data.Length);
-            numberOfBytesWritten = data.Length;
-            return NTStatus.STATUS_SUCCESS;
+            numberOfBytesWritten = 0;
+            try
+            {
+                Stream stream = ((FileHandle)handle).Stream;
+                stream.Write(data, 0, data.Length);
+                numberOfBytesWritten = data.Length;
+                return NTStatus.STATUS_SUCCESS;
+            }
+            catch (IOException)
+            {
+                return NTStatus.STATUS_DATA_ERROR;
+            }
+            catch (ObjectDisposedException)
+            {
+                return NTStatus.STATUS_INVALID_HANDLE;
+            }
         }
 
         public NTStatus FlushFileBuffers(object handle)
