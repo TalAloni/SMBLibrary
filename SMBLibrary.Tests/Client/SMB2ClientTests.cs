@@ -97,5 +97,63 @@ namespace SMBLibrary.Tests.Client
             Assert.IsFalse(isConnected);
             Assert.IsTrue(stopwatch.ElapsedMilliseconds < 200);
         }
+
+        // Added for EhPFileBridge - not upstream yet.
+        private byte[] m_capturedNegotiateRequestBytes;
+
+        private void AcceptTcpClient_CaptureNegotiateRequest(IAsyncResult ar)
+        {
+            TcpClient client = m_tcpListener.EndAcceptTcpClient(ar);
+            m_clientConnected = true;
+
+            // NetBIOS session message: 1-byte type + 3-byte (big-endian) length, then the SMB2 packet.
+            byte[] nbtHeader = ReadExactly(client, 4);
+            int length = (nbtHeader[1] << 16) | (nbtHeader[2] << 8) | nbtHeader[3];
+            m_capturedNegotiateRequestBytes = ReadExactly(client, length);
+        }
+
+        private static byte[] ReadExactly(TcpClient client, int length)
+        {
+            byte[] buffer = new byte[length];
+            int totalRead = 0;
+            while (totalRead < length)
+            {
+                int read = client.Client.Receive(buffer, totalRead, length - totalRead, SocketFlags.None);
+                if (read == 0)
+                {
+                    break;
+                }
+                totalRead += read;
+            }
+            return buffer;
+        }
+
+        [TestMethod]
+        public void When_SMB2ClientConnects_NegotiateRequestAdvertisesMultiChannelCapability()
+        {
+            // [MS-SMB2] 3.2.5.2 requires a client to advertise SMB2_GLOBAL_CAP_MULTI_CHANNEL in its
+            // NEGOTIATE request for the server to ever consider binding additional channels to a
+            // session established over this connection (see SMB2Client.ServerSupportsMultiChannel /
+            // SMBConnectionPool). This does not depend on the server actually supporting it.
+            m_tcpListener.BeginAcceptTcpClient(AcceptTcpClient_CaptureNegotiateRequest, null);
+            int timeoutInMilliseconds = 300;
+            SMB2Client client = new SMB2Client(timeoutInMilliseconds);
+
+            new Thread(() =>
+            {
+                client.Connect(IPAddress.Loopback, SMBTransportType.DirectTCPTransport, m_serverPort);
+            }).Start();
+
+            while (!m_clientConnected)
+            {
+                Thread.Sleep(1);
+            }
+            // Give the client a moment to finish writing the NEGOTIATE request after connecting.
+            Thread.Sleep(50);
+
+            Assert.IsNotNull(m_capturedNegotiateRequestBytes);
+            SMBLibrary.SMB2.NegotiateRequest negotiateRequest = new SMBLibrary.SMB2.NegotiateRequest(m_capturedNegotiateRequestBytes, 0);
+            Assert.IsTrue((negotiateRequest.Capabilities & SMBLibrary.SMB2.Capabilities.MultiChannel) > 0);
+        }
     }
 }

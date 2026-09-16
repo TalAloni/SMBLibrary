@@ -44,6 +44,12 @@ namespace SMBLibrary.Client
         private bool m_largeWrite;
         private uint m_serverMaxBufferSize;
         private ushort m_maxMpxCount;
+        // Added for EhPFileBridge - not upstream yet.
+        // MaxNumberVcs (Maximum Number of Virtual Circuits) tells the client how many concurrent
+        // sessions/connections ("VCs") the server is willing to accept from it. Exposed as
+        // MaxNumberOfVirtualCircuits below so callers (e.g. a connection pool) can size the number
+        // of parallel SMB1 connections they open to this server instead of guessing.
+        private ushort m_maxNumberOfVirtualCircuits;
         private int m_responseTimeoutInMilliseconds;
 
         private object m_incomingQueueLock = new object();
@@ -211,6 +217,7 @@ namespace SMBLibrary.Client
                 m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
                 m_serverMaxBufferSize = response.MaxBufferSize;
                 m_maxMpxCount = Math.Min(response.MaxMpxCount, ClientMaxMpxCount);
+                m_maxNumberOfVirtualCircuits = response.MaxNumberVcs;
                 m_serverChallenge = response.Challenge;
                 return ntSMB && rpc && ntStatusCode;
             }
@@ -227,6 +234,7 @@ namespace SMBLibrary.Client
                 m_largeWrite = ((response.Capabilities & Capabilities.LargeWrite) > 0);
                 m_serverMaxBufferSize = response.MaxBufferSize;
                 m_maxMpxCount = Math.Min(response.MaxMpxCount, ClientMaxMpxCount);
+                m_maxNumberOfVirtualCircuits = response.MaxNumberVcs;
                 m_securityBlob = response.SecurityBlob;
                 return ntSMB && rpc && ntStatusCode;
             }
@@ -725,6 +733,18 @@ namespace SMBLibrary.Client
             get
             {
                 return m_maxMpxCount;
+            }
+        }
+
+        // Added for EhPFileBridge - not upstream yet.
+        // See m_maxNumberOfVirtualCircuits above: the server-advertised limit on how many
+        // concurrent SMB1 connections/sessions ("Virtual Circuits") it will accept from this
+        // client, as reported in the NEGOTIATE response's MaxNumberVcs field.
+        public int MaxNumberOfVirtualCircuits
+        {
+            get
+            {
+                return m_maxNumberOfVirtualCircuits;
             }
         }
 

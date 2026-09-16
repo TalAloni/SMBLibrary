@@ -62,6 +62,12 @@ namespace SMBLibrary.Client
         private byte[] m_preauthIntegrityHashValue; // SMB 3.1.1
         private ushort m_availableCredits = 1;
         private bool m_connectionSupportsMultiCredit = false;
+        // Added for EhPFileBridge - not upstream yet.
+        // Whether the server, in addition to this client, advertised SMB2_GLOBAL_CAP_MULTI_CHANNEL
+        // in the NEGOTIATE response. This is the protocol-level precondition for establishing
+        // additional bound channels to the same session (see SMB2Client.EstablishAdditionalChannel);
+        // it does not by itself mean any additional channel has actually been set up.
+        private bool m_serverSupportsMultiChannel = false;
         private IAuthenticationClient m_authenticationClient;
 
         public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
@@ -215,6 +221,7 @@ namespace SMBLibrary.Client
                 m_sessionID = 0;
                 m_availableCredits = 1;
                 m_connectionSupportsMultiCredit = false;
+                m_serverSupportsMultiChannel = false;
             }
         }
 
@@ -222,7 +229,13 @@ namespace SMBLibrary.Client
         {
             NegotiateRequest request = new NegotiateRequest();
             request.SecurityMode = SecurityMode.SigningEnabled;
-            request.Capabilities = Capabilities.Encryption;
+            // Added for EhPFileBridge - not upstream yet.
+            // Advertise SMB2_GLOBAL_CAP_MULTI_CHANNEL alongside Encryption: this is required for the
+            // server to consider binding additional channels to a session established over this
+            // connection (see EstablishAdditionalChannel). Harmless to send even when the negotiated
+            // dialect ends up below SMB 3.0 or the server does not support it - see
+            // m_serverSupportsMultiChannel below, which gates all actual multichannel usage.
+            request.Capabilities = Capabilities.Encryption | Capabilities.MultiChannel;
             request.ClientGuid = Guid.NewGuid();
             request.ClientStartTime = DateTime.Now;
             request.Dialects.Add(SMB2Dialect.SMB202);
@@ -249,6 +262,11 @@ namespace SMBLibrary.Client
                 m_maxReadSize = Math.Min(response.MaxReadSize, ClientMaxReadSize);
                 m_maxWriteSize = Math.Min(response.MaxWriteSize, ClientMaxWriteSize);
                 m_securityBlob = response.SecurityBuffer;
+                // Added for EhPFileBridge - not upstream yet.
+                // [MS-SMB2] 3.2.5.2: multichannel requires BOTH sides to advertise
+                // SMB2_GLOBAL_CAP_MULTI_CHANNEL, and is only defined for dialect 3.0+.
+                m_serverSupportsMultiChannel = m_dialect >= SMB2Dialect.SMB300 &&
+                                                (response.Capabilities & Capabilities.MultiChannel) > 0;
                 return true;
             }
             return false;
@@ -831,6 +849,19 @@ namespace SMBLibrary.Client
             get
             {
                 return m_maxWriteSize;
+            }
+        }
+
+        // Added for EhPFileBridge - not upstream yet.
+        // True once Negotiate has completed and both this client and the server advertised
+        // SMB2_GLOBAL_CAP_MULTI_CHANNEL over dialect 3.0+. Reflects protocol capability only -
+        // it does not mean any additional channel has been bound yet (see
+        // EstablishAdditionalChannel).
+        public bool ServerSupportsMultiChannel
+        {
+            get
+            {
+                return m_serverSupportsMultiChannel;
             }
         }
 

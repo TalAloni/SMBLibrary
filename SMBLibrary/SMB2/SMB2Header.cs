@@ -25,7 +25,16 @@ namespace SMBLibrary.SMB2
         public SMB2PacketHeaderFlags Flags;
         public uint NextCommand; // offset in bytes
         public ulong MessageID;
-        public uint Reserved; // Sync
+        // Added for EhPFileBridge - not upstream yet.
+        // [MS-SMB2] 3.2.4.1.8 / 2.2.1.2: on a sync SMB2 header this 4-byte slot is actually
+        // ChannelSequence (2 bytes) + Reserved (2 bytes), not one opaque Reserved value. A client
+        // using SMB3 Multichannel sets ChannelSequence to identify which bound channel a request
+        // was (re)sent on and bumps it on channel failure so the server can apply the request
+        // replay rules in 3.3.5.2.10. This was previously modeled as a single "uint Reserved" field
+        // that nothing ever populated; splitting it out is required for multichannel support and
+        // is fully wire-compatible (same 4 bytes, same offset).
+        public ushort ChannelSequence; // Sync, SMB 3.x
+        public ushort Reserved;        // Sync
         public uint TreeID;   // Sync
         public ulong AsyncID; // Async
         public ulong SessionID;
@@ -56,7 +65,8 @@ namespace SMBLibrary.SMB2
             }
             else
             {
-                Reserved = LittleEndianConverter.ToUInt32(buffer, offset + 32);
+                ChannelSequence = LittleEndianConverter.ToUInt16(buffer, offset + 32);
+                Reserved = LittleEndianConverter.ToUInt16(buffer, offset + 34);
                 TreeID = LittleEndianConverter.ToUInt32(buffer, offset + 36);
             }
             SessionID = LittleEndianConverter.ToUInt64(buffer, offset + 40);
@@ -83,7 +93,8 @@ namespace SMBLibrary.SMB2
             }
             else
             {
-                LittleEndianWriter.WriteUInt32(buffer, offset + 32, Reserved);
+                LittleEndianWriter.WriteUInt16(buffer, offset + 32, ChannelSequence);
+                LittleEndianWriter.WriteUInt16(buffer, offset + 34, Reserved);
                 LittleEndianWriter.WriteUInt32(buffer, offset + 36, TreeID);
             }
             LittleEndianWriter.WriteUInt64(buffer, offset + 40, SessionID);
