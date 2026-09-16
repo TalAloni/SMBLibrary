@@ -782,7 +782,10 @@ namespace SMBLibrary.Client
                 }
             }
             TrySendCommand(m_clientSocket, request, encryptData ? m_encryptionKey : null);
-            if (!m_connectionSupportsMultiCredit)
+
+            // NegotiateRequest is included because SupportsMultiCredit is assigned from the negotiate response on the receive thread,
+            // and can change between the CreditCharge assigned above and this line, leaving NEGOTIATE's CreditCharge of 0 to be added.
+            if (!m_connectionSupportsMultiCredit || request is NegotiateRequest)
             {
                 m_messageID++;
             }
