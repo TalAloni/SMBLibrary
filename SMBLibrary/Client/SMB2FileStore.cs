@@ -311,12 +311,31 @@ namespace SMBLibrary.Client
 
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
         {
-            throw new NotImplementedException();
+            ChangeNotifyRequest request = new ChangeNotifyRequest();
+            request.FileId = (FileID)handle;
+            request.WatchTree = watchTree;
+            request.CompletionFilter = completionFilter;
+            request.OutputBufferLength = (uint)outputBufferSize;
+            request.Header.TreeID = m_treeID;
+
+            // CHANGE_NOTIFY completes asynchronously (the server first answers with an interim
+            // STATUS_PENDING, then the real completion whenever a change occurs - which may be much
+            // later, or never). WaitForCommand()'s fixed response timeout cannot be used for this;
+            // SendAsyncRequest() instead delivers the eventual completion via onNotifyChangeCompleted.
+            SMB2Client.PendingSMB2AsyncRequest pending = m_client.SendAsyncRequest(request, m_encryptShareData,
+                (status, buffer) => onNotifyChangeCompleted(status, buffer, context));
+            ioRequest = pending;
+            return NTStatus.STATUS_PENDING;
         }
 
         public NTStatus Cancel(object ioRequest)
         {
-            throw new NotImplementedException();
+            if (ioRequest is SMB2Client.PendingSMB2AsyncRequest pending && m_client.TryCancelAsyncRequest(pending))
+            {
+                return NTStatus.STATUS_SUCCESS;
+            }
+
+            return NTStatus.STATUS_INVALID_HANDLE;
         }
 
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
