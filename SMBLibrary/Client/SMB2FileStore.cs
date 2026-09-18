@@ -38,9 +38,7 @@ namespace SMBLibrary.Client
         /// the create contexts the server answered with.
         /// </summary>
         /// <param name="createContexts">
-        /// [MS-SMB2] 2.2.13.2 create contexts to send, or null to send none. Use
-        /// <see cref="CreateContextHelper.CreateTimeWarpToken"/> to open the copy of the file held by
-        /// a shadow copy (previous version) of the share.
+        /// [MS-SMB2] 2.2.13.2 create contexts to send, or null to send none.
         /// </param>
         /// <param name="responseCreateContexts">
         /// The create contexts returned by the server, or null when the file was not opened. An open
