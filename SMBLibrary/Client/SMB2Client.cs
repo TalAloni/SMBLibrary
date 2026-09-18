@@ -782,7 +782,9 @@ namespace SMBLibrary.Client
                 }
             }
             TrySendCommand(m_clientSocket, request, encryptData ? m_encryptionKey : null);
-            if (!m_connectionSupportsMultiCredit)
+            // For NegotiateRequest it is possible that at this point the response was
+            // already received and m_connectionSupportsMultiCredit is set to true.
+            if (!m_connectionSupportsMultiCredit || request is NegotiateRequest)
             {
                 m_messageID++;
             }
