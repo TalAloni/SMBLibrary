@@ -43,6 +43,16 @@ namespace SMBLibrary.Client
         private List<SMB2Command> m_incomingQueue = new List<SMB2Command>();
         private EventWaitHandle m_incomingQueueEventHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
 
+        // Requests that were sent with an out-of-band completion callback instead of being
+        // collected into m_incomingQueue (currently only SMB2 CHANGE_NOTIFY). The server first
+        // answers with an interim STATUS_PENDING response (SMB2_FLAGS_ASYNC_COMMAND set, carrying
+        // an AsyncID) and only sends the real, possibly much later, completion afterwards - using
+        // the same MessageID but the AsyncID instead of the TreeID. WaitForCommand's short,
+        // fixed response timeout cannot be used for this, so these requests are tracked here and
+        // dispatched to their callback directly from ProcessPacket.
+        private object m_pendingAsyncRequestsLock = new object();
+        private Dictionary<ulong, PendingSMB2AsyncRequest> m_pendingAsyncRequests = new Dictionary<ulong, PendingSMB2AsyncRequest>();
+
         private SessionPacket m_sessionResponsePacket;
         private EventWaitHandle m_sessionResponseEventHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
 
@@ -640,10 +650,47 @@ namespace SMBLibrary.Client
                         return;
                     }
 
-                    lock (m_incomingQueueLock)
+                    PendingSMB2AsyncRequest pendingAsyncRequest;
+                    lock (m_pendingAsyncRequestsLock)
                     {
-                        m_incomingQueue.Add(command);
-                        m_incomingQueueEventHandle.Set();
+                        m_pendingAsyncRequests.TryGetValue(command.Header.MessageID, out pendingAsyncRequest);
+                    }
+
+                    if (pendingAsyncRequest != null)
+                    {
+                        if (isInterimResponse)
+                        {
+                            // Not the real completion yet - just the interim ack that carries the
+                            // AsyncID we'll need if the caller wants to Cancel() the request later.
+                            lock (m_pendingAsyncRequestsLock)
+                            {
+                                pendingAsyncRequest.AsyncID = command.Header.AsyncID;
+                            }
+                        }
+                        else
+                        {
+                            lock (m_pendingAsyncRequestsLock)
+                            {
+                                m_pendingAsyncRequests.Remove(command.Header.MessageID);
+                            }
+
+                            byte[] outputBuffer = (command as ChangeNotifyResponse)?.OutputBuffer ?? new byte[0];
+                            NTStatus status = command.Header.Status;
+                            // Invoke off the receive thread so a slow/blocking callback can never
+                            // stall processing of further incoming packets on this connection.
+                            System.Threading.ThreadPool.QueueUserWorkItem(delegate
+                            {
+                                pendingAsyncRequest.OnCompleted(status, outputBuffer);
+                            });
+                        }
+                    }
+                    else
+                    {
+                        lock (m_incomingQueueLock)
+                        {
+                            m_incomingQueue.Add(command);
+                            m_incomingQueueEventHandle.Set();
+                        }
                     }
                 }
             }
@@ -697,6 +744,71 @@ namespace SMBLibrary.Client
                 m_incomingQueueEventHandle.WaitOne(100);
             }
             return null;
+        }
+
+        /// <summary>
+        /// Sends a request whose completion is delivered out-of-band (via <paramref name="onCompleted"/>,
+        /// invoked from <see cref="ProcessPacket"/>) instead of through <see cref="WaitForCommand"/>. Used
+        /// for SMB2 CHANGE_NOTIFY, whose real completion may arrive long after the interim STATUS_PENDING
+        /// response and must not be subject to the fixed response timeout.
+        /// </summary>
+        internal PendingSMB2AsyncRequest SendAsyncRequest(SMB2Command request, bool encryptData, AsyncRequestCompletedHandler onCompleted)
+        {
+            lock (m_pendingAsyncRequestsLock)
+            {
+                // Registration must happen while still holding the lock that ProcessPacket uses to
+                // look up the MessageID, otherwise a response could theoretically be processed before
+                // this method finishes registering the callback for it.
+                TrySendCommand(request, encryptData);
+                PendingSMB2AsyncRequest pending = new PendingSMB2AsyncRequest(request.Header.MessageID, onCompleted);
+                m_pendingAsyncRequests[pending.MessageID] = pending;
+                return pending;
+            }
+        }
+
+        /// <summary>
+        /// Requests cancellation of a previously sent <see cref="SendAsyncRequest"/>. Only possible once
+        /// the interim response (and therefore the AsyncID) has been received; returns false otherwise -
+        /// the caller can still rely on the request completing (e.g. with STATUS_NOTIFY_CLEANUP) once the
+        /// associated handle is closed.
+        /// </summary>
+        internal bool TryCancelAsyncRequest(PendingSMB2AsyncRequest pending)
+        {
+            ulong asyncID;
+            lock (m_pendingAsyncRequestsLock)
+            {
+                if (!m_pendingAsyncRequests.ContainsKey(pending.MessageID) || !pending.AsyncID.HasValue)
+                {
+                    return false;
+                }
+                asyncID = pending.AsyncID.Value;
+            }
+
+            CancelRequest cancelRequest = new CancelRequest();
+            cancelRequest.Header.IsAsync = true;
+            cancelRequest.Header.AsyncID = asyncID;
+            // [MS-SMB2] The SMB2 CANCEL Request MUST use an ASYNC header for canceling requests that
+            // have already received an interim response; TrySendCommand() assigns a fresh MessageID
+            // and SessionID as usual, it never sets TreeID for async requests (union with AsyncID).
+            TrySendCommand(cancelRequest);
+            return true;
+        }
+
+        /// <summary>Completion callback for <see cref="SendAsyncRequest"/> (net20 has no 2-arg <c>Action&lt;T1,T2&gt;</c>).</summary>
+        internal delegate void AsyncRequestCompletedHandler(NTStatus status, byte[] buffer);
+
+        /// <summary>Tracks a single in-flight out-of-band request (see <see cref="SendAsyncRequest"/>).</summary>
+        internal sealed class PendingSMB2AsyncRequest
+        {
+            public readonly ulong MessageID;
+            public readonly AsyncRequestCompletedHandler OnCompleted;
+            public ulong? AsyncID;
+
+            public PendingSMB2AsyncRequest(ulong messageID, AsyncRequestCompletedHandler onCompleted)
+            {
+                MessageID = messageID;
+                OnCompleted = onCompleted;
+            }
         }
 
         internal SessionPacket WaitForSessionResponsePacket()
