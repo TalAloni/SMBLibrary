@@ -28,11 +28,39 @@ namespace SMBLibrary.Client
         public static readonly int DirectTCPPort = 445;
 
         private static readonly ushort ClientMaxBufferSize = 65535; // Valid range: 512 - 65535
-        private static readonly ushort ClientMaxMpxCount = 1;
+        // Added for EhPFileBridge - not upstream yet: raised from 1.
+        // MaxMpxCount tells the server how many requests this client may leave outstanding at once.
+        // With a value of 1 an in-flight NT_TRANSACT_NOTIFY_CHANGE (see SendAsyncRequest) would
+        // block every subsequent request - including the SMB_COM_CLOSE / SMB_COM_NT_CANCEL needed to
+        // end the watch. Real Windows clients advertise 50; 10 is a conservative value that legacy
+        // NT4.0-era and embedded CIFS servers handle without trouble.
+        private static readonly ushort ClientMaxMpxCount = 10;
         private static readonly int DefaultResponseTimeoutInMilliseconds = 5000;
 
         private SMBTransportType m_transport;
-        private bool m_isConnected;
+        // Added for EhPFileBridge - not upstream yet.
+        // m_isConnected used to be a plain field. It was turned into a property (backed by
+        // m_isConnectedValue) so that every existing "m_isConnected = false" disconnect path -
+        // there are ~10 of them spread across the receive callback, packet processing and
+        // Disconnect() - automatically fails any in-flight out-of-band request registered via
+        // SendAsyncRequest. Without this, a pending NT_TRANSACT_NOTIFY_CHANGE would simply never
+        // call back once the socket dies and the caller would wait forever.
+        private bool m_isConnectedValue;
+        private bool m_isConnected
+        {
+            get
+            {
+                return m_isConnectedValue;
+            }
+            set
+            {
+                m_isConnectedValue = value;
+                if (!value)
+                {
+                    FailAllPendingAsyncRequests();
+                }
+            }
+        }
         private bool m_isLoggedIn;
         private Socket m_clientSocket;
         private ConnectionState m_connectionState;
@@ -49,6 +77,19 @@ namespace SMBLibrary.Client
         private object m_incomingQueueLock = new object();
         private List<SMB1Message> m_incomingQueue = new List<SMB1Message>();
         private EventWaitHandle m_incomingQueueEventHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+
+        // Added for EhPFileBridge - not upstream yet.
+        // Out-of-band ("async") requests. Regular SMB1 requests in this client are strictly
+        // request/response with MID = 0 and are correlated by command name in WaitForMessage().
+        // That model cannot express SMB_COM_NT_TRANSACT / NT_TRANSACT_NOTIFY_CHANGE, which the
+        // server holds open indefinitely until the watched directory changes or the request is
+        // cancelled. Such requests are therefore given a distinct multiplex ID, registered here,
+        // and dispatched straight to a callback from the receive thread instead of being placed
+        // on m_incomingQueue. A distinct MID is also mandatory for cancellation, because
+        // SMB_COM_NT_CANCEL identifies its target solely by UID/TID/PID/MID.
+        private object m_pendingAsyncRequestsLock = new object();
+        private Dictionary<ushort, PendingSMB1AsyncRequest> m_pendingAsyncRequests = new Dictionary<ushort, PendingSMB1AsyncRequest>();
+        private ushort m_nextMultiplexID = 1;
 
         private SessionPacket m_sessionResponsePacket;
         private EventWaitHandle m_sessionResponseEventHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
@@ -571,6 +612,36 @@ namespace SMBLibrary.Client
                     return;
                 }
 
+                // Added for EhPFileBridge - not upstream yet.
+                // Out-of-band requests (NT_TRANSACT_NOTIFY_CHANGE) carry a non-zero MID allocated
+                // by SendAsyncRequest. Their responses must be dispatched to the registered
+                // callback here, before the [MS-CIFS] 3.2.5.1 filter below discards everything
+                // that is not PID/MID 0.
+                PendingSMB1AsyncRequest pendingAsyncRequest = null;
+                if (message.Header.MID != 0 && message.Header.MID != 0xFFFF)
+                {
+                    lock (m_pendingAsyncRequestsLock)
+                    {
+                        if (m_pendingAsyncRequests.TryGetValue(message.Header.MID, out pendingAsyncRequest))
+                        {
+                            m_pendingAsyncRequests.Remove(message.Header.MID);
+                        }
+                    }
+                }
+
+                if (pendingAsyncRequest != null)
+                {
+                    // Invoke the callback on a pool thread: it may run arbitrarily long
+                    // application code and must never stall the single receive thread.
+                    SMB1Message completedMessage = message;
+                    PendingSMB1AsyncRequest completedRequest = pendingAsyncRequest;
+                    ThreadPool.QueueUserWorkItem(delegate(object ignored)
+                    {
+                        completedRequest.Complete(completedMessage);
+                    });
+                    return;
+                }
+
                 // [MS-CIFS] 3.2.5.1 - If the MID value is the reserved value 0xFFFF, the message can be an OpLock break
                 // sent by the server. Otherwise, if the PID and MID values of the received message are not found in the
                 // Client.Connection.PIDMIDList, the message MUST be discarded.
@@ -662,14 +733,159 @@ namespace SMBLibrary.Client
 
         internal void TrySendMessage(SMB1Command request, ushort treeID)
         {
+            TrySendMessage(request, treeID, 0);
+        }
+
+        internal void TrySendMessage(SMB1Command request, ushort treeID, ushort multiplexID)
+        {
             SMB1Message message = new SMB1Message();
             message.Header.UnicodeFlag = m_unicode;
             message.Header.ExtendedSecurityFlag = m_forceExtendedSecurity;
             message.Header.Flags2 |= HeaderFlags2.LongNamesAllowed | HeaderFlags2.LongNameUsed | HeaderFlags2.NTStatusCode;
             message.Header.UID = m_userID;
             message.Header.TID = treeID;
+            message.Header.MID = multiplexID;
             message.Commands.Add(request);
             TrySendMessage(m_clientSocket, message);
+        }
+
+        // Added for EhPFileBridge - not upstream yet. See m_pendingAsyncRequests.
+        /// <summary>
+        /// Sends a request that the server is expected to leave outstanding for an arbitrary
+        /// amount of time (currently only NT_TRANSACT_NOTIFY_CHANGE). The request is given its own
+        /// multiplex ID and its response is delivered to <paramref name="onCompleted"/> from a
+        /// thread pool thread rather than through WaitForMessage().
+        /// </summary>
+        internal PendingSMB1AsyncRequest SendAsyncRequest(SMB1Command request, ushort treeID, AsyncRequestCompletedHandler onCompleted)
+        {
+            lock (m_pendingAsyncRequestsLock)
+            {
+                ushort multiplexID = AllocateMultiplexIDUnsafe();
+                PendingSMB1AsyncRequest pendingRequest = new PendingSMB1AsyncRequest(multiplexID, treeID, onCompleted);
+                // Register before sending: ProcessPacket takes the same lock, so the response
+                // cannot be observed (and discarded) before the entry exists.
+                m_pendingAsyncRequests.Add(multiplexID, pendingRequest);
+                TrySendMessage(request, treeID, multiplexID);
+                return pendingRequest;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to cancel a request previously issued via SendAsyncRequest.
+        /// [MS-CIFS] 2.2.4.65: SMB_COM_NT_CANCEL identifies the request to cancel solely by the
+        /// header fields (UID/TID/PID/MID) and the server sends no response to the cancel itself.
+        /// The cancelled request is completed by the server with STATUS_CANCELLED, which arrives
+        /// on the original MID and therefore still reaches the registered callback.
+        /// </summary>
+        internal bool TryCancelAsyncRequest(PendingSMB1AsyncRequest pendingRequest)
+        {
+            if (pendingRequest == null)
+            {
+                return false;
+            }
+
+            lock (m_pendingAsyncRequestsLock)
+            {
+                if (!m_pendingAsyncRequests.ContainsKey(pendingRequest.MultiplexID))
+                {
+                    // Already completed or already failed out.
+                    return false;
+                }
+            }
+
+            if (!m_isConnected)
+            {
+                return false;
+            }
+
+            TrySendMessage(new NTCancelRequest(), pendingRequest.TreeID, pendingRequest.MultiplexID);
+            return true;
+        }
+
+        /// <summary>
+        /// Must be called while holding m_pendingAsyncRequestsLock.
+        /// MID 0 is used by every regular request in this client and 0xFFFF is reserved by
+        /// [MS-CIFS] for server-initiated oplock breaks, so both are skipped.
+        /// </summary>
+        private ushort AllocateMultiplexIDUnsafe()
+        {
+            for (int attempt = 0; attempt < ushort.MaxValue; attempt++)
+            {
+                if (m_nextMultiplexID == 0 || m_nextMultiplexID == 0xFFFF)
+                {
+                    m_nextMultiplexID = 1;
+                }
+                ushort candidate = m_nextMultiplexID;
+                m_nextMultiplexID++;
+                if (!m_pendingAsyncRequests.ContainsKey(candidate))
+                {
+                    return candidate;
+                }
+            }
+            throw new InvalidOperationException("No free SMB1 multiplex ID available");
+        }
+
+        /// <summary>
+        /// Completes every outstanding async request with a null message, signalling to the
+        /// caller that the connection went away. Invoked from the m_isConnected setter.
+        /// </summary>
+        private void FailAllPendingAsyncRequests()
+        {
+            List<PendingSMB1AsyncRequest> pendingRequests;
+            lock (m_pendingAsyncRequestsLock)
+            {
+                if (m_pendingAsyncRequests.Count == 0)
+                {
+                    return;
+                }
+                pendingRequests = new List<PendingSMB1AsyncRequest>(m_pendingAsyncRequests.Values);
+                m_pendingAsyncRequests.Clear();
+            }
+
+            foreach (PendingSMB1AsyncRequest pendingRequest in pendingRequests)
+            {
+                PendingSMB1AsyncRequest capturedRequest = pendingRequest;
+                ThreadPool.QueueUserWorkItem(delegate(object ignored)
+                {
+                    capturedRequest.Complete(null);
+                });
+            }
+        }
+
+        // Added for EhPFileBridge - not upstream yet.
+        /// <summary>
+        /// Invoked when an out-of-band request completes. <paramref name="message"/> is null when
+        /// the connection was lost before a response arrived.
+        /// </summary>
+        internal delegate void AsyncRequestCompletedHandler(SMB1Message message);
+
+        /// <summary>Tracks a single in-flight out-of-band request (see <see cref="SendAsyncRequest"/>).</summary>
+        internal sealed class PendingSMB1AsyncRequest
+        {
+            public readonly ushort MultiplexID;
+            public readonly ushort TreeID;
+            private readonly AsyncRequestCompletedHandler m_onCompleted;
+            private int m_completed;
+
+            public PendingSMB1AsyncRequest(ushort multiplexID, ushort treeID, AsyncRequestCompletedHandler onCompleted)
+            {
+                MultiplexID = multiplexID;
+                TreeID = treeID;
+                m_onCompleted = onCompleted;
+            }
+
+            /// <summary>Invokes the callback at most once, no matter how often it is called.</summary>
+            public void Complete(SMB1Message message)
+            {
+                if (Interlocked.CompareExchange(ref m_completed, 1, 0) != 0)
+                {
+                    return;
+                }
+                if (m_onCompleted != null)
+                {
+                    m_onCompleted(message);
+                }
+            }
         }
 
         public bool Unicode
