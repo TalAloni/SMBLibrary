@@ -29,8 +29,28 @@ namespace SMBLibrary.Client
 
         public NTStatus CreateFile(out object handle, out FileStatus fileStatus, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext)
         {
+            List<CreateContext> responseCreateContexts;
+            return CreateFile(out handle, out fileStatus, out responseCreateContexts, path, desiredAccess, fileAttributes, shareAccess, createDisposition, createOptions, securityContext, null);
+        }
+
+        /// <summary>
+        /// Creates or opens a file, sending the given create contexts with the request and returning
+        /// the create contexts the server answered with.
+        /// </summary>
+        /// <param name="createContexts">
+        /// [MS-SMB2] 2.2.13.2 create contexts to send, or null to send none. Use
+        /// <see cref="CreateContextHelper.CreateTimeWarpToken"/> to open the copy of the file held by
+        /// a shadow copy (previous version) of the share.
+        /// </param>
+        /// <param name="responseCreateContexts">
+        /// The create contexts returned by the server, or null when the file was not opened. An open
+        /// that succeeded but drew no contexts from the server yields an empty list.
+        /// </param>
+        public NTStatus CreateFile(out object handle, out FileStatus fileStatus, out List<CreateContext> responseCreateContexts, string path, AccessMask desiredAccess, FileAttributes fileAttributes, ShareAccess shareAccess, CreateDisposition createDisposition, CreateOptions createOptions, SecurityContext securityContext, List<CreateContext> createContexts)
+        {
             handle = null;
             fileStatus = FileStatus.FILE_DOES_NOT_EXIST;
+            responseCreateContexts = null;
             CreateRequest request = new CreateRequest();
             if (m_isDfsOperation)
             {
@@ -45,6 +65,10 @@ namespace SMBLibrary.Client
             request.CreateDisposition = createDisposition;
             request.CreateOptions = createOptions;
             request.ImpersonationLevel = ImpersonationLevel.Impersonation;
+            if (createContexts != null)
+            {
+                request.CreateContexts.AddRange(createContexts);
+            }
             TrySendCommand(request);
 
             SMB2Command response = m_client.WaitForCommand(request.MessageID, out bool connectionTerminated);
@@ -55,6 +79,7 @@ namespace SMBLibrary.Client
                     CreateResponse createResponse = ((CreateResponse)response);
                     handle = createResponse.FileId;
                     fileStatus = ToFileStatus(createResponse.CreateAction);
+                    responseCreateContexts = createResponse.CreateContexts;
                 }
                 return response.Header.Status;
             }
