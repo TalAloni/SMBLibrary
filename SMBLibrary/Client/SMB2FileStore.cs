@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2024 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
+/* Copyright (C) 2017-2026 Tal Aloni <tal.aloni.il@gmail.com>. All rights reserved.
  * 
  * You can redistribute this program and/or modify it under the terms of
  * the GNU Lesser Public License as published by the Free Software Foundation,
@@ -311,12 +311,46 @@ namespace SMBLibrary.Client
 
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
         {
-            throw new NotImplementedException();
+            ChangeNotifyRequest request = new ChangeNotifyRequest();
+            request.FileId = (FileID)handle;
+            request.WatchTree = watchTree;
+            request.CompletionFilter = completionFilter;
+            request.OutputBufferLength = (uint)outputBufferSize;
+            request.Header.TreeID = m_treeID;
+
+            TrySendCommand(request);
+            SMB2Command response = m_client.WaitForCommand(request.MessageID, true, out bool connectionTerminated);
+            ioRequest = null;
+            if (response != null)
+            {
+                if (response.Header.IsAsync && response.Header.Status == NTStatus.STATUS_PENDING)
+                {
+                    ioRequest = response.Header.AsyncID;
+                    m_client.RegisterNotifyChange(response.Header.AsyncID, onNotifyChangeCompleted, context);
+                }
+                else
+                {
+                    return NTStatus.STATUS_INVALID_SMB;
+                }
+
+                return response.Header.Status;
+            }
+
+            return connectionTerminated ? NTStatus.STATUS_INVALID_SMB : NTStatus.STATUS_IO_TIMEOUT;
         }
 
         public NTStatus Cancel(object ioRequest)
         {
-            throw new NotImplementedException();
+            ulong asyncID = (ulong)ioRequest;
+
+            m_client.RemoveNotifyChangeRegistration(asyncID);
+
+            CancelRequest request = new CancelRequest();
+            request.Header.IsAsync = true;
+            request.Header.AsyncID = asyncID;
+            m_client.TrySendCommand(request);
+
+            return NTStatus.STATUS_CANCELLED;
         }
 
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)

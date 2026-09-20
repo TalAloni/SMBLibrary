@@ -63,6 +63,7 @@ namespace SMBLibrary.Client
         private ushort m_availableCredits = 1;
         private bool m_connectionSupportsMultiCredit = false;
         private IAuthenticationClient m_authenticationClient;
+        private Dictionary<ulong, KeyValuePair<OnNotifyChangeCompleted, object>> m_asyncIDToNotifyChangeHandler = new Dictionary<ulong, KeyValuePair<OnNotifyChangeCompleted, object>>();
 
         public SMB2Client() : this(DefaultResponseTimeoutInMilliseconds)
         {
@@ -640,6 +641,12 @@ namespace SMBLibrary.Client
                         return;
                     }
 
+                    if (command.Header.IsAsync && command is ChangeNotifyResponse changeNotifyResponse)
+                    {
+                        ProcessChangeNotifyResponse(changeNotifyResponse);
+                        return;
+                    }
+
                     lock (m_incomingQueueLock)
                     {
                         m_incomingQueue.Add(command);
@@ -721,6 +728,40 @@ namespace SMBLibrary.Client
             }
 
             return null;
+        }
+
+        internal void RegisterNotifyChange(ulong asyncID, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
+        {
+            lock (m_asyncIDToNotifyChangeHandler)
+            {
+                m_asyncIDToNotifyChangeHandler[asyncID] = new KeyValuePair<OnNotifyChangeCompleted, object>(onNotifyChangeCompleted, context);
+            }
+        }
+
+        internal void RemoveNotifyChangeRegistration(ulong asyncID)
+        {
+            lock (m_asyncIDToNotifyChangeHandler)
+            {
+                m_asyncIDToNotifyChangeHandler.Remove(asyncID);
+            }
+        }
+
+        private void ProcessChangeNotifyResponse(ChangeNotifyResponse response)
+        {
+            lock (m_asyncIDToNotifyChangeHandler)
+            {
+                if (m_asyncIDToNotifyChangeHandler.TryGetValue(response.Header.AsyncID, out KeyValuePair<OnNotifyChangeCompleted, object> onNotifyChangeHandler))
+                {
+                    m_asyncIDToNotifyChangeHandler.Remove(response.Header.AsyncID);
+                    OnNotifyChangeCompleted onNotifyChangeCompleted = onNotifyChangeHandler.Key;
+                    object context = onNotifyChangeHandler.Value;
+                    onNotifyChangeCompleted(response.Header.Status, response.OutputBuffer, context);
+                }
+                else
+                {
+                    Log($"ChangeNotify response contains unexpected AsyncID: {response.Header.AsyncID}");
+                }
+            }
         }
 
         private void Log(string message)
