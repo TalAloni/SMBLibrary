@@ -671,6 +671,11 @@ namespace SMBLibrary.Client
 
         internal SMB2Command WaitForCommand(ulong messageID, out bool connectionTerminated)
         {
+            return WaitForCommand(messageID, false, out connectionTerminated);
+        }
+
+        internal SMB2Command WaitForCommand(ulong messageID, bool returnInterimResponse, out bool connectionTerminated)
+        {
             connectionTerminated = false;
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -685,7 +690,7 @@ namespace SMBLibrary.Client
                         if (command.Header.MessageID == messageID)
                         {
                             m_incomingQueue.RemoveAt(index);
-                            if (command.Header.IsAsync && command.Header.Status == NTStatus.STATUS_PENDING)
+                            if (!returnInterimResponse && command.Header.IsAsync && command.Header.Status == NTStatus.STATUS_PENDING)
                             {
                                 index--;
                                 continue;
