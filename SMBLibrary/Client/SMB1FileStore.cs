@@ -357,6 +357,32 @@ namespace SMBLibrary.Client
             return connectionTerminated ? NTStatus.STATUS_INVALID_SMB : NTStatus.STATUS_IO_TIMEOUT;
         }
 
+        /// <summary>
+        /// Renames (or moves within the same share) a file or directory using the classic,
+        /// path-based SMB_COM_RENAME command (no open file handle required) - unlike
+        /// <see cref="SetFileInformation(object, FileInformation)"/>, which relies on the
+        /// TRANS2_SET_FILE_INFORMATION passthrough info level. Some legacy/embedded SMB1 servers
+        /// advertise CAP_INFOLEVEL_PASSTHRU in SMB_COM_NEGOTIATE but still reject a
+        /// FileRenameInformation TRANS2 request with STATUS_NOT_SUPPORTED; SMB_COM_RENAME is part
+        /// of the original CIFS core protocol and is supported by effectively every SMB1 server
+        /// ever shipped (including pre-NT SMB/LanMan implementations), making it the more
+        /// reliable choice for SMB1 specifically. Added for EhPFileBridge - not upstream yet.
+        /// </summary>
+        public NTStatus RenamePath(string oldPath, string newPath)
+        {
+            RenameRequest request = new RenameRequest();
+            request.OldFileName = oldPath;
+            request.NewFileName = newPath;
+
+            TrySendMessage(request);
+            SMB1Message reply = m_client.WaitForMessage(CommandName.SMB_COM_RENAME, out bool connectionTerminated);
+            if (reply != null)
+            {
+                return reply.Header.Status;
+            }
+            return connectionTerminated ? NTStatus.STATUS_INVALID_SMB : NTStatus.STATUS_IO_TIMEOUT;
+        }
+
         public NTStatus GetFileSystemInformation(out FileSystemInformation result, FileSystemInformationClass informationClass)
         {
             if (m_client.InfoLevelPassthrough)
@@ -471,12 +497,68 @@ namespace SMBLibrary.Client
 
         public NTStatus NotifyChange(out object ioRequest, object handle, NotifyChangeFilter completionFilter, bool watchTree, int outputBufferSize, OnNotifyChangeCompleted onNotifyChangeCompleted, object context)
         {
-            throw new NotImplementedException();
+            // Added for EhPFileBridge - not upstream yet.
+            // NT_TRANSACT_NOTIFY_CHANGE is the SMB1 equivalent of SMB2's CHANGE_NOTIFY and is what
+            // Windows Explorer uses against NT4-era shares. Unlike SMB2 the server sends no interim
+            // response ([MS-CIFS] 2.2.7.4): it simply holds the request open until the watched
+            // directory changes, the handle is closed, or an SMB_COM_NT_CANCEL arrives. Because it
+            // may stay outstanding indefinitely it cannot go through WaitForMessage()'s fixed
+            // response timeout, so it is dispatched via SMB1Client.SendAsyncRequest() which gives it
+            // a dedicated multiplex ID and delivers the eventual reply to a callback.
+            ioRequest = null;
+
+            NTTransactNotifyChangeRequest subcommand = new NTTransactNotifyChangeRequest();
+            subcommand.FID = (ushort)handle;
+            subcommand.CompletionFilter = completionFilter;
+            subcommand.WatchTree = watchTree;
+
+            NTTransactRequest request = new NTTransactRequest();
+            request.Function = subcommand.SubcommandName;
+            request.Setup = subcommand.GetSetup();
+            request.TransParameters = new byte[0];
+            request.TransData = new byte[0];
+            request.TotalParameterCount = 0;
+            request.TotalDataCount = 0;
+            // The FILE_NOTIFY_INFORMATION list is returned in the Trans_Parameters block, not in
+            // Trans_Data, so the caller's buffer size applies to MaxParameterCount.
+            request.MaxParameterCount = (uint)outputBufferSize;
+            request.MaxDataCount = 0;
+            request.MaxSetupCount = 0;
+
+            SMB1Client.PendingSMB1AsyncRequest pendingRequest = m_client.SendAsyncRequest(request, m_treeID, delegate (SMB1Message reply)
+            {
+                if (reply == null)
+                {
+                    onNotifyChangeCompleted(NTStatus.STATUS_INVALID_SMB, new byte[0], context);
+                    return;
+                }
+
+                byte[] buffer = new byte[0];
+                if (reply.Commands.Count > 0 && reply.Commands[0] is NTTransactResponse)
+                {
+                    NTTransactResponse response = (NTTransactResponse)reply.Commands[0];
+                    NTTransactNotifyChangeResponse subcommandResponse = new NTTransactNotifyChangeResponse(response.TransParameters);
+                    if (subcommandResponse.FileNotifyInformationBytes != null)
+                    {
+                        buffer = subcommandResponse.FileNotifyInformationBytes;
+                    }
+                }
+                onNotifyChangeCompleted(reply.Header.Status, buffer, context);
+            });
+
+            ioRequest = pendingRequest;
+            return NTStatus.STATUS_PENDING;
         }
 
         public NTStatus Cancel(object ioRequest)
         {
-            throw new NotImplementedException();
+            // Added for EhPFileBridge - not upstream yet.
+            if (ioRequest is SMB1Client.PendingSMB1AsyncRequest pendingRequest && m_client.TryCancelAsyncRequest(pendingRequest))
+            {
+                return NTStatus.STATUS_SUCCESS;
+            }
+
+            return NTStatus.STATUS_INVALID_HANDLE;
         }
 
         public NTStatus DeviceIOControl(object handle, uint ctlCode, byte[] input, out byte[] output, int maxOutputLength)
